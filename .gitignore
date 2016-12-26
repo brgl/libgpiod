@@ -1,0 +1,7 @@
+!.gitignore
+libgpiod.so
+gpiodetect
+gpioinfo
+gpioget
+gpioset
+*.o
