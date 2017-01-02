@@ -217,9 +217,9 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 
 	req->lineoffsets[0] = line->info.line_offset;
 	req->lines = 1;
-	/* FIXME This doesn't seem to work... */
-	if (flags & GPIOD_DIRECTION_OUT)
-		req->default_values[0] = default_val ? 1 : 0;
+
+	if (direction == GPIOD_DIRECTION_OUT)
+		req->default_values[0] = (__u8)default_val;
 
 	strncpy(req->consumer_label, consumer,
 		sizeof(req->consumer_label) - 1);
