@@ -310,7 +310,6 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 	chip = zalloc(sizeof(*chip));
 	if (!chip) {
 		close(fd);
-		set_last_error(ENOMEM);
 		return NULL;
 	}
 
@@ -327,7 +326,6 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 	if (!chip->lines) {
 		close(chip->fd);
 		free(chip);
-		set_last_error(ENOMEM);
 		return NULL;
 	}
 
@@ -456,10 +454,8 @@ struct gpiod_chip_iter * gpiod_chip_iter_new(void)
 	struct gpiod_chip_iter *new;
 
 	new = zalloc(sizeof(*new));
-	if (!new) {
-		set_last_error(ENOMEM);
+	if (!new)
 		return NULL;
-	}
 
 	new->dir = opendir(dev_dir);
 	if (!new->dir) {
