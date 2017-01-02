@@ -32,6 +32,14 @@ extern "C" {
 
 #define GPIOD_BIT(nr)		(1UL << (nr))
 
+#define __GPIOD_ERRNO_OFFSET	10000
+
+enum {
+	GPIOD_ESUCCESS = __GPIOD_ERRNO_OFFSET,
+	GPIOD_ENOTREQUESTED,
+	__GPIOD_MAX_ERR,
+};
+
 int gpiod_errno(void) GPIOD_API;
 
 const char * gpiod_strerror(int errnum) GPIOD_API;

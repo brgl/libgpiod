@@ -27,6 +27,11 @@ static const char libgpiod_consumer[] = "libgpiod";
 
 static __thread int last_error;
 
+static const char *const error_descr[] = {
+	"success",
+	"GPIO line not requested",
+};
+
 static void set_last_error(int errnum)
 {
 	last_error = errnum;
@@ -79,7 +84,12 @@ int gpiod_errno(void)
 
 const char * gpiod_strerror(int errnum)
 {
-	return strerror(errnum);
+	if (errnum < __GPIOD_ERRNO_OFFSET)
+		return strerror(errnum);
+	else if (errnum > __GPIOD_MAX_ERR)
+		return "invalid error number";
+	else
+		return error_descr[errnum - __GPIOD_ERRNO_OFFSET];
 }
 
 int gpiod_simple_get_value(const char *device, unsigned int offset)
@@ -254,7 +264,7 @@ int gpiod_line_get_value(struct gpiod_line *line)
 	int status;
 
 	if (!gpiod_line_is_requested(line)) {
-		set_last_error(EPERM);
+		set_last_error(GPIOD_ENOTREQUESTED);
 		return -1;
 	}
 
@@ -274,7 +284,7 @@ int gpiod_line_set_value(struct gpiod_line *line, int value)
 	int status;
 
 	if (!gpiod_line_is_requested(line)) {
-		set_last_error(EPERM);
+		set_last_error(GPIOD_ENOTREQUESTED);
 		return -1;
 	}
 
