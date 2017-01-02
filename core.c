@@ -579,6 +579,7 @@ void gpiod_chip_iter_free(struct gpiod_chip_iter *iter)
 
 struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 {
+	struct gpiod_chip *chip;
 	struct dirent *dentry;
 	int status;
 
@@ -593,7 +594,8 @@ struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 		status = strncmp(dentry->d_name, cdev_prefix,
 				 sizeof(cdev_prefix) - 1);
 		if (status == 0) {
-			iter->current = gpiod_chip_open(dentry->d_name);
+			chip = gpiod_chip_open_by_name(dentry->d_name);
+			iter->current = chip;
 			return iter->current;
 		}
 	}
