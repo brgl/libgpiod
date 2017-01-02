@@ -146,7 +146,7 @@ struct gpiod_line {
 	bool requested;
 	struct gpiod_chip *chip;
 	struct gpioline_info info;
-	struct gpiohandle_request req;
+	struct gpiohandle_request *req;
 };
 
 unsigned int gpiod_line_offset(struct gpiod_line *line)
@@ -197,7 +197,11 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 	struct gpiod_chip *chip;
 	int status, fd;
 
-	req = &line->req;
+	req = zalloc(sizeof(*req));
+	if (!req)
+		return -1;
+
+	line->req = req;
 	memset(req, 0, sizeof(*req));
 
 	if (flags & GPIOD_REQUEST_ACTIVE_LOW)
@@ -234,7 +238,8 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 
 void gpiod_line_release(struct gpiod_line *line)
 {
-	close(line->req.fd);
+	close(line->req->fd);
+	free(line->req);
 	line->requested = false;
 }
 
@@ -255,7 +260,7 @@ int gpiod_line_get_value(struct gpiod_line *line)
 
 	memset(&data, 0, sizeof(data));
 
-	status = gpio_ioctl(line->req.fd,
+	status = gpio_ioctl(line->req->fd,
 			    GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
@@ -276,7 +281,7 @@ int gpiod_line_set_value(struct gpiod_line *line, int value)
 	memset(&data, 0, sizeof(data));
 	data.values[0] = value ? 1 : 0;
 
-	status = gpio_ioctl(line->req.fd,
+	status = gpio_ioctl(line->req->fd,
 			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
