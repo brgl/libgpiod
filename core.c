@@ -382,6 +382,13 @@ struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
 
 void gpiod_chip_close(struct gpiod_chip *chip)
 {
+	unsigned int i;
+
+	for (i = 0; i < chip->cinfo.lines; i++) {
+		if (chip->lines[i].requested)
+			gpiod_line_release(&chip->lines[i]);
+	}
+
 	close(chip->fd);
 	free(chip->lines);
 	free(chip);
