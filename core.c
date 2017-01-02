@@ -145,49 +145,49 @@ int gpiod_simple_set_value(const char *device, unsigned int offset, int value)
 struct gpiod_line {
 	bool requested;
 	struct gpiod_chip *chip;
-	struct gpioline_info linfo;
-	struct gpiohandle_request lreq;
+	struct gpioline_info info;
+	struct gpiohandle_request req;
 };
 
 unsigned int gpiod_line_offset(struct gpiod_line *line)
 {
-	return (unsigned int)line->linfo.line_offset;
+	return (unsigned int)line->info.line_offset;
 }
 
 const char * gpiod_line_name(struct gpiod_line *line)
 {
-	return line->linfo.name[0] == '\0' ? NULL : line->linfo.name;
+	return line->info.name[0] == '\0' ? NULL : line->info.name;
 }
 
 const char * gpiod_line_consumer(struct gpiod_line *line)
 {
-	return line->linfo.consumer[0] == '\0' ? NULL : line->linfo.consumer;
+	return line->info.consumer[0] == '\0' ? NULL : line->info.consumer;
 }
 
 int gpiod_line_direction(struct gpiod_line *line)
 {
-	return line->linfo.flags & GPIOLINE_FLAG_IS_OUT ? GPIOD_DIRECTION_OUT
+	return line->info.flags & GPIOLINE_FLAG_IS_OUT ? GPIOD_DIRECTION_OUT
 							: GPIOD_DIRECTION_IN;
 }
 
 bool gpiod_line_is_active_low(struct gpiod_line *line)
 {
-	return line->linfo.flags & GPIOLINE_FLAG_ACTIVE_LOW;
+	return line->info.flags & GPIOLINE_FLAG_ACTIVE_LOW;
 }
 
 bool gpiod_line_is_used_by_kernel(struct gpiod_line *line)
 {
-	return line->linfo.flags & GPIOLINE_FLAG_KERNEL;
+	return line->info.flags & GPIOLINE_FLAG_KERNEL;
 }
 
 bool gpiod_line_is_open_drain(struct gpiod_line *line)
 {
-	return line->linfo.flags & GPIOLINE_FLAG_OPEN_DRAIN;
+	return line->info.flags & GPIOLINE_FLAG_OPEN_DRAIN;
 }
 
 bool gpiod_line_is_open_source(struct gpiod_line *line)
 {
-	return line->linfo.flags & GPIOLINE_FLAG_OPEN_SOURCE;
+	return line->info.flags & GPIOLINE_FLAG_OPEN_SOURCE;
 }
 
 int gpiod_line_request(struct gpiod_line *line, const char *consumer,
@@ -197,7 +197,7 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 	struct gpiod_chip *chip;
 	int status, fd;
 
-	req = &line->lreq;
+	req = &line->req;
 	memset(req, 0, sizeof(*req));
 
 	if (flags & GPIOD_REQUEST_ACTIVE_LOW)
@@ -211,7 +211,7 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 					? GPIOHANDLE_REQUEST_INPUT
 					: GPIOHANDLE_REQUEST_OUTPUT;
 
-	req->lineoffsets[0] = line->linfo.line_offset;
+	req->lineoffsets[0] = line->info.line_offset;
 	req->lines = 1;
 	/* FIXME This doesn't seem to work... */
 	if (flags & GPIOD_DIRECTION_OUT)
@@ -234,7 +234,7 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 
 void gpiod_line_release(struct gpiod_line *line)
 {
-	close(line->lreq.fd);
+	close(line->req.fd);
 	line->requested = false;
 }
 
@@ -255,7 +255,7 @@ int gpiod_line_get_value(struct gpiod_line *line)
 
 	memset(&data, 0, sizeof(data));
 
-	status = gpio_ioctl(line->lreq.fd,
+	status = gpio_ioctl(line->req.fd,
 			    GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
@@ -276,7 +276,7 @@ int gpiod_line_set_value(struct gpiod_line *line, int value)
 	memset(&data, 0, sizeof(data));
 	data.values[0] = value ? 1 : 0;
 
-	status = gpio_ioctl(line->lreq.fd,
+	status = gpio_ioctl(line->req.fd,
 			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
@@ -411,10 +411,10 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 
 	line = &chip->lines[offset];
 
-	memset(&line->linfo, 0, sizeof(line->linfo));
-	line->linfo.line_offset = offset;
+	memset(&line->info, 0, sizeof(line->info));
+	line->info.line_offset = offset;
 
-	status = gpio_ioctl(chip->fd, GPIO_GET_LINEINFO_IOCTL, &line->linfo);
+	status = gpio_ioctl(chip->fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
 	if (status < 0)
 		return NULL;
 
