@@ -165,7 +165,7 @@ const char * gpiod_line_consumer(struct gpiod_line *line)
 int gpiod_line_direction(struct gpiod_line *line)
 {
 	return line->info.flags & GPIOLINE_FLAG_IS_OUT ? GPIOD_DIRECTION_OUT
-							: GPIOD_DIRECTION_IN;
+						       : GPIOD_DIRECTION_IN;
 }
 
 bool gpiod_line_is_active_low(struct gpiod_line *line)
