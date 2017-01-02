@@ -30,3 +30,7 @@ gpioget_LDFLAGS = -lgpiod
 
 gpioset_SOURCES = gpioset.c
 gpioset_LDFLAGS = -lgpiod
+
+doc:
+	doxygen
+.PHONY: doc

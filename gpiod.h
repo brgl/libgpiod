@@ -8,6 +8,15 @@
  * published by the Free Software Foundation.
  */
 
+/**
+ * @mainpage libgpiod public API
+ *
+ * This is the documentation of the public API exported by libgpiod.
+ *
+ * <p>These functions and data structures allow to use the complete
+ * functionality of the linux GPIO character device interface.
+ */
+
 #ifndef __GPIOD__
 #define __GPIOD__
 

@@ -6,6 +6,7 @@ gpioget
 gpioset
 *.o
 *.lo
+doc
 
 # autotools stuff
 .deps/
