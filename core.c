@@ -123,35 +123,6 @@ int gpiod_simple_get_value(const char *device, unsigned int offset)
 	return value;
 }
 
-int gpiod_simple_set_value(const char *device, unsigned int offset, int value)
-{
-	struct gpiod_chip *chip;
-	struct gpiod_line *line;
-	int status;
-
-	chip = gpiod_chip_open_lookup(device);
-	if (!chip)
-		return -1;
-
-	line = gpiod_chip_get_line(chip, offset);
-	if (!line) {
-		gpiod_chip_close(chip);
-		return -1;
-	}
-
-	status = gpiod_line_request(line, libgpiod_consumer,
-				    GPIOD_DIRECTION_OUT, value, 0);
-	if (status < 0) {
-		gpiod_chip_close(chip);
-		return -1;
-	}
-
-	gpiod_line_release(line);
-	gpiod_chip_close(chip);
-
-	return status;
-}
-
 struct gpiod_line {
 	bool requested;
 	struct gpiod_chip *chip;
