@@ -219,7 +219,7 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 	req->lines = 1;
 
 	if (direction == GPIOD_DIRECTION_OUT)
-		req->default_values[0] = (__u8)default_val;
+		req->default_values[0] = (__u8)!!default_val;
 
 	strncpy(req->consumer_label, consumer,
 		sizeof(req->consumer_label) - 1);
@@ -279,7 +279,7 @@ int gpiod_line_set_value(struct gpiod_line *line, int value)
 	}
 
 	memset(&data, 0, sizeof(data));
-	data.values[0] = value ? 1 : 0;
+	data.values[0] = (__u8)!!value;
 
 	status = gpio_ioctl(line->req->fd,
 			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
