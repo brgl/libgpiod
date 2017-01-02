@@ -270,16 +270,123 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 	return 0;
 }
 
+static bool verify_line_bulk(struct gpiod_line_bulk *line_bulk)
+{
+	struct gpiod_chip *chip;
+	unsigned int i;
+
+	chip = gpiod_line_get_chip(line_bulk->lines[0]);
+
+	for (i = 1; i < line_bulk->num_lines; i++) {
+		if (chip != gpiod_line_get_chip(line_bulk->lines[i]))
+			return false;
+	}
+
+	return true;
+}
+
+int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
+			    const char *consumer, int direction,
+			    int *default_vals, int flags)
+{
+	struct gpiohandle_request *req;
+	struct gpiod_chip *chip;
+	unsigned int i, j;
+	int status, fd;
+
+	/* Paranoia: verify that all lines are from the same gpiochip. */
+	if (!verify_line_bulk(line_bulk))
+		return -1;
+
+	req = zalloc(sizeof(*req));
+	if (!req)
+		return -1;
+
+	memset(req, 0, sizeof(*req));
+
+	if (flags & GPIOD_REQUEST_ACTIVE_LOW)
+		req->flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
+	if (flags & GPIOD_REQUEST_OPEN_DRAIN)
+		req->flags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
+	if (flags & GPIOD_REQUEST_OPEN_SOURCE)
+		req->flags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
+
+	req->flags |= direction == GPIOD_DIRECTION_IN
+					? GPIOHANDLE_REQUEST_INPUT
+					: GPIOHANDLE_REQUEST_OUTPUT;
+
+	req->lines = line_bulk->num_lines;
+
+	for (i = 0; i < line_bulk->num_lines; i++) {
+		req->lineoffsets[i] = gpiod_line_offset(line_bulk->lines[i]);
+		if (direction == GPIOD_DIRECTION_OUT)
+			req->default_values[i] = !!default_vals[i];
+	}
+
+	strncpy(req->consumer_label, consumer,
+		sizeof(req->consumer_label) - 1);
+
+	chip = gpiod_line_get_chip(line_bulk->lines[0]);
+	fd = gpiod_chip_get_fd(chip);
+
+	status = gpio_ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
+	if (status < 0)
+		return -1;
+
+	for (i = 0; i < line_bulk->num_lines; i++) {
+		line_bulk->lines[i]->req = req;
+		line_bulk->lines[i]->requested = true;
+		status = update_line_info(line_bulk->lines[i], chip,
+				gpiod_line_offset(line_bulk->lines[i]));
+		if (status < 0) {
+			for (j = 0; j < i; j++)
+				gpiod_line_release(line_bulk->lines[i]);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 void gpiod_line_release(struct gpiod_line *line)
 {
-	close(line->req->fd);
-	free(line->req);
+	if (line->req) {
+		close(line->req->fd);
+		free(line->req);
+		line->req = NULL;
+	}
+
 	line->requested = false;
+}
+
+void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
+{
+	unsigned int i;
+
+	close(line_bulk->lines[0]->req->fd);
+	free(line_bulk->lines[0]->req);
+
+	for (i = 0; i < line_bulk->num_lines; i++) {
+		line_bulk->lines[i]->req = NULL;
+		line_bulk->lines[i]->requested = false;
+	}
 }
 
 bool gpiod_line_is_requested(struct gpiod_line *line)
 {
 	return line->requested;
+}
+
+static bool line_bulk_is_requested(struct gpiod_line_bulk *line_bulk)
+{
+	unsigned int i;
+
+	for (i = 0; i < line_bulk->num_lines; i++) {
+		if (!gpiod_line_is_requested(line_bulk->lines[i]))
+			return false;
+	}
+
+	return true;
 }
 
 int gpiod_line_get_value(struct gpiod_line *line)
@@ -302,6 +409,30 @@ int gpiod_line_get_value(struct gpiod_line *line)
 	return data.values[0];
 }
 
+int gpiod_line_get_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
+{
+	struct gpiohandle_data data;
+	unsigned int i;
+	int status;
+
+	if (!line_bulk_is_requested(line_bulk)) {
+		set_last_error(GPIOD_ENOTREQUESTED);
+		return -1;
+	}
+
+	memset(&data, 0, sizeof(data));
+
+	status = gpio_ioctl(line_bulk->lines[0]->req->fd,
+			    GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
+	if (status < 0)
+		return -1;
+
+	for (i = 0; i < line_bulk->num_lines; i++)
+		values[i] = data.values[i];
+
+	return 0;
+}
+
 int gpiod_line_set_value(struct gpiod_line *line, int value)
 {
 	struct gpiohandle_data data;
@@ -316,6 +447,30 @@ int gpiod_line_set_value(struct gpiod_line *line, int value)
 	data.values[0] = (__u8)!!value;
 
 	status = gpio_ioctl(line->req->fd,
+			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+	if (status < 0)
+		return -1;
+
+	return 0;
+}
+
+int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
+{
+	struct gpiohandle_data data;
+	unsigned int i;
+	int status;
+
+	if (!line_bulk_is_requested(line_bulk)) {
+		set_last_error(GPIOD_ENOTREQUESTED);
+		return -1;
+	}
+
+	memset(&data, 0, sizeof(data));
+
+	for (i = 0; i < line_bulk->num_lines; i++)
+		data.values[i] = (__u8)!!values[i];
+
+	status = gpio_ioctl(line_bulk->lines[0]->req->fd,
 			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
