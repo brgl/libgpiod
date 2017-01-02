@@ -159,6 +159,23 @@ struct gpiod_line {
 	struct gpiohandle_request *req;
 };
 
+static int update_line_info(struct gpiod_line *line,
+			    struct gpiod_chip *chip, unsigned int offset)
+{
+	int status, fd;
+
+	memset(&line->info, 0, sizeof(line->info));
+	line->info.line_offset = offset;
+
+	fd = gpiod_chip_get_fd(chip);
+
+	status = gpio_ioctl(fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
+	if (status < 0)
+		return -1;
+
+	return 0;
+}
+
 unsigned int gpiod_line_offset(struct gpiod_line *line)
 {
 	return (unsigned int)line->info.line_offset;
@@ -242,6 +259,13 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 		return -1;
 
 	line->requested = true;
+
+	/* Update line info to include the changes after the request. */
+	status = update_line_info(line, chip, gpiod_line_offset(line));
+	if (status < 0) {
+		gpiod_line_release(line);
+		return -1;
+	}
 
 	return 0;
 }
@@ -430,15 +454,11 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 	}
 
 	line = &chip->lines[offset];
+	line->chip = chip;
 
-	memset(&line->info, 0, sizeof(line->info));
-	line->info.line_offset = offset;
-
-	status = gpio_ioctl(chip->fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
+	status = update_line_info(line, chip, offset);
 	if (status < 0)
 		return NULL;
-
-	line->chip = chip;
 
 	return line;
 }
