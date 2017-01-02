@@ -11,7 +11,7 @@ ACLOCAL_AMFLAGS = -I m4
 LIBS =
 
 AM_CPPFLAGS = -I$(top_srcdir) -include $(top_srcdir)/config.h -Wextra
-AM_CPPFLAGS += -fvisibility=hidden
+AM_CPPFLAGS += -fvisibility=hidden -D_GNU_SOURCE
 
 lib_LTLIBRARIES = libgpiod.la
 
