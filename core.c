@@ -59,6 +59,19 @@ static bool is_unsigned_int(const char *str)
 	return *str == '\0';
 }
 
+static int gpio_ioctl(int fd, unsigned long request, void *data)
+{
+	int status;
+
+	status = ioctl(fd, request, data);
+	if (status < 0) {
+		last_error_from_errno();
+		return -1;
+	}
+
+	return 0;
+}
+
 int gpiod_errno(void)
 {
 	return last_error;
@@ -210,11 +223,9 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 	chip = gpiod_line_get_chip(line);
 	fd = gpiod_chip_get_fd(chip);
 
-	status = ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
-	if (status < 0) {
-		last_error_from_errno();
+	status = gpio_ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
+	if (status < 0)
 		return -1;
-	}
 
 	line->requested = true;
 
@@ -244,11 +255,10 @@ int gpiod_line_get_value(struct gpiod_line *line)
 
 	memset(&data, 0, sizeof(data));
 
-	status = ioctl(line->lreq.fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
-	if (status < 0) {
-		last_error_from_errno();
+	status = gpio_ioctl(line->lreq.fd,
+			    GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
+	if (status < 0)
 		return -1;
-	}
 
 	return data.values[0];
 }
@@ -266,11 +276,10 @@ int gpiod_line_set_value(struct gpiod_line *line, int value)
 	memset(&data, 0, sizeof(data));
 	data.values[0] = value ? 1 : 0;
 
-	status = ioctl(line->lreq.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
-	if (status < 0) {
-		last_error_from_errno();
+	status = gpio_ioctl(line->lreq.fd,
+			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+	if (status < 0)
 		return -1;
-	}
 
 	return 0;
 }
@@ -302,11 +311,10 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 
 	chip->fd = fd;
 
-	status = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &chip->cinfo);
+	status = gpio_ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &chip->cinfo);
 	if (status < 0) {
 		close(chip->fd);
 		free(chip);
-		last_error_from_errno();
 		return NULL;
 	}
 
@@ -406,11 +414,9 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 	memset(&line->linfo, 0, sizeof(line->linfo));
 	line->linfo.line_offset = offset;
 
-	status = ioctl(chip->fd, GPIO_GET_LINEINFO_IOCTL, &line->linfo);
-	if (status < 0) {
-		last_error_from_errno();
+	status = gpio_ioctl(chip->fd, GPIO_GET_LINEINFO_IOCTL, &line->linfo);
+	if (status < 0)
 		return NULL;
-	}
 
 	line->chip = chip;
 
