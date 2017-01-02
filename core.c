@@ -25,6 +25,8 @@ static const char dev_dir[] = "/dev/";
 static const char cdev_prefix[] = "gpiochip";
 static const char libgpiod_consumer[] = "libgpiod";
 
+static __thread int last_error;
+
 static void * zalloc(size_t size)
 {
 	void *ptr;
@@ -43,6 +45,16 @@ static bool is_unsigned_int(const char *str)
 	return *str == '\0';
 }
 
+int gpiod_errno(void)
+{
+	return last_error;
+}
+
+const char * gpiod_strerror(int errnum)
+{
+	return strerror(errnum);
+}
+
 int gpiod_simple_get_value(const char *device, unsigned int offset)
 {
 	struct gpiod_chip *chip;
@@ -50,20 +62,20 @@ int gpiod_simple_get_value(const char *device, unsigned int offset)
 	int status, value;
 
 	chip = gpiod_chip_open_lookup(device);
-	if (GPIOD_IS_ERR(chip))
-		return GPIOD_PTR_ERR(chip);
+	if (!chip)
+		return -1;
 
 	line = gpiod_chip_get_line(chip, offset);
-	if (GPIOD_IS_ERR(line)) {
+	if (!line) {
 		gpiod_chip_close(chip);
-		return GPIOD_PTR_ERR(line);
+		return -1;
 	}
 
 	status = gpiod_line_request(line, libgpiod_consumer,
 				    GPIOD_DIRECTION_IN, 0, 0);
 	if (status < 0) {
 		gpiod_chip_close(chip);
-		return status;
+		return -1;
 	}
 
 	value = gpiod_line_get_value(line);
@@ -81,20 +93,20 @@ int gpiod_simple_set_value(const char *device, unsigned int offset, int value)
 	int status;
 
 	chip = gpiod_chip_open_lookup(device);
-	if (GPIOD_IS_ERR(chip))
-		return GPIOD_PTR_ERR(chip);
+	if (!chip)
+		return -1;
 
 	line = gpiod_chip_get_line(chip, offset);
-	if (GPIOD_IS_ERR(line)) {
+	if (!line) {
 		gpiod_chip_close(chip);
-		return GPIOD_PTR_ERR(line);
+		return -1;
 	}
 
 	status = gpiod_line_request(line, libgpiod_consumer,
 				    GPIOD_DIRECTION_OUT, value, 0);
 	if (status < 0) {
 		gpiod_chip_close(chip);
-		return status;
+		return -1;
 	}
 
 	gpiod_line_release(line);
@@ -185,8 +197,10 @@ int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 	fd = gpiod_chip_get_fd(chip);
 
 	status = ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
-	if (status < 0)
-		return -errno;
+	if (status < 0) {
+		last_error = errno;
+		return -1;
+	}
 
 	line->requested = true;
 
@@ -209,14 +223,18 @@ int gpiod_line_get_value(struct gpiod_line *line)
 	struct gpiohandle_data data;
 	int status;
 
-	if (!gpiod_line_is_requested(line))
-		return -EPERM;
+	if (!gpiod_line_is_requested(line)) {
+		last_error = -EPERM;
+		return -1;
+	}
 
 	memset(&data, 0, sizeof(data));
 
 	status = ioctl(line->lreq.fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
-	if (status < 0)
-		return -errno;
+	if (status < 0) {
+		last_error = errno;
+		return -1;
+	}
 
 	return data.values[0];
 }
@@ -226,15 +244,19 @@ int gpiod_line_set_value(struct gpiod_line *line, int value)
 	struct gpiohandle_data data;
 	int status;
 
-	if (!gpiod_line_is_requested(line))
-		return -EPERM;
+	if (!gpiod_line_is_requested(line)) {
+		last_error = -EPERM;
+		return -1;
+	}
 
 	memset(&data, 0, sizeof(data));
 	data.values[0] = value ? 1 : 0;
 
 	status = ioctl(line->lreq.fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
-	if (status < 0)
-		return -errno;
+	if (status < 0) {
+		last_error = errno;
+		return -1;
+	}
 
 	return 0;
 }
@@ -252,13 +274,16 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 	int status, fd;
 
 	fd = open(path, O_RDWR);
-	if (fd < 0)
-		return GPIOD_ERR_PTR(-errno);
+	if (fd < 0) {
+		last_error = errno;
+		return NULL;
+	}
 
 	chip = zalloc(sizeof(*chip));
 	if (!chip) {
 		close(fd);
-		return GPIOD_ERR_PTR(-ENOMEM);
+		last_error = ENOMEM;
+		return NULL;
 	}
 
 	chip->fd = fd;
@@ -267,14 +292,16 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 	if (status < 0) {
 		close(chip->fd);
 		free(chip);
-		return GPIOD_ERR_PTR(-errno);
+		last_error = errno;
+		return NULL;
 	}
 
 	chip->lines = zalloc(chip->cinfo.lines * sizeof(*chip->lines));
 	if (!chip->lines) {
 		close(chip->fd);
 		free(chip);
-		return GPIOD_ERR_PTR(-ENOMEM);
+		last_error = ENOMEM;
+		return NULL;
 	}
 
 	return chip;
@@ -287,8 +314,10 @@ struct gpiod_chip * gpiod_chip_open_by_name(const char *name)
 	int status;
 
 	status = asprintf(&path, "%s%s", dev_dir, name);
-	if (status < 0)
-		return GPIOD_ERR_PTR(-errno);
+	if (status < 0) {
+		last_error = errno;
+		return NULL;
+	}
 
 	chip = gpiod_chip_open(path);
 	free(path);
@@ -303,8 +332,10 @@ struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num)
 	int status;
 
 	status = asprintf(&path, "%s%s%u", dev_dir, cdev_prefix, num);
-	if (!status)
-		return GPIOD_ERR_PTR(-ENOMEM);
+	if (!status) {
+		last_error = errno;
+		return NULL;
+	}
 
 	chip = gpiod_chip_open(path);
 	free(path);
@@ -351,8 +382,10 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 	struct gpiod_line *line;
 	int status;
 
-	if (offset >= chip->cinfo.lines)
-		return GPIOD_ERR_PTR(-EINVAL);
+	if (offset >= chip->cinfo.lines) {
+		last_error = EINVAL;
+		return NULL;
+	}
 
 	line = &chip->lines[offset];
 
@@ -360,8 +393,10 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 	line->linfo.line_offset = offset;
 
 	status = ioctl(chip->fd, GPIO_GET_LINEINFO_IOCTL, &line->linfo);
-	if (status < 0)
-		return GPIOD_ERR_PTR(-errno);
+	if (status < 0) {
+		last_error = errno;
+		return NULL;
+	}
 
 	line->chip = chip;
 
@@ -389,12 +424,16 @@ struct gpiod_chip_iter * gpiod_chip_iter_new(void)
 	struct gpiod_chip_iter *new;
 
 	new = zalloc(sizeof(*new));
-	if (!new)
-		return GPIOD_ERR_PTR(-ENOMEM);
+	if (!new) {
+		last_error = ENOMEM;
+		return NULL;
+	}
 
 	new->dir = opendir(dev_dir);
-	if (!new->dir)
-		return GPIOD_ERR_PTR(-errno);
+	if (!new->dir) {
+		last_error = errno;
+		return NULL;
+	}
 
 	return new;
 }

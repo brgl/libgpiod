@@ -25,22 +25,9 @@ extern "C" {
 
 #define GPIOD_BIT(nr)		(1UL << (nr))
 
-#define __GPIOD_MAX_ERRNO	4095
+int gpiod_errno(void) GPIOD_API;
 
-static inline void * GPIOD_ERR_PTR(long error)
-{
-	return (void *)error;
-}
-
-static inline long GPIOD_PTR_ERR(const void *ptr)
-{
-	return (long)ptr;
-}
-
-static inline bool GPIOD_IS_ERR(const void *ptr)
-{
-	return (uintptr_t)ptr >= ((unsigned int) - __GPIOD_MAX_ERRNO);
-}
+const char * gpiod_strerror(int errnum) GPIOD_API;
 
 int gpiod_simple_get_value(const char *device, unsigned int offset) GPIOD_API;
 
@@ -135,7 +122,7 @@ gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
 
 #define gpiod_foreach_chip(iter, chip)					\
 	for ((chip) = gpiod_chip_iter_next(iter);			\
-	     (chip) && !GPIOD_IS_ERR(chip);				\
+	     (chip);							\
 	     (chip) = gpiod_chip_iter_next(iter))
 
 struct gpiod_line_iter {
@@ -160,7 +147,7 @@ gpiod_chip_line_next(struct gpiod_chip *chip, struct gpiod_line_iter *iter)
 
 #define gpiod_chip_foreach_line(iter, chip, line)			\
 	for ((line) = gpiod_chip_line_next(chip, iter);			\
-	     (line) && !(GPIOD_IS_ERR(line));				\
+	     (line);							\
 	     (line) = gpiod_chip_line_next(chip, iter))
 
 #ifdef __cplusplus

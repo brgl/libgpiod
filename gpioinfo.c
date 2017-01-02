@@ -47,11 +47,11 @@ int main(int argc, char **argv)
 
 	for (i = 1; i < argc; i++) {
 		chip = gpiod_chip_open_lookup(argv[i]);
-		if (GPIOD_IS_ERR(chip)) {
+		if (!chip) {
 			fprintf(stderr,
 				"%s: unable to access %s: %s\n",
 				argv[0], argv[i],
-				strerror(-GPIOD_PTR_ERR(chip)));
+				gpiod_strerror(gpiod_errno()));
 			continue;
 		}
 

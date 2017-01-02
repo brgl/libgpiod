@@ -53,18 +53,18 @@ int main(int argc, char **argv)
 	}
 
 	chip = gpiod_chip_open_lookup(device);
-	if (GPIOD_IS_ERR(chip)) {
+	if (!chip) {
 		fprintf(stderr,
 			"%s: error accessing gpiochip %s: %s\n",
-			argv[0], device, strerror(-GPIOD_PTR_ERR(chip)));
+			argv[0], device, gpiod_strerror(gpiod_errno()));
 		return EXIT_FAILURE;
 	}
 
 	line = gpiod_chip_get_line(chip, offset);
-	if (GPIOD_IS_ERR(line)) {
+	if (!line) {
 		fprintf(stderr,
 			"%s: error accessing line %u: %s\n",
-			argv[0], offset, strerror(-GPIOD_PTR_ERR(chip)));
+			argv[0], offset, gpiod_strerror(gpiod_errno()));
 		return EXIT_FAILURE;
 	}
 
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 	if (status < 0) {
 		fprintf(stderr,
 			"%s: error requesting GPIO line: %s\n",
-			argv[0], strerror(-status));
+			argv[0], gpiod_strerror(gpiod_errno()));
 		return EXIT_FAILURE;
 	}
 
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 	if (status < 0) {
 		fprintf(stderr,
 			"%s: error setting GPIO value: %s\n",
-			argv[0], strerror(-status));
+			argv[0], gpiod_strerror(gpiod_errno()));
 		return EXIT_FAILURE;
 	}
 
