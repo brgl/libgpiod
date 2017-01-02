@@ -15,6 +15,8 @@
 
 /* REVISIT This program needs a nicer, better formatted output. */
 
+#define ARRAY_SIZE(x)	(sizeof(x) / sizeof(*(x)))
+
 struct flag {
 	const char *name;
 	bool (*is_set)(struct gpiod_line *);
@@ -85,7 +87,7 @@ int main(int argc, char **argv)
 						 : "active-high");
 
 			flag_printed = false;
-			for (j = 0; j < GPIOD_ARRAY_SIZE(flags); j++) {
+			for (j = 0; j < ARRAY_SIZE(flags); j++) {
 				if (flags[j].is_set(line)) {
 					if (flag_printed)
 						printf(" ");

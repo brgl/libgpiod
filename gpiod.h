@@ -30,8 +30,6 @@ extern "C" {
 
 #define GPIOD_API		__attribute__((visibility("default")))
 
-#define GPIOD_ARRAY_SIZE(x)	(sizeof(x) / sizeof(*(x)))
-
 #define GPIOD_BIT(nr)		(1UL << (nr))
 
 int gpiod_errno(void) GPIOD_API;
