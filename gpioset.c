@@ -76,14 +76,6 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	status = gpiod_line_set_value(line, value);
-	if (status < 0) {
-		fprintf(stderr,
-			"%s: error setting GPIO value: %s\n",
-			argv[0], gpiod_strerror(gpiod_errno()));
-		return EXIT_FAILURE;
-	}
-
 	getchar();
 
 	gpiod_chip_close(chip);
