@@ -39,12 +39,11 @@ static const struct flag flags[] = {
 
 int main(int argc, char **argv)
 {
-	int i, direction, flag_printed;
+	int i, direction, flag_printed, polarity;
 	struct gpiod_line_iter iter;
 	const char *name, *consumer;
 	struct gpiod_line *line;
 	struct gpiod_chip *chip;
-	bool active_low;
 	unsigned int j;
 
 	for (i = 1; i < argc; i++) {
@@ -65,7 +64,7 @@ int main(int argc, char **argv)
 			name = gpiod_line_name(line);
 			consumer = gpiod_line_consumer(line);
 			direction = gpiod_line_direction(line);
-			active_low = gpiod_line_is_active_low(line);
+			polarity = gpiod_line_polarity(line);
 
 			printf("\tline %2u: ", gpiod_line_offset(line));
 
@@ -83,8 +82,9 @@ int main(int argc, char **argv)
 
 			printf("%s ", direction == GPIOD_DIRECTION_IN
 							? "input" : "output");
-			printf("%s ", active_low ? "active-low"
-						 : "active-high");
+			printf("%s ", polarity == GPIOD_POLARITY_ACTIVE_LOW
+							? "active-low"
+							: "active-high");
 
 			flag_printed = false;
 			for (j = 0; j < ARRAY_SIZE(flags); j++) {

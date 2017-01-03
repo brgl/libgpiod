@@ -52,6 +52,11 @@ enum {
 };
 
 enum {
+	GPIOD_POLARITY_ACTIVE_HIGH,
+	GPIOD_POLARITY_ACTIVE_LOW,
+};
+
+enum {
 	GPIOD_REQUEST_ACTIVE_LOW	= GPIOD_BIT(0),
 	GPIOD_REQUEST_OPEN_DRAIN	= GPIOD_BIT(1),
 	GPIOD_REQUEST_OPEN_SOURCE	= GPIOD_BIT(2),
@@ -69,7 +74,7 @@ const char * gpiod_line_consumer(struct gpiod_line *line) GPIOD_API;
 
 int gpiod_line_direction(struct gpiod_line *line) GPIOD_API;
 
-bool gpiod_line_is_active_low(struct gpiod_line *line) GPIOD_API;
+int gpiod_line_polarity(struct gpiod_line *line) GPIOD_API;
 
 bool gpiod_line_is_used_by_kernel(struct gpiod_line *line) GPIOD_API;
 

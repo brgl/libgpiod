@@ -168,9 +168,11 @@ int gpiod_line_direction(struct gpiod_line *line)
 						       : GPIOD_DIRECTION_IN;
 }
 
-bool gpiod_line_is_active_low(struct gpiod_line *line)
+int gpiod_line_polarity(struct gpiod_line *line)
 {
-	return line->info.flags & GPIOLINE_FLAG_ACTIVE_LOW;
+	return line->info.flags & GPIOLINE_FLAG_ACTIVE_LOW
+					? GPIOD_POLARITY_ACTIVE_LOW
+					: GPIOD_POLARITY_ACTIVE_HIGH;
 }
 
 bool gpiod_line_is_used_by_kernel(struct gpiod_line *line)
