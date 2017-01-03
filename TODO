@@ -1,0 +1,10 @@
+- create a low-level request routine accepting a structure containing request
+  configuration
+- for high-level request functions separate the polarity and direction settings
+  from other flags
+- create a routine for finding GPIO lines by name (plus an extended version
+  requesting the line too)
+- separate the line information logic updates, make it run in the background
+  after requesting/releasing lines and find a way to inform users of failures
+  to update line info
+- create a set of functions for requesting/waiting for events on lines
