@@ -57,9 +57,13 @@ enum {
 };
 
 enum {
-	GPIOD_REQUEST_ACTIVE_LOW	= GPIOD_BIT(0),
-	GPIOD_REQUEST_OPEN_DRAIN	= GPIOD_BIT(1),
-	GPIOD_REQUEST_OPEN_SOURCE	= GPIOD_BIT(2),
+	GPIOD_REQUEST_DIRECTION_AS_IS		= GPIOD_BIT(0),
+	GPIOD_REQUEST_DIRECTION_INPUT		= GPIOD_BIT(1),
+	GPIOD_REQUEST_DIRECTION_OUTPUT		= GPIOD_BIT(2),
+	GPIOD_REQUEST_POLARITY_ACTIVE_HIGH	= GPIOD_BIT(3),
+	GPIOD_REQUEST_POLARITY_ACTIVE_LOW	= GPIOD_BIT(4),
+	GPIOD_REQUEST_OPEN_DRAIN		= GPIOD_BIT(5),
+	GPIOD_REQUEST_OPEN_SOURCE		= GPIOD_BIT(6),
 };
 
 #define GPIOD_MAX_LINES		64
@@ -83,21 +87,21 @@ bool gpiod_line_is_open_drain(struct gpiod_line *line) GPIOD_API;
 bool gpiod_line_is_open_source(struct gpiod_line *line) GPIOD_API;
 
 int gpiod_line_request(struct gpiod_line *line, const char *consumer,
-		       int direction, int default_val, int flags) GPIOD_API;
+		       int default_val, int flags) GPIOD_API;
 
 static inline int gpiod_line_request_din(struct gpiod_line *line,
 					 const char *consumer, int flags)
 {
-	return gpiod_line_request(line, consumer,
-				  GPIOD_DIRECTION_IN, 0, flags);
+	return gpiod_line_request(line, consumer, 0,
+				  flags | GPIOD_REQUEST_DIRECTION_INPUT);
 }
 
 static inline int gpiod_line_request_dout(struct gpiod_line *line,
 					  const char *consumer,
 					  int default_val, int flags)
 {
-	return gpiod_line_request(line, consumer,
-				  GPIOD_DIRECTION_OUT, default_val, flags);
+	return gpiod_line_request(line, consumer, default_val,
+				  flags | GPIOD_REQUEST_DIRECTION_OUTPUT);
 }
 
 struct gpiod_line_bulk {
@@ -119,8 +123,8 @@ static inline void gpiod_line_bulk_add(struct gpiod_line_bulk *line_bulk,
 }
 
 int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
-			    const char *consumer, int direction,
-			    int *default_vals, int flags) GPIOD_API;
+			    const char *consumer, int *default_vals,
+			    int flags) GPIOD_API;
 
 void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
 

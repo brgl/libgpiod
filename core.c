@@ -108,8 +108,8 @@ int gpiod_simple_get_value(const char *device, unsigned int offset)
 		return -1;
 	}
 
-	status = gpiod_line_request(line, libgpiod_consumer,
-				    GPIOD_DIRECTION_IN, 0, 0);
+	status = gpiod_line_request(line, libgpiod_consumer, 0,
+				    GPIOD_REQUEST_DIRECTION_INPUT);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
@@ -190,16 +190,15 @@ bool gpiod_line_is_open_source(struct gpiod_line *line)
 	return line->info.flags & GPIOLINE_FLAG_OPEN_SOURCE;
 }
 
-int gpiod_line_request(struct gpiod_line *line, const char *consumer,
-		       int direction, int default_val, int flags)
+int gpiod_line_request(struct gpiod_line *line,
+		       const char *consumer, int default_val, int flags)
 {
 	struct gpiod_line_bulk bulk;
 
 	gpiod_line_bulk_init(&bulk);
 	gpiod_line_bulk_add(&bulk, line);
 
-	return gpiod_line_request_bulk(&bulk, consumer,
-				       direction, &default_val, flags);
+	return gpiod_line_request_bulk(&bulk, consumer, &default_val, flags);
 }
 
 static bool verify_line_bulk(struct gpiod_line_bulk *line_bulk)
@@ -218,8 +217,7 @@ static bool verify_line_bulk(struct gpiod_line_bulk *line_bulk)
 }
 
 int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
-			    const char *consumer, int direction,
-			    int *default_vals, int flags)
+			    const char *consumer, int *default_vals, int flags)
 {
 	struct gpiohandle_request *req;
 	struct gpiod_chip *chip;
@@ -236,22 +234,35 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 
 	memset(req, 0, sizeof(*req));
 
-	if (flags & GPIOD_REQUEST_ACTIVE_LOW)
+	if ((flags & GPIOD_REQUEST_POLARITY_ACTIVE_HIGH) &&
+	    (flags & GPIOD_REQUEST_POLARITY_ACTIVE_LOW)) {
+		set_last_error(EINVAL);
+		return -1;
+	}
+
+	if ((flags & GPIOD_REQUEST_DIRECTION_INPUT) &&
+	    (flags & GPIOD_REQUEST_DIRECTION_OUTPUT)) {
+		set_last_error(EINVAL);
+		return -1;
+	}
+
+	if (flags & GPIOD_REQUEST_POLARITY_ACTIVE_LOW)
 		req->flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 	if (flags & GPIOD_REQUEST_OPEN_DRAIN)
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
 	if (flags & GPIOD_REQUEST_OPEN_SOURCE)
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
 
-	req->flags |= direction == GPIOD_DIRECTION_IN
-					? GPIOHANDLE_REQUEST_INPUT
-					: GPIOHANDLE_REQUEST_OUTPUT;
+	if (flags & GPIOD_REQUEST_DIRECTION_INPUT)
+		req->flags |= GPIOHANDLE_REQUEST_INPUT;
+	else if (flags & GPIOD_REQUEST_DIRECTION_OUTPUT)
+		req->flags |= GPIOHANDLE_REQUEST_OUTPUT;
 
 	req->lines = line_bulk->num_lines;
 
 	for (i = 0; i < line_bulk->num_lines; i++) {
 		req->lineoffsets[i] = gpiod_line_offset(line_bulk->lines[i]);
-		if (direction == GPIOD_DIRECTION_OUT)
+		if (flags & GPIOD_REQUEST_DIRECTION_OUTPUT)
 			req->default_values[i] = !!default_vals[i];
 	}
 
