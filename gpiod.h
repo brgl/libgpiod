@@ -126,6 +126,23 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 			    const char *consumer, int *default_vals,
 			    int flags) GPIOD_API;
 
+static inline int
+gpiod_line_request_bulk_din(struct gpiod_line_bulk *line_bulk,
+			    const char *consumer, int flags)
+{
+	return gpiod_line_request_bulk(line_bulk, consumer, NULL,
+				       flags | GPIOD_REQUEST_DIRECTION_INPUT);
+}
+
+static inline int
+gpiod_line_request_bulk_dout(struct gpiod_line_bulk *line_bulk,
+			     const char *consumer, int *default_vals,
+			     int flags)
+{
+	return gpiod_line_request_bulk(line_bulk, consumer, default_vals,
+				       flags | GPIOD_REQUEST_DIRECTION_INPUT);
+}
+
 void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
 
 void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk) GPIOD_API;
