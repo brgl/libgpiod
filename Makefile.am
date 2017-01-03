@@ -21,15 +21,19 @@ bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset
 
 gpiodetect_SOURCES = gpiodetect.c
 gpiodetect_LDFLAGS = -lgpiod
+gpiodetect_DEPENDENCIES = libgpiod.la
 
 gpioinfo_SOURCES = gpioinfo.c
 gpioinfo_LDFLAGS = -lgpiod
+gpioinfo_DEPENDENCIES = libgpiod.la
 
 gpioget_SOURCES = gpioget.c
 gpioget_LDFLAGS = -lgpiod
+gpioget_DEPENDENCIES = libgpiod.la
 
 gpioset_SOURCES = gpioset.c
 gpioset_LDFLAGS = -lgpiod
+gpioset_DEPENDENCIES = libgpiod.la
 
 doc:
 	doxygen
