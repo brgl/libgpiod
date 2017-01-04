@@ -47,6 +47,7 @@ const char * gpiod_strerror(int errnum) GPIOD_API;
 int gpiod_simple_get_value(const char *device, unsigned int offset) GPIOD_API;
 
 enum {
+	GPIOD_DIRECTION_AS_IS,
 	GPIOD_DIRECTION_IN,
 	GPIOD_DIRECTION_OUT,
 };
@@ -57,11 +58,6 @@ enum {
 };
 
 enum {
-	GPIOD_REQUEST_DIRECTION_AS_IS		= GPIOD_BIT(0),
-	GPIOD_REQUEST_DIRECTION_INPUT		= GPIOD_BIT(1),
-	GPIOD_REQUEST_DIRECTION_OUTPUT		= GPIOD_BIT(2),
-	GPIOD_REQUEST_POLARITY_ACTIVE_HIGH	= GPIOD_BIT(3),
-	GPIOD_REQUEST_POLARITY_ACTIVE_LOW	= GPIOD_BIT(4),
 	GPIOD_REQUEST_OPEN_DRAIN		= GPIOD_BIT(5),
 	GPIOD_REQUEST_OPEN_SOURCE		= GPIOD_BIT(6),
 };
@@ -90,8 +86,16 @@ bool gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API;
 
 int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
 
-int gpiod_line_request(struct gpiod_line *line, const char *consumer,
-		       int default_val, int flags) GPIOD_API;
+struct gpiod_line_request_config {
+	const char *consumer;
+	int direction;
+	int polarity;
+	int flags;
+};
+
+int gpiod_line_request(struct gpiod_line *line,
+		       const struct gpiod_line_request_config *config,
+		       int default_val) GPIOD_API;
 
 struct gpiod_line_bulk {
 	struct gpiod_line *lines[GPIOD_REQUEST_MAX_LINES];
@@ -112,8 +116,8 @@ static inline void gpiod_line_bulk_add(struct gpiod_line_bulk *line_bulk,
 }
 
 int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
-			    const char *consumer, int *default_vals,
-			    int flags) GPIOD_API;
+			    const struct gpiod_line_request_config *config,
+			    int *default_vals) GPIOD_API;
 
 void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
 

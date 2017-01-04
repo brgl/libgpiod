@@ -94,9 +94,14 @@ const char * gpiod_strerror(int errnum)
 
 int gpiod_simple_get_value(const char *device, unsigned int offset)
 {
+	struct gpiod_line_request_config config;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	int status, value;
+
+	memset(&config, 0, sizeof(config));
+	config.consumer = libgpiod_consumer;
+	config.direction = GPIOD_DIRECTION_AS_IS;
 
 	chip = gpiod_chip_open_lookup(device);
 	if (!chip)
@@ -108,8 +113,7 @@ int gpiod_simple_get_value(const char *device, unsigned int offset)
 		return -1;
 	}
 
-	status = gpiod_line_request(line, libgpiod_consumer, 0,
-				    GPIOD_REQUEST_DIRECTION_INPUT);
+	status = gpiod_line_request(line, &config, 0);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
@@ -204,14 +208,15 @@ int gpiod_line_update(struct gpiod_line *line)
 }
 
 int gpiod_line_request(struct gpiod_line *line,
-		       const char *consumer, int default_val, int flags)
+		       const struct gpiod_line_request_config *config,
+		       int default_val)
 {
 	struct gpiod_line_bulk bulk;
 
 	gpiod_line_bulk_init(&bulk);
 	gpiod_line_bulk_add(&bulk, line);
 
-	return gpiod_line_request_bulk(&bulk, consumer, &default_val, flags);
+	return gpiod_line_request_bulk(&bulk, config, &default_val);
 }
 
 static bool verify_line_bulk(struct gpiod_line_bulk *line_bulk)
@@ -230,12 +235,13 @@ static bool verify_line_bulk(struct gpiod_line_bulk *line_bulk)
 }
 
 int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
-			    const char *consumer, int *default_vals, int flags)
+			    const struct gpiod_line_request_config *config,
+			    int *default_vals)
 {
 	struct gpiohandle_request *req;
 	struct gpiod_chip *chip;
-	unsigned int i;
 	int status, fd;
+	unsigned int i;
 
 	/* Paranoia: verify that all lines are from the same gpiochip. */
 	if (!verify_line_bulk(line_bulk))
@@ -247,39 +253,28 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 
 	memset(req, 0, sizeof(*req));
 
-	if ((flags & GPIOD_REQUEST_POLARITY_ACTIVE_HIGH) &&
-	    (flags & GPIOD_REQUEST_POLARITY_ACTIVE_LOW)) {
-		set_last_error(EINVAL);
-		return -1;
-	}
-
-	if ((flags & GPIOD_REQUEST_DIRECTION_INPUT) &&
-	    (flags & GPIOD_REQUEST_DIRECTION_OUTPUT)) {
-		set_last_error(EINVAL);
-		return -1;
-	}
-
-	if (flags & GPIOD_REQUEST_POLARITY_ACTIVE_LOW)
-		req->flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
-	if (flags & GPIOD_REQUEST_OPEN_DRAIN)
+	if (config->flags & GPIOD_REQUEST_OPEN_DRAIN)
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
-	if (flags & GPIOD_REQUEST_OPEN_SOURCE)
+	if (config->flags & GPIOD_REQUEST_OPEN_SOURCE)
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
 
-	if (flags & GPIOD_REQUEST_DIRECTION_INPUT)
+	if (config->direction == GPIOD_DIRECTION_IN)
 		req->flags |= GPIOHANDLE_REQUEST_INPUT;
-	else if (flags & GPIOD_REQUEST_DIRECTION_OUTPUT)
+	else if (config->direction == GPIOD_DIRECTION_OUT)
 		req->flags |= GPIOHANDLE_REQUEST_OUTPUT;
+
+	if (config->polarity == GPIOD_POLARITY_ACTIVE_LOW)
+		req->flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
 	req->lines = line_bulk->num_lines;
 
 	for (i = 0; i < line_bulk->num_lines; i++) {
 		req->lineoffsets[i] = gpiod_line_offset(line_bulk->lines[i]);
-		if (flags & GPIOD_REQUEST_DIRECTION_OUTPUT)
+		if (config->direction == GPIOD_DIRECTION_OUT)
 			req->default_values[i] = !!default_vals[i];
 	}
 
-	strncpy(req->consumer_label, consumer,
+	strncpy(req->consumer_label, config->consumer,
 		sizeof(req->consumer_label) - 1);
 
 	chip = gpiod_line_get_chip(line_bulk->lines[0]);

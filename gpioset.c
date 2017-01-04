@@ -15,6 +15,7 @@
 
 int main(int argc, char **argv)
 {
+	struct gpiod_line_request_config config;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	unsigned int offset;
@@ -68,8 +69,11 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	status = gpiod_line_request(line, "gpioset",
-				    value, GPIOD_REQUEST_DIRECTION_OUTPUT);
+	memset(&config, 0, sizeof(config));
+	config.consumer = "gpioset";
+	config.direction = GPIOD_DIRECTION_OUT;
+
+	status = gpiod_line_request(line, &config, value);
 	if (status < 0) {
 		fprintf(stderr,
 			"%s: error requesting GPIO line: %s\n",
