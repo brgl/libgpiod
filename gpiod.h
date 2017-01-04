@@ -48,8 +48,8 @@ int gpiod_simple_get_value(const char *device, unsigned int offset) GPIOD_API;
 
 enum {
 	GPIOD_DIRECTION_AS_IS,
-	GPIOD_DIRECTION_IN,
-	GPIOD_DIRECTION_OUT,
+	GPIOD_DIRECTION_INPUT,
+	GPIOD_DIRECTION_OUTPUT,
 };
 
 enum {

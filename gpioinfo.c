@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 				printf("unused");
 			printf(" ");
 
-			printf("%s ", direction == GPIOD_DIRECTION_IN
+			printf("%s ", direction == GPIOD_DIRECTION_INPUT
 							? "input" : "output");
 			printf("%s ", polarity == GPIOD_POLARITY_ACTIVE_LOW
 							? "active-low"

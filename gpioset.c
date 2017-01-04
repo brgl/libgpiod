@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 
 	memset(&config, 0, sizeof(config));
 	config.consumer = "gpioset";
-	config.direction = GPIOD_DIRECTION_OUT;
+	config.direction = GPIOD_DIRECTION_OUTPUT;
 
 	status = gpiod_line_request(line, &config, value);
 	if (status < 0) {
