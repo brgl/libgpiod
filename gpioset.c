@@ -68,7 +68,8 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	status = gpiod_line_request_dout(line, "gpioset", value, 0);
+	status = gpiod_line_request(line, "gpioset",
+				    value, GPIOD_REQUEST_DIRECTION_OUTPUT);
 	if (status < 0) {
 		fprintf(stderr,
 			"%s: error requesting GPIO line: %s\n",
