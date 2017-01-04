@@ -86,6 +86,10 @@ bool gpiod_line_is_open_drain(struct gpiod_line *line) GPIOD_API;
 
 bool gpiod_line_is_open_source(struct gpiod_line *line) GPIOD_API;
 
+bool gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API;
+
+int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
+
 int gpiod_line_request(struct gpiod_line *line, const char *consumer,
 		       int default_val, int flags) GPIOD_API;
 

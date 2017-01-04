@@ -125,26 +125,15 @@ int gpiod_simple_get_value(const char *device, unsigned int offset)
 
 struct gpiod_line {
 	bool requested;
+	bool up_to_date;
 	struct gpiod_chip *chip;
 	struct gpioline_info info;
 	struct gpiohandle_request *req;
 };
 
-static int update_line_info(struct gpiod_line *line,
-			    struct gpiod_chip *chip, unsigned int offset)
+static void line_set_offset(struct gpiod_line *line, unsigned int offset)
 {
-	int status, fd;
-
-	memset(&line->info, 0, sizeof(line->info));
 	line->info.line_offset = offset;
-
-	fd = gpiod_chip_get_fd(chip);
-
-	status = gpio_ioctl(fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
-	if (status < 0)
-		return -1;
-
-	return 0;
 }
 
 unsigned int gpiod_line_offset(struct gpiod_line *line)
@@ -190,6 +179,30 @@ bool gpiod_line_is_open_source(struct gpiod_line *line)
 	return line->info.flags & GPIOLINE_FLAG_OPEN_SOURCE;
 }
 
+bool gpiod_line_needs_update(struct gpiod_line *line)
+{
+	return !line->up_to_date;
+}
+
+int gpiod_line_update(struct gpiod_line *line)
+{
+	struct gpiod_chip *chip;
+	int status, fd;
+
+	memset(&line->info, 0, sizeof(line->info));
+
+	chip = gpiod_line_get_chip(line);
+	fd = gpiod_chip_get_fd(chip);
+
+	status = gpio_ioctl(fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
+	if (status < 0)
+		return -1;
+
+	line->up_to_date = true;
+
+	return 0;
+}
+
 int gpiod_line_request(struct gpiod_line *line,
 		       const char *consumer, int default_val, int flags)
 {
@@ -221,7 +234,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 {
 	struct gpiohandle_request *req;
 	struct gpiod_chip *chip;
-	unsigned int i, j;
+	unsigned int i;
 	int status, fd;
 
 	/* Paranoia: verify that all lines are from the same gpiochip. */
@@ -283,13 +296,9 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 		 * Update line info to include the changes after the
 		 * request.
 		 */
-		status = update_line_info(line_bulk->lines[i], chip,
-				gpiod_line_offset(line_bulk->lines[i]));
-		if (status < 0) {
-			for (j = 0; j < i; j++)
-				gpiod_line_release(line_bulk->lines[i]);
-			return -1;
-		}
+		status = gpiod_line_update(line_bulk->lines[i]);
+		if (status < 0)
+			line_bulk->lines[i]->up_to_date = false;
 	}
 
 	return 0;
@@ -308,6 +317,7 @@ void gpiod_line_release(struct gpiod_line *line)
 void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 {
 	unsigned int i;
+	int status;
 
 	close(line_bulk->lines[0]->req->fd);
 	free(line_bulk->lines[0]->req);
@@ -315,6 +325,10 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 	for (i = 0; i < line_bulk->num_lines; i++) {
 		line_bulk->lines[i]->req = NULL;
 		line_bulk->lines[i]->requested = false;
+
+		status = gpiod_line_update(line_bulk->lines[i]);
+		if (status < 0)
+			line_bulk->lines[i]->up_to_date = false;
 	}
 }
 
@@ -539,9 +553,10 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 	}
 
 	line = &chip->lines[offset];
+	line_set_offset(line, offset);
 	line->chip = chip;
 
-	status = update_line_info(line, chip, offset);
+	status = gpiod_line_update(line);
 	if (status < 0)
 		return NULL;
 
