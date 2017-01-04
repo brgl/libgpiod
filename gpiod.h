@@ -135,6 +135,8 @@ int gpiod_line_set_value(struct gpiod_line *line, int value) GPIOD_API;
 int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk,
 			      int *values) GPIOD_API;
 
+struct gpiod_line * gpiod_line_find_by_name(const char *name) GPIOD_API;
+
 struct gpiod_chip;
 
 struct gpiod_chip * gpiod_chip_open(const char *path) GPIOD_API;
