@@ -240,6 +240,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 {
 	struct gpiohandle_request *req;
 	struct gpiod_chip *chip;
+	struct gpiod_line *line;
 	int status, fd;
 	unsigned int i;
 
@@ -283,15 +284,17 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 		return -1;
 
 	for (i = 0; i < line_bulk->num_lines; i++) {
-		line_bulk->lines[i]->req = req;
-		line_bulk->lines[i]->requested = true;
+		line = line_bulk->lines[i];
+
+		line->req = req;
+		line->requested = true;
 		/*
 		 * Update line info to include the changes after the
 		 * request.
 		 */
-		status = gpiod_line_update(line_bulk->lines[i]);
+		status = gpiod_line_update(line);
 		if (status < 0)
-			line_bulk->lines[i]->up_to_date = false;
+			line->up_to_date = false;
 	}
 
 	return 0;
@@ -309,6 +312,7 @@ void gpiod_line_release(struct gpiod_line *line)
 
 void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 {
+	struct gpiod_line *line;
 	unsigned int i;
 	int status;
 
@@ -316,12 +320,14 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 	free(line_bulk->lines[0]->req);
 
 	for (i = 0; i < line_bulk->num_lines; i++) {
-		line_bulk->lines[i]->req = NULL;
-		line_bulk->lines[i]->requested = false;
+		line = line_bulk->lines[i];
 
-		status = gpiod_line_update(line_bulk->lines[i]);
+		line->req = NULL;
+		line->requested = false;
+
+		status = gpiod_line_update(line);
 		if (status < 0)
-			line_bulk->lines[i]->up_to_date = false;
+			line->up_to_date = false;
 	}
 }
 
