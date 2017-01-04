@@ -176,28 +176,31 @@ gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
 
 struct gpiod_line_iter {
 	unsigned int offset;
+	struct gpiod_chip *chip;
 };
 
-#define GPIOD_LINE_ITER_INITIALIZER	{ 0 }
+#define GPIOD_LINE_ITER_INITIALIZER(chip)	{ 0, (chip) }
 
-static inline void gpiod_line_iter_init(struct gpiod_line_iter *iter)
+static inline void gpiod_line_iter_init(struct gpiod_line_iter *iter,
+					struct gpiod_chip *chip)
 {
 	iter->offset = 0;
+	iter->chip = chip;
 }
 
 static inline struct gpiod_line *
-gpiod_chip_line_next(struct gpiod_chip *chip, struct gpiod_line_iter *iter)
+gpiod_line_iter_next(struct gpiod_line_iter *iter)
 {
-	if (iter->offset >= gpiod_chip_num_lines(chip))
+	if (iter->offset >= gpiod_chip_num_lines(iter->chip))
 		return NULL;
 
-	return gpiod_chip_get_line(chip, iter->offset++);
+	return gpiod_chip_get_line(iter->chip, iter->offset++);
 }
 
-#define gpiod_chip_foreach_line(iter, chip, line)			\
-	for ((line) = gpiod_chip_line_next(chip, iter);			\
+#define gpiod_foreach_line(iter, line)					\
+	for ((line) = gpiod_line_iter_next(iter);			\
 	     (line);							\
-	     (line) = gpiod_chip_line_next(chip, iter))
+	     (line) = gpiod_line_iter_next(iter))
 
 #ifdef __cplusplus
 } /* extern "C" */

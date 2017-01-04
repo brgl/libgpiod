@@ -59,8 +59,8 @@ int main(int argc, char **argv)
 		printf("%s - %u lines:\n",
 		       gpiod_chip_name(chip), gpiod_chip_num_lines(chip));
 
-		gpiod_line_iter_init(&iter);
-		gpiod_chip_foreach_line(&iter, chip, line) {
+		gpiod_line_iter_init(&iter, chip);
+		gpiod_foreach_line(&iter, line) {
 			name = gpiod_line_name(line);
 			consumer = gpiod_line_consumer(line);
 			direction = gpiod_line_direction(line);
