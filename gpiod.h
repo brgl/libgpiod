@@ -66,7 +66,7 @@ enum {
 	GPIOD_REQUEST_OPEN_SOURCE		= GPIOD_BIT(6),
 };
 
-#define GPIOD_MAX_LINES		64
+#define GPIOD_REQUEST_MAX_LINES		64
 
 struct gpiod_line;
 
@@ -109,7 +109,7 @@ static inline int gpiod_line_request_dout(struct gpiod_line *line,
 }
 
 struct gpiod_line_bulk {
-	struct gpiod_line *lines[GPIOD_MAX_LINES];
+	struct gpiod_line *lines[GPIOD_REQUEST_MAX_LINES];
 	unsigned int num_lines;
 };
 
