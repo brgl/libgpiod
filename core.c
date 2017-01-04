@@ -251,8 +251,6 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 	if (!req)
 		return -1;
 
-	memset(req, 0, sizeof(*req));
-
 	if (config->flags & GPIOD_REQUEST_OPEN_DRAIN)
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
 	if (config->flags & GPIOD_REQUEST_OPEN_SOURCE)
