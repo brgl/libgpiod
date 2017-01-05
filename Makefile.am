@@ -37,6 +37,10 @@ gpioset_SOURCES = gpioset.c
 gpioset_LDFLAGS = -lgpiod
 gpioset_DEPENDENCIES = libgpiod.la
 
+gpiomon_SOURCES = gpiomon.c
+gpiomon_LDFLAGS = -lgpiod
+gpiomon_DEPENDENCIES = libgpiod.la
+
 doc:
 	doxygen
 .PHONY: doc
