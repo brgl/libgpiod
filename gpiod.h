@@ -57,6 +57,10 @@ extern "C" {
  * system-wide errno numbers and internal GPIO-specific errors. The routines
  * in this section should be used to access the information about any error
  * conditions that may occur.
+ *
+ * With some noted exceptions, all libgpiod functions set the last error
+ * variable if an error occurs. Internally, the last_error variable has a
+ * separate instance per thread making the library thread-safe.
  */
 
 /**
@@ -290,7 +294,7 @@ int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
 bool gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API;
 
 /**
- * @brief Structure holding configuration of a line handle request.
+ * @brief Structure holding configuration of a line request.
  */
 struct gpiod_line_request_config {
 	const char *consumer;
@@ -351,16 +355,55 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk) GPIOD_API;
  */
 bool gpiod_line_is_reserved(struct gpiod_line *line) GPIOD_API;
 
+/**
+ * @brief Read current value of a single GPIO line.
+ * @param line GPIO line object.
+ * @return 0 or 1 if the operation succeeds. On error this routine returns -1
+ *         and sets the last error number.
+ */
 int gpiod_line_get_value(struct gpiod_line *line) GPIOD_API;
 
+/**
+ * @brief Read current values of a set of GPIO lines.
+ * @param line_bulk Set of GPIO lines to reserve.
+ * @param values An array big enough to hold line_bulk->num_lines values.
+ * @return 0 is the operation succeeds. In case of an error this routine
+ *         returns -1 and sets the last error number.
+ *
+ * If succeeds, this routine fills the values array with a set of values in
+ * the same order, the lines are added to line_bulk.
+ */
 int gpiod_line_get_value_bulk(struct gpiod_line_bulk *line_bulk,
 			      int *values) GPIOD_API;
 
+/**
+ * @brief Set the value of a single GPIO line.
+ * @param line GPIO line object.
+ * @param value New value.
+ * @return 0 is the operation succeeds. In case of an error this routine
+ *         returns -1 and sets the last error number.
+ */
 int gpiod_line_set_value(struct gpiod_line *line, int value) GPIOD_API;
 
+/**
+ * @brief Set the values of a set of GPIO lines.
+ * @param line_bulk Set of GPIO lines to reserve.
+ * @param values An array holding line_bulk->num_lines new values for lines.
+ * @return 0 is the operation succeeds. In case of an error this routine
+ *         returns -1 and sets the last error number.
+ */
 int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk,
 			      int *values) GPIOD_API;
 
+/**
+ * @brief Find a GPIO line by its name.
+ * @param name Name of the GPIO line.
+ * @return Returns the GPIO line handle if the line exists in the system or
+ *         NULL if it couldn't be located.
+ *
+ * If this routine succeeds, the user must manually close the GPIO chip owning
+ * this line to avoid memory leaks.
+ */
 struct gpiod_line * gpiod_line_find_by_name(const char *name) GPIOD_API;
 
 /**
@@ -369,40 +412,96 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name) GPIOD_API;
  *
  * Functions and data structures for requesting and reading GPIO line events.
  */
+
+/**
+ * @brief Event types.
+ */
 enum {
 	GPIOD_EVENT_RISING_EDGE,
+	/**< Rising edge event. */
 	GPIOD_EVENT_FALLING_EDGE,
+	/**< Falling edge event. */
 	GPIOD_EVENT_BOTH_EDGES,
+	/**< Rising or falling edge event: only relevant for event requests. */
 };
 
+/**
+ * @brief Structure holding configuration of a line event request.
+ */
 struct gpiod_line_evreq_config {
 	const char *consumer;
+	/**< Name of the consumer. */
 	int event_type;
+	/**< Type of the event we want to be notified about. */
 	int polarity;
+	/**< GPIO line polarity. */
 	int line_flags;
+	/**< Misc line flags - same as for line requests. */
 };
 
+/**
+ * @brief Structure holding event info.
+ */
 struct gpiod_line_event {
 	struct gpiod_line *line;
+	/**< Line on which the event occurred. */
 	struct timespec ts;
+	/**< Best estimate of time of event occurrence. */
 	int event_type;
+	/**< Type of the event that occurred. */
 };
 
+/**
+ * @brief Request event notifications for a single line.
+ * @param line GPIO line object.
+ * @param config Event request configuration.
+ * @return 0 is the operation succeeds. In case of an error this routine
+ *         returns -1 and sets the last error number.
+ */
 int gpiod_line_event_request(struct gpiod_line *line,
 			     struct gpiod_line_evreq_config *config) GPIOD_API;
 
+/**
+ * @brief Stop listening for events and release the line.
+ * @param line GPIO line object.
+ */
 void gpiod_line_event_release(struct gpiod_line *line) GPIOD_API;
 
+/**
+ * @brief Check if event notifications are configured on this line.
+ * @param line GPIO line object.
+ * @return True if event notifications are configured. False otherwise.
+ */
 bool gpiod_line_event_configured(struct gpiod_line *line) GPIOD_API;
 
+/**
+ * @brief Wait for an event on a single line.
+ * @param line GPIO line object.
+ * @param timeout Wait time limit.
+ * @param event Buffer to which the event data will be copied.
+ * @return 0 if wait timed out, -1 if an error occurred, 1 if an event
+ *         occurred.
+ */
 int gpiod_line_event_wait(struct gpiod_line *line,
 			  const struct timespec *timeout,
 			  struct gpiod_line_event *event) GPIOD_API;
 
+/**
+ * @brief Wait for the first event on a set of lines.
+ * @param bulk Set of GPIO lines to monitor.
+ * @param timeout Wait time limit.
+ * @param event Buffer to which the event data will be copied.
+ * @return 0 if wait timed out, -1 if an error occurred, 1 if an event
+ *         occurred.
+ */
 int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       const struct timespec *timeout,
 			       struct gpiod_line_event *event) GPIOD_API;
 
+/*
+ * FIXME for this to make sense we need a routine to read events from a file
+ * descriptor too.
+ */
 int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
 
 /**
@@ -416,29 +515,91 @@ int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
  * Functions and data structures dealing with GPIO chips.
  */
 
+/**
+ * @brief Opaque structure representing a single GPIO line.
+ */
 struct gpiod_chip;
 
+/**
+ * @brief Open a gpiochip by path.
+ * @param path Path to the gpiochip device file.
+ * @return GPIO chip handle or NULL if an error occurred.
+ */
 struct gpiod_chip * gpiod_chip_open(const char *path) GPIOD_API;
 
+/**
+ * @brief Open a gpiochip by name.
+ * @param name Name of the gpiochip to open.
+ * @return GPIO chip handle or NULL if an error occurred.
+ *
+ * This routine appends name to '/dev/' to create the path.
+ */
 struct gpiod_chip * gpiod_chip_open_by_name(const char *name) GPIOD_API;
 
+/**
+ * @brief Open a gpiochip by number.
+ * @param num Number of the gpiochip.
+ * @return GPIO chip handle or NULL if an error occurred.
+ *
+ * This routine appends num to '/dev/gpiochip' to create the path.
+ */
 struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num) GPIOD_API;
 
+/**
+ * @brief Open a gpiochip based on the best guess what the path is.
+ * @param descr String describing the gpiochip.
+ * @return GPIO chip handle or NULL if an error occurred.
+ *
+ * This routine tries to figure out whether the user passed it the path to
+ * the GPIO chip, its name or number as a string. Then it tries to open it
+ * using one of the other gpiod_chip_open** routines.
+ */
 struct gpiod_chip * gpiod_chip_open_lookup(const char *descr) GPIOD_API;
 
+/**
+ * @brief Close a GPIO chip handle and release all allocated resources.
+ * @param chip The GPIO chip object.
+ */
 void gpiod_chip_close(struct gpiod_chip *chip) GPIOD_API;
 
+/**
+ * @brief Get the GPIO chip name as represented in the kernel.
+ * @param chip The GPIO chip object.
+ * @return Pointer to a human-readable string containing the chip name.
+ */
 const char * gpiod_chip_name(struct gpiod_chip *chip) GPIOD_API;
 
+/**
+ * @brief Get the GPIO chip label as represented in the kernel.
+ * @param chip The GPIO chip object.
+ * @return Pointer to a human-readable string containing the chip label.
+ */
 const char * gpiod_chip_label(struct gpiod_chip *chip) GPIOD_API;
 
+/**
+ * @brief Get the number of GPIO lines exposed by this chip.
+ * @param chip The GPIO chip object.
+ * @return Number of GPIO lines.
+ */
 unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip) GPIOD_API;
 
+/**
+ * @brief Get the handle to the GPIO line at given offset.
+ * @param chip The GPIO chip object.
+ * @param offset The offset of the GPIO line.
+ * @return Pointer to the GPIO line handle or NULL if an error occured.
+ */
 struct gpiod_line *
 gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
 
+/* FIXME This shouldn't be needed. Make it private maybe? */
 int gpiod_chip_get_fd(struct gpiod_chip *chip) GPIOD_API;
 
+/**
+ * @brief Get the handle to the GPIO chip controlling this line.
+ * @param line The GPIO line object.
+ * @return Pointer to the GPIO chip handle controlling this line.
+ */
 struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
 
 /**
@@ -451,27 +612,76 @@ struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
  * chips and lines.
  */
 
+/**
+ * @brief Opaque structure representing a chip iterator.
+ */
 struct gpiod_chip_iter;
 
+/**
+ * @brief Create a new gpiochip iterator.
+ * @return Pointer to a new chip iterator object or NULL if an error occurred.
+ */
 struct gpiod_chip_iter * gpiod_chip_iter_new(void) GPIOD_API;
 
+/**
+ * @brief Release all data allocated for a gpiochip iterator.
+ * @param iter The gpiochip iterator object.
+ */
 void gpiod_chip_iter_free(struct gpiod_chip_iter *iter) GPIOD_API;
 
+/**
+ * @brief Get the next gpiochip handle.
+ * @param iter The gpiochip iterator object.
+ * @return Pointer to an open gpiochip handle or NULL if the next chip can't
+ *         be accessed.
+ *
+ * Internally this routine scans the /dev/ directory, storing current state
+ * in the chip iterator structure, and tries to open the next /dev/gpiochipX
+ * device file. If an error occurs or no more chips are present, the function
+ * returns NULL.
+ */
 struct gpiod_chip *
 gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
 
+/**
+ * @brief Iterate over all gpiochip present in the system.
+ * @param iter An initialized GPIO chip iterator.
+ * @param chip Pointer to a GPIO chip handle. On each iteration the newly
+ *             opened chip handle is assigned to this argument.
+ *
+ * The user must not close the GPIO chip manually - instead the previous chip
+ * handle is closed automatically on the next iteration. The last chip to be
+ * opened is closed internally by gpiod_chip_iter_free().
+ */
 #define gpiod_foreach_chip(iter, chip)					\
 	for ((chip) = gpiod_chip_iter_next(iter);			\
 	     (chip);							\
 	     (chip) = gpiod_chip_iter_next(iter))
 
+/**
+ * @brief GPIO line iterator structure.
+ *
+ * This structure is used in conjunction with gpiod_line_iter_next() to
+ * iterate over all GPIO lines of a single GPIO chip.
+ */
 struct gpiod_line_iter {
 	unsigned int offset;
+	/**< Current line offset. */
 	struct gpiod_chip *chip;
+	/**< GPIO chip whose line we're iterating over. */
 };
 
+/**
+ * @brief Static initializer for line iterators.
+ * @param chip The gpiochip object whose lines we want to iterate over.
+ */
 #define GPIOD_LINE_ITER_INITIALIZER(chip)	{ 0, (chip) }
 
+/**
+ * @brief Initialize a GPIO line iterator.
+ * @param iter Pointer to a GPIO line iterator.
+ * @param chip The gpiochip object whose lines we want to iterate over.
+ */
 static inline void gpiod_line_iter_init(struct gpiod_line_iter *iter,
 					struct gpiod_chip *chip)
 {
@@ -479,6 +689,12 @@ static inline void gpiod_line_iter_init(struct gpiod_line_iter *iter,
 	iter->chip = chip;
 }
 
+/**
+ * @brief Get the next GPIO line handle.
+ * @param iter The GPIO line iterator object.
+ * @return Pointer to the next GPIO line handle or NULL if no more lines or
+ *         and error occured.
+ */
 static inline struct gpiod_line *
 gpiod_line_iter_next(struct gpiod_line_iter *iter)
 {
@@ -488,6 +704,12 @@ gpiod_line_iter_next(struct gpiod_line_iter *iter)
 	return gpiod_chip_get_line(iter->chip, iter->offset++);
 }
 
+/**
+ * @brief Iterate over all GPIO lines of a single chip.
+ * @param iter An initialized GPIO line iterator.
+ * @param line Pointer to a GPIO line handle - on each iteration, the
+ *             next GPIO line will be assigned to this argument.
+ */
 #define gpiod_foreach_line(iter, line)					\
 	for ((line) = gpiod_line_iter_next(iter);			\
 	     (line);							\
