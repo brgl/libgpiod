@@ -137,6 +137,42 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk,
 
 struct gpiod_line * gpiod_line_find_by_name(const char *name) GPIOD_API;
 
+enum {
+	GPIOD_EVENT_RISING_EDGE,
+	GPIOD_EVENT_FALLING_EDGE,
+	GPIOD_EVENT_BOTH_EDGES,
+};
+
+struct gpiod_line_evreq_config {
+	const char *consumer;
+	int event_type;
+	int polarity;
+	int line_flags;
+};
+
+struct gpiod_line_event {
+	struct gpiod_line *line;
+	struct timespec ts;
+	int event_type;
+};
+
+int gpiod_line_event_request(struct gpiod_line *line,
+			     struct gpiod_line_evreq_config *config) GPIOD_API;
+
+void gpiod_line_event_release(struct gpiod_line *line) GPIOD_API;
+
+bool gpiod_line_event_is_requested(struct gpiod_line *line) GPIOD_API;
+
+int gpiod_line_event_wait(struct gpiod_line *line,
+			  const struct timespec *timeout,
+			  struct gpiod_line_event *event) GPIOD_API;
+
+int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
+			       const struct timespec *timeout,
+			       struct gpiod_line_event *event) GPIOD_API;
+
+int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
+
 struct gpiod_chip;
 
 struct gpiod_chip * gpiod_chip_open(const char *path) GPIOD_API;

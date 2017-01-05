@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/poll.h>
 #include <linux/gpio.h>
 
 static const char dev_dir[] = "/dev/";
@@ -62,6 +63,12 @@ static bool is_unsigned_int(const char *str)
 	for (; *str && isdigit(*str); str++);
 
 	return *str == '\0';
+}
+
+static void nsec_to_timespec(uint64_t nsec, struct timespec *ts)
+{
+	ts->tv_sec = nsec / 1000000000ULL;
+	ts->tv_nsec = (nsec % 1000000000ULL);
 }
 
 static int gpio_ioctl(int fd, unsigned long request, void *data)
@@ -129,10 +136,12 @@ int gpiod_simple_get_value(const char *device, unsigned int offset)
 
 struct gpiod_line {
 	bool requested;
+	bool event_requested;
 	bool up_to_date;
 	struct gpiod_chip *chip;
 	struct gpioline_info info;
 	struct gpiohandle_request *req;
+	struct gpioevent_request event;
 };
 
 static void line_set_offset(struct gpiod_line *line, unsigned int offset)
@@ -419,6 +428,130 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
 		return -1;
 
 	return 0;
+}
+
+int gpiod_line_event_request(struct gpiod_line *line,
+			     struct gpiod_line_evreq_config *config)
+{
+	struct gpioevent_request *req;
+	struct gpiod_chip *chip;
+	int status, fd;
+
+	if (line->event_requested)
+		return -EBUSY;
+
+	req = &line->event;
+
+	memset(req, 0, sizeof(*req));
+	strncpy(req->consumer_label, config->consumer,
+		sizeof(req->consumer_label) - 1);
+	req->lineoffset = gpiod_line_offset(line);
+	req->handleflags |= GPIOHANDLE_REQUEST_INPUT;
+
+	if (config->line_flags & GPIOD_REQUEST_OPEN_DRAIN)
+		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
+	if (config->line_flags & GPIOD_REQUEST_OPEN_SOURCE)
+		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
+
+	if (config->polarity == GPIOD_POLARITY_ACTIVE_LOW)
+		req->handleflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
+
+	if (config->event_type == GPIOD_EVENT_RISING_EDGE)
+		req->eventflags |= GPIOEVENT_EVENT_RISING_EDGE;
+	else if (config->event_type == GPIOD_EVENT_FALLING_EDGE)
+		req->eventflags |= GPIOEVENT_EVENT_FALLING_EDGE;
+	else if (req->eventflags |= GPIOD_EVENT_BOTH_EDGES)
+		req->eventflags |= GPIOEVENT_REQUEST_BOTH_EDGES;
+
+	chip = gpiod_line_get_chip(line);
+	fd = gpiod_chip_get_fd(chip);
+
+	status = gpio_ioctl(fd, GPIO_GET_LINEEVENT_IOCTL, req);
+	if (status < 0)
+		return -1;
+
+	line->event_requested = true;
+
+	return 0;
+}
+
+void gpiod_line_event_release(struct gpiod_line *line)
+{
+	close(line->event.fd);
+	line->event_requested = false;
+}
+
+bool gpiod_line_event_is_requested(struct gpiod_line *line)
+{
+	return line->event_requested;
+}
+
+int gpiod_line_event_wait(struct gpiod_line *line,
+			  const struct timespec *timeout,
+			  struct gpiod_line_event *event)
+{
+	struct gpiod_line_bulk bulk;
+
+	gpiod_line_bulk_init(&bulk);
+	gpiod_line_bulk_add(&bulk, line);
+
+	return gpiod_line_event_wait_bulk(&bulk, timeout, event);
+}
+
+int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
+			       const struct timespec *timeout,
+			       struct gpiod_line_event *event)
+{
+	struct pollfd fds[GPIOD_REQUEST_MAX_LINES];
+	struct gpioevent_data evdata;
+	struct gpiod_line *line;
+	unsigned int i;
+	int status;
+	ssize_t rd;
+
+	memset(fds, 0, sizeof(fds));
+	memset(&evdata, 0, sizeof(evdata));
+
+	/* TODO Check if all lines are requested. */
+
+	for (i = 0; i < bulk->num_lines; i++) {
+		line = bulk->lines[i];
+
+		fds[i].fd = line->event.fd;
+		fds[i].events = POLLIN | POLLPRI;
+	}
+
+	status = ppoll(fds, bulk->num_lines, timeout, NULL);
+	if (status < 0) {
+		last_error_from_errno();
+		return -1;
+	} else if (status == 0) {
+		return 0;
+	}
+
+	for (i = 0; !fds[i].revents; i++);
+
+	rd = read(fds[i].fd, &evdata, sizeof(evdata));
+	if (rd < 0) {
+		last_error_from_errno();
+		return -1;
+	} else if (rd != sizeof(evdata)) {
+		set_last_error(EIO);
+		return -1;
+	}
+
+	event->line = bulk->lines[i];
+	event->event_type = evdata.id == GPIOEVENT_EVENT_RISING_EDGE
+						? GPIOD_EVENT_RISING_EDGE
+						: GPIOD_EVENT_FALLING_EDGE;
+	nsec_to_timespec(evdata.timestamp, &event->ts);
+
+	return 1;
+}
+
+int gpiod_line_event_get_fd(struct gpiod_line *line)
+{
+	return line->event_requested ? line->event.fd : -1;
 }
 
 struct gpiod_chip
