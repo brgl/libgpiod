@@ -15,6 +15,8 @@ AM_CPPFLAGS += -fvisibility=hidden -D_GNU_SOURCE
 
 lib_LTLIBRARIES = libgpiod.la
 
+include_HEADERS = gpiod.h
+
 libgpiod_la_SOURCES = core.c
 
 bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset
