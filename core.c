@@ -108,7 +108,7 @@ int gpiod_simple_get_value(const char *device, unsigned int offset)
 
 	memset(&config, 0, sizeof(config));
 	config.consumer = libgpiod_consumer;
-	config.direction = GPIOD_DIRECTION_AS_IS;
+	config.direction = GPIOD_DIRECTION_INPUT;
 
 	chip = gpiod_chip_open_lookup(device);
 	if (!chip)
