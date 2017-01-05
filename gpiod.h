@@ -13,8 +13,8 @@
  *
  * This is the documentation of the public API exported by libgpiod.
  *
- * <p>These functions and data structures allow to use the complete
- * functionality of the linux GPIO character device interface.
+ * <p>These functions and data structures allow to use all the functionalities
+ * exposed by the linux GPIO character device interface.
  */
 
 #ifndef __GPIOD__
@@ -28,101 +28,324 @@
 extern "C" {
 #endif
 
+/**
+ * @defgroup __common__ Common helper macros
+ * @{
+ *
+ * Commonly used utility macros.
+ */
+
+/**
+ * @brief Makes symbol visible.
+ */
 #define GPIOD_API		__attribute__((visibility("default")))
 
+/**
+ * @brief Shift 1 by given offset.
+ * @param nr Bit position.
+ * @return 1 shifted by nr.
+ */
 #define GPIOD_BIT(nr)		(1UL << (nr))
 
+/**
+ * @}
+ *
+ * @defgroup __error__ Error handling
+ * @{
+ *
+ * Error handling functions and macros. This library uses a combination of
+ * system-wide errno numbers and internal GPIO-specific errors. The routines
+ * in this section should be used to access the information about any error
+ * conditions that may occur.
+ */
+
+/**
+ * @brief Private: offset for all libgpiod error numbers.
+ */
 #define __GPIOD_ERRNO_OFFSET	10000
 
+/**
+ * @brief libgpiod-specific error numbers.
+ */
 enum {
 	GPIOD_ESUCCESS = __GPIOD_ERRNO_OFFSET,
+	/**< No error. */
 	GPIOD_ENOTREQUESTED,
+	/**< GPIO line not requested. */
 	__GPIOD_MAX_ERR,
+	/**< Private: number of libgpiod-specific error numbers. */
 };
 
+/**
+ * @brief Return last error.
+ * @return Number of the last error inside libgpiod.
+ */
 int gpiod_errno(void) GPIOD_API;
 
+/**
+ * @brief Convert error number to a human-readable string.
+ * @param errnum Error number to convert.
+ * @return Pointer to a null-terminated error description.
+ */
 const char * gpiod_strerror(int errnum) GPIOD_API;
 
+/**
+ * @}
+ *
+ * @defgroup __high_level__ High-level API
+ * @{
+ *
+ * Simple high-level routines for straightforward GPIO manipulation.
+ */
+
+/**
+ * @brief Read current value from a single GPIO line.
+ * @param device Name, path or number of the gpiochip.
+ * @param offset GPIO line offset on the chip.
+ * @return 0 or 1 if the operation succeeds. On error this routine returns -1
+ *         and sets the last error number.
+ */
 int gpiod_simple_get_value(const char *device, unsigned int offset) GPIOD_API;
 
+/**
+ * @}
+ *
+ * @defgroup __lines__ GPIO line operations
+ * @{
+ *
+ * Functions and data structures dealing with GPIO lines.
+ */
+
+/**
+ * @brief Available direction settings.
+ *
+ * These values are used both when requesting lines and when retrieving
+ * line info.
+ */
 enum {
 	GPIOD_DIRECTION_AS_IS,
+	/**< Only relevant for line requests - don't set the direction. */
 	GPIOD_DIRECTION_INPUT,
+	/**< Direction is input - we're reading the state of a GPIO line. */
 	GPIOD_DIRECTION_OUTPUT,
+	/**< Direction is output - we're driving the GPIO line. */
 };
 
+/**
+ * @brief Available polarity settings.
+ */
 enum {
 	GPIOD_POLARITY_ACTIVE_HIGH,
+	/**< The  polarity of a GPIO is active-high. */
 	GPIOD_POLARITY_ACTIVE_LOW,
+	/**< The polarity of a GPIO is active-low. */
 };
 
+/**
+ * @brief Miscellaneous GPIO flags.
+ */
 enum {
 	GPIOD_REQUEST_OPEN_DRAIN	= GPIOD_BIT(0),
+	/**< The line is an open-drain port. */
 	GPIOD_REQUEST_OPEN_SOURCE	= GPIOD_BIT(1),
+	/**< The line is an open-source port. */
 };
 
+/**
+ * @brief Maximum number of GPIO lines that can be requested at once.
+ */
 #define GPIOD_REQUEST_MAX_LINES		64
 
+/**
+ * @brief Opaque structure representing a single GPIO line.
+ */
 struct gpiod_line;
 
-unsigned int gpiod_line_offset(struct gpiod_line *line) GPIOD_API;
-
-const char * gpiod_line_name(struct gpiod_line *line) GPIOD_API;
-
-const char * gpiod_line_consumer(struct gpiod_line *line) GPIOD_API;
-
-int gpiod_line_direction(struct gpiod_line *line) GPIOD_API;
-
-int gpiod_line_polarity(struct gpiod_line *line) GPIOD_API;
-
-bool gpiod_line_is_used_by_kernel(struct gpiod_line *line) GPIOD_API;
-
-bool gpiod_line_is_open_drain(struct gpiod_line *line) GPIOD_API;
-
-bool gpiod_line_is_open_source(struct gpiod_line *line) GPIOD_API;
-
-bool gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API;
-
-int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
-
-struct gpiod_line_request_config {
-	const char *consumer;
-	int direction;
-	int polarity;
-	int flags;
-};
-
-int gpiod_line_request(struct gpiod_line *line,
-		       const struct gpiod_line_request_config *config,
-		       int default_val) GPIOD_API;
-
+/**
+ * @brief Helper structure for storing a set of GPIO line objects.
+ *
+ * This structure is used in all operations involving sets of GPIO lines.
+ */
 struct gpiod_line_bulk {
 	struct gpiod_line *lines[GPIOD_REQUEST_MAX_LINES];
+	/**< Buffer for line pointers. */
 	unsigned int num_lines;
+	/**< Number of lines currently held in this structure. */
 };
 
+/**
+ * @brief Static initializer for GPIO bulk objects.
+ *
+ * This macro simply sets the internally held number of lines to 0.
+ */
 #define GPIOD_LINE_BULK_INITIALIZER	{ .num_lines = 0, }
 
+/**
+ * @brief Initialize a GPIO bulk object.
+ * @param line_bulk Line bulk object.
+ *
+ * This routine simply sets the internally held number of lines to 0.
+ */
 static inline void gpiod_line_bulk_init(struct gpiod_line_bulk *line_bulk)
 {
 	line_bulk->num_lines = 0;
 }
 
+/**
+ * @brief Add a single line to a GPIO bulk object.
+ * @param line_bulk Line bulk object.
+ * @param line Line to add.
+ */
 static inline void gpiod_line_bulk_add(struct gpiod_line_bulk *line_bulk,
 				       struct gpiod_line *line)
 {
 	line_bulk->lines[line_bulk->num_lines++] = line;
 }
 
+/**
+ * @brief Read the GPIO line offset.
+ * @param line GPIO line object.
+ * @return Line offset.
+ */
+unsigned int gpiod_line_offset(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Read the GPIO line name.
+ * @param line GPIO line object.
+ * @return Name of the GPIO line as it is represented in the kernel. This
+ *         routine returns a pointer to a null-terminated string or NULL if
+ *         the line is unnamed.
+ */
+const char * gpiod_line_name(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Read the GPIO line consumer name.
+ * @param line GPIO line object.
+ * @return Name of the GPIO consumer name as it is represented in the
+ *         kernel. This routine returns a pointer to a null-terminated string
+ *         or NULL if the line is not used.
+ */
+const char * gpiod_line_consumer(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Read the GPIO line direction setting.
+ * @param line GPIO line object.
+ * @return Returns GPIOD_DIRECTION_INPUT or GPIOD_DIRECTION_OUTPUT.
+ */
+int gpiod_line_direction(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Read the GPIO line polarity setting.
+ * @param line GPIO line object.
+ * @return Returns GPIOD_POLARITY_ACTIVE_HIGH or GPIOD_POLARITY_ACTIVE_LOW.
+ */
+int gpiod_line_polarity(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Check if the line is used by the kernel.
+ * @param line GPIO line object.
+ * @return True if the line is used by the kernel, false otherwise.
+ */
+bool gpiod_line_is_used_by_kernel(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Check if the line is an open-drain GPIO.
+ * @param line GPIO line object.
+ * @return True if the line is an open-drain GPIO, false otherwise.
+ */
+bool gpiod_line_is_open_drain(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Check if the line is an open-source GPIO.
+ * @param line GPIO line object.
+ * @return True if the line is an open-source GPIO, false otherwise.
+ */
+bool gpiod_line_is_open_source(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Re-read the line info.
+ * @param line GPIO line object.
+ * @return 0 is the operation succeeds. In case of an error this routine
+ *         returns -1 and sets the last error number.
+ *
+ * The line info is initially retrieved from the kernel by
+ * gpiod_chip_get_line(). Users can use this line to manually re-read the line
+ * info.
+ */
+int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Check if the line info needs to be updated.
+ * @param line GPIO line object.
+ * @return Returns false if the line is up-to-date. True otherwise.
+ *
+ * The line is updated by calling gpiod_line_update() from within
+ * gpiod_chip_get_line() and on every line request/release. However: an error
+ * returned from gpiod_line_update() only breaks the execution of the former.
+ * The request/release routines only set the internal up-to-date flag to false
+ * and continue their execution. This routine allows to check if a line info
+ * update failed at some point and we should call gpiod_line_update()
+ * explicitly.
+ */
+bool gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Structure holding configuration of a line handle request.
+ */
+struct gpiod_line_request_config {
+	const char *consumer;
+	/**< Name of the consumer. */
+	int direction;
+	/**< Requested direction. */
+	int polarity;
+	/**< Requested polarity configuration. */
+	int flags;
+	/**< Other configuration flags. */
+};
+
+/**
+ * @brief Request a single line.
+ * @param line GPIO line object.
+ * @param config Request options.
+ * @param default_val Default line value - only relevant if we're setting
+ *        the direction to output.
+ * @return 0 if the line was properly requested. In case of an error this
+ *         routine returns -1 and sets the last error number.
+ */
+int gpiod_line_request(struct gpiod_line *line,
+		       const struct gpiod_line_request_config *config,
+		       int default_val) GPIOD_API;
+
+/**
+ * @brief Request a set of GPIO lines.
+ * @param line_bulk Set of GPIO lines to request.
+ * @param config Request options.
+ * @param default_vals Default line values - only relevant if we're setting
+ *        the direction to output.
+ * @return 0 if the all lines were properly requested. In case of an error
+ *         this routine returns -1 and sets the last error number.
+ */
 int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 			    const struct gpiod_line_request_config *config,
 			    int *default_vals) GPIOD_API;
 
+/**
+ * @brief Release a previously requested line.
+ * @param line GPIO line object.
+ */
 void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
 
+/**
+ * @brief Release a set of previously requested lines.
+ * @param line_bulk Set of GPIO lines to release.
+ */
 void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk) GPIOD_API;
 
+/**
+ * @brief Check if the line was requested.
+ * @param line GPIO line object.
+ * @return True if given line was requested, false otherwise.
+ */
 bool gpiod_line_is_requested(struct gpiod_line *line) GPIOD_API;
 
 int gpiod_line_get_value(struct gpiod_line *line) GPIOD_API;
@@ -137,6 +360,12 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk,
 
 struct gpiod_line * gpiod_line_find_by_name(const char *name) GPIOD_API;
 
+/**
+ * @defgroup __line_events__ Line event operations
+ * @{
+ *
+ * Functions and data structures for requesting and reading GPIO line events.
+ */
 enum {
 	GPIOD_EVENT_RISING_EDGE,
 	GPIOD_EVENT_FALLING_EDGE,
@@ -173,6 +402,17 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 
 int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
 
+/**
+ * @}
+ *
+ * @}
+ *
+ * @defgroup __chips__ GPIO chip operations
+ * @{
+ *
+ * Functions and data structures dealing with GPIO chips.
+ */
+
 struct gpiod_chip;
 
 struct gpiod_chip * gpiod_chip_open(const char *path) GPIOD_API;
@@ -197,6 +437,16 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
 int gpiod_chip_get_fd(struct gpiod_chip *chip) GPIOD_API;
 
 struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @}
+ *
+ * @defgroup __iterators__ Iterators for GPIO chips and lines
+ * @{
+ *
+ * These functions and data structures allow easy iterating over GPIO
+ * chips and lines.
+ */
 
 struct gpiod_chip_iter;
 
@@ -239,6 +489,10 @@ gpiod_line_iter_next(struct gpiod_line_iter *iter)
 	for ((line) = gpiod_line_iter_next(iter);			\
 	     (line);							\
 	     (line) = gpiod_line_iter_next(iter))
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 } /* extern "C" */
