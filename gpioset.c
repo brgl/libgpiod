@@ -83,6 +83,7 @@ int main(int argc, char **argv)
 
 	getchar();
 
+	gpiod_line_release(line);
 	gpiod_chip_close(chip);
 
 	return EXIT_SUCCESS;
