@@ -304,21 +304,24 @@ struct gpiod_line_request_config {
 };
 
 /**
- * @brief Request a single line.
+ * @brief Reserve a single line.
  * @param line GPIO line object.
  * @param config Request options.
  * @param default_val Default line value - only relevant if we're setting
  *        the direction to output.
- * @return 0 if the line was properly requested. In case of an error this
+ * @return 0 if the line was properly reserved. In case of an error this
  *         routine returns -1 and sets the last error number.
+ *
+ * Is this routine succeeds, the caller takes posession of the GPIO line until
+ * it's released.
  */
 int gpiod_line_request(struct gpiod_line *line,
 		       const struct gpiod_line_request_config *config,
 		       int default_val) GPIOD_API;
 
 /**
- * @brief Request a set of GPIO lines.
- * @param line_bulk Set of GPIO lines to request.
+ * @brief Reserve a set of GPIO lines.
+ * @param line_bulk Set of GPIO lines to reserve.
  * @param config Request options.
  * @param default_vals Default line values - only relevant if we're setting
  *        the direction to output.
@@ -330,23 +333,23 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 			    int *default_vals) GPIOD_API;
 
 /**
- * @brief Release a previously requested line.
+ * @brief Release a previously reserved line.
  * @param line GPIO line object.
  */
 void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
 
 /**
- * @brief Release a set of previously requested lines.
+ * @brief Release a set of previously reserved lines.
  * @param line_bulk Set of GPIO lines to release.
  */
 void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk) GPIOD_API;
 
 /**
- * @brief Check if the line was requested.
+ * @brief Check if the line is reserved by the calling user.
  * @param line GPIO line object.
  * @return True if given line was requested, false otherwise.
  */
-bool gpiod_line_is_requested(struct gpiod_line *line) GPIOD_API;
+bool gpiod_line_is_reserved(struct gpiod_line *line) GPIOD_API;
 
 int gpiod_line_get_value(struct gpiod_line *line) GPIOD_API;
 
@@ -390,7 +393,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 
 void gpiod_line_event_release(struct gpiod_line *line) GPIOD_API;
 
-bool gpiod_line_event_is_requested(struct gpiod_line *line) GPIOD_API;
+bool gpiod_line_event_configured(struct gpiod_line *line) GPIOD_API;
 
 int gpiod_line_event_wait(struct gpiod_line *line,
 			  const struct timespec *timeout,

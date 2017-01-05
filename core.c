@@ -135,8 +135,8 @@ int gpiod_simple_get_value(const char *device, unsigned int offset)
 }
 
 struct gpiod_line {
-	bool requested;
-	bool event_requested;
+	bool reserved;
+	bool event_configured;
 	bool up_to_date;
 	struct gpiod_chip *chip;
 	struct gpioline_info info;
@@ -298,7 +298,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 		line = line_bulk->lines[i];
 
 		line->req = req;
-		line->requested = true;
+		line->reserved = true;
 		/*
 		 * Update line info to include the changes after the
 		 * request.
@@ -334,7 +334,7 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 		line = line_bulk->lines[i];
 
 		line->req = NULL;
-		line->requested = false;
+		line->reserved = false;
 
 		status = gpiod_line_update(line);
 		if (status < 0)
@@ -342,9 +342,9 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 	}
 }
 
-bool gpiod_line_is_requested(struct gpiod_line *line)
+bool gpiod_line_is_reserved(struct gpiod_line *line)
 {
-	return line->requested;
+	return line->reserved;
 }
 
 static bool line_bulk_is_requested(struct gpiod_line_bulk *line_bulk)
@@ -352,7 +352,7 @@ static bool line_bulk_is_requested(struct gpiod_line_bulk *line_bulk)
 	unsigned int i;
 
 	for (i = 0; i < line_bulk->num_lines; i++) {
-		if (!gpiod_line_is_requested(line_bulk->lines[i]))
+		if (!gpiod_line_is_reserved(line_bulk->lines[i]))
 			return false;
 	}
 
@@ -439,7 +439,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	struct gpiod_chip *chip;
 	int status, fd;
 
-	if (line->event_requested)
+	if (line->event_configured)
 		return -EBUSY;
 
 	req = &line->event;
@@ -472,7 +472,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	if (status < 0)
 		return -1;
 
-	line->event_requested = true;
+	line->event_configured = true;
 
 	return 0;
 }
@@ -480,12 +480,12 @@ int gpiod_line_event_request(struct gpiod_line *line,
 void gpiod_line_event_release(struct gpiod_line *line)
 {
 	close(line->event.fd);
-	line->event_requested = false;
+	line->event_configured = false;
 }
 
-bool gpiod_line_event_is_requested(struct gpiod_line *line)
+bool gpiod_line_event_configured(struct gpiod_line *line)
 {
-	return line->event_requested;
+	return line->event_configured;
 }
 
 int gpiod_line_event_wait(struct gpiod_line *line,
@@ -553,7 +553,7 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 
 int gpiod_line_event_get_fd(struct gpiod_line *line)
 {
-	return line->event_requested ? line->event.fd : -1;
+	return line->event_configured ? line->event.fd : -1;
 }
 
 struct gpiod_chip
@@ -650,7 +650,7 @@ void gpiod_chip_close(struct gpiod_chip *chip)
 	unsigned int i;
 
 	for (i = 0; i < chip->cinfo.lines; i++) {
-		if (chip->lines[i].requested)
+		if (chip->lines[i].reserved)
 			gpiod_line_release(&chip->lines[i]);
 	}
 
