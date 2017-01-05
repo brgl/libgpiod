@@ -202,7 +202,9 @@ int gpiod_line_update(struct gpiod_line *line)
 	struct gpiod_chip *chip;
 	int status, fd;
 
-	memset(&line->info, 0, sizeof(line->info));
+	memset(line->info.name, 0, sizeof(line->info.name));
+	memset(line->info.consumer, 0, sizeof(line->info.consumer));
+	line->info.flags = 0;
 
 	chip = gpiod_line_get_chip(line);
 	fd = gpiod_chip_get_fd(chip);
