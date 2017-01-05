@@ -19,7 +19,7 @@ include_HEADERS = gpiod.h
 
 libgpiod_la_SOURCES = core.c
 
-bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset
+bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon
 
 gpiodetect_SOURCES = gpiodetect.c
 gpiodetect_LDFLAGS = -lgpiod
