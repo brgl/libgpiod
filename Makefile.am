@@ -19,7 +19,7 @@ include_HEADERS = gpiod.h
 
 libgpiod_la_SOURCES = core.c
 
-bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon
+bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpiofind
 
 gpiodetect_SOURCES = gpiodetect.c
 gpiodetect_LDFLAGS = -lgpiod
@@ -40,6 +40,10 @@ gpioset_DEPENDENCIES = libgpiod.la
 gpiomon_SOURCES = gpiomon.c
 gpiomon_LDFLAGS = -lgpiod
 gpiomon_DEPENDENCIES = libgpiod.la
+
+gpiofind_SOURCES = gpiofind.c
+gpiofind_LDFLAGS = -lgpiod
+gpiofind_DEPENDENCIES = libgpiod.la
 
 doc:
 	doxygen
