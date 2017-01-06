@@ -21,7 +21,6 @@
 #define __GPIOD__
 
 #include <stdlib.h>
-#include <stdint.h>
 #include <stdbool.h>
 
 #ifdef __cplusplus
