@@ -28,6 +28,10 @@
 extern "C" {
 #endif
 
+struct gpiod_chip;
+struct gpiod_line;
+struct gpiod_chip_iter;
+
 /**
  * @defgroup __common__ Common helper macros
  * @{
@@ -159,11 +163,6 @@ enum {
  * @brief Maximum number of GPIO lines that can be requested at once.
  */
 #define GPIOD_REQUEST_MAX_LINES		64
-
-/**
- * @brief Opaque structure representing a single GPIO line.
- */
-struct gpiod_line;
 
 /**
  * @brief Helper structure for storing a set of GPIO line objects.
@@ -407,6 +406,13 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk,
 struct gpiod_line * gpiod_line_find_by_name(const char *name) GPIOD_API;
 
 /**
+ * @brief Get the handle to the GPIO chip controlling this line.
+ * @param line The GPIO line object.
+ * @return Pointer to the GPIO chip handle controlling this line.
+ */
+struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
+
+/**
  * @defgroup __line_events__ Line event operations
  * @{
  *
@@ -516,11 +522,6 @@ int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
  */
 
 /**
- * @brief Opaque structure representing a single GPIO line.
- */
-struct gpiod_chip;
-
-/**
  * @brief Open a gpiochip by path.
  * @param path Path to the gpiochip device file.
  * @return GPIO chip handle or NULL if an error occurred.
@@ -596,13 +597,6 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
 int gpiod_chip_get_fd(struct gpiod_chip *chip) GPIOD_API;
 
 /**
- * @brief Get the handle to the GPIO chip controlling this line.
- * @param line The GPIO line object.
- * @return Pointer to the GPIO chip handle controlling this line.
- */
-struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
-
-/**
  * @}
  *
  * @defgroup __iterators__ Iterators for GPIO chips and lines
@@ -611,11 +605,6 @@ struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
  * These functions and data structures allow easy iterating over GPIO
  * chips and lines.
  */
-
-/**
- * @brief Opaque structure representing a chip iterator.
- */
-struct gpiod_chip_iter;
 
 /**
  * @brief Create a new gpiochip iterator.
