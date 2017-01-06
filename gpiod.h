@@ -484,29 +484,42 @@ bool gpiod_line_event_configured(struct gpiod_line *line) GPIOD_API;
  * @brief Wait for an event on a single line.
  * @param line GPIO line object.
  * @param timeout Wait time limit.
- * @param event Buffer to which the event data will be copied.
  * @return 0 if wait timed out, -1 if an error occurred, 1 if an event
  *         occurred.
  */
 int gpiod_line_event_wait(struct gpiod_line *line,
-			  const struct timespec *timeout,
-			  struct gpiod_line_event *event) GPIOD_API;
+			  const struct timespec *timeout) GPIOD_API;
 
 /**
  * @brief Wait for the first event on a set of lines.
  * @param bulk Set of GPIO lines to monitor.
  * @param timeout Wait time limit.
- * @param event Buffer to which the event data will be copied.
+ * @param index The position of the line on which an event occured is stored
+ *              in this variable. Can be NULL, in which case the index will
+ *              not be stored.
  * @return 0 if wait timed out, -1 if an error occurred, 1 if an event
  *         occurred.
  */
 int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       const struct timespec *timeout,
-			       struct gpiod_line_event *event) GPIOD_API;
+			       unsigned int *index) GPIOD_API;
 
-/*
- * FIXME for this to make sense we need a routine to read events from a file
- * descriptor too.
+/**
+ * @brief Read the last event from the GPIO line.
+ * @param line GPIO line object.
+ * @param event Buffer to which the event data will be copied.
+ * @return 0 if the event was read correctly, -1 on error.
+ */
+int gpiod_line_event_read(struct gpiod_line *line,
+			  struct gpiod_line_event *event) GPIOD_API;
+
+/**
+ * @brief Get the event file descriptor.
+ * @param line GPIO line object.
+ * @return Number of the event file descriptor or -1 on error.
+ *
+ * Users may want to poll the event file descriptor on their own. This routine
+ * allows to access it.
  */
 int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
 

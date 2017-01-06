@@ -502,30 +502,26 @@ bool gpiod_line_event_configured(struct gpiod_line *line)
 }
 
 int gpiod_line_event_wait(struct gpiod_line *line,
-			  const struct timespec *timeout,
-			  struct gpiod_line_event *event)
+			  const struct timespec *timeout)
 {
 	struct gpiod_line_bulk bulk;
 
 	gpiod_line_bulk_init(&bulk);
 	gpiod_line_bulk_add(&bulk, line);
 
-	return gpiod_line_event_wait_bulk(&bulk, timeout, event);
+	return gpiod_line_event_wait_bulk(&bulk, timeout, NULL);
 }
 
 int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       const struct timespec *timeout,
-			       struct gpiod_line_event *event)
+			       unsigned int *index)
 {
 	struct pollfd fds[GPIOD_REQUEST_MAX_LINES];
-	struct gpioevent_data evdata;
 	struct gpiod_line *line;
 	unsigned int i;
 	int status;
-	ssize_t rd;
 
 	memset(fds, 0, sizeof(fds));
-	memset(&evdata, 0, sizeof(evdata));
 
 	/* TODO Check if all lines are requested. */
 
@@ -545,8 +541,21 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	}
 
 	for (i = 0; !fds[i].revents; i++);
+	if (index)
+		*index = i;
 
-	rd = read(fds[i].fd, &evdata, sizeof(evdata));
+	return 1;
+}
+
+int gpiod_line_event_read(struct gpiod_line *line,
+			  struct gpiod_line_event *event)
+{
+	struct gpioevent_data evdata;
+	ssize_t rd;
+
+	memset(&evdata, 0, sizeof(evdata));
+
+	rd = read(line->event.fd, &evdata, sizeof(evdata));
 	if (rd < 0) {
 		last_error_from_errno();
 		return -1;
@@ -555,13 +564,13 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 		return -1;
 	}
 
-	event->line = bulk->lines[i];
+	event->line = line;
 	event->event_type = evdata.id == GPIOEVENT_EVENT_RISING_EDGE
 						? GPIOD_EVENT_RISING_EDGE
 						: GPIOD_EVENT_FALLING_EDGE;
 	nsec_to_timespec(evdata.timestamp, &event->ts);
 
-	return 1;
+	return 0;
 }
 
 int gpiod_line_event_get_fd(struct gpiod_line *line)

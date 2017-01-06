@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 		timeout.tv_sec = 1;
 		timeout.tv_nsec = 0;
 
-		status = gpiod_line_event_wait(line, &timeout, &event);
+		status = gpiod_line_event_wait(line, &timeout);
 		if (status < 0) {
 			fprintf(stderr,
 				"%s: error waiting for line event: %s\n",
@@ -84,6 +84,14 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		} else if (status == 0) {
 			continue;
+		}
+
+		status = gpiod_line_event_read(line, &event);
+		if (status < 0) {
+			fprintf(stderr,
+				"%s: error reading the line event: %s\n",
+				argv[0], gpiod_strerror(gpiod_errno()));
+			return EXIT_FAILURE;
 		}
 
 		printf("GPIO EVENT: %s [%ld.%ld]\n",
