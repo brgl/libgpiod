@@ -9,82 +9,93 @@
  */
 
 #include "gpiod.h"
+#include "tools-common.h"
 
 #include <stdio.h>
 #include <string.h>
+#include <getopt.h>
+
+static const struct option longopts[] = {
+	{ "help",		no_argument,		NULL,	'h' },
+	{ "active-low",		no_argument,		NULL,	'l' },
+	{ 0 },
+};
+
+static const char *const shortopts = "hl";
+
+static void print_help(void)
+{
+	printf("Usage: %s [CHIP NAME/NUMBER] [LINE OFFSET] [VALUE] <options>\n",
+	       get_progname());
+	printf("Set value of a GPIO line\n");
+	printf("Options:\n");
+	printf("  -h, --help:\t\tdisplay this message and exit\n");
+	printf("  -l, --active-low:\tset the line active state to low\n");
+	printf("\n");
+	printf("This program reserves the GPIO line, sets its value and waits for the user to press ENTER before releasing the line\n");
+}
+
+static void wait_for_enter(void *data)
+{
+	(void)data;
+
+	getchar();
+}
 
 int main(int argc, char **argv)
 {
-	struct gpiod_line_request_config config;
-	struct gpiod_chip *chip;
-	struct gpiod_line *line;
+	int value, status, optc, opti;
+	bool active_low = false;
 	unsigned int offset;
 	char *device, *end;
-	int value, status;
 
-	if (argc < 2) {
-		fprintf(stderr, "%s: gpiochip must be specified\n", argv[0]);
-		return EXIT_FAILURE;
+	set_progname(argv[0]);
+
+	for (;;) {
+		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
+		if (optc < 0)
+			break;
+
+		switch (optc) {
+		case 'h':
+			print_help();
+			return EXIT_SUCCESS;
+		case 'l':
+			active_low = true;
+			break;
+		case '?':
+			die("try %s --help", get_progname());
+		default:
+			abort();
+		}
 	}
 
-	if (argc < 3) {
-		fprintf(stderr,
-			"%s: gpio line offset must be specified\n", argv[0]);
-		return EXIT_FAILURE;
-	}
+	argc -= optind;
+	argv += optind;
 
-	if (argc < 4) {
-		fprintf(stderr, "%s: value must be specified\n", argv[0]);
-		return EXIT_FAILURE;
-	}
+	if (argc < 1)
+		die("gpiochip must be specified");
 
-	device = argv[1];
-	/* FIXME Handle negative numbers. */
-	offset = strtoul(argv[2], &end, 10);
-	if (*end != '\0') {
-		fprintf(stderr,
-			"%s: invalid GPIO offset: %s\n", argv[0], argv[2]);
-		return EXIT_FAILURE;
-	}
+	if (argc < 2)
+		die("gpio line offset must be specified");
 
-	value = strtoul(argv[3], &end, 10);
-	if (*end != '\0' || (value != 0 && value != 1)) {
-		fprintf(stderr, "%s: invalid value: %s\n", argv[0], argv[3]);
-		return EXIT_FAILURE;
-	}
+	if (argc < 3)
+		die("value must be specified");
 
-	chip = gpiod_chip_open_lookup(device);
-	if (!chip) {
-		fprintf(stderr,
-			"%s: error accessing gpiochip %s: %s\n",
-			argv[0], device, gpiod_strerror(gpiod_errno()));
-		return EXIT_FAILURE;
-	}
+	device = argv[0];
 
-	line = gpiod_chip_get_line(chip, offset);
-	if (!line) {
-		fprintf(stderr,
-			"%s: error accessing line %u: %s\n",
-			argv[0], offset, gpiod_strerror(gpiod_errno()));
-		return EXIT_FAILURE;
-	}
+	offset = strtoul(argv[1], &end, 10);
+	if (*end != '\0')
+		die("invalid GPIO offset: %s", argv[1]);
 
-	memset(&config, 0, sizeof(config));
-	config.consumer = "gpioset";
-	config.direction = GPIOD_DIRECTION_OUTPUT;
+	value = strtoul(argv[2], &end, 10);
+	if (*end != '\0' || (value != 0 && value != 1))
+		die("invalid value: %s", argv[2]);
 
-	status = gpiod_line_request(line, &config, value);
-	if (status < 0) {
-		fprintf(stderr,
-			"%s: error requesting GPIO line: %s\n",
-			argv[0], gpiod_strerror(gpiod_errno()));
-		return EXIT_FAILURE;
-	}
-
-	getchar();
-
-	gpiod_line_release(line);
-	gpiod_chip_close(chip);
+	status = gpiod_simple_set_value(device, offset, value,
+					active_low, wait_for_enter, NULL);
+	if (status < 0)
+		die_perror("error setting the GPIO line value");
 
 	return EXIT_SUCCESS;
 }
