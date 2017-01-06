@@ -2,3 +2,4 @@
 - create a high level routine for setting the GPIO line value
 - create a high level routine for listening on events on a GPIO line
 - rethink the GPIO event API
+- include gpiod.h from tools locally
