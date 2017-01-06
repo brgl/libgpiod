@@ -22,6 +22,29 @@
 #include <sys/poll.h>
 #include <linux/gpio.h>
 
+struct gpiod_chip
+{
+	int fd;
+	struct gpiochip_info cinfo;
+	struct gpiod_line *lines;
+};
+
+struct gpiod_line {
+	bool reserved;
+	bool event_configured;
+	bool up_to_date;
+	struct gpiod_chip *chip;
+	struct gpioline_info info;
+	struct gpiohandle_request *req;
+	struct gpioevent_request event;
+};
+
+struct gpiod_chip_iter
+{
+	DIR *dir;
+	struct gpiod_chip *current;
+};
+
 static const char dev_dir[] = "/dev/";
 static const char cdev_prefix[] = "gpiochip";
 static const char libgpiod_consumer[] = "libgpiod";
@@ -133,16 +156,6 @@ int gpiod_simple_get_value(const char *device, unsigned int offset)
 
 	return value;
 }
-
-struct gpiod_line {
-	bool reserved;
-	bool event_configured;
-	bool up_to_date;
-	struct gpiod_chip *chip;
-	struct gpioline_info info;
-	struct gpiohandle_request *req;
-	struct gpioevent_request event;
-};
 
 static void line_set_offset(struct gpiod_line *line, unsigned int offset)
 {
@@ -556,13 +569,6 @@ int gpiod_line_event_get_fd(struct gpiod_line *line)
 	return line->event_configured ? line->event.fd : -1;
 }
 
-struct gpiod_chip
-{
-	int fd;
-	struct gpiochip_info cinfo;
-	struct gpiod_line *lines;
-};
-
 struct gpiod_chip * gpiod_chip_open(const char *path)
 {
 	struct gpiod_chip *chip;
@@ -706,12 +712,6 @@ struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
 {
 	return line->chip;
 }
-
-struct gpiod_chip_iter
-{
-	DIR *dir;
-	struct gpiod_chip *current;
-};
 
 struct gpiod_chip_iter * gpiod_chip_iter_new(void)
 {
