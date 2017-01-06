@@ -9,29 +9,49 @@
  */
 
 #include <gpiod.h>
+#include "tools-common.h"
 
 #include <stdio.h>
 #include <string.h>
+#include <getopt.h>
+
+static const struct option longopts[] = {
+	{ "help", no_argument, NULL, 'h' },
+	{ 0 },
+};
+
+static const char *const shortopts = "+h";
 
 int main(int argc, char **argv)
 {
 	struct gpiod_chip_iter *iter;
 	struct gpiod_chip *chip;
+	int optc, opti;
 
-	if (argc != 1) {
-		printf("Usage: %s\n", argv[0]);
-		printf("List all GPIO chips\n");
+	set_progname(argv[0]);
 
-		return EXIT_FAILURE;
+	for (;;) {
+		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
+		if (optc < 0)
+			break;
+
+		switch (optc) {
+		case 'h':
+			printf("Usage: %s\n", get_progname());
+			printf("List all GPIO chips\n");
+			exit(EXIT_SUCCESS);
+		}
 	}
+
+	argc -= optind;
+	argv += optind;
+
+	if (argc > 0)
+		die("unrecognized argument: %s", argv[0]);
 
 	iter = gpiod_chip_iter_new();
-	if (!iter) {
-		fprintf(stderr, "%s: unable to access gpio chips: %s\n",
-			argv[0], gpiod_strerror(gpiod_errno()));
-
-		return EXIT_FAILURE;
-	}
+	if (!iter)
+		die_perror("unable to access GPIO chips");
 
 	gpiod_foreach_chip(iter, chip) {
 		printf("%s [%s] (%u lines)\n",

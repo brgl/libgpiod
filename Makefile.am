@@ -21,27 +21,27 @@ libgpiod_la_SOURCES = core.c
 
 bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpiofind
 
-gpiodetect_SOURCES = gpiodetect.c
+gpiodetect_SOURCES = gpiodetect.c tools-common.c
 gpiodetect_LDFLAGS = -lgpiod
 gpiodetect_DEPENDENCIES = libgpiod.la
 
-gpioinfo_SOURCES = gpioinfo.c
+gpioinfo_SOURCES = gpioinfo.c tools-common.c
 gpioinfo_LDFLAGS = -lgpiod
 gpioinfo_DEPENDENCIES = libgpiod.la
 
-gpioget_SOURCES = gpioget.c
+gpioget_SOURCES = gpioget.c tools-common.c
 gpioget_LDFLAGS = -lgpiod
 gpioget_DEPENDENCIES = libgpiod.la
 
-gpioset_SOURCES = gpioset.c
+gpioset_SOURCES = gpioset.c tools-common.c
 gpioset_LDFLAGS = -lgpiod
 gpioset_DEPENDENCIES = libgpiod.la
 
-gpiomon_SOURCES = gpiomon.c
+gpiomon_SOURCES = gpiomon.c tools-common.c
 gpiomon_LDFLAGS = -lgpiod
 gpiomon_DEPENDENCIES = libgpiod.la
 
-gpiofind_SOURCES = gpiofind.c
+gpiofind_SOURCES = gpiofind.c tools-common.c
 gpiofind_LDFLAGS = -lgpiod
 gpiofind_DEPENDENCIES = libgpiod.la
 
