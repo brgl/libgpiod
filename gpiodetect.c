@@ -40,6 +40,10 @@ int main(int argc, char **argv)
 			printf("Usage: %s\n", get_progname());
 			printf("List all GPIO chips\n");
 			exit(EXIT_SUCCESS);
+		case '?':
+			die("try %s --help", get_progname());
+		default:
+			abort();
 		}
 	}
 
