@@ -593,9 +593,6 @@ unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip) GPIOD_API;
 struct gpiod_line *
 gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
 
-/* FIXME This shouldn't be needed. Make it private maybe? */
-int gpiod_chip_get_fd(struct gpiod_chip *chip) GPIOD_API;
-
 /**
  * @}
  *
