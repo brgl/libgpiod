@@ -27,7 +27,7 @@ static void print_help(void)
 {
 	printf("Usage: %s [CHIP NAME/NUMBER] [LINE OFFSET] <options>\n",
 	       get_progname());
-	printf("List all GPIO chips\n");
+	printf("Read value from a GPIO line\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -l, --active-low:\tset the line active state to low\n");
@@ -71,6 +71,7 @@ int main(int argc, char **argv)
 		die("gpio line offset must be specified");
 
 	device = argv[0];
+
 	offset = strtoul(argv[1], &end, 10);
 	if (*end != '\0')
 		die("invalid GPIO offset: %s", argv[1]);
