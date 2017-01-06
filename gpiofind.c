@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 		switch (optc) {
 		case 'h':
 			print_help();
-			exit(EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		case '?':
 			die("try %s --help", get_progname());
 		default:
