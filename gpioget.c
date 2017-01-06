@@ -71,7 +71,6 @@ int main(int argc, char **argv)
 		die("gpio line offset must be specified");
 
 	device = argv[0];
-	/* FIXME Handle negative numbers. */
 	offset = strtoul(argv[1], &end, 10);
 	if (*end != '\0')
 		die("invalid GPIO offset: %s", argv[1]);
