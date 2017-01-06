@@ -139,13 +139,13 @@ enum {
 };
 
 /**
- * @brief Available polarity settings.
+ * @brief Available active state settings.
  */
 enum {
-	GPIOD_POLARITY_ACTIVE_HIGH,
-	/**< The  polarity of a GPIO is active-high. */
-	GPIOD_POLARITY_ACTIVE_LOW,
-	/**< The polarity of a GPIO is active-low. */
+	GPIOD_ACTIVE_STATE_HIGH,
+	/**< The active state of a GPIO is active-high. */
+	GPIOD_ACTIVE_STATE_LOW,
+	/**< The active state of a GPIO is active-low. */
 };
 
 /**
@@ -237,11 +237,11 @@ const char * gpiod_line_consumer(struct gpiod_line *line) GPIOD_API;
 int gpiod_line_direction(struct gpiod_line *line) GPIOD_API;
 
 /**
- * @brief Read the GPIO line polarity setting.
+ * @brief Read the GPIO line active state setting.
  * @param line GPIO line object.
- * @return Returns GPIOD_POLARITY_ACTIVE_HIGH or GPIOD_POLARITY_ACTIVE_LOW.
+ * @return Returns GPIOD_ACTIVE_STATE_HIGH or GPIOD_ACTIVE_STATE_LOW.
  */
-int gpiod_line_polarity(struct gpiod_line *line) GPIOD_API;
+int gpiod_line_active_state(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Check if the line is used by the kernel.
@@ -299,8 +299,8 @@ struct gpiod_line_request_config {
 	/**< Name of the consumer. */
 	int direction;
 	/**< Requested direction. */
-	int polarity;
-	/**< Requested polarity configuration. */
+	int active_state;
+	/**< Requested active state configuration. */
 	int flags;
 	/**< Other configuration flags. */
 };
@@ -438,8 +438,8 @@ struct gpiod_line_evreq_config {
 	/**< Name of the consumer. */
 	int event_type;
 	/**< Type of the event we want to be notified about. */
-	int polarity;
-	/**< GPIO line polarity. */
+	int active_state;
+	/**< GPIO line active state. */
 	int line_flags;
 	/**< Misc line flags - same as for line requests. */
 };

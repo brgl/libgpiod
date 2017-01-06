@@ -184,11 +184,11 @@ int gpiod_line_direction(struct gpiod_line *line)
 						       : GPIOD_DIRECTION_INPUT;
 }
 
-int gpiod_line_polarity(struct gpiod_line *line)
+int gpiod_line_active_state(struct gpiod_line *line)
 {
 	return line->info.flags & GPIOLINE_FLAG_ACTIVE_LOW
-					? GPIOD_POLARITY_ACTIVE_LOW
-					: GPIOD_POLARITY_ACTIVE_HIGH;
+					? GPIOD_ACTIVE_STATE_LOW
+					: GPIOD_ACTIVE_STATE_HIGH;
 }
 
 bool gpiod_line_is_used_by_kernel(struct gpiod_line *line)
@@ -287,7 +287,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 	else if (config->direction == GPIOD_DIRECTION_OUTPUT)
 		req->flags |= GPIOHANDLE_REQUEST_OUTPUT;
 
-	if (config->polarity == GPIOD_POLARITY_ACTIVE_LOW)
+	if (config->active_state == GPIOD_ACTIVE_STATE_LOW)
 		req->flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
 	req->lines = line_bulk->num_lines;
@@ -469,7 +469,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	if (config->line_flags & GPIOD_REQUEST_OPEN_SOURCE)
 		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
 
-	if (config->polarity == GPIOD_POLARITY_ACTIVE_LOW)
+	if (config->active_state == GPIOD_ACTIVE_STATE_LOW)
 		req->handleflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
 	if (config->event_type == GPIOD_EVENT_RISING_EDGE)
