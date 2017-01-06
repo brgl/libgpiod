@@ -9,19 +9,49 @@
  */
 
 #include "gpiod.h"
+#include "tools-common.h"
 
 #include <stdio.h>
 #include <string.h>
+#include <getopt.h>
+
+static const struct option longopts[] = {
+	{ "help", no_argument, NULL, 'h' },
+	{ 0 },
+};
+
+static const char *const shortopts = "+h";
 
 int main(int argc, char **argv)
 {
 	struct gpiod_line *line;
 	struct gpiod_chip *chip;
+	int optc, opti;
 
-	if (argc < 2) {
-		fprintf(stderr, "%s: gpiochip must be specified\n", argv[0]);
-		return EXIT_FAILURE;
+	set_progname(argv[0]);
+
+	for (;;) {
+		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
+		if (optc < 0)
+			break;
+
+		switch (optc) {
+		case 'h':
+			printf("Usage: %s [NAME]\n", get_progname());
+			printf("Find a GPIO line by name.\n");
+			exit(EXIT_SUCCESS);
+		case '?':
+			die("try %s --help", get_progname());
+		default:
+			abort();
+		}
 	}
+
+	argc -= optind;
+	argv += optind;
+
+	if (argc != 1)
+		die("GPIO line name must be specified\n");
 
 	line = gpiod_line_find_by_name(argv[1]);
 	if (!line)
