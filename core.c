@@ -449,6 +449,34 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
 	return 0;
 }
 
+struct gpiod_line * gpiod_line_find_by_name(const char *name)
+{
+	struct gpiod_chip_iter *chip_iter;
+	struct gpiod_line_iter line_iter;
+	struct gpiod_chip *chip;
+	struct gpiod_line *line;
+
+	chip_iter = gpiod_chip_iter_new();
+	if (!chip_iter)
+		return NULL;
+
+	gpiod_foreach_chip(chip_iter, chip) {
+		gpiod_line_iter_init(&line_iter, chip);
+		gpiod_foreach_line(&line_iter, line) {
+			if (strcmp(gpiod_line_name(line), name) == 0) {
+				/* TODO A separate function for that maybe? */
+				closedir(chip_iter->dir);
+				free(chip_iter);
+				return line;
+			}
+		}
+	}
+
+	gpiod_chip_iter_free(chip_iter);
+
+	return NULL;
+}
+
 int gpiod_line_event_request(struct gpiod_line *line,
 			     struct gpiod_line_evreq_config *config)
 {
@@ -769,34 +797,6 @@ struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 			return iter->current;
 		}
 	}
-
-	return NULL;
-}
-
-struct gpiod_line * gpiod_line_find_by_name(const char *name)
-{
-	struct gpiod_chip_iter *chip_iter;
-	struct gpiod_line_iter line_iter;
-	struct gpiod_chip *chip;
-	struct gpiod_line *line;
-
-	chip_iter = gpiod_chip_iter_new();
-	if (!chip_iter)
-		return NULL;
-
-	gpiod_foreach_chip(chip_iter, chip) {
-		gpiod_line_iter_init(&line_iter, chip);
-		gpiod_foreach_line(&line_iter, line) {
-			if (strcmp(gpiod_line_name(line), name) == 0) {
-				/* TODO A separate function for that maybe? */
-				closedir(chip_iter->dir);
-				free(chip_iter);
-				return line;
-			}
-		}
-	}
-
-	gpiod_chip_iter_free(chip_iter);
 
 	return NULL;
 }
