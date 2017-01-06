@@ -22,6 +22,14 @@ static const struct option longopts[] = {
 
 static const char *const shortopts = "+h";
 
+static void print_help(void)
+{
+	printf("Usage: %s <options> [NAME]\n", get_progname());
+	printf("Find a GPIO line by name.\n");
+	printf("Options:\n");
+	printf("  -h, --help:\t\tdisplay this message and exit\n");
+}
+
 int main(int argc, char **argv)
 {
 	struct gpiod_line *line;
@@ -37,8 +45,7 @@ int main(int argc, char **argv)
 
 		switch (optc) {
 		case 'h':
-			printf("Usage: %s [NAME]\n", get_progname());
-			printf("Find a GPIO line by name.\n");
+			print_help();
 			exit(EXIT_SUCCESS);
 		case '?':
 			die("try %s --help", get_progname());
