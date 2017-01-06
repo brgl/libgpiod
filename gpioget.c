@@ -23,6 +23,16 @@ static const struct option longopts[] = {
 
 static const char *const shortopts = "hl";
 
+static void print_help(void)
+{
+	printf("Usage: %s [CHIP NAME/NUMBER] [LINE OFFSET] <options>\n",
+	       get_progname());
+	printf("List all GPIO chips\n");
+	printf("Options:\n");
+	printf("  -h, --help:\t\tdisplay this message and exit\n");
+	printf("  -l, --active-low:\tset the line active state to low\n");
+}
+
 int main(int argc, char **argv)
 {
 	bool active_low = false;
@@ -39,12 +49,7 @@ int main(int argc, char **argv)
 
 		switch (optc) {
 		case 'h':
-			printf("Usage: %s [CHIP NAME/NUMBER] [LINE OFFSET] <options>\n",
-			       get_progname());
-			printf("List all GPIO chips\n");
-			printf("Options:\n");
-			printf("  -h, --help:\t\tdisplay this message and exit\n");
-			printf("  -l, --active-low:\tset the line active state to low\n");
+			print_help();
 			exit(EXIT_SUCCESS);
 		case 'l':
 			active_low = true;
