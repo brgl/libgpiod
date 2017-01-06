@@ -1,4 +1,3 @@
-- create a tool for finding the gpiochip name and line offset by line name
-- create a high level routine for setting the GPIO line value
 - create a high level routine for listening on events on a GPIO line
 - rethink the GPIO event API
+- extend gpioset with options to specify the wait time etc.
