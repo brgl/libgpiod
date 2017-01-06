@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#define NORETURN		__attribute__((noreturn))
+#define PRINTF(fmt, arg)	__attribute__((format(printf, fmt, arg)))
+
 static char *progname = "unknown";
 
 void set_progname(char *name)
@@ -27,7 +30,7 @@ const char * get_progname(void)
 	return progname;
 }
 
-void die(const char *fmt, ...)
+void NORETURN PRINTF(1, 2) die(const char *fmt, ...)
 {
 	va_list va;
 
@@ -40,7 +43,7 @@ void die(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-void die_perror(const char *fmt, ...)
+void NORETURN PRINTF(1, 2) die_perror(const char *fmt, ...)
 {
 	va_list va;
 
