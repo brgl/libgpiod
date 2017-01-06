@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	value = gpiod_simple_get_value(device, offset);
+	value = gpiod_simple_get_value(device, offset, false);
 	if (value < 0) {
 		fprintf(stderr,
 			"%s: error reading GPIO value: %s\n",

@@ -123,7 +123,8 @@ const char * gpiod_strerror(int errnum)
 		return error_descr[errnum - __GPIOD_ERRNO_OFFSET];
 }
 
-int gpiod_simple_get_value(const char *device, unsigned int offset)
+int gpiod_simple_get_value(const char *device,
+			   unsigned int offset, bool active_low)
 {
 	struct gpiod_line_request_config config;
 	struct gpiod_chip *chip;
@@ -133,6 +134,8 @@ int gpiod_simple_get_value(const char *device, unsigned int offset)
 	memset(&config, 0, sizeof(config));
 	config.consumer = libgpiod_consumer;
 	config.direction = GPIOD_DIRECTION_INPUT;
+	config.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					 : GPIOD_ACTIVE_STATE_HIGH;
 
 	chip = gpiod_chip_open_lookup(device);
 	if (!chip)

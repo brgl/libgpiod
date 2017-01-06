@@ -109,10 +109,12 @@ const char * gpiod_strerror(int errnum) GPIOD_API;
  * @brief Read current value from a single GPIO line.
  * @param device Name, path or number of the gpiochip.
  * @param offset GPIO line offset on the chip.
+ * @param active_low The active state of this line - true if low.
  * @return 0 or 1 if the operation succeeds. On error this routine returns -1
  *         and sets the last error number.
  */
-int gpiod_simple_get_value(const char *device, unsigned int offset) GPIOD_API;
+int gpiod_simple_get_value(const char *device,
+			   unsigned int offset, bool active_low) GPIOD_API;
 
 /**
  * @}
