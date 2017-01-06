@@ -117,6 +117,23 @@ int gpiod_simple_get_value(const char *device,
 			   unsigned int offset, bool active_low) GPIOD_API;
 
 /**
+ * @brief Set value of a single GPIO line.
+ * @param device Name, path or number of the gpiochip.
+ * @param offset GPIO line offset on the chip.
+ * @param value New value.
+ * @param active_low The active state of this line - true if low.
+ * @param cb Callback function that will be called right after the value is
+ *        set. Users can use this, for example, to pause the execution after
+ *        toggling a GPIO.
+ * @param data User data that will be passed to the callback function.
+ * @return 0 or 1 if the operation succeeds. On error this routine returns -1
+ *         and sets the last error number.
+ */
+int gpiod_simple_set_value(const char *device, unsigned int offset,
+			   int value, bool active_low, void (*cb)(void *),
+			   void *data) GPIOD_API;
+
+/**
  * @}
  *
  * @defgroup __lines__ GPIO line operations

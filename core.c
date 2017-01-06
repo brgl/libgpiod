@@ -161,6 +161,52 @@ int gpiod_simple_get_value(const char *device,
 	return value;
 }
 
+int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
+			   bool active_low, void (*cb)(void *), void *data)
+{
+	struct gpiod_line_request_config config;
+	struct gpiod_chip *chip;
+	struct gpiod_line *line;
+	int status;
+
+	memset(&config, 0, sizeof(config));
+	config.consumer = libgpiod_consumer;
+	config.direction = GPIOD_DIRECTION_OUTPUT;
+	config.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					 : GPIOD_ACTIVE_STATE_HIGH;
+
+	chip = gpiod_chip_open_lookup(device);
+	if (!chip)
+		return -1;
+
+	line = gpiod_chip_get_line(chip, offset);
+	if (!line) {
+		gpiod_chip_close(chip);
+		return -1;
+	}
+
+	status = gpiod_line_request(line, &config, 0);
+	if (status < 0) {
+		gpiod_chip_close(chip);
+		return -1;
+	}
+
+	status = gpiod_line_set_value(line, value);
+	if (status < 0) {
+		gpiod_line_release(line);
+		gpiod_chip_close(chip);
+		return -1;
+	}
+
+	if (cb)
+		cb(data);
+
+	gpiod_line_release(line);
+	gpiod_chip_close(chip);
+
+	return 0;
+}
+
 static void line_set_offset(struct gpiod_line *line, unsigned int offset)
 {
 	line->info.line_offset = offset;
