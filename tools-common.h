@@ -18,6 +18,8 @@
  * common code.
  */
 
+#define UNUSED __attribute__((unused))
+
 void set_progname(char *name);
 const char * get_progname(void);
 void die(const char *fmt, ...);

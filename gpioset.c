@@ -35,10 +35,8 @@ static void print_help(void)
 	printf("This program reserves the GPIO line, sets its value and waits for the user to press ENTER before releasing the line\n");
 }
 
-static void wait_for_enter(void *data)
+static void wait_for_enter(void *data UNUSED)
 {
-	(void)data;
-
 	getchar();
 }
 
