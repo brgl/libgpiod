@@ -50,7 +50,14 @@ static const char dev_dir[] = "/dev/";
 static const char cdev_prefix[] = "gpiochip";
 static const char libgpiod_consumer[] = "libgpiod";
 
+/*
+ * The longest error message in glibc is about 50 characters long so 64 should
+ * be enough to store every error message in the future too.
+ */
+#define ERRSTR_MAX 64
+
 static __thread int last_error;
+static __thread char errmsg[ERRSTR_MAX];
 
 static const char *const error_descr[] = {
 	"success",
@@ -116,7 +123,7 @@ int gpiod_errno(void)
 const char * gpiod_strerror(int errnum)
 {
 	if (errnum < __GPIOD_ERRNO_OFFSET)
-		return strerror(errnum);
+		return strerror_r(errnum, errmsg, sizeof(errmsg));
 	else if (errnum > __GPIOD_MAX_ERR)
 		return "invalid error number";
 	else
