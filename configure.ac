@@ -25,6 +25,7 @@ AC_HEADER_STDC
 AC_CHECK_FUNC([ioctl], [], [AC_MSG_ERROR([ioctl() unavailable])])
 AC_CHECK_FUNC([asprintf], [], [AC_MSG_ERROR([asprintf() unavailable])])
 AC_CHECK_FUNC([readdir], [], [AC_MSG_ERROR([readdir() unavailable])])
+AC_CHECK_FUNC([poll], [], [AC_MSG_ERROR([poll() unavailable])])
 
 AC_FUNC_MALLOC
 
