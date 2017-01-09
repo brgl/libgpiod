@@ -130,6 +130,11 @@ const char * gpiod_strerror(int errnum)
 		return error_descr[errnum - __GPIOD_ERRNO_OFFSET];
 }
 
+const char * gpiod_last_strerror(void)
+{
+	return gpiod_strerror(gpiod_errno());
+}
+
 int gpiod_simple_get_value(const char *device,
 			   unsigned int offset, bool active_low)
 {

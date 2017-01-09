@@ -97,6 +97,12 @@ int gpiod_errno(void) GPIOD_API;
 const char * gpiod_strerror(int errnum) GPIOD_API;
 
 /**
+ * @brief Convert the last libgpiod error number to a human-readable string.
+ * @return Pointer to a null-terminated error description.
+ */
+const char * gpiod_last_strerror(void) GPIOD_API;
+
+/**
  * @}
  *
  * @defgroup __high_level__ High-level API
