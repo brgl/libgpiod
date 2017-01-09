@@ -513,6 +513,7 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name)
 	struct gpiod_line_iter line_iter;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
+	const char *line_name;
 
 	chip_iter = gpiod_chip_iter_new();
 	if (!chip_iter)
@@ -521,6 +522,10 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name)
 	gpiod_foreach_chip(chip_iter, chip) {
 		gpiod_line_iter_init(&line_iter, chip);
 		gpiod_foreach_line(&line_iter, line) {
+			line_name = gpiod_line_name(line);
+			if (!line_name)
+				continue;
+
 			if (strcmp(gpiod_line_name(line), name) == 0) {
 				/* TODO A separate function for that maybe? */
 				closedir(chip_iter->dir);
