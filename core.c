@@ -66,7 +66,7 @@ static __thread char errmsg[ERRSTR_MAX];
 
 static const char *const error_descr[] = {
 	"success",
-	"GPIO line not requested",
+	"GPIO line not reserved",
 	"no events configured on GPIO line",
 	"GPIO lines in bulk don't belong to the same gpiochip",
 };
@@ -440,7 +440,7 @@ bool gpiod_line_is_reserved(struct gpiod_line *line)
 	return line->reserved_status == LINE_RESERVED;
 }
 
-static bool line_bulk_is_requested(struct gpiod_line_bulk *line_bulk)
+static bool line_bulk_is_reserved(struct gpiod_line_bulk *line_bulk)
 {
 	unsigned int i;
 
@@ -473,7 +473,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
 	unsigned int i;
 	int status;
 
-	if (!line_bulk_is_requested(line_bulk)) {
+	if (!line_bulk_is_reserved(line_bulk)) {
 		set_last_error(GPIOD_EREQUEST);
 		return -1;
 	}
@@ -507,7 +507,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
 	unsigned int i;
 	int status;
 
-	if (!line_bulk_is_requested(line_bulk)) {
+	if (!line_bulk_is_reserved(line_bulk)) {
 		set_last_error(GPIOD_EREQUEST);
 		return -1;
 	}
