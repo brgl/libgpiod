@@ -67,6 +67,7 @@ static __thread char errmsg[ERRSTR_MAX];
 static const char *const error_descr[] = {
 	"success",
 	"GPIO line not requested",
+	"GPIO lines in bulk don't belong to the same gpiochip",
 };
 
 static void set_last_error(int errnum)
@@ -345,9 +346,10 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 	int status, fd;
 	unsigned int i;
 
-	/* Paranoia: verify that all lines are from the same gpiochip. */
-	if (!verify_line_bulk(line_bulk))
+	if (!verify_line_bulk(line_bulk)) {
+		set_last_error(GPIOD_EBULKINCOH);
 		return -1;
+	}
 
 	req = zalloc(sizeof(*req));
 	if (!req)
