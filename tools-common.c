@@ -50,7 +50,7 @@ void NORETURN PRINTF(1, 2) die_perror(const char *fmt, ...)
 	va_start(va, fmt);
 	fprintf(stderr, "%s: ", progname);
 	vfprintf(stderr, fmt, va);
-	fprintf(stderr, ": %s\n", gpiod_strerror(gpiod_errno()));
+	fprintf(stderr, ": %s\n", gpiod_last_strerror());
 	va_end(va);
 
 	exit(EXIT_FAILURE);
