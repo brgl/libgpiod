@@ -67,6 +67,7 @@ static __thread char errmsg[ERRSTR_MAX];
 static const char *const error_descr[] = {
 	"success",
 	"GPIO line not requested",
+	"no events configured on GPIO line",
 	"GPIO lines in bulk don't belong to the same gpiochip",
 };
 
@@ -564,7 +565,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	struct gpiod_chip *chip;
 	int status, fd;
 
-	if (line->reserved_status != LINE_FREE)
+	if (gpiod_line_event_configured(line))
 		return -EBUSY;
 
 	req = &line->event;
@@ -624,6 +625,18 @@ int gpiod_line_event_wait(struct gpiod_line *line,
 	return gpiod_line_event_wait_bulk(&bulk, timeout, NULL);
 }
 
+static bool line_bulk_is_event_configured(struct gpiod_line_bulk *line_bulk)
+{
+	unsigned int i;
+
+	for (i = 0; i < line_bulk->num_lines; i++) {
+		if (!gpiod_line_event_configured(line_bulk->lines[i]))
+			return false;
+	}
+
+	return true;
+}
+
 int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       const struct timespec *timeout,
 			       unsigned int *index)
@@ -635,7 +648,10 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 
 	memset(fds, 0, sizeof(fds));
 
-	/* TODO Check if all lines are requested. */
+	if (!line_bulk_is_event_configured(bulk)) {
+		set_last_error(GPIOD_EEVREQUEST);
+		return -1;
+	}
 
 	for (i = 0; i < bulk->num_lines; i++) {
 		line = bulk->lines[i];
@@ -664,6 +680,11 @@ int gpiod_line_event_read(struct gpiod_line *line,
 {
 	struct gpioevent_data evdata;
 	ssize_t rd;
+
+	if (!gpiod_line_event_configured(line)) {
+		set_last_error(GPIOD_EEVREQUEST);
+		return -1;
+	}
 
 	memset(&evdata, 0, sizeof(evdata));
 

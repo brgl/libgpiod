@@ -79,6 +79,8 @@ enum {
 	/**< No error. */
 	GPIOD_EREQUEST,
 	/**< The caller has no ownership of this line. */
+	GPIOD_EEVREQUEST,
+	/**< The caller has not configured any events on this line. */
 	GPIOD_EBULKINCOH,
 	/**< Not all lines in bulk belong to the same GPIO chip. */
 	__GPIOD_MAX_ERR,
