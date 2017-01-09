@@ -17,8 +17,8 @@
  * exposed by the linux GPIO character device interface.
  */
 
-#ifndef __GPIOD__
-#define __GPIOD__
+#ifndef __LIBGPIOD_GPIOD_H__
+#define __LIBGPIOD_GPIOD_H__
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -740,4 +740,4 @@ gpiod_line_iter_next(struct gpiod_line_iter *iter)
 } /* extern "C" */
 #endif
 
-#endif /* __GPIOD__ */
+#endif /* __LIBGPIOD_GPIOD_H__ */
