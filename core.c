@@ -331,8 +331,15 @@ static bool verify_line_bulk(struct gpiod_line_bulk *line_bulk)
 	chip = gpiod_line_get_chip(line_bulk->lines[0]);
 
 	for (i = 1; i < line_bulk->num_lines; i++) {
-		if (chip != gpiod_line_get_chip(line_bulk->lines[i]))
+		if (chip != gpiod_line_get_chip(line_bulk->lines[i])) {
+			set_last_error(GPIOD_EBULKINCOH);
 			return false;
+		}
+
+		if (!gpiod_line_is_free(line_bulk->lines[i])) {
+			set_last_error(GPIOD_ELINEBUSY);
+			return false;
+		}
 	}
 
 	return true;
@@ -348,10 +355,8 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 	int status, fd;
 	unsigned int i;
 
-	if (!verify_line_bulk(line_bulk)) {
-		set_last_error(GPIOD_EBULKINCOH);
+	if (!verify_line_bulk(line_bulk))
 		return -1;
-	}
 
 	req = zalloc(sizeof(*req));
 	if (!req)
