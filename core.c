@@ -267,6 +267,16 @@ bool gpiod_line_is_open_source(struct gpiod_line *line)
 	return line->info.flags & GPIOLINE_FLAG_OPEN_SOURCE;
 }
 
+static void line_set_updated(struct gpiod_line *line)
+{
+	line->up_to_date = true;
+}
+
+static void line_set_needs_update(struct gpiod_line *line)
+{
+	line->up_to_date = false;
+}
+
 bool gpiod_line_needs_update(struct gpiod_line *line)
 {
 	return !line->up_to_date;
@@ -288,7 +298,7 @@ int gpiod_line_update(struct gpiod_line *line)
 	if (status < 0)
 		return -1;
 
-	line->up_to_date = true;
+	line_set_updated(line);
 
 	return 0;
 }
@@ -380,7 +390,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 		 */
 		status = gpiod_line_update(line);
 		if (status < 0)
-			line->up_to_date = false;
+			line_set_needs_update(line);
 	}
 
 	return 0;
@@ -413,7 +423,7 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 
 		status = gpiod_line_update(line);
 		if (status < 0)
-			line->up_to_date = false;
+			line_set_needs_update(line);
 	}
 }
 
