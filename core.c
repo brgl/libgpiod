@@ -659,12 +659,12 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	unsigned int i;
 	int status;
 
-	memset(fds, 0, sizeof(fds));
-
 	if (!line_bulk_is_event_configured(bulk)) {
 		set_last_error(GPIOD_EEVREQUEST);
 		return -1;
 	}
+
+	memset(fds, 0, sizeof(fds));
 
 	for (i = 0; i < bulk->num_lines; i++) {
 		line = bulk->lines[i];
