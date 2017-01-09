@@ -333,7 +333,7 @@ struct gpiod_line_request_config {
  * @return 0 if the line was properly reserved. In case of an error this
  *         routine returns -1 and sets the last error number.
  *
- * Is this routine succeeds, the caller takes posession of the GPIO line until
+ * Is this routine succeeds, the caller takes ownership of the GPIO line until
  * it's released.
  */
 int gpiod_line_request(struct gpiod_line *line,
@@ -348,6 +348,9 @@ int gpiod_line_request(struct gpiod_line *line,
  *        the direction to output.
  * @return 0 if the all lines were properly requested. In case of an error
  *         this routine returns -1 and sets the last error number.
+ *
+ * Is this routine succeeds, the caller takes ownership of the GPIO line until
+ * it's released.
  */
 int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 			    const struct gpiod_line_request_config *config,
@@ -366,7 +369,7 @@ void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
 void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk) GPIOD_API;
 
 /**
- * @brief Check if the line is reserved by the calling user.
+ * @brief Check if the calling user has ownership of this line.
  * @param line GPIO line object.
  * @return True if given line was requested, false otherwise.
  */
