@@ -576,8 +576,10 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	struct gpiod_chip *chip;
 	int status, fd;
 
-	if (gpiod_line_event_configured(line))
-		return -EBUSY;
+	if (!gpiod_line_is_free(line)) {
+		set_last_error(GPIOD_ELINEBUSY);
+		return -1;
+	}
 
 	req = &line->event;
 
