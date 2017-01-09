@@ -69,6 +69,7 @@ static const char *const error_descr[] = {
 	"GPIO line not reserved",
 	"no events configured on GPIO line",
 	"GPIO lines in bulk don't belong to the same gpiochip",
+	"GPIO line currently in use",
 };
 
 static void set_last_error(int errnum)

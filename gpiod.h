@@ -83,6 +83,8 @@ enum {
 	/**< The caller has not configured any events on this line. */
 	GPIOD_EBULKINCOH,
 	/**< Not all lines in bulk belong to the same GPIO chip. */
+	GPIOD_ELINEBUSY,
+	/**< This line is currently in use. */
 	__GPIOD_MAX_ERR,
 	/**< Private: number of libgpiod-specific error numbers. */
 };
