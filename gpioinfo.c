@@ -122,7 +122,7 @@ static void list_lines(struct gpiod_chip *chip)
 
 		prinfo(&overflow, 8, "%s ", direction == GPIOD_DIRECTION_INPUT
 						? "input" : "output");
-		prinfo(&overflow, 12, "%s ",
+		prinfo(&overflow, 13, "%s ",
 		       active_state == GPIOD_ACTIVE_STATE_LOW
 						? "active-low"
 						: "active-high");
