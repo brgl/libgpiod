@@ -16,7 +16,6 @@
 #include <stdarg.h>
 
 #define NORETURN		__attribute__((noreturn))
-#define PRINTF(fmt, arg)	__attribute__((format(printf, fmt, arg)))
 
 static char *progname = "unknown";
 

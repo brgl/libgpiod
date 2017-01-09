@@ -13,7 +13,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include <getopt.h>
+#include <errno.h>
 
 #define ARRAY_SIZE(x)	(sizeof(x) / sizeof(*(x)))
 
@@ -52,42 +54,76 @@ static void print_help(void)
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 }
 
+static PRINTF(3, 4) void prinfo(bool *overflow,
+				unsigned int pref_len, const char *fmt, ...)
+{
+	char *buf, *buffmt = NULL;
+	size_t len;
+	va_list va;
+	int status;
+
+	va_start(va, fmt);
+	status = vasprintf(&buf, fmt, va);
+	va_end(va);
+	if (status < 0)
+		die("vasprintf: %s\n", strerror(errno));
+
+	len = strlen(buf) - 1;
+
+	if (len >= pref_len || *overflow) {
+		*overflow = true;
+		printf("%s", buf);
+	} else {
+		status = asprintf(&buffmt, "%%%us", pref_len);
+		if (status < 0)
+			die("asprintf: %s\n", strerror(errno));
+
+		printf(buffmt, buf);
+	}
+
+	free(buf);
+	if (fmt)
+		free(buffmt);
+}
+
 static void list_lines(struct gpiod_chip *chip)
 {
+	bool flag_printed, overflow;
 	int direction, active_state;
 	struct gpiod_line_iter iter;
 	const char *name, *consumer;
 	struct gpiod_line *line;
-	bool flag_printed;
-	unsigned int i;
+	unsigned int i, offset;
 
 	printf("%s - %u lines:\n",
 	       gpiod_chip_name(chip), gpiod_chip_num_lines(chip));
 
 	gpiod_line_iter_init(&iter, chip);
 	gpiod_foreach_line(&iter, line) {
+		offset = gpiod_line_offset(line);
 		name = gpiod_line_name(line);
 		consumer = gpiod_line_consumer(line);
 		direction = gpiod_line_direction(line);
 		active_state = gpiod_line_active_state(line);
 
-		printf("\tline %2u: ", gpiod_line_offset(line));
+		overflow = false;
 
-		if (name)
-			printf("\"%s\"", name);
-		else
-			printf("unnamed");
+		printf("\tline ");
+		prinfo(&overflow, 2, "%u", offset);
+		printf(": ");
+
+		name ? prinfo(&overflow, 12, "\"%s\"", name)
+		     : prinfo(&overflow, 12, "unnamed");
 		printf(" ");
 
-		if (consumer)
-			printf("\"%s\"", consumer);
-		else
-			printf("unused");
+		consumer ? prinfo(&overflow, 12, "\"%s\"", consumer)
+			 : prinfo(&overflow, 12, "unused");
 		printf(" ");
 
-		printf("%s ", direction == GPIOD_DIRECTION_INPUT
+		prinfo(&overflow, 8, "%s ", direction == GPIOD_DIRECTION_INPUT
 						? "input" : "output");
-		printf("%s ", active_state == GPIOD_ACTIVE_STATE_LOW
+		prinfo(&overflow, 12, "%s ",
+		       active_state == GPIOD_ACTIVE_STATE_LOW
 						? "active-low"
 						: "active-high");
 

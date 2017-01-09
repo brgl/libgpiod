@@ -18,7 +18,8 @@
  * common code.
  */
 
-#define UNUSED __attribute__((unused))
+#define UNUSED			__attribute__((unused))
+#define PRINTF(fmt, arg)	__attribute__((format(printf, fmt, arg)))
 
 void set_progname(char *name);
 const char * get_progname(void);
