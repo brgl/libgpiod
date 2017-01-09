@@ -1,3 +1,9 @@
+MINOR:
 - create a high level routine for listening on events on a GPIO line
 - rethink the GPIO event API
 - extend gpioset with options to specify the wait time etc.
+
+MAJOR:
+- create gpioctld - a daemon controlling the GPIOs so that we can
+  request and then keep the line reserved until we want it released
+- create gpioctl - a program controlling the daemon
