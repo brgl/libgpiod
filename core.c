@@ -471,7 +471,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
 	int status;
 
 	if (!line_bulk_is_requested(line_bulk)) {
-		set_last_error(GPIOD_ENOTREQUESTED);
+		set_last_error(GPIOD_EREQUEST);
 		return -1;
 	}
 
@@ -505,7 +505,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
 	int status;
 
 	if (!line_bulk_is_requested(line_bulk)) {
-		set_last_error(GPIOD_ENOTREQUESTED);
+		set_last_error(GPIOD_EREQUEST);
 		return -1;
 	}
 

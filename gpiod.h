@@ -77,8 +77,8 @@ struct gpiod_chip_iter;
 enum {
 	GPIOD_ESUCCESS = __GPIOD_ERRNO_OFFSET,
 	/**< No error. */
-	GPIOD_ENOTREQUESTED,
-	/**< GPIO line not requested. */
+	GPIOD_EREQUEST,
+	/**< The caller has no ownership of this line. */
 	__GPIOD_MAX_ERR,
 	/**< Private: number of libgpiod-specific error numbers. */
 };
