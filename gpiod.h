@@ -386,6 +386,14 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk) GPIOD_API;
 bool gpiod_line_is_reserved(struct gpiod_line *line) GPIOD_API;
 
 /**
+ * @brief Check if the calling user has neither requested ownership of this
+ *        line nor configured any event notifications.
+ * @param line GPIO line object.
+ * @return True if given line is free, false otherwise.
+ */
+bool gpiod_line_is_free(struct gpiod_line *line) GPIOD_API;
+
+/**
  * @brief Read current value of a single GPIO line.
  * @param line GPIO line object.
  * @return 0 or 1 if the operation succeeds. On error this routine returns -1

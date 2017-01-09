@@ -440,6 +440,11 @@ bool gpiod_line_is_reserved(struct gpiod_line *line)
 	return line->reserved_status == LINE_RESERVED;
 }
 
+bool gpiod_line_is_free(struct gpiod_line *line)
+{
+	return line->reserved_status == LINE_FREE;
+}
+
 static bool line_bulk_is_reserved(struct gpiod_line_bulk *line_bulk)
 {
 	unsigned int i;
