@@ -41,7 +41,7 @@ struct gpiod_line {
 	bool up_to_date;
 	struct gpiod_chip *chip;
 	struct gpioline_info info;
-	struct gpiohandle_request *req;
+	struct gpiohandle_request *request;
 	struct gpioevent_request event;
 };
 
@@ -406,7 +406,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 	for (i = 0; i < line_bulk->num_lines; i++) {
 		line = line_bulk->lines[i];
 
-		line->req = req;
+		line->request = req;
 		line_set_state(line, LINE_TAKEN);
 		/*
 		 * Update line info to include the changes after the
@@ -436,13 +436,13 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 	unsigned int i;
 	int status;
 
-	close(line_bulk->lines[0]->req->fd);
-	free(line_bulk->lines[0]->req);
+	close(line_bulk->lines[0]->request->fd);
+	free(line_bulk->lines[0]->request);
 
 	for (i = 0; i < line_bulk->num_lines; i++) {
 		line = line_bulk->lines[i];
 
-		line->req = NULL;
+		line->request = NULL;
 		line_set_state(line, LINE_FREE);
 
 		status = gpiod_line_update(line);
@@ -501,7 +501,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
 
 	memset(&data, 0, sizeof(data));
 
-	status = gpio_ioctl(line_bulk->lines[0]->req->fd,
+	status = gpio_ioctl(line_bulk->lines[0]->request->fd,
 			    GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
@@ -538,7 +538,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
 	for (i = 0; i < line_bulk->num_lines; i++)
 		data.values[i] = (__u8)!!values[i];
 
-	status = gpio_ioctl(line_bulk->lines[0]->req->fd,
+	status = gpio_ioctl(line_bulk->lines[0]->request->fd,
 			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
