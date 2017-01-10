@@ -232,6 +232,16 @@ static void line_set_offset(struct gpiod_line *line, unsigned int offset)
 	line->info.line_offset = offset;
 }
 
+static int line_get_state(struct gpiod_line *line)
+{
+	return line->state;
+}
+
+static void line_set_state(struct gpiod_line *line, int state)
+{
+	line->state = state;
+}
+
 unsigned int gpiod_line_offset(struct gpiod_line *line)
 {
 	return (unsigned int)line->info.line_offset;
@@ -397,7 +407,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 		line = line_bulk->lines[i];
 
 		line->req = req;
-		line->state = LINE_TAKEN;
+		line_set_state(line, LINE_TAKEN);
 		/*
 		 * Update line info to include the changes after the
 		 * request.
@@ -433,7 +443,7 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 		line = line_bulk->lines[i];
 
 		line->req = NULL;
-		line->state = LINE_FREE;
+		line_set_state(line, LINE_FREE);
 
 		status = gpiod_line_update(line);
 		if (status < 0)
@@ -443,12 +453,12 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 
 bool gpiod_line_is_reserved(struct gpiod_line *line)
 {
-	return line->state == LINE_TAKEN;
+	return line_get_state(line) == LINE_TAKEN;
 }
 
 bool gpiod_line_is_free(struct gpiod_line *line)
 {
-	return line->state == LINE_FREE;
+	return line_get_state(line) == LINE_FREE;
 }
 
 static bool line_bulk_is_reserved(struct gpiod_line_bulk *line_bulk)
@@ -611,7 +621,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	if (status < 0)
 		return -1;
 
-	line->state = LINE_EVENT;
+	line_set_state(line, LINE_EVENT);
 
 	return 0;
 }
@@ -619,12 +629,12 @@ int gpiod_line_event_request(struct gpiod_line *line,
 void gpiod_line_event_release(struct gpiod_line *line)
 {
 	close(line->event.fd);
-	line->state = LINE_FREE;
+	line_set_state(line, LINE_FREE);
 }
 
 bool gpiod_line_event_configured(struct gpiod_line *line)
 {
-	return line->state == LINE_EVENT;
+	return line_get_state(line) == LINE_EVENT;
 }
 
 int gpiod_line_event_wait(struct gpiod_line *line,
@@ -720,8 +730,7 @@ int gpiod_line_event_read(struct gpiod_line *line,
 
 int gpiod_line_event_get_fd(struct gpiod_line *line)
 {
-	return line->state == LINE_EVENT ? line->event.fd
-							    : -1;
+	return line_get_state(line) == LINE_EVENT ? line->event.fd : -1;
 }
 
 struct gpiod_chip * gpiod_chip_open(const char *path)
