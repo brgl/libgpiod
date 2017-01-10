@@ -36,13 +36,20 @@ enum {
 	LINE_EVENT,
 };
 
+struct handle_data {
+	struct gpiohandle_request request;
+	int refcount;
+};
+
 struct gpiod_line {
 	int state;
 	bool up_to_date;
 	struct gpiod_chip *chip;
 	struct gpioline_info info;
-	struct gpiohandle_request *request;
-	struct gpioevent_request event;
+	union {
+		struct handle_data *handle;
+		struct gpioevent_request event;
+	};
 };
 
 struct gpiod_chip_iter
@@ -242,6 +249,45 @@ static void line_set_state(struct gpiod_line *line, int state)
 	line->state = state;
 }
 
+static int line_get_handle_fd(struct gpiod_line *line)
+{
+	if (line_get_state(line) != LINE_TAKEN)
+		return -1;
+	else
+		return line->handle->request.fd;
+}
+
+static int line_get_event_fd(struct gpiod_line *line)
+{
+	if (line_get_state(line) != LINE_EVENT)
+		return -1;
+	else
+		return line->event.fd;
+}
+
+static void line_set_handle(struct gpiod_line *line,
+			    struct handle_data *handle)
+{
+	line->handle = handle;
+	handle->refcount++;
+}
+
+static void line_remove_handle(struct gpiod_line *line)
+{
+	struct handle_data *handle;
+
+	if (!line->handle)
+		return;
+
+	handle = line->handle;
+	line->handle = NULL;
+	handle->refcount--;
+	if (handle->refcount <= 0) {
+		close(handle->request.fd);
+		free(handle);
+	}
+}
+
 unsigned int gpiod_line_offset(struct gpiod_line *line)
 {
 	return (unsigned int)line->info.line_offset;
@@ -360,6 +406,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 			    int *default_vals)
 {
 	struct gpiohandle_request *req;
+	struct handle_data *handle;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	int status, fd;
@@ -368,9 +415,11 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 	if (!verify_line_bulk(line_bulk))
 		return -1;
 
-	req = zalloc(sizeof(*req));
-	if (!req)
+	handle = zalloc(sizeof(*handle));
+	if (!handle)
 		return -1;
+
+	req = &handle->request;
 
 	if (config->flags & GPIOD_REQUEST_OPEN_DRAIN)
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
@@ -406,7 +455,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 	for (i = 0; i < line_bulk->num_lines; i++) {
 		line = line_bulk->lines[i];
 
-		line->request = req;
+		line_set_handle(line, handle);
 		line_set_state(line, LINE_TAKEN);
 		/*
 		 * Update line info to include the changes after the
@@ -436,13 +485,10 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 	unsigned int i;
 	int status;
 
-	close(line_bulk->lines[0]->request->fd);
-	free(line_bulk->lines[0]->request);
-
 	for (i = 0; i < line_bulk->num_lines; i++) {
 		line = line_bulk->lines[i];
 
-		line->request = NULL;
+		line_remove_handle(line);
 		line_set_state(line, LINE_FREE);
 
 		status = gpiod_line_update(line);
@@ -501,7 +547,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
 
 	memset(&data, 0, sizeof(data));
 
-	status = gpio_ioctl(line_bulk->lines[0]->request->fd,
+	status = gpio_ioctl(line_get_handle_fd(line_bulk->lines[0]),
 			    GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
@@ -538,7 +584,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
 	for (i = 0; i < line_bulk->num_lines; i++)
 		data.values[i] = (__u8)!!values[i];
 
-	status = gpio_ioctl(line_bulk->lines[0]->request->fd,
+	status = gpio_ioctl(line_get_handle_fd(line_bulk->lines[0]),
 			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
@@ -628,7 +674,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 
 void gpiod_line_event_release(struct gpiod_line *line)
 {
-	close(line->event.fd);
+	close(line_get_event_fd(line));
 	line_set_state(line, LINE_FREE);
 }
 
@@ -679,7 +725,7 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	for (i = 0; i < bulk->num_lines; i++) {
 		linetmp = bulk->lines[i];
 
-		fds[i].fd = linetmp->event.fd;
+		fds[i].fd = line_get_event_fd(linetmp);
 		fds[i].events = POLLIN | POLLPRI;
 	}
 
@@ -711,7 +757,7 @@ int gpiod_line_event_read(struct gpiod_line *line,
 
 	memset(&evdata, 0, sizeof(evdata));
 
-	rd = read(line->event.fd, &evdata, sizeof(evdata));
+	rd = read(line_get_event_fd(line), &evdata, sizeof(evdata));
 	if (rd < 0) {
 		last_error_from_errno();
 		return -1;
@@ -730,7 +776,8 @@ int gpiod_line_event_read(struct gpiod_line *line,
 
 int gpiod_line_event_get_fd(struct gpiod_line *line)
 {
-	return line_get_state(line) == LINE_EVENT ? line->event.fd : -1;
+	return line_get_state(line) == LINE_EVENT
+				? line_get_event_fd(line) : -1;
 }
 
 struct gpiod_chip * gpiod_chip_open(const char *path)
