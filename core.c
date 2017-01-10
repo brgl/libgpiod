@@ -612,9 +612,7 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name)
 				continue;
 
 			if (strcmp(gpiod_line_name(line), name) == 0) {
-				/* TODO A separate function for that maybe? */
-				closedir(chip_iter->dir);
-				free(chip_iter);
+				gpiod_chip_iter_free_noclose(chip_iter);
 				return line;
 			}
 		}
@@ -943,6 +941,11 @@ void gpiod_chip_iter_free(struct gpiod_chip_iter *iter)
 	if (iter->current)
 		gpiod_chip_close(iter->current);
 
+	gpiod_chip_iter_free_noclose(iter);
+}
+
+void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter)
+{
 	closedir(iter->dir);
 	free(iter);
 }

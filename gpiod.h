@@ -661,10 +661,22 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
 struct gpiod_chip_iter * gpiod_chip_iter_new(void) GPIOD_API;
 
 /**
- * @brief Release all data allocated for a gpiochip iterator.
+ * @brief Release all resources allocated for the gpiochip iterator and close
+ *        the most recently opened gpiochip (if any).
  * @param iter The gpiochip iterator object.
  */
 void gpiod_chip_iter_free(struct gpiod_chip_iter *iter) GPIOD_API;
+
+/**
+ * @brief Release all resources allocated for the gpiochip iterator but
+ *        don't close the most recently opened gpiochip (if any).
+ * @param iter The gpiochip iterator object.
+ *
+ * Users may want to break the loop when iterating over gpiochips and keep
+ * the most recently opened chip active while freeing the iterator data.
+ * This routine enables that.
+ */
+void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
 
 /**
  * @brief Get the next gpiochip handle.
