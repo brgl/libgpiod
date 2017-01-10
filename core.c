@@ -878,13 +878,12 @@ void gpiod_chip_close(struct gpiod_chip *chip)
 
 const char * gpiod_chip_name(struct gpiod_chip *chip)
 {
-	return chip->cinfo.name;
+	return chip->cinfo.name[0] == '\0' ? NULL : chip->cinfo.name;
 }
 
 const char * gpiod_chip_label(struct gpiod_chip *chip)
 {
-	/* REVISIT can a gpiochip not have a label? */
-	return chip->cinfo.label;
+	return chip->cinfo.label[0] == '\0' ? NULL : chip->cinfo.label;
 }
 
 unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip)
