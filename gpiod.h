@@ -490,8 +490,6 @@ struct gpiod_line_evreq_config {
  * @brief Structure holding event info.
  */
 struct gpiod_line_event {
-	struct gpiod_line *line;
-	/**< Line on which the event occurred. */
 	struct timespec ts;
 	/**< Best estimate of time of event occurrence. */
 	int event_type;

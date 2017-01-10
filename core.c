@@ -710,7 +710,6 @@ int gpiod_line_event_read(struct gpiod_line *line,
 		return -1;
 	}
 
-	event->line = line;
 	event->event_type = evdata.id == GPIOEVENT_EVENT_RISING_EDGE
 						? GPIOD_EVENT_RISING_EDGE
 						: GPIOD_EVENT_FALLING_EDGE;
