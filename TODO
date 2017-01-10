@@ -4,6 +4,8 @@ MINOR:
 - extend gpioset/get with options to specify the wait time etc.
 - add versioning
 - build tools conditionally
+- improve the way bulk line request work - keep track of common request
+  structs better
 
 MAJOR:
 - create gpioctld - a daemon controlling the GPIOs so that we can
