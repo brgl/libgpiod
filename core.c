@@ -32,12 +32,12 @@ struct gpiod_chip
 
 enum {
 	LINE_FREE = 0,
-	LINE_RESERVED,
-	LINE_RESERVED_EVENT,
+	LINE_TAKEN,
+	LINE_EVENT,
 };
 
 struct gpiod_line {
-	int reserved_status;
+	int state;
 	bool up_to_date;
 	struct gpiod_chip *chip;
 	struct gpioline_info info;
@@ -397,7 +397,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 		line = line_bulk->lines[i];
 
 		line->req = req;
-		line->reserved_status = LINE_RESERVED;
+		line->state = LINE_TAKEN;
 		/*
 		 * Update line info to include the changes after the
 		 * request.
@@ -433,7 +433,7 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 		line = line_bulk->lines[i];
 
 		line->req = NULL;
-		line->reserved_status = LINE_FREE;
+		line->state = LINE_FREE;
 
 		status = gpiod_line_update(line);
 		if (status < 0)
@@ -443,12 +443,12 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 
 bool gpiod_line_is_reserved(struct gpiod_line *line)
 {
-	return line->reserved_status == LINE_RESERVED;
+	return line->state == LINE_TAKEN;
 }
 
 bool gpiod_line_is_free(struct gpiod_line *line)
 {
-	return line->reserved_status == LINE_FREE;
+	return line->state == LINE_FREE;
 }
 
 static bool line_bulk_is_reserved(struct gpiod_line_bulk *line_bulk)
@@ -611,7 +611,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	if (status < 0)
 		return -1;
 
-	line->reserved_status = LINE_RESERVED_EVENT;
+	line->state = LINE_EVENT;
 
 	return 0;
 }
@@ -619,12 +619,12 @@ int gpiod_line_event_request(struct gpiod_line *line,
 void gpiod_line_event_release(struct gpiod_line *line)
 {
 	close(line->event.fd);
-	line->reserved_status = LINE_FREE;
+	line->state = LINE_FREE;
 }
 
 bool gpiod_line_event_configured(struct gpiod_line *line)
 {
-	return line->reserved_status == LINE_RESERVED_EVENT;
+	return line->state == LINE_EVENT;
 }
 
 int gpiod_line_event_wait(struct gpiod_line *line,
@@ -720,7 +720,7 @@ int gpiod_line_event_read(struct gpiod_line *line,
 
 int gpiod_line_event_get_fd(struct gpiod_line *line)
 {
-	return line->reserved_status == LINE_RESERVED_EVENT ? line->event.fd
+	return line->state == LINE_EVENT ? line->event.fd
 							    : -1;
 }
 
@@ -811,9 +811,9 @@ void gpiod_chip_close(struct gpiod_chip *chip)
 	unsigned int i;
 
 	for (i = 0; i < chip->cinfo.lines; i++) {
-		if (chip->lines[i].reserved_status == LINE_RESERVED)
+		if (chip->lines[i].state == LINE_TAKEN)
 			gpiod_line_release(&chip->lines[i]);
-		else if (chip->lines[i].reserved_status == LINE_RESERVED_EVENT)
+		else if (chip->lines[i].state == LINE_EVENT)
 			gpiod_line_event_release(&chip->lines[i]);
 	}
 
