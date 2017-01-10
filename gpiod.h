@@ -533,15 +533,14 @@ int gpiod_line_event_wait(struct gpiod_line *line,
  * @brief Wait for the first event on a set of lines.
  * @param bulk Set of GPIO lines to monitor.
  * @param timeout Wait time limit.
- * @param index The position of the line on which an event occured is stored
- *              in this variable. Can be NULL, in which case the index will
- *              not be stored.
+ * @param line The handle of the line on which an event occurs is stored
+ *             in this variable. Can be NULL.
  * @return 0 if wait timed out, -1 if an error occurred, 1 if an event
  *         occurred.
  */
 int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       const struct timespec *timeout,
-			       unsigned int *index) GPIOD_API;
+			       struct gpiod_line **line) GPIOD_API;
 
 /**
  * @brief Read the last event from the GPIO line.

@@ -652,10 +652,10 @@ static bool line_bulk_is_event_configured(struct gpiod_line_bulk *line_bulk)
 
 int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       const struct timespec *timeout,
-			       unsigned int *index)
+			       struct gpiod_line **line)
 {
 	struct pollfd fds[GPIOD_REQUEST_MAX_LINES];
-	struct gpiod_line *line;
+	struct gpiod_line *linetmp;
 	unsigned int i;
 	int status;
 
@@ -667,9 +667,9 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	memset(fds, 0, sizeof(fds));
 
 	for (i = 0; i < bulk->num_lines; i++) {
-		line = bulk->lines[i];
+		linetmp = bulk->lines[i];
 
-		fds[i].fd = line->event.fd;
+		fds[i].fd = linetmp->event.fd;
 		fds[i].events = POLLIN | POLLPRI;
 	}
 
@@ -682,8 +682,8 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	}
 
 	for (i = 0; !fds[i].revents; i++);
-	if (index)
-		*index = i;
+	if (line)
+		*line = bulk->lines[i];
 
 	return 1;
 }
