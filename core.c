@@ -242,6 +242,66 @@ int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
 	return 0;
 }
 
+int gpiod_simple_event_loop(const char *device, unsigned int offset,
+			    bool active_low, struct timespec *timeout,
+			    gpiod_event_cb callback, void *cbdata)
+{
+	struct gpiod_line_evreq_config config;
+	struct gpiod_line_event event;
+	struct gpiod_chip *chip;
+	struct gpiod_line *line;
+	int status, evtype;
+
+	memset(&config, 0, sizeof(config));
+	config.consumer = libgpiod_consumer;
+	config.event_type = GPIOD_EVENT_BOTH_EDGES;
+	config.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					 : GPIOD_ACTIVE_STATE_HIGH;
+
+	chip = gpiod_chip_open_lookup(device);
+	if (!chip)
+		return -1;
+
+	line = gpiod_chip_get_line(chip, offset);
+	if (!line) {
+		gpiod_chip_close(chip);
+		return -1;
+	}
+
+	status = gpiod_line_event_request(line, &config);
+	if (status < 0) {
+		gpiod_chip_close(chip);
+		return -1;
+	}
+
+	for (;;) {
+		status = gpiod_line_event_wait(line, timeout);
+		if (status < 0) {
+			goto out;
+		} else if (status == 0) {
+			evtype = GPIOD_EVENT_CB_TIMEOUT;
+		} else {
+			status = gpiod_line_event_read(line, &event);
+			if (status < 0)
+				goto out;
+
+			evtype = event.event_type == GPIOD_EVENT_RISING_EDGE
+						? GPIOD_EVENT_CB_RISING_EDGE
+						: GPIOD_EVENT_CB_FALLING_EDGE;
+		}
+
+		status = callback(evtype, &event.ts, cbdata);
+		if (status == GPIOD_EVENT_CB_STOP)
+			goto out;
+	}
+
+out:
+	gpiod_line_event_release(line);
+	gpiod_chip_close(chip);
+
+	return status;
+}
+
 static void line_set_offset(struct gpiod_line *line, unsigned int offset)
 {
 	line->info.line_offset = offset;

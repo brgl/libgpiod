@@ -146,6 +146,48 @@ int gpiod_simple_set_value(const char *device, unsigned int offset,
 			   void *data) GPIOD_API;
 
 /**
+ * @brief Event types that can be passed to the simple event callback.
+ */
+enum {
+	GPIOD_EVENT_CB_TIMEOUT,
+	/**< Waiting for events timed out. */
+	GPIOD_EVENT_CB_RISING_EDGE,
+	/**< Rising edge event occured. */
+	GPIOD_EVENT_CB_FALLING_EDGE,
+	/**< Falling edge event occured. */
+};
+
+/**
+ * @brief Return status values that the simple event callback can return.
+ */
+enum {
+	GPIOD_EVENT_CB_OK = 0,
+	/**< Continue processing events. */
+	GPIOD_EVENT_CB_STOP,
+	/**< Stop processing events. */
+};
+
+/**
+ * @brief Simple event callack signature.
+ */
+typedef int (*gpiod_event_cb)(int, const struct timespec *, void *);
+
+/**
+ * @brief Wait for events on a single GPIO line.
+ * @param device Name, path or number of the gpiochip.
+ * @param offset GPIO line offset on the chip.
+ * @param active_low The active state of this line - true if low.
+ * @param timeout Maximum wait time for each iteration.
+ * @param callback Callback function to call on event occurence.
+ * @param cbdata User data passed to the callback.
+ * @return 0 no errors were encountered, -1 if an error occured.
+ *
+ */
+int gpiod_simple_event_loop(const char *device, unsigned int offset,
+			    bool active_low, struct timespec *timeout,
+			    gpiod_event_cb callback, void *cbdata) GPIOD_API;
+
+/**
  * @}
  *
  * @defgroup __lines__ GPIO line operations
