@@ -161,16 +161,9 @@ const char * gpiod_last_strerror(void)
 int gpiod_simple_get_value(const char *device,
 			   unsigned int offset, bool active_low)
 {
-	struct gpiod_line_request_config config;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	int status, value;
-
-	memset(&config, 0, sizeof(config));
-	config.consumer = libgpiod_consumer;
-	config.direction = GPIOD_DIRECTION_INPUT;
-	config.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					 : GPIOD_ACTIVE_STATE_HIGH;
 
 	chip = gpiod_chip_open_lookup(device);
 	if (!chip)
@@ -182,7 +175,7 @@ int gpiod_simple_get_value(const char *device,
 		return -1;
 	}
 
-	status = gpiod_line_request(line, &config, 0);
+	status = gpiod_line_request_input(line, libgpiod_consumer, active_low);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
