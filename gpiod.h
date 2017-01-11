@@ -813,7 +813,7 @@ struct gpiod_line_iter {
 	{								\
 		.offset = 0,						\
 		.chip = (chip),						\
-		state = GPIOD_LINE_ITER_INIT,				\
+		.state = GPIOD_LINE_ITER_INIT,				\
 	}
 
 /**
