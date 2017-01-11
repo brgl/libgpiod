@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
+#include <signal.h>
 
 static const struct option longopts[] = {
 	{ "help",	no_argument,	NULL,	'h' },
@@ -31,6 +32,13 @@ static void print_help(void)
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -l, --active-low:\tset the line active state to low\n");
+}
+
+static volatile bool do_run = true;
+
+static void sighandler(int signum UNUSED)
+{
+	do_run = false;
 }
 
 static int event_callback(int type, const struct timespec *ts,
@@ -52,6 +60,9 @@ static int event_callback(int type, const struct timespec *ts,
 	if (evname)
 		printf("GPIO EVENT: %s [%8ld.%09ld]\n",
 		       evname, ts->tv_sec, ts->tv_nsec);
+
+	if (!do_run)
+		return GPIOD_EVENT_CB_STOP;
 
 	return GPIOD_EVENT_CB_OK;
 }
@@ -101,6 +112,9 @@ int main(int argc, char **argv)
 
 	timeout.tv_sec = 0;
 	timeout.tv_nsec = 500000000;
+
+	signal(SIGINT, sighandler);
+	signal(SIGTERM, sighandler);
 
 	status = gpiod_simple_event_loop(device, offset, active_low,
 					 &timeout, event_callback, NULL);
