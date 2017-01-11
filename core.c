@@ -192,16 +192,9 @@ int gpiod_simple_get_value(const char *device,
 int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
 			   bool active_low, void (*cb)(void *), void *data)
 {
-	struct gpiod_line_request_config config;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	int status;
-
-	memset(&config, 0, sizeof(config));
-	config.consumer = libgpiod_consumer;
-	config.direction = GPIOD_DIRECTION_OUTPUT;
-	config.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					 : GPIOD_ACTIVE_STATE_HIGH;
 
 	chip = gpiod_chip_open_lookup(device);
 	if (!chip)
@@ -213,15 +206,9 @@ int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
 		return -1;
 	}
 
-	status = gpiod_line_request(line, &config, 0);
+	status = gpiod_line_request_output(line, libgpiod_consumer,
+					   active_low, value);
 	if (status < 0) {
-		gpiod_chip_close(chip);
-		return -1;
-	}
-
-	status = gpiod_line_set_value(line, value);
-	if (status < 0) {
-		gpiod_line_release(line);
 		gpiod_chip_close(chip);
 		return -1;
 	}
