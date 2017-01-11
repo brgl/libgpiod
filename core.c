@@ -226,17 +226,10 @@ int gpiod_simple_event_loop(const char *device, unsigned int offset,
 			    bool active_low, struct timespec *timeout,
 			    gpiod_event_cb callback, void *cbdata)
 {
-	struct gpiod_line_evreq_config config;
 	struct gpiod_line_event event;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	int status, evtype;
-
-	memset(&config, 0, sizeof(config));
-	config.consumer = libgpiod_consumer;
-	config.event_type = GPIOD_EVENT_BOTH_EDGES;
-	config.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					 : GPIOD_ACTIVE_STATE_HIGH;
 
 	chip = gpiod_chip_open_lookup(device);
 	if (!chip)
@@ -248,7 +241,8 @@ int gpiod_simple_event_loop(const char *device, unsigned int offset,
 		return -1;
 	}
 
-	status = gpiod_line_event_request(line, &config);
+	status = gpiod_line_event_request_all(line,
+					      libgpiod_consumer, active_low);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
