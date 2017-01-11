@@ -9,101 +9,103 @@
  */
 
 #include "gpiod.h"
+#include "tools-common.h"
 
 #include <stdio.h>
 #include <string.h>
+#include <getopt.h>
+
+static const struct option longopts[] = {
+	{ "help",	no_argument,	NULL,	'h' },
+	{ "active-low",	no_argument,	NULL,	'l' },
+	{ 0 },
+};
+
+static const char *const shortopts = "hl";
+
+static void print_help(void)
+{
+	printf("Usage: %s [CHIP NAME/NUMBER] [LINE OFFSET] <options>\n",
+	       get_progname());
+	printf("Wait for events on a GPIO line\n");
+	printf("Options:\n");
+	printf("  -h, --help:\t\tdisplay this message and exit\n");
+	printf("  -l, --active-low:\tset the line active state to low\n");
+}
+
+static int event_callback(int type, const struct timespec *ts,
+			  void *data UNUSED)
+{
+	const char *evname = NULL;
+
+	switch (type) {
+	case GPIOD_EVENT_CB_RISING_EDGE:
+		evname = " RISING EDGE";
+		break;
+	case GPIOD_EVENT_CB_FALLING_EDGE:
+		evname = "FALLING_EDGE";
+		break;
+	default:
+		break;
+	}
+
+	if (evname)
+		printf("GPIO EVENT: %s [%8ld.%09ld]\n",
+		       evname, ts->tv_sec, ts->tv_nsec);
+
+	return GPIOD_EVENT_CB_OK;
+}
 
 int main(int argc, char **argv)
 {
-	struct gpiod_line_evreq_config config;
-	struct gpiod_line_event event;
+	bool active_low = false;
 	struct timespec timeout;
-	struct gpiod_chip *chip;
-	struct gpiod_line *line;
+	int optc, opti, status;
 	unsigned int offset;
 	char *device, *end;
-	int status;
 
-	if (argc < 2) {
-		fprintf(stderr, "%s: gpiochip must be specified\n", argv[0]);
-		return EXIT_FAILURE;
-	}
-
-	if (argc < 3) {
-		fprintf(stderr,
-			"%s: gpio line offset must be specified\n", argv[0]);
-		return EXIT_FAILURE;
-	}
-
-	device = argv[1];
-	/* FIXME Handle negative numbers. */
-	offset = strtoul(argv[2], &end, 10);
-	if (*end != '\0') {
-		fprintf(stderr,
-			"%s: invalid GPIO offset: %s\n", argv[0], argv[2]);
-		return EXIT_FAILURE;
-	}
-
-	chip = gpiod_chip_open_lookup(device);
-	if (!chip) {
-		fprintf(stderr,
-			"%s: error accessing gpiochip %s: %s\n",
-			argv[0], device, gpiod_strerror(gpiod_errno()));
-		return EXIT_FAILURE;
-	}
-
-	line = gpiod_chip_get_line(chip, offset);
-	if (!line) {
-		fprintf(stderr,
-			"%s: error accessing line %u: %s\n",
-			argv[0], offset, gpiod_strerror(gpiod_errno()));
-		return EXIT_FAILURE;
-	}
-
-	memset(&config, 0, sizeof(config));
-	config.consumer = "gpiomon";
-	config.event_type = GPIOD_EVENT_BOTH_EDGES;
-
-	status = gpiod_line_event_request(line, &config);
-	if (status < 0) {
-		fprintf(stderr,
-			"%s: error requesting line event: %s\n",
-			argv[0], gpiod_strerror(gpiod_errno()));
-		return EXIT_FAILURE;
-	}
+	set_progname(argv[0]);
 
 	for (;;) {
-		timeout.tv_sec = 1;
-		timeout.tv_nsec = 0;
+		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
+		if (optc < 0)
+			break;
 
-		status = gpiod_line_event_wait(line, &timeout);
-		if (status < 0) {
-			fprintf(stderr,
-				"%s: error waiting for line event: %s\n",
-				argv[0], gpiod_strerror(gpiod_errno()));
-			return EXIT_FAILURE;
-		} else if (status == 0) {
-			continue;
+		switch (optc) {
+		case 'h':
+			print_help();
+			return EXIT_SUCCESS;
+		case 'l':
+			active_low = true;
+			break;
+		case '?':
+			die("try %s --help", get_progname());
+		default:
+			abort();
 		}
-
-		status = gpiod_line_event_read(line, &event);
-		if (status < 0) {
-			fprintf(stderr,
-				"%s: error reading the line event: %s\n",
-				argv[0], gpiod_strerror(gpiod_errno()));
-			return EXIT_FAILURE;
-		}
-
-		printf("GPIO EVENT: %s [%ld.%ld]\n",
-		       event.event_type == GPIOD_EVENT_FALLING_EDGE
-							? "FALLING EDGE"
-							: "RAISING EDGE",
-		       event.ts.tv_sec, event.ts.tv_nsec);
 	}
 
-	gpiod_line_event_release(line);
-	gpiod_line_release(line);
-	gpiod_chip_close(chip);
+	argc -= optind;
+	argv += optind;
+
+	if (argc < 1)
+		die("gpiochip must be specified");
+
+	if (argc < 2)
+		die("gpio line offset must be specified");
+
+	device = argv[0];
+	offset = strtoul(argv[1], &end, 10);
+	if (*end != '\0')
+		die("invalid GPIO offset: %s", argv[1]);
+
+	timeout.tv_sec = 0;
+	timeout.tv_nsec = 500000000;
+
+	status = gpiod_simple_event_loop(device, offset, active_low,
+					 &timeout, event_callback, NULL);
+	if (status < 0)
+		die_perror("error waiting for events");
 
 	return EXIT_SUCCESS;
 }
