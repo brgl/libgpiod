@@ -1,5 +1,4 @@
 MINOR:
-- create a high level routine for listening on events on a GPIO line
 - extend gpioset/get with options to specify the wait time etc.
 - add versioning
 - build tools conditionally
