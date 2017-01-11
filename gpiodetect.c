@@ -66,7 +66,8 @@ int main(int argc, char **argv)
 
 	gpiod_foreach_chip(iter, chip) {
 		if (gpiod_chip_iter_iserr(iter))
-			die_perror("error accessing gpiochip");
+			die_perror("error accessing gpiochip %s",
+				   gpiod_chip_iter_failed_chip(iter));
 
 		printf("%s [%s] (%u lines)\n",
 		       gpiod_chip_name(chip),

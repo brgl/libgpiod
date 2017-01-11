@@ -724,6 +724,19 @@ bool gpiod_chip_iter_done(struct gpiod_chip_iter *iter) GPIOD_API;
 bool gpiod_chip_iter_iserr(struct gpiod_chip_iter *iter) GPIOD_API;
 
 /**
+ * @brief Get the name of the gpiochip that we failed to access.
+ * @param iter The gpiochip iterator object.
+ * @return If gpiod_chip_iter_iserr() returned true, this function returns a
+ *         pointer to the name of the gpiochip that we failed to access.
+ *         If there was no error this function returns NULL.
+ *
+ * NOTE: this function will return NULL if the internal memory allocation
+ * fails.
+ */
+const char *
+gpiod_chip_iter_failed_chip(struct gpiod_chip_iter *iter) GPIOD_API;
+
+/**
  * @brief GPIO line iterator structure.
  *
  * This structure is used in conjunction with gpiod_line_iter_next() to

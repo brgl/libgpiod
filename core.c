@@ -63,6 +63,7 @@ struct gpiod_chip_iter
 	DIR *dir;
 	struct gpiod_chip *current;
 	int state;
+	char *failed_chip;
 };
 
 static const char dev_dir[] = "/dev/";
@@ -955,6 +956,8 @@ void gpiod_chip_iter_free(struct gpiod_chip_iter *iter)
 void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter)
 {
 	closedir(iter->dir);
+	if (iter->failed_chip)
+		free(iter->failed_chip);
 	free(iter);
 }
 
@@ -976,10 +979,17 @@ struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 				 sizeof(cdev_prefix) - 1);
 		if (status == 0) {
 			iter->state = CHIP_ITER_INIT;
+			if (iter->failed_chip) {
+				free(iter->failed_chip);
+				iter->failed_chip = NULL;
+			}
 
 			chip = gpiod_chip_open_by_name(dentry->d_name);
-			if (!chip)
+			if (!chip) {
 				iter->state = CHIP_ITER_ERR;
+				iter->failed_chip = strdup(dentry->d_name);
+				/* No point in an error check here. */
+			}
 
 			iter->current = chip;
 			return iter->current;
@@ -998,4 +1008,10 @@ bool gpiod_chip_iter_done(struct gpiod_chip_iter *iter)
 bool gpiod_chip_iter_iserr(struct gpiod_chip_iter *iter)
 {
 	return iter->state == CHIP_ITER_ERR;
+}
+
+const char *
+gpiod_chip_iter_failed_chip(struct gpiod_chip_iter *iter)
+{
+	return iter->failed_chip;
 }
