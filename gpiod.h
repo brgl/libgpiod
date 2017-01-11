@@ -604,6 +604,18 @@ int gpiod_line_event_read(struct gpiod_line *line,
 int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
 
 /**
+ * @brief Read the last GPIO event directly from a file descriptor.
+ * @param fd File descriptor.
+ * @param event Buffer to which the event data will be copied.
+ * @return 0 if the event was read correctly, -1 on error.
+ *
+ * Users who directly poll the file descriptor for incoming events can also
+ * directly read the event data from it using this routine. This function
+ * translates the kernel representation of the event to the libgpiod format.
+ */
+int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event) GPIOD_API;
+
+/**
  * @}
  *
  * @}

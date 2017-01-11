@@ -815,17 +815,32 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 int gpiod_line_event_read(struct gpiod_line *line,
 			  struct gpiod_line_event *event)
 {
-	struct gpioevent_data evdata;
-	ssize_t rd;
+	int fd;
 
 	if (!gpiod_line_event_configured(line)) {
 		set_last_error(GPIOD_EEVREQUEST);
 		return -1;
 	}
 
+	fd = line_get_event_fd(line);
+
+	return gpiod_line_event_read_fd(fd, event);
+}
+
+int gpiod_line_event_get_fd(struct gpiod_line *line)
+{
+	return line_get_state(line) == LINE_EVENT
+				? line_get_event_fd(line) : -1;
+}
+
+int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
+{
+	struct gpioevent_data evdata;
+	ssize_t rd;
+
 	memset(&evdata, 0, sizeof(evdata));
 
-	rd = read(line_get_event_fd(line), &evdata, sizeof(evdata));
+	rd = read(fd, &evdata, sizeof(evdata));
 	if (rd < 0) {
 		last_error_from_errno();
 		return -1;
@@ -840,12 +855,6 @@ int gpiod_line_event_read(struct gpiod_line *line,
 	nsec_to_timespec(evdata.timestamp, &event->ts);
 
 	return 0;
-}
-
-int gpiod_line_event_get_fd(struct gpiod_line *line)
-{
-	return line_get_state(line) == LINE_EVENT
-				? line_get_event_fd(line) : -1;
 }
 
 struct gpiod_chip * gpiod_chip_open(const char *path)
