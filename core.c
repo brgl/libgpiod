@@ -349,6 +349,15 @@ static void line_set_needs_update(struct gpiod_line *line)
 	line->up_to_date = false;
 }
 
+static void line_update(struct gpiod_line *line)
+{
+	int status;
+
+	status = gpiod_line_update(line);
+	if (status < 0)
+		line_set_needs_update(line);
+}
+
 bool gpiod_line_needs_update(struct gpiod_line *line)
 {
 	return !line->up_to_date;
@@ -465,13 +474,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 
 		line_set_handle(line, handle);
 		line_set_state(line, LINE_TAKEN);
-		/*
-		 * Update line info to include the changes after the
-		 * request.
-		 */
-		status = gpiod_line_update(line);
-		if (status < 0)
-			line_set_needs_update(line);
+		line_update(line);
 	}
 
 	return 0;
@@ -491,17 +494,13 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
 {
 	struct gpiod_line *line;
 	unsigned int i;
-	int status;
 
 	for (i = 0; i < line_bulk->num_lines; i++) {
 		line = line_bulk->lines[i];
 
 		line_remove_handle(line);
 		line_set_state(line, LINE_FREE);
-
-		status = gpiod_line_update(line);
-		if (status < 0)
-			line_set_needs_update(line);
+		line_update(line);
 	}
 }
 
