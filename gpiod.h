@@ -395,6 +395,49 @@ int gpiod_line_request(struct gpiod_line *line,
 		       int default_val) GPIOD_API;
 
 /**
+ * @brief Reserve a single line, set the direction to input.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param active_low Active state of the line (true if low).
+ * @return 0 if the line was properly reserved, -1 on failure.
+ */
+static inline int gpiod_line_request_input(struct gpiod_line *line,
+					   const char *consumer,
+					   bool active_low)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.direction = GPIOD_DIRECTION_INPUT,
+		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					   : GPIOD_ACTIVE_STATE_HIGH,
+	};
+
+	return gpiod_line_request(line, &config, 0);
+}
+
+/**
+ * @brief Reserve a single line, set the direction to output.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param active_low Active state of the line (true if low).
+ * @param default_val Default line value.
+ * @return 0 if the line was properly reserved, -1 on failure.
+ */
+static inline int gpiod_line_request_output(struct gpiod_line *line,
+					    const char *consumer,
+					    bool active_low, int default_val)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.direction = GPIOD_DIRECTION_OUTPUT,
+		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					   : GPIOD_ACTIVE_STATE_HIGH,
+	};
+
+	return gpiod_line_request(line, &config, default_val);
+}
+
+/**
  * @brief Reserve a set of GPIO lines.
  * @param line_bulk Set of GPIO lines to reserve.
  * @param config Request options.
@@ -409,6 +452,50 @@ int gpiod_line_request(struct gpiod_line *line,
 int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 			    const struct gpiod_line_request_config *config,
 			    int *default_vals) GPIOD_API;
+
+/**
+ * @brief Reserve a set of GPIO lines, set the direction to input.
+ * @param bulk Set of GPIO lines to reserve.
+ * @param consumer Name of the consumer.
+ * @param active_low Active state of the lines (true if low).
+ * @return 0 if the lines were properly reserved, -1 on failure.
+ */
+static inline int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
+						const char *consumer,
+						bool active_low)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.direction = GPIOD_DIRECTION_INPUT,
+		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					   : GPIOD_ACTIVE_STATE_HIGH,
+	};
+
+	return gpiod_line_request_bulk(bulk, &config, 0);
+}
+
+/**
+ * @brief Reserve a set of GPIO lines, set the direction to output.
+ * @param bulk Set of GPIO lines to reserve.
+ * @param consumer Name of the consumer.
+ * @param active_low Active state of the lines (true if low).
+ * @param default_vals Default line values.
+ * @return 0 if the lines were properly reserved, -1 on failure.
+ */
+static inline int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
+						 const char *consumer,
+						 bool active_low,
+						 int *default_vals)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.direction = GPIOD_DIRECTION_OUTPUT,
+		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					   : GPIOD_ACTIVE_STATE_HIGH,
+	};
+
+	return gpiod_line_request_bulk(bulk, &config, default_vals);
+}
 
 /**
  * @brief Release a previously reserved line.
