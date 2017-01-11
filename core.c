@@ -455,7 +455,7 @@ static bool verify_line_bulk(struct gpiod_line_bulk *line_bulk)
 	return true;
 }
 
-int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
+int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 			    const struct gpiod_line_request_config *config,
 			    int *default_vals)
 {
@@ -466,7 +466,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 	int status, fd;
 	unsigned int i;
 
-	if (!verify_line_bulk(line_bulk))
+	if (!verify_line_bulk(bulk))
 		return -1;
 
 	handle = zalloc(sizeof(*handle));
@@ -488,10 +488,10 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 	if (config->active_state == GPIOD_ACTIVE_STATE_LOW)
 		req->flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
-	req->lines = line_bulk->num_lines;
+	req->lines = bulk->num_lines;
 
-	for (i = 0; i < line_bulk->num_lines; i++) {
-		req->lineoffsets[i] = gpiod_line_offset(line_bulk->lines[i]);
+	for (i = 0; i < bulk->num_lines; i++) {
+		req->lineoffsets[i] = gpiod_line_offset(bulk->lines[i]);
 		if (config->direction == GPIOD_DIRECTION_OUTPUT)
 			req->default_values[i] = !!default_vals[i];
 	}
@@ -499,15 +499,15 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
 	strncpy(req->consumer_label, config->consumer,
 		sizeof(req->consumer_label) - 1);
 
-	chip = gpiod_line_get_chip(line_bulk->lines[0]);
+	chip = gpiod_line_get_chip(bulk->lines[0]);
 	fd = chip->fd;
 
 	status = gpio_ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
 	if (status < 0)
 		return -1;
 
-	for (i = 0; i < line_bulk->num_lines; i++) {
-		line = line_bulk->lines[i];
+	for (i = 0; i < bulk->num_lines; i++) {
+		line = bulk->lines[i];
 
 		line_set_handle(line, handle);
 		line_set_state(line, LINE_TAKEN);
@@ -527,13 +527,13 @@ void gpiod_line_release(struct gpiod_line *line)
 	gpiod_line_release_bulk(&bulk);
 }
 
-void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk)
+void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 {
 	struct gpiod_line *line;
 	unsigned int i;
 
-	for (i = 0; i < line_bulk->num_lines; i++) {
-		line = line_bulk->lines[i];
+	for (i = 0; i < bulk->num_lines; i++) {
+		line = bulk->lines[i];
 
 		line_remove_handle(line);
 		line_set_state(line, LINE_FREE);
@@ -578,25 +578,25 @@ int gpiod_line_get_value(struct gpiod_line *line)
 	return value;
 }
 
-int gpiod_line_get_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
+int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 {
 	struct gpiohandle_data data;
 	unsigned int i;
 	int status;
 
-	if (!line_bulk_is_reserved(line_bulk)) {
+	if (!line_bulk_is_reserved(bulk)) {
 		set_last_error(GPIOD_EREQUEST);
 		return -1;
 	}
 
 	memset(&data, 0, sizeof(data));
 
-	status = gpio_ioctl(line_get_handle_fd(line_bulk->lines[0]),
+	status = gpio_ioctl(line_get_handle_fd(bulk->lines[0]),
 			    GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
 
-	for (i = 0; i < line_bulk->num_lines; i++)
+	for (i = 0; i < bulk->num_lines; i++)
 		values[i] = data.values[i];
 
 	return 0;
@@ -612,23 +612,23 @@ int gpiod_line_set_value(struct gpiod_line *line, int value)
 	return gpiod_line_set_value_bulk(&bulk, &value);
 }
 
-int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk, int *values)
+int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 {
 	struct gpiohandle_data data;
 	unsigned int i;
 	int status;
 
-	if (!line_bulk_is_reserved(line_bulk)) {
+	if (!line_bulk_is_reserved(bulk)) {
 		set_last_error(GPIOD_EREQUEST);
 		return -1;
 	}
 
 	memset(&data, 0, sizeof(data));
 
-	for (i = 0; i < line_bulk->num_lines; i++)
+	for (i = 0; i < bulk->num_lines; i++)
 		data.values[i] = (__u8)!!values[i];
 
-	status = gpio_ioctl(line_get_handle_fd(line_bulk->lines[0]),
+	status = gpio_ioctl(line_get_handle_fd(bulk->lines[0]),
 			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;

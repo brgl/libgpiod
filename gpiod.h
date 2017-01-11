@@ -257,24 +257,24 @@ struct gpiod_line_bulk {
 
 /**
  * @brief Initialize a GPIO bulk object.
- * @param line_bulk Line bulk object.
+ * @param bulk Line bulk object.
  *
  * This routine simply sets the internally held number of lines to 0.
  */
-static inline void gpiod_line_bulk_init(struct gpiod_line_bulk *line_bulk)
+static inline void gpiod_line_bulk_init(struct gpiod_line_bulk *bulk)
 {
-	line_bulk->num_lines = 0;
+	bulk->num_lines = 0;
 }
 
 /**
  * @brief Add a single line to a GPIO bulk object.
- * @param line_bulk Line bulk object.
+ * @param bulk Line bulk object.
  * @param line Line to add.
  */
-static inline void gpiod_line_bulk_add(struct gpiod_line_bulk *line_bulk,
+static inline void gpiod_line_bulk_add(struct gpiod_line_bulk *bulk,
 				       struct gpiod_line *line)
 {
-	line_bulk->lines[line_bulk->num_lines++] = line;
+	bulk->lines[bulk->num_lines++] = line;
 }
 
 /**
@@ -439,7 +439,7 @@ static inline int gpiod_line_request_output(struct gpiod_line *line,
 
 /**
  * @brief Reserve a set of GPIO lines.
- * @param line_bulk Set of GPIO lines to reserve.
+ * @param bulk Set of GPIO lines to reserve.
  * @param config Request options.
  * @param default_vals Default line values - only relevant if we're setting
  *        the direction to output.
@@ -449,7 +449,7 @@ static inline int gpiod_line_request_output(struct gpiod_line *line,
  * Is this routine succeeds, the caller takes ownership of the GPIO line until
  * it's released.
  */
-int gpiod_line_request_bulk(struct gpiod_line_bulk *line_bulk,
+int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 			    const struct gpiod_line_request_config *config,
 			    int *default_vals) GPIOD_API;
 
@@ -505,9 +505,9 @@ void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Release a set of previously reserved lines.
- * @param line_bulk Set of GPIO lines to release.
+ * @param bulk Set of GPIO lines to release.
  */
-void gpiod_line_release_bulk(struct gpiod_line_bulk *line_bulk) GPIOD_API;
+void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk) GPIOD_API;
 
 /**
  * @brief Check if the calling user has ownership of this line.
@@ -534,7 +534,7 @@ int gpiod_line_get_value(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Read current values of a set of GPIO lines.
- * @param line_bulk Set of GPIO lines to reserve.
+ * @param bulk Set of GPIO lines to reserve.
  * @param values An array big enough to hold line_bulk->num_lines values.
  * @return 0 is the operation succeeds. In case of an error this routine
  *         returns -1 and sets the last error number.
@@ -542,7 +542,7 @@ int gpiod_line_get_value(struct gpiod_line *line) GPIOD_API;
  * If succeeds, this routine fills the values array with a set of values in
  * the same order, the lines are added to line_bulk.
  */
-int gpiod_line_get_value_bulk(struct gpiod_line_bulk *line_bulk,
+int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk,
 			      int *values) GPIOD_API;
 
 /**
@@ -556,12 +556,12 @@ int gpiod_line_set_value(struct gpiod_line *line, int value) GPIOD_API;
 
 /**
  * @brief Set the values of a set of GPIO lines.
- * @param line_bulk Set of GPIO lines to reserve.
+ * @param bulk Set of GPIO lines to reserve.
  * @param values An array holding line_bulk->num_lines new values for lines.
  * @return 0 is the operation succeeds. In case of an error this routine
  *         returns -1 and sets the last error number.
  */
-int gpiod_line_set_value_bulk(struct gpiod_line_bulk *line_bulk,
+int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
 			      int *values) GPIOD_API;
 
 /**
