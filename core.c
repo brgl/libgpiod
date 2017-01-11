@@ -52,10 +52,17 @@ struct gpiod_line {
 	};
 };
 
+enum {
+	CHIP_ITER_INIT = 0,
+	CHIP_ITER_DONE,
+	CHIP_ITER_ERR,
+};
+
 struct gpiod_chip_iter
 {
 	DIR *dir;
 	struct gpiod_chip *current;
+	int state;
 };
 
 static const char dev_dir[] = "/dev/";
@@ -932,6 +939,8 @@ struct gpiod_chip_iter * gpiod_chip_iter_new(void)
 		return NULL;
 	}
 
+	new->state = CHIP_ITER_INIT;
+
 	return new;
 }
 
@@ -966,11 +975,27 @@ struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 		status = strncmp(dentry->d_name, cdev_prefix,
 				 sizeof(cdev_prefix) - 1);
 		if (status == 0) {
+			iter->state = CHIP_ITER_INIT;
+
 			chip = gpiod_chip_open_by_name(dentry->d_name);
+			if (!chip)
+				iter->state = CHIP_ITER_ERR;
+
 			iter->current = chip;
 			return iter->current;
 		}
 	}
 
+	iter->state = CHIP_ITER_DONE;
 	return NULL;
+}
+
+bool gpiod_chip_iter_done(struct gpiod_chip_iter *iter)
+{
+	return iter->state == CHIP_ITER_DONE;
+}
+
+bool gpiod_chip_iter_iserr(struct gpiod_chip_iter *iter)
+{
+	return iter->state == CHIP_ITER_ERR;
 }

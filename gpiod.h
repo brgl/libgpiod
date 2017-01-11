@@ -704,8 +704,24 @@ gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
  */
 #define gpiod_foreach_chip(iter, chip)					\
 	for ((chip) = gpiod_chip_iter_next(iter);			\
-	     (chip);							\
+	     !gpiod_chip_iter_done(iter);				\
 	     (chip) = gpiod_chip_iter_next(iter))
+
+/**
+ * @brief Check if we're done iterating over gpiochips on this iterator.
+ * @param iter The gpiochip iterator object.
+ * @return True if we've iterated over all chips, false otherwise.
+ */
+bool gpiod_chip_iter_done(struct gpiod_chip_iter *iter) GPIOD_API;
+
+/**
+ * @brief Check if we've encountered an error condition while opening a
+ *        gpiochip.
+ * @param iter The gpiochip iterator object.
+ * @return True if there was an error opening a gpiochip device file,
+ *         false otherwise.
+ */
+bool gpiod_chip_iter_iserr(struct gpiod_chip_iter *iter) GPIOD_API;
 
 /**
  * @brief GPIO line iterator structure.
