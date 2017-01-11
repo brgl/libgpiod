@@ -835,23 +835,8 @@ static inline void gpiod_line_iter_init(struct gpiod_line_iter *iter,
  * @return Pointer to the next GPIO line handle or NULL if no more lines or
  *         and error occured.
  */
-static inline struct gpiod_line *
-gpiod_line_iter_next(struct gpiod_line_iter *iter)
-{
-	struct gpiod_line *line;
-
-	if (iter->offset >= gpiod_chip_num_lines(iter->chip)) {
-		iter->state = GPIOD_LINE_ITER_DONE;
-		return NULL;
-	}
-
-	iter->state = GPIOD_LINE_ITER_INIT;
-	line = gpiod_chip_get_line(iter->chip, iter->offset++);
-	if (!line)
-		iter->state = GPIOD_LINE_ITER_ERR;
-
-	return line;
-}
+struct gpiod_line *
+gpiod_line_iter_next(struct gpiod_line_iter *iter) GPIOD_API;
 
 /**
  * @brief Check if we're done iterating over lines on this iterator.

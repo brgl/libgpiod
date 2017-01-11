@@ -1077,3 +1077,20 @@ gpiod_chip_iter_failed_chip(struct gpiod_chip_iter *iter)
 {
 	return iter->failed_chip;
 }
+
+struct gpiod_line * gpiod_line_iter_next(struct gpiod_line_iter *iter)
+{
+	struct gpiod_line *line;
+
+	if (iter->offset >= gpiod_chip_num_lines(iter->chip)) {
+		iter->state = GPIOD_LINE_ITER_DONE;
+		return NULL;
+	}
+
+	iter->state = GPIOD_LINE_ITER_INIT;
+	line = gpiod_chip_get_line(iter->chip, iter->offset++);
+	if (!line)
+		iter->state = GPIOD_LINE_ITER_ERR;
+
+	return line;
+}
