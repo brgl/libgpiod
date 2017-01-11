@@ -629,7 +629,7 @@ struct gpiod_line_event {
  * @brief Request event notifications for a single line.
  * @param line GPIO line object.
  * @param config Event request configuration.
- * @return 0 is the operation succeeds. In case of an error this routine
+ * @return 0 if the operation succeeds. In case of an error this routine
  *         returns -1 and sets the last error number.
  */
 int gpiod_line_event_request(struct gpiod_line *line,
