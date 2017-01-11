@@ -737,6 +737,18 @@ const char *
 gpiod_chip_iter_failed_chip(struct gpiod_chip_iter *iter) GPIOD_API;
 
 /**
+ * @brief Possible states of a line iterator.
+ */
+enum {
+	GPIOD_LINE_ITER_INIT = 0,
+	/**< Line iterator is initiated or iterating over lines. */
+	GPIOD_LINE_ITER_DONE,
+	/**< Line iterator is done with all lines on this chip. */
+	GPIOD_LINE_ITER_ERR,
+	/**< There was an error retrieving info for a line. */
+};
+
+/**
  * @brief GPIO line iterator structure.
  *
  * This structure is used in conjunction with gpiod_line_iter_next() to
@@ -747,13 +759,20 @@ struct gpiod_line_iter {
 	/**< Current line offset. */
 	struct gpiod_chip *chip;
 	/**< GPIO chip whose line we're iterating over. */
+	int state;
+	/**< Current state of the iterator. */
 };
 
 /**
  * @brief Static initializer for line iterators.
  * @param chip The gpiochip object whose lines we want to iterate over.
  */
-#define GPIOD_LINE_ITER_INITIALIZER(chip)	{ 0, (chip) }
+#define GPIOD_LINE_ITER_INITIALIZER(chip) 				\
+	{								\
+		.offset = 0,						\
+		.chip = (chip),						\
+		state = GPIOD_LINE_ITER_INIT,				\
+	}
 
 /**
  * @brief Initialize a GPIO line iterator.
@@ -765,6 +784,7 @@ static inline void gpiod_line_iter_init(struct gpiod_line_iter *iter,
 {
 	iter->offset = 0;
 	iter->chip = chip;
+	iter->state = GPIOD_LINE_ITER_INIT;
 }
 
 /**
@@ -776,10 +796,53 @@ static inline void gpiod_line_iter_init(struct gpiod_line_iter *iter,
 static inline struct gpiod_line *
 gpiod_line_iter_next(struct gpiod_line_iter *iter)
 {
-	if (iter->offset >= gpiod_chip_num_lines(iter->chip))
-		return NULL;
+	struct gpiod_line *line;
 
-	return gpiod_chip_get_line(iter->chip, iter->offset++);
+	if (iter->offset >= gpiod_chip_num_lines(iter->chip)) {
+		iter->state = GPIOD_LINE_ITER_DONE;
+		return NULL;
+	}
+
+	iter->state = GPIOD_LINE_ITER_INIT;
+	line = gpiod_chip_get_line(iter->chip, iter->offset++);
+	if (!line)
+		iter->state = GPIOD_LINE_ITER_ERR;
+
+	return line;
+}
+
+/**
+ * @brief Check if we're done iterating over lines on this iterator.
+ * @param iter The GPIO line iterator object.
+ * @return True if we've iterated over all lines, false otherwise.
+ */
+static inline bool gpiod_line_iter_done(const struct gpiod_line_iter *iter)
+{
+	return iter->state == GPIOD_LINE_ITER_DONE;
+}
+
+/**
+ * @brief Check if we've encountered an error condition while retrieving
+ *        info for a line.
+ * @param iter The GPIO line iterator object.
+ * @return True if there was an error retrieving info about a GPIO line,
+ *         false otherwise.
+ */
+static inline bool gpiod_line_iter_err(const struct gpiod_line_iter *iter)
+{
+	return iter->state == GPIOD_LINE_ITER_ERR;
+}
+
+/**
+ * @brief Get the offset of the last line we tried to open.
+ * @param iter The GPIO line iterator object.
+ * @return The offset of the last line we tried to open - whether we failed
+ *         or succeeded to do so.
+ */
+static inline unsigned int
+gpiod_line_iter_last_offset(const struct gpiod_line_iter *iter)
+{
+	return iter->offset - 1;
 }
 
 /**
@@ -790,7 +853,7 @@ gpiod_line_iter_next(struct gpiod_line_iter *iter)
  */
 #define gpiod_foreach_line(iter, line)					\
 	for ((line) = gpiod_line_iter_next(iter);			\
-	     (line);							\
+	     !gpiod_line_iter_done(iter);				\
 	     (line) = gpiod_line_iter_next(iter))
 
 /**

@@ -100,6 +100,10 @@ static void list_lines(struct gpiod_chip *chip)
 
 	gpiod_line_iter_init(&iter, chip);
 	gpiod_foreach_line(&iter, line) {
+		if (gpiod_line_iter_err(&iter))
+			die_perror("error retrieving info for line %u",
+				   gpiod_line_iter_last_offset(&iter));
+
 		offset = gpiod_line_offset(line);
 		name = gpiod_line_name(line);
 		consumer = gpiod_line_consumer(line);
