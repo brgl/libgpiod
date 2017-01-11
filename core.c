@@ -277,7 +277,10 @@ int gpiod_simple_event_loop(const char *device, unsigned int offset,
 	for (;;) {
 		status = gpiod_line_event_wait(line, timeout);
 		if (status < 0) {
-			goto out;
+			if (gpiod_errno() == EINTR)
+				return evtype = GPIOD_EVENT_CB_TIMEOUT;
+			else
+				goto out;
 		} else if (status == 0) {
 			evtype = GPIOD_EVENT_CB_TIMEOUT;
 		} else {
