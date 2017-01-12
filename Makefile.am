@@ -18,6 +18,7 @@ lib_LTLIBRARIES = libgpiod.la
 include_HEADERS = gpiod.h
 
 libgpiod_la_SOURCES = core.c
+libgpiod_la_CFLAGS = -g
 
 bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpiofind
 
