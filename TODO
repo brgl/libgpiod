@@ -1,6 +1,5 @@
 MINOR:
 - extend gpioset/get with options to specify the wait time etc.
-- build tools conditionally
 - unify the help messages for all tools
 
 MAJOR:
