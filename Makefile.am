@@ -13,10 +13,9 @@ LIBS =
 AM_CPPFLAGS = -I$(top_srcdir) -include $(top_srcdir)/config.h -Wextra
 AM_CPPFLAGS += -fvisibility=hidden -D_GNU_SOURCE
 
-lib_LTLIBRARIES = libgpiod.la
-
 include_HEADERS = gpiod.h
 
+lib_LTLIBRARIES = libgpiod.la
 libgpiod_la_SOURCES = core.c
 libgpiod_la_CFLAGS = -g
 
