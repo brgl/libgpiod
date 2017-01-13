@@ -53,8 +53,6 @@ AC_CHECK_HEADERS([dirent.h], [], [AC_MSG_ERROR([dirent.h header not found])])
 AC_CHECK_HEADERS([linux/gpio.h], [],
 		[AC_MSG_ERROR([linux/gpio.h header not found])])
 
-AC_HEADER_STDC
-
 AC_CONFIG_FILES([Makefile])
 
 CFLAGS="$CFLAGS -Wall"
