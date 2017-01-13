@@ -1005,6 +1005,21 @@ gpiod_line_iter_last_offset(const struct gpiod_line_iter *iter)
 
 /**
  * @}
+ *
+ * @defgroup __misc__ Stuff that didn't fit anywhere else
+ * @{
+ *
+ * Various libgpiod-related functions.
+ */
+
+/**
+ * @brief Get the version of the library as a human-readable string.
+ * @return Human-readable string containing the library version.
+ */
+const char * gpiod_version_string(void) GPIOD_API;
+
+/**
+ * @}
  */
 
 #ifdef __cplusplus

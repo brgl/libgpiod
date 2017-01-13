@@ -1077,3 +1077,8 @@ struct gpiod_line * gpiod_line_iter_next(struct gpiod_line_iter *iter)
 
 	return line;
 }
+
+const char * gpiod_version_string(void)
+{
+	return PACKAGE_VERSION;
+}
