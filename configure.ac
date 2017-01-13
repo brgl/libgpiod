@@ -8,7 +8,6 @@
 
 AC_PREREQ(2.61)
 AC_INIT([libgpiod], 0.0.0)
-AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([autostuff])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror subdir-objects])
 

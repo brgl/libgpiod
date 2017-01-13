@@ -7,7 +7,6 @@
 #
 
 AUTOMAKE_OPTIONS = foreign
-ACLOCAL_AMFLAGS = -I m4
 LIBS =
 
 AM_CPPFLAGS = -I$(top_srcdir) -include $(top_srcdir)/config.h -Wextra
