@@ -20,6 +20,20 @@ AC_SUBST(VERSION_RELEASE, 0)
 
 AC_CONFIG_HEADER([config.h])
 
+AC_ARG_ENABLE([tools],
+	[AC_HELP_STRING([--enable-tools],
+		[enable libgpiod command-line tools [default=no]])],
+	[
+		if test "x$enableval" = xyes
+		then
+			with_tools=true
+		else
+			with_tools=false
+		fi
+	],
+	[with_tools = false])
+AM_CONDITIONAL([WITH_TOOLS], [test x$with_tools = xtrue])
+
 AC_PROG_CC
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL

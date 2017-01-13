@@ -20,6 +20,8 @@ libgpiod_la_SOURCES = core.c
 libgpiod_la_CFLAGS = -g
 libgpiod_la_LDFLAGS = -version-number $(VERSION_MAJOR):$(VERSION_MINOR):$(VERSION_RELEASE)
 
+if WITH_TOOLS
+
 bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpiofind
 
 gpiodetect_SOURCES = gpiodetect.c tools-common.c
@@ -45,6 +47,8 @@ gpiomon_DEPENDENCIES = libgpiod.la
 gpiofind_SOURCES = gpiofind.c tools-common.c
 gpiofind_LDFLAGS = -lgpiod
 gpiofind_DEPENDENCIES = libgpiod.la
+
+endif
 
 doc:
 	doxygen
