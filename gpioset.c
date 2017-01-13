@@ -16,9 +16,9 @@
 #include <getopt.h>
 
 static const struct option longopts[] = {
-	{ "help",		no_argument,		NULL,	'h' },
+	{ "help",	no_argument,	NULL,	'h' },
 	{ "version",	no_argument,	NULL,	'v' },
-	{ "active-low",		no_argument,		NULL,	'l' },
+	{ "active-low",	no_argument,	NULL,	'l' },
 	{ 0 },
 };
 
