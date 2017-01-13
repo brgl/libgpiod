@@ -40,11 +40,12 @@ static const struct flag flags[] = {
 };
 
 static const struct option longopts[] = {
-	{ "help", no_argument, NULL, 'h' },
+	{ "help",	no_argument,	NULL,	'h' },
+	{ "version",	no_argument,	NULL,	'v' },
 	{ 0 },
 };
 
-static const char *const shortopts = "+h";
+static const char *const shortopts = "+hv";
 
 static void print_help(void)
 {
@@ -52,6 +53,7 @@ static void print_help(void)
 	printf("List all lines of a GPIO chip.\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
+	printf("  -v, --version:\tdisplay the version and exit\n");
 }
 
 static PRINTF(3, 4) void prinfo(bool *overflow,
@@ -165,6 +167,9 @@ int main(int argc, char **argv)
 		switch (optc) {
 		case 'h':
 			print_help();
+			return EXIT_SUCCESS;
+		case 'v':
+			print_version();
 			return EXIT_SUCCESS;
 		case '?':
 			die("try %s --help", get_progname());

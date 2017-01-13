@@ -18,11 +18,12 @@
 
 static const struct option longopts[] = {
 	{ "help",	no_argument,	NULL,	'h' },
+	{ "version",	no_argument,	NULL,	'v' },
 	{ "active-low",	no_argument,	NULL,	'l' },
 	{ 0 },
 };
 
-static const char *const shortopts = "hl";
+static const char *const shortopts = "hvl";
 
 static void print_help(void)
 {
@@ -31,6 +32,7 @@ static void print_help(void)
 	printf("Wait for events on a GPIO line\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
+	printf("  -v, --version:\tdisplay the version and exit\n");
 	printf("  -l, --active-low:\tset the line active state to low\n");
 }
 
@@ -85,6 +87,9 @@ int main(int argc, char **argv)
 		switch (optc) {
 		case 'h':
 			print_help();
+			return EXIT_SUCCESS;
+		case 'v':
+			print_version();
 			return EXIT_SUCCESS;
 		case 'l':
 			active_low = true;
