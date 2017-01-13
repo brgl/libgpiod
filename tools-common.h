@@ -25,5 +25,6 @@ void set_progname(char *name);
 const char * get_progname(void);
 void die(const char *fmt, ...);
 void die_perror(const char *fmt, ...);
+void print_version(void);
 
 #endif /* __GPIOD_TOOLS_COMMON_H__ */

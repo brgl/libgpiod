@@ -13,7 +13,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdarg.h>
+#include <libgen.h>
 
 #define NORETURN		__attribute__((noreturn))
 
@@ -53,4 +55,24 @@ void NORETURN PRINTF(1, 2) die_perror(const char *fmt, ...)
 	va_end(va);
 
 	exit(EXIT_FAILURE);
+}
+
+void print_version(void)
+{
+	char *prog, *tmp;
+
+	tmp = strdup(progname);
+	if (!tmp)
+		prog = progname;
+	else
+		prog = basename(tmp);
+
+	printf("%s (libgpiod) %s\n", prog, gpiod_version_string());
+	printf("Copyright (C) 2017 Bartosz Golaszewski\n");
+	printf("License GPLv3+: GNU GPL version 3 or later\n");
+	printf("This is free software: you are free to change and redistribute it.\n");
+	printf("There is NO WARRANTY, to the extent permitted by law.\n");
+
+	if (tmp)
+		free(tmp);
 }
