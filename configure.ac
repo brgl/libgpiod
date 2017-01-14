@@ -13,10 +13,6 @@ AM_INIT_AUTOMAKE([foreign -Wall -Werror subdir-objects])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-AC_SUBST(VERSION_MAJOR, 0)
-AC_SUBST(VERSION_MINOR, 0)
-AC_SUBST(VERSION_RELEASE, 0)
-
 AC_CONFIG_HEADER([config.h])
 
 AC_ARG_ENABLE([tools],

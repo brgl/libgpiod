@@ -17,7 +17,7 @@ include_HEADERS = gpiod.h
 lib_LTLIBRARIES = libgpiod.la
 libgpiod_la_SOURCES = core.c
 libgpiod_la_CFLAGS = -g
-libgpiod_la_LDFLAGS = -version-number $(VERSION_MAJOR):$(VERSION_MINOR):$(VERSION_RELEASE)
+libgpiod_la_LDFLAGS = -version-number $(subst .,:,$(PACKAGE_VERSION))
 
 if WITH_TOOLS
 
