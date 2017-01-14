@@ -10,7 +10,6 @@
 
 # General configuration
 PROJECT_NAME           = libgpiod
-PROJECT_NUMBER         = ALPHA
 OUTPUT_DIRECTORY       = doc
 OUTPUT_LANGUAGE        = English
 EXTRACT_ALL            = NO

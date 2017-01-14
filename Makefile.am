@@ -50,5 +50,5 @@ gpiofind_DEPENDENCIES = libgpiod.la
 endif
 
 doc:
-	doxygen
+	@(cat Doxyfile; echo PROJECT_NUMBER = $(PACKAGE_VERSION)) | doxygen -
 .PHONY: doc
