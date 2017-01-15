@@ -6,10 +6,4 @@
 # published by the Free Software Foundation.
 #
 
-AUTOMAKE_OPTIONS = foreign
-ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = include src
-
-doc:
-	@(cat Doxyfile; echo PROJECT_NUMBER = $(PACKAGE_VERSION)) | doxygen -
-.PHONY: doc
+include_HEADERS = gpiod.h

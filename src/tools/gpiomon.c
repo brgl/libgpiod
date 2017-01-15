@@ -8,7 +8,7 @@
  * published by the Free Software Foundation.
  */
 
-#include "gpiod.h"
+#include <gpiod.h>
 #include "tools-common.h"
 
 #include <stdio.h>

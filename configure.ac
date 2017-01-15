@@ -9,11 +9,13 @@
 AC_PREREQ(2.61)
 AC_INIT([libgpiod], 0.0.0)
 AC_CONFIG_AUX_DIR([autostuff])
-AM_INIT_AUTOMAKE([foreign -Wall -Werror subdir-objects])
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
+AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADER([config.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_ARG_ENABLE([tools],
 	[AC_HELP_STRING([--enable-tools],
@@ -29,6 +31,7 @@ AC_ARG_ENABLE([tools],
 	[with_tools = false])
 AM_CONDITIONAL([WITH_TOOLS], [test x$with_tools = xtrue])
 
+AM_PROG_AR
 AC_PROG_CC
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
@@ -49,8 +52,10 @@ AC_CHECK_HEADERS([dirent.h], [], [AC_MSG_ERROR([dirent.h header not found])])
 AC_CHECK_HEADERS([linux/gpio.h], [],
 		[AC_MSG_ERROR([linux/gpio.h header not found])])
 
-AC_CONFIG_FILES([Makefile])
-
-CFLAGS="$CFLAGS -Wall"
+AC_CONFIG_FILES([Makefile
+		 include/Makefile
+		 src/Makefile
+		 src/lib/Makefile
+		 src/tools/Makefile])
 
 AC_OUTPUT

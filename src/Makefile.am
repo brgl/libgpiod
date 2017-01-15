@@ -6,10 +6,10 @@
 # published by the Free Software Foundation.
 #
 
-AUTOMAKE_OPTIONS = foreign
-ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = include src
+if WITH_TOOLS
 
-doc:
-	@(cat Doxyfile; echo PROJECT_NUMBER = $(PACKAGE_VERSION)) | doxygen -
-.PHONY: doc
+TOOLS_SUBDIR = tools
+
+endif
+
+SUBDIRS = . lib $(TOOLS_SUBDIR)

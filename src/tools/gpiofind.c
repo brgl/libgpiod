@@ -8,7 +8,7 @@
  * published by the Free Software Foundation.
  */
 
-#include "gpiod.h"
+#include <gpiod.h>
 #include "tools-common.h"
 
 #include <stdio.h>
@@ -18,29 +18,25 @@
 static const struct option longopts[] = {
 	{ "help",	no_argument,	NULL,	'h' },
 	{ "version",	no_argument,	NULL,	'v' },
-	{ "active-low",	no_argument,	NULL,	'l' },
 	{ 0 },
 };
 
-static const char *const shortopts = "hvl";
+static const char *const shortopts = "+hv";
 
 static void print_help(void)
 {
-	printf("Usage: %s [CHIP NAME/NUMBER] [LINE OFFSET] <options>\n",
-	       get_progname());
-	printf("Read value from a GPIO line\n");
+	printf("Usage: %s <options> [NAME]\n", get_progname());
+	printf("Find a GPIO line by name.\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -v, --version:\tdisplay the version and exit\n");
-	printf("  -l, --active-low:\tset the line active state to low\n");
 }
 
 int main(int argc, char **argv)
 {
-	bool active_low = false;
-	int value, optc, opti;
-	unsigned int offset;
-	char *device, *end;
+	struct gpiod_line *line;
+	struct gpiod_chip *chip;
+	int optc, opti;
 
 	set_progname(argv[0]);
 
@@ -56,9 +52,6 @@ int main(int argc, char **argv)
 		case 'v':
 			print_version();
 			return EXIT_SUCCESS;
-		case 'l':
-			active_low = true;
-			break;
 		case '?':
 			die("try %s --help", get_progname());
 		default:
@@ -69,23 +62,18 @@ int main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 1)
-		die("gpiochip must be specified");
+	if (argc != 1)
+		die("GPIO line name must be specified");
 
-	if (argc < 2)
-		die("gpio line offset must be specified");
+	line = gpiod_line_find_by_name(argv[0]);
+	if (!line)
+		return EXIT_FAILURE;
 
-	device = argv[0];
+	chip = gpiod_line_get_chip(line);
 
-	offset = strtoul(argv[1], &end, 10);
-	if (*end != '\0')
-		die("invalid GPIO offset: %s", argv[1]);
+	printf("%s %u\n", gpiod_chip_name(chip), gpiod_line_offset(line));
 
-	value = gpiod_simple_get_value(device, offset, active_low);
-	if (value < 0)
-		die_perror("error reading GPIO value");
-
-	printf("%d\n", value);
+	gpiod_chip_close(chip);
 
 	return EXIT_SUCCESS;
 }
