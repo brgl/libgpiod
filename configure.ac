@@ -8,7 +8,7 @@
 
 AC_PREREQ(2.61)
 
-AC_INIT([libgpiod], 0.0.0)
+AC_INIT([libgpiod], 0.1)
 AC_SUBST(EXTRA_VERSION, [.git])
 
 AC_DEFINE_UNQUOTED([GPIOD_VERSION_STR],
