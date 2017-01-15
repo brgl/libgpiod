@@ -7,7 +7,14 @@
 #
 
 AC_PREREQ(2.61)
+
 AC_INIT([libgpiod], 0.0.0)
+AC_SUBST(EXTRA_VERSION, [.git])
+
+AC_DEFINE_UNQUOTED([GPIOD_VERSION_STR],
+			["$PACKAGE_VERSION$EXTRA_VERSION"],
+			[Full library version string.])
+
 AC_CONFIG_AUX_DIR([autostuff])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 

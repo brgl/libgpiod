@@ -1080,5 +1080,5 @@ struct gpiod_line * gpiod_line_iter_next(struct gpiod_line_iter *iter)
 
 const char * gpiod_version_string(void)
 {
-	return PACKAGE_VERSION;
+	return GPIOD_VERSION_STR;
 }
