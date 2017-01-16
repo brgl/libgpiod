@@ -635,6 +635,7 @@ struct gpiod_line_event {
 int gpiod_line_event_request(struct gpiod_line *line,
 			     struct gpiod_line_evreq_config *config) GPIOD_API;
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 static inline int _gpiod_line_event_request_type(struct gpiod_line *line,
 						 const char *consumer,
 						 bool active_low,
@@ -649,6 +650,7 @@ static inline int _gpiod_line_event_request_type(struct gpiod_line *line,
 
 	return gpiod_line_event_request(line, &config);
 }
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
  * @brief Request rising edge event notifications on a single line.
