@@ -635,6 +635,51 @@ struct gpiod_line_event {
 int gpiod_line_event_request(struct gpiod_line *line,
 			     struct gpiod_line_evreq_config *config) GPIOD_API;
 
+static inline int _gpiod_line_event_request_type(struct gpiod_line *line,
+						 const char *consumer,
+						 bool active_low,
+						 int type)
+{
+	struct gpiod_line_evreq_config config = {
+		.consumer = consumer,
+		.event_type = type,
+		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					   : GPIOD_ACTIVE_STATE_HIGH,
+	};
+
+	return gpiod_line_event_request(line, &config);
+}
+
+/**
+ * @brief Request rising edge event notifications on a single line.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param active_low Active state of the line - true if low.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+static inline int gpiod_line_event_request_rising(struct gpiod_line *line,
+						  const char *consumer,
+						  bool active_low)
+{
+	return _gpiod_line_event_request_type(line, consumer, active_low,
+					      GPIOD_EVENT_RISING_EDGE);
+}
+
+/**
+ * @brief Request falling edge event notifications on a single line.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param active_low Active state of the line - true if low.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+static inline int gpiod_line_event_request_falling(struct gpiod_line *line,
+						   const char *consumer,
+						   bool active_low)
+{
+	return _gpiod_line_event_request_type(line, consumer, active_low,
+					      GPIOD_EVENT_FALLING_EDGE);
+}
+
 /**
  * @brief Request all event type notifications on a single line.
  * @param line GPIO line object.
@@ -646,14 +691,8 @@ static inline int gpiod_line_event_request_all(struct gpiod_line *line,
 					       const char *consumer,
 					       bool active_low)
 {
-	struct gpiod_line_evreq_config config = {
-		.consumer = consumer,
-		.event_type = GPIOD_EVENT_BOTH_EDGES,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
-	};
-
-	return gpiod_line_event_request(line, &config);
+	return _gpiod_line_event_request_type(line, consumer, active_low,
+					      GPIOD_EVENT_BOTH_EDGES);
 }
 
 /**
