@@ -108,18 +108,3 @@ TAGFILES               =
 GENERATE_TAGFILE       =
 ALLEXTERNALS           = NO
 PERL_PATH              =
-
-# Dot tool
-CLASS_DIAGRAMS         = YES
-HAVE_DOT               = NO
-CLASS_GRAPH            = YES
-COLLABORATION_GRAPH    = YES
-TEMPLATE_RELATIONS     = YES
-HIDE_UNDOC_RELATIONS   = YES
-INCLUDE_GRAPH          = YES
-INCLUDED_BY_GRAPH      = YES
-GRAPHICAL_HIERARCHY    = YES
-DOT_PATH               =
-DOTFILE_DIRS           =
-GENERATE_LEGEND        = YES
-DOT_CLEANUP            = YES
