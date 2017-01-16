@@ -22,11 +22,11 @@ static const struct option longopts[] = {
 	{ 0 },
 };
 
-static const char *const shortopts = "hvl";
+static const char *const shortopts = "+hvl";
 
 static void print_help(void)
 {
-	printf("Usage: %s [CHIP NAME/NUMBER] [LINE OFFSET] [VALUE] <options>\n",
+	printf("Usage: %s [OPTIONS] <chip name/number> <line offset> <value>\n",
 	       get_progname());
 	printf("Set value of a GPIO line\n");
 	printf("Options:\n");
