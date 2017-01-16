@@ -56,8 +56,8 @@ static void print_help(void)
 	printf("  -v, --version:\tdisplay the version and exit\n");
 }
 
-static PRINTF(3, 4) void prinfo(bool *overflow,
-				unsigned int pref_len, const char *fmt, ...)
+static PRINTF(3, 4) void prinfo(bool *of,
+				unsigned int prlen, const char *fmt, ...)
 {
 	char *buf, *buffmt = NULL;
 	size_t len;
@@ -72,11 +72,11 @@ static PRINTF(3, 4) void prinfo(bool *overflow,
 
 	len = strlen(buf) - 1;
 
-	if (len >= pref_len || *overflow) {
-		*overflow = true;
+	if (len >= prlen || *of) {
+		*of = true;
 		printf("%s", buf);
 	} else {
-		status = asprintf(&buffmt, "%%%us", pref_len);
+		status = asprintf(&buffmt, "%%%us", prlen);
 		if (status < 0)
 			die("asprintf: %s\n", strerror(errno));
 
@@ -90,12 +90,12 @@ static PRINTF(3, 4) void prinfo(bool *overflow,
 
 static void list_lines(struct gpiod_chip *chip)
 {
-	bool flag_printed, overflow;
 	int direction, active_state;
 	struct gpiod_line_iter iter;
 	const char *name, *consumer;
 	struct gpiod_line *line;
 	unsigned int i, offset;
+	bool flag_printed, of;
 
 	printf("%s - %u lines:\n",
 	       gpiod_chip_name(chip), gpiod_chip_num_lines(chip));
@@ -112,23 +112,23 @@ static void list_lines(struct gpiod_chip *chip)
 		direction = gpiod_line_direction(line);
 		active_state = gpiod_line_active_state(line);
 
-		overflow = false;
+		of = false;
 
 		printf("\tline ");
-		prinfo(&overflow, 2, "%u", offset);
+		prinfo(&of, 2, "%u", offset);
 		printf(": ");
 
-		name ? prinfo(&overflow, 12, "\"%s\"", name)
-		     : prinfo(&overflow, 12, "unnamed");
+		name ? prinfo(&of, 12, "\"%s\"", name)
+		     : prinfo(&of, 12, "unnamed");
 		printf(" ");
 
-		consumer ? prinfo(&overflow, 12, "\"%s\"", consumer)
-			 : prinfo(&overflow, 12, "unused");
+		consumer ? prinfo(&of, 12, "\"%s\"", consumer)
+			 : prinfo(&of, 12, "unused");
 		printf(" ");
 
-		prinfo(&overflow, 8, "%s ", direction == GPIOD_DIRECTION_INPUT
+		prinfo(&of, 8, "%s ", direction == GPIOD_DIRECTION_INPUT
 						? "input" : "output");
-		prinfo(&overflow, 13, "%s ",
+		prinfo(&of, 13, "%s ",
 		       active_state == GPIOD_ACTIVE_STATE_LOW
 						? "active-low"
 						: "active-high");
