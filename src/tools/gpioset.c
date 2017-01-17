@@ -29,10 +29,11 @@ static const struct option longopts[] = {
 	{ "mode",		required_argument,	NULL,	'm' },
 	{ "sec",		required_argument,	NULL,	's' },
 	{ "usec",		required_argument,	NULL,	'u' },
+	{ "background",		no_argument,		NULL,	'b' },
 	{ 0 },
 };
 
-static const char *const shortopts = "+hvlm:s:u:";
+static const char *const shortopts = "+hvlm:s:u:b";
 
 static void print_help(void)
 {
@@ -47,6 +48,7 @@ static void print_help(void)
 	printf("		tell the program what to do after setting values\n");
 	printf("  -s, --sec=SEC:\tspecify the number of seconds to wait (only valid for --mode=time)\n");
 	printf("  -u, --usec=USEC:\tspecify the number of microseconds to wait (only valid for --mode=time)\n");
+	printf("  -b, --background:\tafter setting values: detach from the controlling terminal\n");
 	printf("\n");
 	printf("Modes:\n");
 	printf("  exit:\tset values and exit immediately\n");
@@ -58,7 +60,19 @@ static void print_help(void)
 struct callback_data {
 	/* Replace with a union once we have more modes using callback data. */
 	struct timeval tv;
+	bool daemonize;
 };
+
+static void maybe_daemonize(bool daemonize)
+{
+	int status;
+
+	if (daemonize) {
+		status = daemon(0, 0);
+		if (status < 0)
+			die("unable to daemonize: %s", strerror(errno));
+	}
+}
 
 static void wait_enter(void *data UNUSED)
 {
@@ -69,11 +83,13 @@ static void wait_time(void *data)
 {
 	struct callback_data *cbdata = data;
 
+	maybe_daemonize(cbdata->daemonize);
 	select(0, NULL, NULL, NULL, &cbdata->tv);
 }
 
-static void wait_signal(void *data UNUSED)
+static void wait_signal(void *data)
 {
+	struct callback_data *cbdata = data;
 	int sigfd, status;
 	struct pollfd pfd;
 	sigset_t sigmask;
@@ -93,6 +109,8 @@ static void wait_signal(void *data UNUSED)
 	memset(&pfd, 0, sizeof(pfd));
 	pfd.fd = sigfd;
 	pfd.events = POLLIN | POLLPRI;
+
+	maybe_daemonize(cbdata->daemonize);
 
 	for (;;) {
 		status = poll(&pfd, 1, 1000 /* one second */);
@@ -203,6 +221,11 @@ int main(int argc, char **argv)
 			if (*end != '\0')
 				die("invalid time value in microseconds: %s",
 				    optarg);
+			break;
+		case 'b':
+			if (mode->id != MODE_SIGNAL && mode->id != MODE_TIME)
+				die("can't daemonize in this mode");
+			cbdata.daemonize = true;
 			break;
 		case '?':
 			die("try %s --help", get_progname());
