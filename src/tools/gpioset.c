@@ -177,11 +177,11 @@ static const struct mode_mapping * parse_mode(const char *mode)
 int main(int argc, char **argv)
 {
 	const struct mode_mapping *mode = &modes[MODE_EXIT];
-	int *values, status, optc, opti;
-	bool active_low = false;
 	unsigned int *offsets, num_lines, i;
-	char *device, *end;
+	int *values, status, optc, opti;
 	struct callback_data cbdata;
+	bool active_low = false;
+	char *device, *end;
 
 	set_progname(argv[0]);
 
