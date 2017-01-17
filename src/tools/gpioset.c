@@ -51,9 +51,9 @@ static void print_help(void)
 	printf("  -b, --background:\tafter setting values: detach from the controlling terminal\n");
 	printf("\n");
 	printf("Modes:\n");
-	printf("  exit:\tset values and exit immediately\n");
-	printf("  wait:\tset values and wait for user to press ENTER\n");
-	printf("  time:\tset values and sleep for a specified amount of time\n");
+	printf("  exit:\t\tset values and exit immediately\n");
+	printf("  wait:\t\tset values and wait for user to press ENTER\n");
+	printf("  time:\t\tset values and sleep for a specified amount of time\n");
 	printf("  signal:\tset values and wait for SIGINT or SIGTERM\n");
 }
 
