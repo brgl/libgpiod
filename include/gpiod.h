@@ -233,6 +233,7 @@ typedef int (*gpiod_event_cb)(int, const struct timespec *, void *);
 
 /**
  * @brief Wait for events on a single GPIO line.
+ * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
  * @param offset GPIO line offset on the chip.
  * @param active_low The active state of this line - true if low.
@@ -242,9 +243,10 @@ typedef int (*gpiod_event_cb)(int, const struct timespec *, void *);
  * @return 0 no errors were encountered, -1 if an error occured.
  *
  */
-int gpiod_simple_event_loop(const char *device, unsigned int offset,
-			    bool active_low, struct timespec *timeout,
-			    gpiod_event_cb callback, void *cbdata) GPIOD_API;
+int gpiod_simple_event_loop(const char *consumer, const char *device,
+			    unsigned int offset, bool active_low,
+			    struct timespec *timeout, gpiod_event_cb callback,
+			    void *cbdata) GPIOD_API;
 
 /**
  * @}

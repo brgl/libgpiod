@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 	signal(SIGINT, sighandler);
 	signal(SIGTERM, sighandler);
 
-	status = gpiod_simple_event_loop(device, offset, active_low,
+	status = gpiod_simple_event_loop("gpiomon", device, offset, active_low,
 					 &timeout, event_callback, NULL);
 	if (status < 0)
 		die_perror("error waiting for events");

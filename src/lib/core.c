@@ -68,7 +68,6 @@ struct gpiod_chip_iter
 
 static const char dev_dir[] = "/dev/";
 static const char cdev_prefix[] = "gpiochip";
-static const char libgpiod_consumer[] = "libgpiod";
 
 /*
  * The longest error message in glibc is about 50 characters long so 64 should
@@ -253,9 +252,10 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 	return 0;
 }
 
-int gpiod_simple_event_loop(const char *device, unsigned int offset,
-			    bool active_low, struct timespec *timeout,
-			    gpiod_event_cb callback, void *cbdata)
+int gpiod_simple_event_loop(const char *consumer, const char *device,
+			    unsigned int offset, bool active_low,
+			    struct timespec *timeout, gpiod_event_cb callback,
+			    void *cbdata)
 {
 	struct gpiod_line_event event;
 	struct gpiod_chip *chip;
@@ -272,8 +272,7 @@ int gpiod_simple_event_loop(const char *device, unsigned int offset,
 		return -1;
 	}
 
-	status = gpiod_line_event_request_all(line,
-					      libgpiod_consumer, active_low);
+	status = gpiod_line_event_request_all(line, consumer, active_low);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
