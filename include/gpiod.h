@@ -153,6 +153,11 @@ static inline int gpiod_simple_get_value(const char *device,
 }
 
 /**
+ * @brief Simple set value callback signature.
+ */
+typedef void (*gpiod_set_value_cb)(void *);
+
+/**
  * @brief Set values of a set of a set of GPIO lines.
  * @param device Name, path or number of the gpiochip.
  * @param offsets An array of offsets of lines whose values should be set.
@@ -166,7 +171,7 @@ static inline int gpiod_simple_get_value(const char *device,
  */
 int gpiod_simple_set_value_multiple(const char *device, unsigned int *offsets,
 				    int *values, unsigned int num_lines,
-				    bool active_low, void (*cb)(void *),
+				    bool active_low, gpiod_set_value_cb cb,
 				    void *data) GPIOD_API;
 
 /**
@@ -183,8 +188,8 @@ int gpiod_simple_set_value_multiple(const char *device, unsigned int *offsets,
  */
 static inline int gpiod_simple_set_value(const char *device,
 					 unsigned int offset, int value,
-					 bool active_low, void (*cb)(void *),
-					 void *data)
+					 bool active_low,
+					 gpiod_set_value_cb cb, void *data)
 {
 	return gpiod_simple_set_value_multiple(device, &offset, &value, 1,
 					       active_low, cb, data);

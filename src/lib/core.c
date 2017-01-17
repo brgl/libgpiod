@@ -208,7 +208,7 @@ int gpiod_simple_get_value_multiple(const char *device, unsigned int *offsets,
 
 int gpiod_simple_set_value_multiple(const char *device, unsigned int *offsets,
 				    int *values, unsigned int num_lines,
-				    bool active_low, void (*cb)(void *),
+				    bool active_low, gpiod_set_value_cb cb,
 				    void *data)
 {
 	struct gpiod_line_bulk bulk;
