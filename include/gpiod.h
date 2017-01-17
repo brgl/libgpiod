@@ -163,6 +163,7 @@ typedef void (*gpiod_set_value_cb)(void *);
 
 /**
  * @brief Set values of a set of a set of GPIO lines.
+ * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
  * @param offsets An array of offsets of lines whose values should be set.
  * @param values An array of integers containing new values.
@@ -173,13 +174,15 @@ typedef void (*gpiod_set_value_cb)(void *);
  * @param data User data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
-int gpiod_simple_set_value_multiple(const char *device, unsigned int *offsets,
-				    int *values, unsigned int num_lines,
-				    bool active_low, gpiod_set_value_cb cb,
+int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
+				    unsigned int *offsets, int *values,
+				    unsigned int num_lines, bool active_low,
+				    gpiod_set_value_cb cb,
 				    void *data) GPIOD_API;
 
 /**
  * @brief Set value of a single GPIO line.
+ * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
  * @param offset GPIO line offset on the chip.
  * @param value New value.
@@ -190,13 +193,15 @@ int gpiod_simple_set_value_multiple(const char *device, unsigned int *offsets,
  * @param data User data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
-static inline int gpiod_simple_set_value(const char *device,
+static inline int gpiod_simple_set_value(const char *consumer,
+					 const char *device,
 					 unsigned int offset, int value,
 					 bool active_low,
 					 gpiod_set_value_cb cb, void *data)
 {
-	return gpiod_simple_set_value_multiple(device, &offset, &value, 1,
-					       active_low, cb, data);
+	return gpiod_simple_set_value_multiple(consumer, device, &offset,
+					       &value, 1, active_low,
+					       cb, data);
 }
 
 /**
