@@ -50,14 +50,16 @@ AC_CHECK_FUNC([asprintf], [], [AC_MSG_ERROR([asprintf() unavailable])])
 AC_CHECK_FUNC([readdir], [], [AC_MSG_ERROR([readdir() unavailable])])
 AC_CHECK_FUNC([poll], [], [AC_MSG_ERROR([poll() unavailable])])
 AC_CHECK_FUNC([basename], [], [AC_MSG_ERROR([basename() unavailable])])
+AC_CHECK_FUNC([daemon], [], [AC_MSG_ERROR([daemon() unavailable])])
+AC_CHECK_FUNC([signalfd], [], [AC_MSG_ERROR([signalfd() unavailable])])
 
 AC_FUNC_MALLOC
 
 AC_CHECK_HEADERS([getopt.h], [], [AC_MSG_ERROR([getopt.h header not found])])
 AC_CHECK_HEADERS([stdint.h], [], [AC_MSG_ERROR([stdint.h header not found])])
 AC_CHECK_HEADERS([dirent.h], [], [AC_MSG_ERROR([dirent.h header not found])])
-AC_CHECK_HEADERS([linux/gpio.h], [],
-		[AC_MSG_ERROR([linux/gpio.h header not found])])
+AC_CHECK_HEADERS([linux/gpio.h], [], [AC_MSG_ERROR([linux/gpio.h header not found])])
+AC_CHECK_HEADERS([sys/signalfd.h], [], [AC_MSG_ERROR([sys/signalfd.h header not found])])
 
 AC_CONFIG_FILES([Makefile
 		 include/Makefile
