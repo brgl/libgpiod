@@ -85,6 +85,8 @@ enum {
 	/**< Not all lines in bulk belong to the same GPIO chip. */
 	GPIOD_ELINEBUSY,
 	/**< This line is currently in use. */
+	GPIOD_ELINEMAX,
+	/**< Number of lines in the request exceeds limit. */
 	__GPIOD_MAX_ERR,
 	/**< Private: number of libgpiod-specific error numbers. */
 };

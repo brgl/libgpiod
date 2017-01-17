@@ -85,6 +85,7 @@ static const char *const error_descr[] = {
 	"no events configured on GPIO line",
 	"GPIO lines in bulk don't belong to the same gpiochip",
 	"GPIO line currently in use",
+	"number of lines in the request exceeds limit",
 };
 
 static void set_last_error(int errnum)
@@ -168,6 +169,11 @@ int gpiod_simple_get_value_multiple(const char *device, unsigned int *offsets,
 	unsigned int i;
 	int status;
 
+	if (num_lines > GPIOD_REQUEST_MAX_LINES) {
+		set_last_error(GPIOD_ELINEMAX);
+		return -1;
+	}
+
 	chip = gpiod_chip_open_lookup(device);
 	if (!chip)
 		return -1;
@@ -210,6 +216,11 @@ int gpiod_simple_set_value_multiple(const char *device, unsigned int *offsets,
 	struct gpiod_line *line;
 	unsigned int i;
 	int status;
+
+	if (num_lines > GPIOD_REQUEST_MAX_LINES) {
+		set_last_error(GPIOD_ELINEMAX);
+		return -1;
+	}
 
 	chip = gpiod_chip_open_lookup(device);
 	if (!chip)
