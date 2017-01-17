@@ -985,7 +985,7 @@ bool gpiod_chip_iter_done(struct gpiod_chip_iter *iter) GPIOD_API;
  * @return True if there was an error opening a gpiochip device file,
  *         false otherwise.
  */
-bool gpiod_chip_iter_iserr(struct gpiod_chip_iter *iter) GPIOD_API;
+bool gpiod_chip_iter_err(struct gpiod_chip_iter *iter) GPIOD_API;
 
 /**
  * @brief Get the name of the gpiochip that we failed to access.

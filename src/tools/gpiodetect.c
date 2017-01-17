@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 		die_perror("unable to access GPIO chips");
 
 	gpiod_foreach_chip(iter, chip) {
-		if (gpiod_chip_iter_iserr(iter))
+		if (gpiod_chip_iter_err(iter))
 			die_perror("error accessing gpiochip %s",
 				   gpiod_chip_iter_failed_chip(iter));
 

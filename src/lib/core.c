@@ -679,7 +679,7 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name)
 		return NULL;
 
 	gpiod_foreach_chip(chip_iter, chip) {
-		if (gpiod_chip_iter_iserr(chip_iter))
+		if (gpiod_chip_iter_err(chip_iter))
 			continue;
 
 		gpiod_line_iter_init(&line_iter, chip);
@@ -1086,7 +1086,7 @@ bool gpiod_chip_iter_done(struct gpiod_chip_iter *iter)
 	return iter->state == CHIP_ITER_DONE;
 }
 
-bool gpiod_chip_iter_iserr(struct gpiod_chip_iter *iter)
+bool gpiod_chip_iter_err(struct gpiod_chip_iter *iter)
 {
 	return iter->state == CHIP_ITER_ERR;
 }

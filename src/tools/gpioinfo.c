@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 			die_perror("error accessing GPIO chips");
 
 		gpiod_foreach_chip(chip_iter, chip) {
-			if (gpiod_chip_iter_iserr(chip_iter))
+			if (gpiod_chip_iter_err(chip_iter))
 				die_perror("error accessing gpiochip %s",
 				    gpiod_chip_iter_failed_chip(chip_iter));
 
