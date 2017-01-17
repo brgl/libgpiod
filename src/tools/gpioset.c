@@ -209,14 +209,14 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			if (mode->id != MODE_TIME)
-				die("--mode=time must be selected to specify seconds");
+				die("can't specify seconds in this mode");
 			cbdata.tv.tv_sec = strtoul(optarg, &end, 10);
 			if (*end != '\0')
 				die("invalid time value in seconds: %s", optarg);
 			break;
 		case 'u':
 			if (mode->id != MODE_TIME)
-				die("--mode=time must be selected to specify microseconds");
+				die("can't specify microseconds in this mode");
 			cbdata.tv.tv_usec = strtoul(optarg, &end, 10);
 			if (*end != '\0')
 				die("invalid time value in microseconds: %s",
