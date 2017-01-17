@@ -15,6 +15,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <signal.h>
+#include <limits.h>
 
 static const struct option longopts[] = {
 	{ "help",		no_argument,		NULL,	'h' },
@@ -158,7 +159,7 @@ int main(int argc, char **argv)
 
 	device = argv[0];
 	offset = strtoul(argv[1], &end, 10);
-	if (*end != '\0')
+	if (*end != '\0' || offset > INT_MAX)
 		die("invalid GPIO offset: %s", argv[1]);
 
 	timeout.tv_sec = 0;
