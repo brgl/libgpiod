@@ -158,56 +158,77 @@ const char * gpiod_last_strerror(void)
 	return gpiod_strerror(gpiod_errno());
 }
 
-int gpiod_simple_get_value(const char *device,
-			   unsigned int offset, bool active_low)
+int gpiod_simple_get_value_multiple(const char *device, unsigned int *offsets,
+				    int *values, unsigned int num_lines,
+				    bool active_low)
 {
+	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
-	int status, value;
-
-	chip = gpiod_chip_open_lookup(device);
-	if (!chip)
-		return -1;
-
-	line = gpiod_chip_get_line(chip, offset);
-	if (!line) {
-		gpiod_chip_close(chip);
-		return -1;
-	}
-
-	status = gpiod_line_request_input(line, libgpiod_consumer, active_low);
-	if (status < 0) {
-		gpiod_chip_close(chip);
-		return -1;
-	}
-
-	value = gpiod_line_get_value(line);
-
-	gpiod_line_release(line);
-	gpiod_chip_close(chip);
-
-	return value;
-}
-
-int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
-			   bool active_low, void (*cb)(void *), void *data)
-{
-	struct gpiod_chip *chip;
-	struct gpiod_line *line;
+	unsigned int i;
 	int status;
 
 	chip = gpiod_chip_open_lookup(device);
 	if (!chip)
 		return -1;
 
-	line = gpiod_chip_get_line(chip, offset);
-	if (!line) {
+	gpiod_line_bulk_init(&bulk);
+
+	for (i = 0; i < num_lines; i++) {
+		line = gpiod_chip_get_line(chip, offsets[i]);
+		if (!line) {
+			gpiod_chip_close(chip);
+			return -1;
+		}
+
+		gpiod_line_bulk_add(&bulk, line);
+	}
+
+	status = gpiod_line_request_bulk_input(&bulk,
+					       libgpiod_consumer, active_low);
+	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
 	}
 
-	status = gpiod_line_request_output(line, libgpiod_consumer,
-					   active_low, value);
+	memset(values, 0, sizeof(*values) * num_lines);
+	status = gpiod_line_get_value_bulk(&bulk, values);
+
+	gpiod_line_release_bulk(&bulk);
+	gpiod_chip_close(chip);
+
+	return status;
+}
+
+int gpiod_simple_set_value_multiple(const char *device, unsigned int *offsets,
+				    int *values, unsigned int num_lines,
+				    bool active_low, void (*cb)(void *),
+				    void *data)
+{
+	struct gpiod_line_bulk bulk;
+	struct gpiod_chip *chip;
+	struct gpiod_line *line;
+	unsigned int i;
+	int status;
+
+	chip = gpiod_chip_open_lookup(device);
+	if (!chip)
+		return -1;
+
+	gpiod_line_bulk_init(&bulk);
+
+	for (i = 0; i < num_lines; i++) {
+		line = gpiod_chip_get_line(chip, offsets[i]);
+		if (!line) {
+			gpiod_chip_close(chip);
+			return -1;
+		}
+
+		gpiod_line_bulk_add(&bulk, line);
+	}
+
+	status = gpiod_line_request_bulk_output(&bulk, libgpiod_consumer,
+						active_low, values);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
@@ -216,7 +237,7 @@ int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
 	if (cb)
 		cb(data);
 
-	gpiod_line_release(line);
+	gpiod_line_release_bulk(&bulk);
 	gpiod_chip_close(chip);
 
 	return 0;
