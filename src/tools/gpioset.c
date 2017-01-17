@@ -15,7 +15,12 @@
 #include <string.h>
 #include <getopt.h>
 #include <sys/select.h>
+#include <signal.h>
+#include <sys/signalfd.h>
+#include <sys/poll.h>
 #include <limits.h>
+#include <errno.h>
+#include <unistd.h>
 
 static const struct option longopts[] = {
 	{ "help",		no_argument,		NULL,	'h' },
@@ -47,6 +52,7 @@ static void print_help(void)
 	printf("  exit:\tset values and exit immediately\n");
 	printf("  wait:\tset values and wait for user to press ENTER\n");
 	printf("  time:\tset values and sleep for a specified amount of time\n");
+	printf("  signal:\tset values and wait for SIGINT or SIGTERM\n");
 }
 
 struct callback_data {
@@ -66,10 +72,48 @@ static void wait_time(void *data)
 	select(0, NULL, NULL, NULL, &cbdata->tv);
 }
 
+static void wait_signal(void *data UNUSED)
+{
+	int sigfd, status;
+	struct pollfd pfd;
+	sigset_t sigmask;
+
+	sigemptyset(&sigmask);
+	sigaddset(&sigmask, SIGTERM);
+	sigaddset(&sigmask, SIGINT);
+
+	status = sigprocmask(SIG_BLOCK, &sigmask, NULL);
+	if (status < 0)
+		die("sigprocmask: %s", strerror(errno));
+
+	sigfd = signalfd(-1, &sigmask, 0);
+	if (sigfd < 0)
+		die("signalfd: %s", strerror(errno));
+
+	memset(&pfd, 0, sizeof(pfd));
+	pfd.fd = sigfd;
+	pfd.events = POLLIN | POLLPRI;
+
+	for (;;) {
+		status = poll(&pfd, 1, 1000 /* one second */);
+		if (status < 0)
+			die("poll: %s", strerror(errno));
+		else if (status > 0)
+			break;
+	}
+
+	/*
+	 * Don't bother reading siginfo - it's enough to know that we
+	 * received any signal.
+	 */
+	close(sigfd);
+}
+
 enum {
 	MODE_EXIT = 0,
 	MODE_WAIT,
 	MODE_TIME,
+	MODE_SIGNAL,
 };
 
 struct mode_mapping {
@@ -93,7 +137,12 @@ static const struct mode_mapping modes[] = {
 		.id		= MODE_TIME,
 		.name		= "time",
 		.callback	= wait_time,
-	}
+	},
+	[MODE_SIGNAL] = {
+		.id		= MODE_SIGNAL,
+		.name		= "signal",
+		.callback	= wait_signal,
+	},
 };
 
 static const struct mode_mapping * parse_mode(const char *mode)
