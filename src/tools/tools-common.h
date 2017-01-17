@@ -20,6 +20,7 @@
 
 #define UNUSED			__attribute__((unused))
 #define PRINTF(fmt, arg)	__attribute__((format(printf, fmt, arg)))
+#define ARRAY_SIZE(x)		(sizeof(x) / sizeof(*(x)))
 
 void set_progname(char *name);
 const char * get_progname(void);

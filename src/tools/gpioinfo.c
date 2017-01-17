@@ -17,8 +17,6 @@
 #include <getopt.h>
 #include <errno.h>
 
-#define ARRAY_SIZE(x)	(sizeof(x) / sizeof(*(x)))
-
 struct flag {
 	const char *name;
 	bool (*is_set)(struct gpiod_line *);
