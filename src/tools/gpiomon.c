@@ -53,6 +53,7 @@ static void sighandler(int signum UNUSED)
 }
 
 struct callback_data {
+	unsigned int offset;
 	unsigned int num_events_wanted;
 	unsigned int num_events_done;
 	bool silent;
@@ -83,8 +84,8 @@ static int event_callback(int type, const struct timespec *ts, void *data)
 	}
 
 	if (evname && !cbdata->silent)
-		printf("GPIO EVENT: %s [%8ld.%09ld]\n",
-		       evname, ts->tv_sec, ts->tv_nsec);
+		printf("event: %s offset: %u timestamp: [%8ld.%09ld]\n",
+		       evname, cbdata->offset, ts->tv_sec, ts->tv_nsec);
 
 	if (cbdata->num_events_wanted &&
 	    cbdata->num_events_done >= cbdata->num_events_wanted)
@@ -161,6 +162,8 @@ int main(int argc, char **argv)
 	offset = strtoul(argv[1], &end, 10);
 	if (*end != '\0' || offset > INT_MAX)
 		die("invalid GPIO offset: %s", argv[1]);
+
+	cbdata.offset = offset;
 
 	timeout.tv_sec = 0;
 	timeout.tv_nsec = 500000000;
