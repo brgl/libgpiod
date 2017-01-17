@@ -17,13 +17,17 @@
 #include <signal.h>
 
 static const struct option longopts[] = {
-	{ "help",	no_argument,	NULL,	'h' },
-	{ "version",	no_argument,	NULL,	'v' },
-	{ "active-low",	no_argument,	NULL,	'l' },
+	{ "help",		no_argument,		NULL,	'h' },
+	{ "version",		no_argument,		NULL,	'v' },
+	{ "active-low",		no_argument,		NULL,	'l' },
+	{ "num-events",		required_argument,	NULL,	'n' },
+	{ "silent",		no_argument,		NULL,	's' },
+	{ "rising-edge",	no_argument,		NULL,	'r' },
+	{ "falling-edge",	no_argument,		NULL,	'f' },
 	{ 0 },
 };
 
-static const char *const shortopts = "+hvl";
+static const char *const shortopts = "+hvln:rf";
 
 static void print_help(void)
 {
@@ -34,6 +38,10 @@ static void print_help(void)
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -v, --version:\tdisplay the version and exit\n");
 	printf("  -l, --active-low:\tset the line active state to low\n");
+	printf("  -n, --num-events=NUM:\texit after processing NUM events\n");
+	printf("  -s, --silent:\t\tdon't print event info\n");
+	printf("  -r, --rising-edge:\tonly process rising edge events\n");
+	printf("  -f, --falling-edge:\tonly process falling edge events\n");
 }
 
 static volatile bool do_run = true;
@@ -43,25 +51,43 @@ static void sighandler(int signum UNUSED)
 	do_run = false;
 }
 
-static int event_callback(int type, const struct timespec *ts,
-			  void *data UNUSED)
+struct callback_data {
+	unsigned int num_events_wanted;
+	unsigned int num_events_done;
+	bool silent;
+	bool watch_rising;
+	bool watch_falling;
+};
+
+static int event_callback(int type, const struct timespec *ts, void *data)
 {
+	struct callback_data *cbdata = data;
 	const char *evname = NULL;
 
 	switch (type) {
 	case GPIOD_EVENT_CB_RISING_EDGE:
-		evname = " RISING EDGE";
+		if (cbdata->watch_rising) {
+			evname = " RISING EDGE";
+			cbdata->num_events_done++;
+		}
 		break;
 	case GPIOD_EVENT_CB_FALLING_EDGE:
-		evname = "FALLING_EDGE";
+		if (cbdata->watch_falling) {
+			evname = "FALLING_EDGE";
+			cbdata->num_events_done++;
+		}
 		break;
 	default:
 		break;
 	}
 
-	if (evname)
+	if (evname && !cbdata->silent)
 		printf("GPIO EVENT: %s [%8ld.%09ld]\n",
 		       evname, ts->tv_sec, ts->tv_nsec);
+
+	if (cbdata->num_events_wanted &&
+	    cbdata->num_events_done >= cbdata->num_events_wanted)
+		do_run = false;
 
 	if (!do_run)
 		return GPIOD_EVENT_CB_STOP;
@@ -71,6 +97,7 @@ static int event_callback(int type, const struct timespec *ts,
 
 int main(int argc, char **argv)
 {
+	struct callback_data cbdata;
 	bool active_low = false;
 	struct timespec timeout;
 	int optc, opti, status;
@@ -78,6 +105,8 @@ int main(int argc, char **argv)
 	char *device, *end;
 
 	set_progname(argv[0]);
+
+	memset(&cbdata, 0, sizeof(cbdata));
 
 	for (;;) {
 		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
@@ -94,12 +123,29 @@ int main(int argc, char **argv)
 		case 'l':
 			active_low = true;
 			break;
+		case 'n':
+			cbdata.num_events_wanted = strtoul(optarg, &end, 10);
+			if (*end != '\0')
+				die("invalid number: %s", optarg);
+			break;
+		case 's':
+			cbdata.silent = true;
+			break;
+		case 'r':
+			cbdata.watch_rising = true;
+			break;
+		case 'f':
+			cbdata.watch_falling = true;
+			break;
 		case '?':
 			die("try %s --help", get_progname());
 		default:
 			abort();
 		}
 	}
+
+	if (!cbdata.watch_rising && !cbdata.watch_falling)
+		cbdata.watch_rising = cbdata.watch_falling = true;
 
 	argc -= optind;
 	argv += optind;
@@ -122,7 +168,7 @@ int main(int argc, char **argv)
 	signal(SIGTERM, sighandler);
 
 	status = gpiod_simple_event_loop("gpiomon", device, offset, active_low,
-					 &timeout, event_callback, NULL);
+					 &timeout, event_callback, &cbdata);
 	if (status < 0)
 		die_perror("error waiting for events");
 
