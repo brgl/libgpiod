@@ -121,6 +121,7 @@ const char * gpiod_last_strerror(void) GPIOD_API;
 
 /**
  * @brief Read current values from a set of GPIO lines.
+ * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
  * @param offsets An array of offsets of lines whose values should be read.
  * @param values A buffer in which the values will be stored.
@@ -128,23 +129,26 @@ const char * gpiod_last_strerror(void) GPIOD_API;
  * @param active_low The active state of the lines - true if low.
  * @return 0 if the operation succeeds, -1 on error.
  */
-int gpiod_simple_get_value_multiple(const char *device, unsigned int *offsets,
-				    int *values, unsigned int num_lines,
+int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
+				    unsigned int *offsets, int *values,
+				    unsigned int num_lines,
 				    bool active_low) GPIOD_API;
 
 /**
  * @brief Read current value from a single GPIO line.
+ * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
  * @param offset GPIO line offset on the chip.
  * @param active_low The active state of this line - true if low.
  * @return 0 or 1 (GPIO value) if the operation succeeds, -1 on error.
  */
-static inline int gpiod_simple_get_value(const char *device,
+static inline int gpiod_simple_get_value(const char *consumer,
+					 const char *device,
 					 unsigned int offset, bool active_low)
 {
 	int value, status;
 
-	status = gpiod_simple_get_value_multiple(device, &offset,
+	status = gpiod_simple_get_value_multiple(consumer, device, &offset,
 						 &value, 1, active_low);
 	if (status < 0)
 		return status;

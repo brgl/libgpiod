@@ -159,9 +159,9 @@ const char * gpiod_last_strerror(void)
 	return gpiod_strerror(gpiod_errno());
 }
 
-int gpiod_simple_get_value_multiple(const char *device, unsigned int *offsets,
-				    int *values, unsigned int num_lines,
-				    bool active_low)
+int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
+				    unsigned int *offsets, int *values,
+				    unsigned int num_lines, bool active_low)
 {
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
@@ -190,8 +190,7 @@ int gpiod_simple_get_value_multiple(const char *device, unsigned int *offsets,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	status = gpiod_line_request_bulk_input(&bulk,
-					       libgpiod_consumer, active_low);
+	status = gpiod_line_request_bulk_input(&bulk, consumer, active_low);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
