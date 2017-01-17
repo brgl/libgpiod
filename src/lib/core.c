@@ -159,7 +159,7 @@ const char * gpiod_last_strerror(void)
 }
 
 int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
-				    unsigned int *offsets, int *values,
+				    const unsigned int *offsets, int *values,
 				    unsigned int num_lines, bool active_low)
 {
 	struct gpiod_line_bulk bulk;
@@ -205,9 +205,10 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 }
 
 int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
-				    unsigned int *offsets, int *values,
-				    unsigned int num_lines, bool active_low,
-				    gpiod_set_value_cb cb, void *data)
+				    const unsigned int *offsets,
+				    const int *values, unsigned int num_lines,
+				    bool active_low, gpiod_set_value_cb cb,
+				    void *data)
 {
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
@@ -254,8 +255,8 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 
 int gpiod_simple_event_loop(const char *consumer, const char *device,
 			    unsigned int offset, bool active_low,
-			    struct timespec *timeout, gpiod_event_cb callback,
-			    void *cbdata)
+			    const struct timespec *timeout,
+			    gpiod_event_cb callback, void *cbdata)
 {
 	struct gpiod_line_event event;
 	struct gpiod_chip *chip;
@@ -487,7 +488,7 @@ static bool verify_line_bulk(struct gpiod_line_bulk *line_bulk)
 
 int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 			    const struct gpiod_line_request_config *config,
-			    int *default_vals)
+			    const int *default_vals)
 {
 	struct gpiohandle_request *req;
 	struct handle_data *handle;

@@ -130,7 +130,7 @@ const char * gpiod_last_strerror(void) GPIOD_API;
  * @return 0 if the operation succeeds, -1 on error.
  */
 int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
-				    unsigned int *offsets, int *values,
+				    const unsigned int *offsets, int *values,
 				    unsigned int num_lines,
 				    bool active_low) GPIOD_API;
 
@@ -175,9 +175,9 @@ typedef void (*gpiod_set_value_cb)(void *);
  * @return 0 if the operation succeeds, -1 on error.
  */
 int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
-				    unsigned int *offsets, int *values,
-				    unsigned int num_lines, bool active_low,
-				    gpiod_set_value_cb cb,
+				    const unsigned int *offsets,
+				    const int *values, unsigned int num_lines,
+				    bool active_low, gpiod_set_value_cb cb,
 				    void *data) GPIOD_API;
 
 /**
@@ -245,8 +245,8 @@ typedef int (*gpiod_event_cb)(int, const struct timespec *, void *);
  */
 int gpiod_simple_event_loop(const char *consumer, const char *device,
 			    unsigned int offset, bool active_low,
-			    struct timespec *timeout, gpiod_event_cb callback,
-			    void *cbdata) GPIOD_API;
+			    const struct timespec *timeout,
+			    gpiod_event_cb callback, void *cbdata) GPIOD_API;
 
 /**
  * @}
@@ -512,7 +512,7 @@ static inline int gpiod_line_request_output(struct gpiod_line *line,
  */
 int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 			    const struct gpiod_line_request_config *config,
-			    int *default_vals) GPIOD_API;
+			    const int *default_vals) GPIOD_API;
 
 /**
  * @brief Reserve a set of GPIO lines, set the direction to input.
@@ -546,7 +546,7 @@ static inline int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
 static inline int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
 						 const char *consumer,
 						 bool active_low,
-						 int *default_vals)
+						 const int *default_vals)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
