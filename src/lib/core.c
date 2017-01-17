@@ -679,8 +679,14 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name)
 		return NULL;
 
 	gpiod_foreach_chip(chip_iter, chip) {
+		if (gpiod_chip_iter_iserr(chip_iter))
+			continue;
+
 		gpiod_line_iter_init(&line_iter, chip);
 		gpiod_foreach_line(&line_iter, line) {
+			if (gpiod_line_iter_err(&line_iter))
+				continue;
+
 			line_name = gpiod_line_name(line);
 			if (!line_name)
 				continue;
