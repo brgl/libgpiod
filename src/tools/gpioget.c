@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
+#include <limits.h>
 
 static const struct option longopts[] = {
 	{ "help",	no_argument,	NULL,	'h' },
@@ -26,9 +27,9 @@ static const char *const shortopts = "+hvl";
 
 static void print_help(void)
 {
-	printf("Usage: %s [OPTIONS] <chip name/number> <line offset>\n",
+	printf("Usage: %s [OPTIONS] <chip name/number> <offset 1> <offset 2> ...\n",
 	       get_progname());
-	printf("Read value from a GPIO line\n");
+	printf("Read line value(s) from a GPIO chip\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -v, --version:\tdisplay the version and exit\n");
@@ -37,9 +38,9 @@ static void print_help(void)
 
 int main(int argc, char **argv)
 {
+	unsigned int *offsets, i, num_lines;
+	int *values, optc, opti, status;
 	bool active_low = false;
-	int value, optc, opti;
-	unsigned int offset;
 	char *device, *end;
 
 	set_progname(argv[0]);
@@ -73,19 +74,36 @@ int main(int argc, char **argv)
 		die("gpiochip must be specified");
 
 	if (argc < 2)
-		die("gpio line offset must be specified");
+		die("at least one gpio line offset must be specified");
 
 	device = argv[0];
+	num_lines = argc - 1;
 
-	offset = strtoul(argv[1], &end, 10);
-	if (*end != '\0')
-		die("invalid GPIO offset: %s", argv[1]);
+	values = malloc(sizeof(*values) * num_lines);
+	offsets = malloc(sizeof(*offsets) * num_lines);
+	if (!values || !offsets)
+		die("out of memory");
 
-	value = gpiod_simple_get_value(device, offset, active_low);
-	if (value < 0)
-		die_perror("error reading GPIO value");
+	for (i = 0; i < num_lines; i++) {
+		offsets[i] = strtoul(argv[i + 1], &end, 10);
+		if (*end != '\0' || offsets[i] > INT_MAX)
+			die("invalid GPIO offset: %s", argv[i + 1]);
+	}
 
-	printf("%d\n", value);
+	status = gpiod_simple_get_value_multiple(device, offsets, values,
+						 num_lines, active_low);
+	if (status < 0)
+		die_perror("error reading GPIO values");
+
+	for (i = 0; i < num_lines; i++) {
+		printf("%d", values[i]);
+		if (i != num_lines - 1)
+			printf(" ");
+	}
+	printf("\n");
+
+	free(values);
+	free(offsets);
 
 	return EXIT_SUCCESS;
 }
