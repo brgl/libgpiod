@@ -1,8 +1,8 @@
 libgpiod
 ========
 
-    libgpiod - C library and tools for interacting with the linux GPIO
-               character device
+  libgpiod - C library and tools for interacting with the linux GPIO
+             character device
 
 Since linux 4.7 the GPIO sysfs interface is deprecated. User space should use
 the character device instead. This library encapsulates the ioctl calls and
