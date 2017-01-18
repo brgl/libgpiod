@@ -64,6 +64,42 @@ There are currently six command-line tools available:
                how many events to process before exiting or if the events
                should be reported to the console
 
+Examples:
+
+    # Read the value of a single GPIO line.
+    # gpioget gpiochip1 23
+    0
+
+    # Read two values at the same time. Set the active state of the lines
+    # to low.
+    # gpioget --active-low gpiochip1 23 24
+    1 1
+
+    # Set values of two lines, then daemonize and wait for a signal (SIGINT or
+    # SIGTERM) before releasing them.
+    # gpioset --mode=signal --background gpiochip1 23=1 24=0
+
+    # Set the value of a single line, then exit immediately. This is useful
+    # for floating pins.
+    # gpioset gpiochip1 23=1
+
+    # Find a GPIO line by name.
+    # gpiofind "USR-LED-2"
+    gpiochip1 23
+
+    # Toggle a GPIO by name, then wait for the user to press ENTER.
+    # gpioset --mode=wait `gpiofind "USR-LED-2"`=1
+
+    # Wait for three rising edge events on a single GPIO line, then exit.
+    # gpiomon --num-events=3 --rising-edge gpiochip2 3
+    event:  RISING EDGE offset: 3 timestamp: [    1151.814356387]
+    event:  RISING EDGE offset: 3 timestamp: [    1151.815449803]
+    event:  RISING EDGE offset: 3 timestamp: [    1152.091556803]
+
+    # Pause execution until a single event of any type occurs. Don't print
+    # anything. Find the line by name.
+    # gpiomon --num-events=1 --silent `gpiofind "USR-IN"`
+
 CONTRIBUTING
 ------------
 
