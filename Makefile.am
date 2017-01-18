@@ -9,6 +9,10 @@
 AUTOMAKE_OPTIONS = foreign
 SUBDIRS = include src
 
+if HAS_DOXYGEN
+
 doc:
 	@(cat Doxyfile; echo PROJECT_NUMBER = $(VERSION_STR)) | doxygen -
 .PHONY: doc
+
+endif

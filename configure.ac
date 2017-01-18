@@ -61,6 +61,13 @@ AC_CHECK_HEADERS([dirent.h], [], [AC_MSG_ERROR([dirent.h header not found])])
 AC_CHECK_HEADERS([linux/gpio.h], [], [AC_MSG_ERROR([linux/gpio.h header not found])])
 AC_CHECK_HEADERS([sys/signalfd.h], [], [AC_MSG_ERROR([sys/signalfd.h header not found])])
 
+AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
+AM_CONDITIONAL([HAS_DOXYGEN], [test x$has_doxygen = xtrue])
+if test "x$has_doxygen" = xfalse
+then
+	AC_MSG_NOTICE([doxygen not found - documentation cannot be generated])
+fi
+
 AC_CONFIG_FILES([Makefile
 		 include/Makefile
 		 src/Makefile
