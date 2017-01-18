@@ -30,6 +30,8 @@ BUILDING
 This is a pretty standard autotools project. It does not depend on any
 libraries other than the standard C library with GNU extensions.
 
+The autoconf version needed to compile the project is 2.61.
+
 Recent (as in >= v4.7) kernel headers are also required for the GPIO user
 API definitions.
 
