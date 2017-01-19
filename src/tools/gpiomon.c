@@ -28,7 +28,7 @@ static const struct option longopts[] = {
 	{ 0 },
 };
 
-static const char *const shortopts = "+hvln:rf";
+static const char *const shortopts = "+hvln:srf";
 
 static void print_help(void)
 {
