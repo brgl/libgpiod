@@ -4,7 +4,7 @@ libgpiod
   libgpiod - C library and tools for interacting with the linux GPIO
              character device
 
-Since linux 4.7 the GPIO sysfs interface is deprecated. User space should use
+Since linux 4.8 the GPIO sysfs interface is deprecated. User space should use
 the character device instead. This library encapsulates the ioctl calls and
 data structures behind a straightforward API.
 
@@ -32,7 +32,7 @@ libraries other than the standard C library with GNU extensions.
 
 The autoconf version needed to compile the project is 2.61.
 
-Recent (as in >= v4.7) kernel headers are also required for the GPIO user
+Recent (as in >= v4.8) kernel headers are also required for the GPIO user
 API definitions.
 
 To build the project (including command-line utilities) run:
