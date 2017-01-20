@@ -58,6 +58,7 @@ AC_FUNC_MALLOC
 AC_CHECK_HEADERS([getopt.h], [], [AC_MSG_ERROR([getopt.h header not found])])
 AC_CHECK_HEADERS([stdint.h], [], [AC_MSG_ERROR([stdint.h header not found])])
 AC_CHECK_HEADERS([dirent.h], [], [AC_MSG_ERROR([dirent.h header not found])])
+AC_CHECK_HEADERS([sys/poll.h], [], [AC_MSG_ERROR([sys/poll.h header not found])])
 AC_CHECK_HEADERS([linux/gpio.h], [], [AC_MSG_ERROR([linux/gpio.h header not found])])
 AC_CHECK_HEADERS([sys/signalfd.h], [], [AC_MSG_ERROR([sys/signalfd.h header not found])])
 
