@@ -29,17 +29,26 @@ AC_PROG_CC
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
+AC_DEFUN([ERR_NOT_FOUND],
+	[AC_MSG_ERROR([$1 not found (needed to build $2)], [1])])
+
+AC_DEFUN([FUNC_NOT_FOUND_LIB],
+	[ERR_NOT_FOUND([$1()], [the library])])
+
+AC_DEFUN([HEADER_NOT_FOUND_LIB],
+	[ERR_NOT_FOUND([$1 header], [the library])])
+
 # This is always checked (library needs this)
 AC_HEADER_STDC
 AC_FUNC_MALLOC
-AC_CHECK_FUNC([ioctl], [], [AC_MSG_ERROR([ioctl() is needed to build the library])])
-AC_CHECK_FUNC([asprintf], [], [AC_MSG_ERROR([asprintf() is needed to build the library])])
-AC_CHECK_FUNC([readdir], [], [AC_MSG_ERROR([readdir() is needed to build the library])])
-AC_CHECK_FUNC([ppoll], [], [AC_MSG_ERROR([ppoll() is needed to build the library])])
-AC_CHECK_HEADERS([getopt.h], [], [AC_MSG_ERROR([getopt.h header is needed to build the library])])
-AC_CHECK_HEADERS([dirent.h], [], [AC_MSG_ERROR([dirent.h header is needed to build the library])])
-AC_CHECK_HEADERS([sys/poll.h], [], [AC_MSG_ERROR([sys/poll.h header is needed to build the library])])
-AC_CHECK_HEADERS([linux/gpio.h], [], [AC_MSG_ERROR([linux/gpio.h header is needed to build the library])])
+AC_CHECK_FUNC([ioctl], [], [FUNC_NOT_FOUND_LIB([ioctl])])
+AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_LIB([asprintf])])
+AC_CHECK_FUNC([readdir], [], [FUNC_NOT_FOUND_LIB([readdir])])
+AC_CHECK_FUNC([ppoll], [], [FUNC_NOT_FOUND_LIB([ppoll])])
+AC_CHECK_HEADERS([getopt.h], [], [HEADER_NOT_FOUND_LIB([getopt.h])])
+AC_CHECK_HEADERS([dirent.h], [], [HEADER_NOT_FOUND_LIB([dirent.h])])
+AC_CHECK_HEADERS([sys/poll.h], [], [HEADER_NOT_FOUND_LIB([sys/poll.h])])
+AC_CHECK_HEADERS([linux/gpio.h], [], [HEADER_NOT_FOUND_LIB([linux/gpio.h])])
 
 AC_ARG_ENABLE([tools],
 	[AC_HELP_STRING([--enable-tools],
@@ -55,13 +64,19 @@ AC_ARG_ENABLE([tools],
 	[with_tools = false])
 AM_CONDITIONAL([WITH_TOOLS], [test x$with_tools = xtrue])
 
+AC_DEFUN([FUNC_NOT_FOUND_TOOLS],
+	[ERR_NOT_FOUND([$1()], [tools])])
+
+AC_DEFUN([HEADER_NOT_FOUND_TOOLS],
+	[ERR_NOT_FOUND([$1 header], [tools])])
+
 if test "x$with_tools" = xtrue
 then
 	# These are only needed to build tools
-	AC_CHECK_FUNC([basename], [], [AC_MSG_ERROR([basename() is needed to build the GPIO tools])])
-	AC_CHECK_FUNC([daemon], [], [AC_MSG_ERROR([daemon() is needed to build the GPIO tools])])
-	AC_CHECK_FUNC([signalfd], [], [AC_MSG_ERROR([signalfd() is needed to build the GPIO tools])])
-	AC_CHECK_HEADERS([sys/signalfd.h], [], [AC_MSG_ERROR([sys/signalfd.h header is needed to build the GPIO tools])])
+	AC_CHECK_FUNC([basename], [], [FUNC_NOT_FOUND_TOOLS([basename])])
+	AC_CHECK_FUNC([daemon], [], [FUNC_NOT_FOUND_TOOLS([daemon])])
+	AC_CHECK_FUNC([signalfd], [], [FUNC_NOT_FOUND_TOOLS([signalfd])])
+	AC_CHECK_HEADERS([sys/signalfd.h], [], [HEADER_NOT_FOUND_TOOLS([sys/signalfd.h])])
 fi
 
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
