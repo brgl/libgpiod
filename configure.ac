@@ -24,6 +24,24 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADER([config.h])
 
+AM_PROG_AR
+AC_PROG_CC
+AC_PROG_LIBTOOL
+AC_PROG_INSTALL
+
+# This is always checked (library needs this)
+AC_HEADER_STDC
+AC_FUNC_MALLOC
+AC_CHECK_FUNC([ioctl], [], [AC_MSG_ERROR([ioctl() unavailable])])
+AC_CHECK_FUNC([asprintf], [], [AC_MSG_ERROR([asprintf() unavailable])])
+AC_CHECK_FUNC([readdir], [], [AC_MSG_ERROR([readdir() unavailable])])
+AC_CHECK_FUNC([ppoll], [], [AC_MSG_ERROR([ppoll() unavailable])])
+AC_CHECK_HEADERS([getopt.h], [], [AC_MSG_ERROR([getopt.h header not found])])
+AC_CHECK_HEADERS([stdint.h], [], [AC_MSG_ERROR([stdint.h header not found])])
+AC_CHECK_HEADERS([dirent.h], [], [AC_MSG_ERROR([dirent.h header not found])])
+AC_CHECK_HEADERS([sys/poll.h], [], [AC_MSG_ERROR([sys/poll.h header not found])])
+AC_CHECK_HEADERS([linux/gpio.h], [], [AC_MSG_ERROR([linux/gpio.h header not found])])
+
 AC_ARG_ENABLE([tools],
 	[AC_HELP_STRING([--enable-tools],
 		[enable libgpiod command-line tools [default=no]])],
@@ -38,29 +56,14 @@ AC_ARG_ENABLE([tools],
 	[with_tools = false])
 AM_CONDITIONAL([WITH_TOOLS], [test x$with_tools = xtrue])
 
-AM_PROG_AR
-AC_PROG_CC
-AC_PROG_LIBTOOL
-AC_PROG_INSTALL
-
-AC_HEADER_STDC
-
-AC_CHECK_FUNC([ioctl], [], [AC_MSG_ERROR([ioctl() unavailable])])
-AC_CHECK_FUNC([asprintf], [], [AC_MSG_ERROR([asprintf() unavailable])])
-AC_CHECK_FUNC([readdir], [], [AC_MSG_ERROR([readdir() unavailable])])
-AC_CHECK_FUNC([ppoll], [], [AC_MSG_ERROR([ppoll() unavailable])])
-AC_CHECK_FUNC([basename], [], [AC_MSG_ERROR([basename() unavailable])])
-AC_CHECK_FUNC([daemon], [], [AC_MSG_ERROR([daemon() unavailable])])
-AC_CHECK_FUNC([signalfd], [], [AC_MSG_ERROR([signalfd() unavailable])])
-
-AC_FUNC_MALLOC
-
-AC_CHECK_HEADERS([getopt.h], [], [AC_MSG_ERROR([getopt.h header not found])])
-AC_CHECK_HEADERS([stdint.h], [], [AC_MSG_ERROR([stdint.h header not found])])
-AC_CHECK_HEADERS([dirent.h], [], [AC_MSG_ERROR([dirent.h header not found])])
-AC_CHECK_HEADERS([sys/poll.h], [], [AC_MSG_ERROR([sys/poll.h header not found])])
-AC_CHECK_HEADERS([linux/gpio.h], [], [AC_MSG_ERROR([linux/gpio.h header not found])])
-AC_CHECK_HEADERS([sys/signalfd.h], [], [AC_MSG_ERROR([sys/signalfd.h header not found])])
+if test "x$with_tools" = xtrue
+then
+	# These are only needed to build tools
+	AC_CHECK_FUNC([basename], [], [AC_MSG_ERROR([basename() unavailable])])
+	AC_CHECK_FUNC([daemon], [], [AC_MSG_ERROR([daemon() unavailable])])
+	AC_CHECK_FUNC([signalfd], [], [AC_MSG_ERROR([signalfd() unavailable])])
+	AC_CHECK_HEADERS([sys/signalfd.h], [], [AC_MSG_ERROR([sys/signalfd.h header not found])])
+fi
 
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
 AM_CONDITIONAL([HAS_DOXYGEN], [test x$has_doxygen = xtrue])
