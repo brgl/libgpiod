@@ -143,10 +143,50 @@ int gpiod_errno(void)
 	return last_error;
 }
 
+static const char * strerror_wrapper(int errnum, char *buf, size_t buflen)
+{
+	intptr_t ret;
+
+	/*
+	 * We define _GNU_SOURCE so we should get the POSIX version of
+	 * strerror_r() (and we do in case of glibc and uClibc(-ng)) but
+	 * musl libc only provides the XSI-compliant version. Let's try
+	 * to figure out what we got.
+	 */
+	ret = (intptr_t)strerror_r(errnum, buf, buflen);
+	if (ret == 0) {
+		/*
+		 * Only the XSI-compliant version can return 0 and that
+		 * means success.
+		 */
+		return buf;
+	} else if (ret == -1) {
+		/*
+		 * This means that the XSI-compliant function returned -1
+		 * or that we got some very unlikely pointer (0xffffffff
+		 * or 0xffffffffffffffff) from the POSIX version.
+		 *
+		 * In case of musl - the only error that we can get is
+		 * ERANGE and it's unlikely, given that we supply a large
+		 * enough buffer.
+		 *
+		 * Generally: this should not happen, so just tell the user
+		 * we have an unknown error.
+		 */
+		return "internal error in strerror()";
+	} else {
+		/*
+		 * The POSIX version returns a pointer to the error string:
+		 * either stored in buf or an internal static string.
+		 */
+		return (const char *)ret;
+	}
+}
+
 const char * gpiod_strerror(int errnum)
 {
 	if (errnum < __GPIOD_ERRNO_OFFSET)
-		return strerror_r(errnum, errmsg, sizeof(errmsg));
+		return strerror_wrapper(errnum, errmsg, sizeof(errmsg));
 	else if (errnum > __GPIOD_MAX_ERR)
 		return "invalid error number";
 	else
