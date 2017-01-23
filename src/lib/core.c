@@ -426,6 +426,30 @@ static void line_update(struct gpiod_line *line)
 		line_set_needs_update(line);
 }
 
+static bool line_bulk_is_reserved(struct gpiod_line_bulk *line_bulk)
+{
+	unsigned int i;
+
+	for (i = 0; i < line_bulk->num_lines; i++) {
+		if (!gpiod_line_is_reserved(line_bulk->lines[i]))
+			return false;
+	}
+
+	return true;
+}
+
+static bool line_bulk_is_event_configured(struct gpiod_line_bulk *line_bulk)
+{
+	unsigned int i;
+
+	for (i = 0; i < line_bulk->num_lines; i++) {
+		if (!gpiod_line_event_configured(line_bulk->lines[i]))
+			return false;
+	}
+
+	return true;
+}
+
 bool gpiod_line_needs_update(struct gpiod_line *line)
 {
 	return !line->up_to_date;
@@ -582,18 +606,6 @@ bool gpiod_line_is_free(struct gpiod_line *line)
 	return line_get_state(line) == LINE_FREE;
 }
 
-static bool line_bulk_is_reserved(struct gpiod_line_bulk *line_bulk)
-{
-	unsigned int i;
-
-	for (i = 0; i < line_bulk->num_lines; i++) {
-		if (!gpiod_line_is_reserved(line_bulk->lines[i]))
-			return false;
-	}
-
-	return true;
-}
-
 int gpiod_line_get_value(struct gpiod_line *line)
 {
 	struct gpiod_line_bulk bulk;
@@ -612,18 +624,26 @@ int gpiod_line_get_value(struct gpiod_line *line)
 int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 {
 	struct gpiohandle_data data;
+	struct gpiod_line *first;
 	unsigned int i;
-	int status;
+	int status, fd;
 
-	if (!line_bulk_is_reserved(bulk)) {
+	first = bulk->lines[0];
+
+	if (!line_bulk_is_reserved(bulk) &&
+	    !line_bulk_is_event_configured(bulk)) {
 		set_last_error(GPIOD_EREQUEST);
 		return -1;
 	}
 
 	memset(&data, 0, sizeof(data));
 
-	status = gpio_ioctl(line_get_handle_fd(bulk->lines[0]),
-			    GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
+	if (gpiod_line_is_reserved(first))
+		fd = line_get_handle_fd(first);
+	else
+		fd = line_get_event_fd(first);
+
+	status = gpio_ioctl(fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
 
@@ -771,18 +791,6 @@ int gpiod_line_event_wait(struct gpiod_line *line,
 	gpiod_line_bulk_add(&bulk, line);
 
 	return gpiod_line_event_wait_bulk(&bulk, timeout, NULL);
-}
-
-static bool line_bulk_is_event_configured(struct gpiod_line_bulk *line_bulk)
-{
-	unsigned int i;
-
-	for (i = 0; i < line_bulk->num_lines; i++) {
-		if (!gpiod_line_event_configured(line_bulk->lines[i]))
-			return false;
-	}
-
-	return true;
 }
 
 int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
