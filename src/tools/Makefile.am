@@ -7,7 +7,7 @@
 #
 
 AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_srcdir)/config.h
-AM_CFLAGS += -Wall -Wextra -g -D_GNU_SOURCE -L$(top_srcdir)/src/lib
+AM_CFLAGS += -Wall -Wextra -g -L$(top_srcdir)/src/lib
 AM_LDFLAGS = -lgpiod
 DEPENDENCIES = libgpiod.la
 

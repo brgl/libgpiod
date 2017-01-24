@@ -143,10 +143,25 @@ int gpiod_errno(void)
 	return last_error;
 }
 
+static const char * strerror_r_wrapper(int errnum, char *buf, size_t buflen)
+{
+#ifdef STRERROR_R_CHAR_P
+	return strerror_r(errnum, buf, buflen);
+#else
+	int status;
+
+	status = strerror_r(errnum, buf, buflen);
+	if (status != 0)
+		snprintf(buf, buflen, "error in strerror_r(): %d", status);
+
+	return buf;
+#endif
+}
+
 const char * gpiod_strerror(int errnum)
 {
 	if (errnum < __GPIOD_ERRNO_OFFSET)
-		return strerror_r(errnum, errmsg, sizeof(errmsg));
+		return strerror_r_wrapper(errnum, errmsg, sizeof(errmsg));
 	else if (errnum > __GPIOD_MAX_ERR)
 		return "invalid error number";
 	else

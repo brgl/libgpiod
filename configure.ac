@@ -24,6 +24,8 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADER([config.h])
 
+AC_DEFINE([_GNU_SOURCE], [], [We want GNU extensions])
+
 AM_PROG_AR
 AC_PROG_CC
 AC_PROG_LIBTOOL
@@ -41,6 +43,7 @@ AC_DEFUN([HEADER_NOT_FOUND_LIB],
 # This is always checked (library needs this)
 AC_HEADER_STDC
 AC_FUNC_MALLOC
+AC_FUNC_STRERROR_R
 AC_CHECK_FUNC([ioctl], [], [FUNC_NOT_FOUND_LIB([ioctl])])
 AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_LIB([asprintf])])
 AC_CHECK_FUNC([readdir], [], [FUNC_NOT_FOUND_LIB([readdir])])
