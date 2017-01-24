@@ -449,7 +449,7 @@ struct gpiod_line_request_config {
  * @return 0 if the line was properly reserved. In case of an error this
  *         routine returns -1 and sets the last error number.
  *
- * Is this routine succeeds, the caller takes ownership of the GPIO line until
+ * If this routine succeeds, the caller takes ownership of the GPIO line until
  * it's released.
  */
 int gpiod_line_request(struct gpiod_line *line,
@@ -508,8 +508,9 @@ static inline int gpiod_line_request_output(struct gpiod_line *line,
  * @return 0 if the all lines were properly requested. In case of an error
  *         this routine returns -1 and sets the last error number.
  *
- * Is this routine succeeds, the caller takes ownership of the GPIO line until
- * it's released.
+ * If this routine succeeds, the caller takes ownership of the GPIO lines
+ * until they're released. All the requested lines must be prodivided by the
+ * same gpiochip.
  */
 int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 			    const struct gpiod_line_request_config *config,
@@ -568,6 +569,9 @@ void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
 /**
  * @brief Release a set of previously reserved lines.
  * @param bulk Set of GPIO lines to release.
+ *
+ * If the lines were not previously requested together, the behavior is
+ * undefined.
  */
 void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk) GPIOD_API;
 
@@ -602,7 +606,8 @@ int gpiod_line_get_value(struct gpiod_line *line) GPIOD_API;
  *         returns -1 and sets the last error number.
  *
  * If succeeds, this routine fills the values array with a set of values in
- * the same order, the lines are added to line_bulk.
+ * the same order, the lines are added to line_bulk. If the lines were not
+ * previously requested together, the behavior is undefined.
  */
 int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk,
 			      int *values) GPIOD_API;
@@ -622,6 +627,9 @@ int gpiod_line_set_value(struct gpiod_line *line, int value) GPIOD_API;
  * @param values An array holding line_bulk->num_lines new values for lines.
  * @return 0 is the operation succeeds. In case of an error this routine
  *         returns -1 and sets the last error number.
+ *
+ * If the lines were not previously requested together, the behavior is
+ * undefined.
  */
 int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
 			      int *values) GPIOD_API;
