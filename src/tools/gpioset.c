@@ -17,7 +17,7 @@
 #include <sys/select.h>
 #include <signal.h>
 #include <sys/signalfd.h>
-#include <sys/poll.h>
+#include <poll.h>
 #include <limits.h>
 #include <errno.h>
 #include <unistd.h>
