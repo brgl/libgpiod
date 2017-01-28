@@ -113,7 +113,7 @@ static void list_lines(struct gpiod_chip *chip)
 		of = false;
 
 		printf("\tline ");
-		prinfo(&of, 2, "%u", offset);
+		prinfo(&of, 3, "%u", offset);
 		printf(": ");
 
 		name ? prinfo(&of, 12, "\"%s\"", name)
