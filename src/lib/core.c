@@ -975,13 +975,16 @@ struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
 
 void gpiod_chip_close(struct gpiod_chip *chip)
 {
+	struct gpiod_line *line;
 	unsigned int i;
 
 	for (i = 0; i < chip->cinfo.lines; i++) {
-		if (chip->lines[i].state == LINE_TAKEN)
-			gpiod_line_release(&chip->lines[i]);
-		else if (chip->lines[i].state == LINE_EVENT)
-			gpiod_line_event_release(&chip->lines[i]);
+		line = &chip->lines[i];
+
+		if (line_get_state(line) == LINE_TAKEN)
+			gpiod_line_release(line);
+		else if (line_get_state(line) == LINE_EVENT)
+			gpiod_line_event_release(line);
 	}
 
 	close(chip->fd);
