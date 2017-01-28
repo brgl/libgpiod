@@ -432,7 +432,7 @@ static void line_set_needs_update(struct gpiod_line *line)
 	line->up_to_date = false;
 }
 
-static void line_update(struct gpiod_line *line)
+static void line_maybe_update(struct gpiod_line *line)
 {
 	int status;
 
@@ -581,7 +581,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 
 		line_set_handle(line, handle);
 		line_set_state(line, LINE_TAKEN);
-		line_update(line);
+		line_maybe_update(line);
 	}
 
 	return 0;
@@ -607,7 +607,7 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 
 		line_remove_handle(line);
 		line_set_state(line, LINE_FREE);
-		line_update(line);
+		line_maybe_update(line);
 	}
 }
 
