@@ -505,18 +505,21 @@ int gpiod_line_request(struct gpiod_line *line,
 
 static bool verify_line_bulk(struct gpiod_line_bulk *line_bulk)
 {
+	struct gpiod_line *line;
 	struct gpiod_chip *chip;
 	unsigned int i;
 
 	chip = gpiod_line_get_chip(line_bulk->lines[0]);
 
 	for (i = 1; i < line_bulk->num_lines; i++) {
-		if (chip != gpiod_line_get_chip(line_bulk->lines[i])) {
+		line = line_bulk->lines[i];
+
+		if (chip != gpiod_line_get_chip(line)) {
 			set_last_error(GPIOD_EBULKINCOH);
 			return false;
 		}
 
-		if (!gpiod_line_is_free(line_bulk->lines[i])) {
+		if (!gpiod_line_is_free(line)) {
 			set_last_error(GPIOD_ELINEBUSY);
 			return false;
 		}
