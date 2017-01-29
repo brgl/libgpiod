@@ -3,9 +3,9 @@
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of version 2.1 of the GNU Lesser General Public License
+ * as published by the Free Software Foundation.
  */
 
 #include <gpiod.h>
@@ -69,7 +69,7 @@ void print_version(void)
 
 	printf("%s (libgpiod) %s\n", prog, gpiod_version_string());
 	printf("Copyright (C) 2017 Bartosz Golaszewski\n");
-	printf("License GPLv3+: GNU GPL version 3 or later\n");
+	printf("License: LGPLv2.1\n");
 	printf("This is free software: you are free to change and redistribute it.\n");
 	printf("There is NO WARRANTY, to the extent permitted by law.\n");
 
