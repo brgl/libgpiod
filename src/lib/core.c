@@ -1074,14 +1074,19 @@ void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter)
 
 struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 {
-	struct gpiod_chip *chip;
-	struct dirent *dentry;
-	int status;
-
 	if (iter->current) {
 		gpiod_chip_close(iter->current);
 		iter->current = NULL;
 	}
+
+	return gpiod_chip_iter_next_noclose(iter);
+}
+
+struct gpiod_chip * gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter)
+{
+	struct gpiod_chip *chip;
+	struct dirent *dentry;
+	int status;
 
 	for (dentry = readdir(iter->dir);
 	     dentry;

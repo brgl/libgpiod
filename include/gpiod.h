@@ -966,6 +966,21 @@ struct gpiod_chip *
 gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
 
 /**
+ * @brief Get the next gpiochip handle without closing the previous one.
+ * @param iter The gpiochip iterator object.
+ * @return Pointer to an open gpiochip handle or NULL if the next chip can't
+ *         be accessed.
+ *
+ * Internally this routine scans the /dev/ directory, storing current state
+ * in the chip iterator structure, and tries to open the next /dev/gpiochipX
+ * device file. If an error occurs or no more chips are present, the function
+ * returns NULL.
+ * Note: The user is responsible for closing the chips after use.
+ */
+struct gpiod_chip *
+gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
+
+/**
  * @brief Iterate over all gpiochip present in the system.
  * @param iter An initialized GPIO chip iterator.
  * @param chip Pointer to a GPIO chip handle. On each iteration the newly
@@ -979,6 +994,21 @@ gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
 	for ((chip) = gpiod_chip_iter_next(iter);			\
 	     !gpiod_chip_iter_done(iter);				\
 	     (chip) = gpiod_chip_iter_next(iter))
+
+/**
+ * @brief Iterate over all gpiochip present in the system without closing them.
+ * @param iter An initialized GPIO chip iterator.
+ * @param chip Pointer to a GPIO chip handle. On each iteration the newly
+ *             opened chip handle is assigned to this argument.
+ *
+ * The user must close the GPIO chip manually after use, until then, the chip
+ * remains open. Free the iterator by calling gpiod_chip_iter_free_noclose to
+ * avoid closing the last chip automatically.
+ */
+#define gpiod_foreach_chip_noclose(iter, chip)				\
+	for ((chip) = gpiod_chip_iter_next_noclose(iter);		\
+	     !gpiod_chip_iter_done(iter);				\
+	     (chip) = gpiod_chip_iter_next_noclose(iter))
 
 /**
  * @brief Check if we're done iterating over gpiochips on this iterator.
