@@ -774,7 +774,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 		req->eventflags |= GPIOEVENT_EVENT_RISING_EDGE;
 	else if (config->event_type == GPIOD_EVENT_FALLING_EDGE)
 		req->eventflags |= GPIOEVENT_EVENT_FALLING_EDGE;
-	else if (req->eventflags == GPIOD_EVENT_BOTH_EDGES)
+	else if (config->event_type == GPIOD_EVENT_BOTH_EDGES)
 		req->eventflags |= GPIOEVENT_REQUEST_BOTH_EDGES;
 
 	chip = gpiod_line_get_chip(line);
