@@ -899,7 +899,7 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 	struct gpiod_chip *chip;
 	int status, fd;
 
-	fd = open(path, O_RDWR);
+	fd = open(path, O_RDWR | O_CLOEXEC);
 	if (fd < 0) {
 		last_error_from_errno();
 		return NULL;
