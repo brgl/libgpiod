@@ -730,7 +730,7 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name)
 			if (!line_name)
 				continue;
 
-			if (strcmp(gpiod_line_name(line), name) == 0) {
+			if (strcmp(line_name, name) == 0) {
 				gpiod_chip_iter_free_noclose(chip_iter);
 				return line;
 			}
