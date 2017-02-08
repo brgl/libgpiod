@@ -342,18 +342,14 @@ static void line_set_state(struct gpiod_line *line, int state)
 
 static int line_get_handle_fd(struct gpiod_line *line)
 {
-	if (line_get_state(line) != LINE_TAKEN)
-		return -1;
-	else
-		return line->handle->request.fd;
+	int state = line_get_state(line);
+
+	return state == LINE_TAKEN ? line->handle->request.fd : -1;
 }
 
 static int line_get_event_fd(struct gpiod_line *line)
 {
-	if (line_get_state(line) != LINE_EVENT)
-		return -1;
-	else
-		return line->event.fd;
+	return line_get_state(line) == LINE_EVENT ? line->event.fd : -1;
 }
 
 static void line_set_handle(struct gpiod_line *line,
