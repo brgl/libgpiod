@@ -65,7 +65,7 @@ AC_ARG_ENABLE([tools],
 		fi
 	],
 	[with_tools=false])
-AM_CONDITIONAL([WITH_TOOLS], [test x$with_tools = xtrue])
+AM_CONDITIONAL([WITH_TOOLS], [test "x$with_tools" = xtrue])
 
 AC_DEFUN([FUNC_NOT_FOUND_TOOLS],
 	[ERR_NOT_FOUND([$1()], [tools])])
@@ -83,7 +83,7 @@ then
 fi
 
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
-AM_CONDITIONAL([HAS_DOXYGEN], [test x$has_doxygen = xtrue])
+AM_CONDITIONAL([HAS_DOXYGEN], [test "x$has_doxygen" = xtrue])
 if test "x$has_doxygen" = xfalse
 then
 	AC_MSG_NOTICE([doxygen not found - documentation cannot be generated])
