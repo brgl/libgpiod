@@ -64,7 +64,7 @@ AC_ARG_ENABLE([tools],
 			with_tools=false
 		fi
 	],
-	[with_tools = false])
+	[with_tools=false])
 AM_CONDITIONAL([WITH_TOOLS], [test x$with_tools = xtrue])
 
 AC_DEFUN([FUNC_NOT_FOUND_TOOLS],
