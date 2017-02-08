@@ -7,8 +7,8 @@
 #
 
 AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_srcdir)/config.h
-AM_CFLAGS += -Wall -Wextra -g -L$(top_srcdir)/src/lib
-AM_LDFLAGS = -lgpiod
+AM_CFLAGS += -Wall -Wextra -g
+LDADD = -lgpiod -L$(top_srcdir)/src/lib
 DEPENDENCIES = libgpiod.la
 
 bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpiofind
