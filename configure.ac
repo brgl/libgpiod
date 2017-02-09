@@ -82,6 +82,34 @@ then
 	AC_CHECK_HEADERS([sys/signalfd.h], [], [HEADER_NOT_FOUND_TOOLS([sys/signalfd.h])])
 fi
 
+AC_ARG_ENABLE([tests],
+	[AC_HELP_STRING([--enable-tests],
+		[enable libgpiod tests [default=no]])],
+	[
+		if test "x$enableval" = xyes
+		then
+			with_tests=true
+		else
+			with_tests=false
+		fi
+	],
+	[with_tests=false])
+AM_CONDITIONAL([WITH_TESTS], [test "x$with_tests" = xtrue])
+
+AC_DEFUN([HEADER_NOT_FOUND_TESTS],
+	[ERR_NOT_FOUND([$1 header], [tests])])
+
+AC_DEFUN([FUNC_NOT_FOUND_TESTS],
+	[ERR_NOT_FOUND([$1()], [tests])])
+
+if test "x$with_tools" = xtrue
+then
+	AC_CHECK_LIB([kmod], [kmod_module_probe_insert_module], [],
+		[AC_MSG_ERROR([libkmod not found (needed to build tests])])
+	AC_CHECK_HEADERS([libkmod.h], [], [HEADER_NOT_FOUND_TESTS([libkmod.h])])
+	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
+fi
+
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
 AM_CONDITIONAL([HAS_DOXYGEN], [test "x$has_doxygen" = xtrue])
 if test "x$has_doxygen" = xfalse
@@ -93,6 +121,8 @@ AC_CONFIG_FILES([Makefile
 		 include/Makefile
 		 src/Makefile
 		 src/lib/Makefile
-		 src/tools/Makefile])
+		 src/tools/Makefile
+		 tests/Makefile
+		 tests/unit/Makefile])
 
 AC_OUTPUT

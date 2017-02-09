@@ -6,19 +6,4 @@
 # as published by the Free Software Foundation.
 #
 
-AUTOMAKE_OPTIONS = foreign
-SUBDIRS = include src
-
-if WITH_TESTS
-
-SUBDIRS += tests
-
-endif
-
-if HAS_DOXYGEN
-
-doc:
-	@(cat Doxyfile; echo PROJECT_NUMBER = $(VERSION_STR)) | doxygen -
-.PHONY: doc
-
-endif
+SUBDIRS = . unit

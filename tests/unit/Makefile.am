@@ -6,19 +6,11 @@
 # as published by the Free Software Foundation.
 #
 
-AUTOMAKE_OPTIONS = foreign
-SUBDIRS = include src
+AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_srcdir)/config.h
+AM_CFLAGS += -Wall -Wextra -g
+LDADD = -lgpiod -L$(top_srcdir)/src/lib -lkmod
+DEPENDENCIES = libgpiod.la
 
-if WITH_TESTS
+check_PROGRAMS = gpiod-unit
 
-SUBDIRS += tests
-
-endif
-
-if HAS_DOXYGEN
-
-doc:
-	@(cat Doxyfile; echo PROJECT_NUMBER = $(VERSION_STR)) | doxygen -
-.PHONY: doc
-
-endif
+gpiod_unit_SOURCES = gpiod-unit.c tests-chip.c
