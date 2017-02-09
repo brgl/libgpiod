@@ -6,10 +6,10 @@
 # as published by the Free Software Foundation.
 #
 
+SUBDIRS = lib
+
 if WITH_TOOLS
 
-TOOLS_SUBDIR = tools
+SUBDIRS += tools
 
 endif
-
-SUBDIRS = . lib $(TOOLS_SUBDIR)
