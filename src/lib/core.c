@@ -23,8 +23,7 @@
 #include <poll.h>
 #include <linux/gpio.h>
 
-struct gpiod_chip
-{
+struct gpiod_chip {
 	int fd;
 	struct gpiochip_info cinfo;
 	struct gpiod_line *lines;
@@ -58,8 +57,7 @@ enum {
 	CHIP_ITER_ERR,
 };
 
-struct gpiod_chip_iter
-{
+struct gpiod_chip_iter {
 	DIR *dir;
 	struct gpiod_chip *current;
 	int state;
