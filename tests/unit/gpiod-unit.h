@@ -11,9 +11,8 @@
 #ifndef __GPIOD_UNIT_H__
 #define __GPIOD_UNIT_H__
 
-#include <stdlib.h>
+#include <gpiod.h>
 #include <string.h>
-#include <stdbool.h>
 
 #define GU_INIT			__attribute__((constructor))
 #define GU_UNUSED		__attribute__((unused))
@@ -73,6 +72,10 @@ void GU_PRINTF(1, 2) gu_err(const char *fmt, ...);
 const char * gu_chip_path(unsigned int index);
 const char * gu_chip_name(unsigned int index);
 unsigned int gu_chip_num(unsigned int index);
+
+void gu_close_chip(struct gpiod_chip **chip);
+void gu_free_str(char **str);
+void gu_free_chip_iter(struct gpiod_chip_iter **iter);
 
 #define GU_ASSERT(statement)						\
 	do {								\

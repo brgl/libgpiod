@@ -402,3 +402,21 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 
 	return globals.tests_failed ? EXIT_FAILURE : EXIT_SUCCESS;
 }
+
+void gu_close_chip(struct gpiod_chip **chip)
+{
+	if (*chip)
+		gpiod_chip_close(*chip);
+}
+
+void gu_free_str(char **str)
+{
+	if (*str)
+		free(*str);
+}
+
+void gu_free_chip_iter(struct gpiod_chip_iter **iter)
+{
+	if (*iter)
+		gpiod_chip_iter_free(*iter);
+}
