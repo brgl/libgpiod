@@ -1,5 +1,5 @@
 /*
- * GPIO chip test cases for libgpiod.
+ * Iterator test cases for libgpiod.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *
