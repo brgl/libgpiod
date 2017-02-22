@@ -96,6 +96,45 @@ static void GU_PRINTF(1, 2) NORETURN die_perr(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
+static void * xzalloc(size_t size)
+{
+	void *ptr;
+
+	ptr = malloc(size);
+	if (!ptr)
+		die("out of memory");
+
+	memset(ptr, 0, size);
+
+	return ptr;
+}
+
+static char * xstrdup(const char *str)
+{
+	char *ret;
+
+	ret = strdup(str);
+	if (!ret)
+		die("out of memory");
+
+	return ret;
+}
+
+static GU_PRINTF(1, 2) char * xasprintf(const char *fmt, ...)
+{
+	int status;
+	va_list va;
+	char *ret;
+
+	va_start(va, fmt);
+	status = vasprintf(&ret, fmt, va);
+	if (status < 0)
+		die_perr("asprintf");
+	va_end(va);
+
+	return ret;
+}
+
 static void  check_chip_index(unsigned int index)
 {
 	if (index >= globals.test_ctx.num_chips)
@@ -213,9 +252,7 @@ static void test_load_module(struct gu_chip_descr *descr)
 	unsigned int i;
 	int status;
 
-	line_sizes = malloc(sizeof(char *) * descr->num_chips);
-	if (!line_sizes)
-		die("out of memory");
+	line_sizes = xzalloc(sizeof(char *) * descr->num_chips);
 
 	modarg_len = strlen("gpio_mockup_ranges=");
 	for (i = 0; i < descr->num_chips; i++) {
@@ -227,9 +264,7 @@ static void test_load_module(struct gu_chip_descr *descr)
 		modarg_len += status;
 	}
 
-	modarg = malloc(modarg_len + 1);
-	if (!modarg)
-		die("out of memory");
+	modarg = xzalloc(modarg_len + 1);
 	tmp_modarg = modarg;
 
 	status = sprintf(tmp_modarg, "gpio_mockup_ranges=");
@@ -272,9 +307,7 @@ static bool is_mockup_chip(const char *name)
 	char *path;
 	int status;
 
-	status = asprintf(&path, "/dev/%s", name);
-	if (status < 0)
-		die("asprintf");
+	path = xasprintf("/dev/%s", name);
 
 	status = stat(path, &gdev_stat);
 	free(path);
@@ -310,9 +343,7 @@ static void test_prepare(struct gu_chip_descr *descr)
 	test_load_module(descr);
 
 	ctx->num_chips = descr->num_chips;
-	ctx->chips = malloc(sizeof(*ctx->chips) * ctx->num_chips);
-	if (!ctx->chips)
-		die("out of memory");
+	ctx->chips = xzalloc(sizeof(*ctx->chips) * ctx->num_chips);
 
 	dir = opendir("/dev");
 	if (!dir)
@@ -323,19 +354,11 @@ static void test_prepare(struct gu_chip_descr *descr)
 			if (!is_mockup_chip(dentry->d_name))
 				continue;
 
-			chip = malloc(sizeof(*chip));
-			if (!chip)
-				die("out of memory");
+			chip = xzalloc(sizeof(*chip));
 			ctx->chips[current++] = chip;
 
-			chip->name = strdup(dentry->d_name);
-			if (!chip->name)
-				die("out of memory");
-
-			status = asprintf(&chip->path,
-					  "/dev/%s", dentry->d_name);
-			if (status < 0)
-				die_perr("asprintf");
+			chip->name = xstrdup(dentry->d_name);
+			chip->path = xasprintf("/dev/%s", dentry->d_name);
 
 			status = sscanf(dentry->d_name,
 					"gpiochip%u", &chip->number);
