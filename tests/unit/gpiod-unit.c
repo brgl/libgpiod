@@ -420,3 +420,9 @@ void gu_free_chip_iter(struct gpiod_chip_iter **iter)
 	if (*iter)
 		gpiod_chip_iter_free(*iter);
 }
+
+void gu_release_line(struct gpiod_line **line)
+{
+	if (*line)
+		gpiod_line_release(*line);
+}
