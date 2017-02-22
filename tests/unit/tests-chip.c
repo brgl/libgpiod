@@ -80,6 +80,29 @@ GU_DEFINE_TEST(chip_open_lookup,
 	       "gpiod_chip_open_lookup()",
 	       GU_LINES_UNNAMED, { 8 });
 
+static void chip_open_by_label_good(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
+
+	chip = gpiod_chip_open_by_label("gpio-mockup-D");
+	GU_ASSERT_NOT_NULL(chip);
+	GU_ASSERT_STR_EQ(gpiod_chip_name(chip), gu_chip_name(3));
+}
+GU_DEFINE_TEST(chip_open_by_label_good,
+	       "chip_open_by_label() good",
+	       GU_LINES_UNNAMED, { 4, 4, 4, 4, 4 });
+
+static void chip_open_by_label_bad(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
+
+	chip = gpiod_chip_open_by_label("nonexistent_gpio_chip");
+	GU_ASSERT_NULL(chip);
+}
+GU_DEFINE_TEST(chip_open_by_label_bad,
+	       "chip_open_by_label() bad",
+	       GU_LINES_UNNAMED, { 4, 4, 4, 4, 4 });
+
 static void chip_name(void)
 {
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip0 = NULL;

@@ -960,6 +960,30 @@ struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num)
 	return chip;
 }
 
+struct gpiod_chip * gpiod_chip_open_by_label(const char *label)
+{
+	struct gpiod_chip_iter *iter;
+	struct gpiod_chip *chip;
+
+	iter = gpiod_chip_iter_new();
+	if (!iter)
+		return NULL;
+
+	gpiod_foreach_chip(iter, chip) {
+		if (gpiod_chip_iter_err(iter))
+			goto out;
+
+		if (strcmp(label, gpiod_chip_label(chip)) == 0) {
+			gpiod_chip_iter_free_noclose(iter);
+			return chip;
+		}
+	}
+
+out:
+	gpiod_chip_iter_free(iter);
+	return  NULL;
+}
+
 struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
 {
 	if (is_unsigned_int(descr))
