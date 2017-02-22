@@ -31,7 +31,7 @@ struct mockup_chip {
 };
 
 struct test_context {
-	struct mockup_chip *chips;
+	struct mockup_chip **chips;
 	size_t num_chips;
 	bool test_failed;
 	struct timeval mod_loaded_ts;
@@ -106,21 +106,21 @@ const char * gu_chip_path(unsigned int index)
 {
 	check_chip_index(index);
 
-	return globals.test_ctx.chips[index].path;
+	return globals.test_ctx.chips[index]->path;
 }
 
 const char * gu_chip_name(unsigned int index)
 {
 	check_chip_index(index);
 
-	return globals.test_ctx.chips[index].name;
+	return globals.test_ctx.chips[index]->name;
 }
 
 unsigned int gu_chip_num(unsigned int index)
 {
 	check_chip_index(index);
 
-	return globals.test_ctx.chips[index].number;
+	return globals.test_ctx.chips[index]->number;
 }
 
 void _gu_register_test(struct gu_test *test)
@@ -289,8 +289,8 @@ static bool is_mockup_chip(const char *name)
 
 static int chipcmp(const void *c1, const void *c2)
 {
-	const struct mockup_chip *chip1 = c1;
-	const struct mockup_chip *chip2 = c2;
+	const struct mockup_chip *chip1 = *(const struct mockup_chip **)c1;
+	const struct mockup_chip *chip2 = *(const struct mockup_chip **)c2;
 
 	return strcmp(chip1->name, chip2->name);
 }
@@ -323,7 +323,10 @@ static void test_prepare(struct gu_chip_descr *descr)
 			if (!is_mockup_chip(dentry->d_name))
 				continue;
 
-			chip = &ctx->chips[current++];
+			chip = malloc(sizeof(*chip));
+			if (!chip)
+				die("out of memory");
+			ctx->chips[current++] = chip;
 
 			chip->name = strdup(dentry->d_name);
 			if (!chip->name)
@@ -356,10 +359,11 @@ static void test_teardown(void)
 	int status;
 
 	for (i = 0; i < globals.test_ctx.num_chips; i++) {
-		chip = &globals.test_ctx.chips[i];
+		chip = globals.test_ctx.chips[i];
 
 		free(chip->path);
 		free(chip->name);
+		free(chip);
 	}
 
 	free(globals.test_ctx.chips);
