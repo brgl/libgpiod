@@ -61,24 +61,32 @@ GU_DEFINE_TEST(chip_open_by_number_good,
 
 static void chip_open_lookup(void)
 {
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip_by_label = NULL;
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip_by_name = NULL;
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip_by_path = NULL;
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip_by_num = NULL;
 	GU_CLEANUP(gu_free_str) char *chip_num;
 
-	GU_ASSERT(asprintf(&chip_num, "%u", gu_chip_num(0)) > 0);
+	GU_ASSERT(asprintf(&chip_num, "%u", gu_chip_num(1)) > 0);
 
-	chip_by_name = gpiod_chip_open_lookup(gu_chip_name(0));
-	chip_by_path = gpiod_chip_open_lookup(gu_chip_path(0));
+	chip_by_name = gpiod_chip_open_lookup(gu_chip_name(1));
+	chip_by_path = gpiod_chip_open_lookup(gu_chip_path(1));
 	chip_by_num = gpiod_chip_open_lookup(chip_num);
+	chip_by_label = gpiod_chip_open_lookup("gpio-mockup-B");
 
 	GU_ASSERT_NOT_NULL(chip_by_name);
 	GU_ASSERT_NOT_NULL(chip_by_path);
 	GU_ASSERT_NOT_NULL(chip_by_num);
+	GU_ASSERT_NOT_NULL(chip_by_label);
+
+	GU_ASSERT_STR_EQ(gpiod_chip_name(chip_by_name), gu_chip_name(1));
+	GU_ASSERT_STR_EQ(gpiod_chip_name(chip_by_path), gu_chip_name(1));
+	GU_ASSERT_STR_EQ(gpiod_chip_name(chip_by_num), gu_chip_name(1));
+	GU_ASSERT_STR_EQ(gpiod_chip_name(chip_by_label), gu_chip_name(1));
 }
 GU_DEFINE_TEST(chip_open_lookup,
 	       "gpiod_chip_open_lookup()",
-	       GU_LINES_UNNAMED, { 8 });
+	       GU_LINES_UNNAMED, { 8, 8, 8 });
 
 static void chip_open_by_label_good(void)
 {

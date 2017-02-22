@@ -986,12 +986,21 @@ out:
 
 struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
 {
-	if (is_unsigned_int(descr))
-		return gpiod_chip_open_by_number(strtoul(descr, NULL, 10));
-	else if (strncmp(descr, dev_dir, sizeof(dev_dir) - 1) != 0)
-		return gpiod_chip_open_by_name(descr);
-	else
-		return gpiod_chip_open(descr);
+	struct gpiod_chip *chip;
+
+	if (is_unsigned_int(descr)) {
+		chip = gpiod_chip_open_by_number(strtoul(descr, NULL, 10));
+	} else {
+		chip = gpiod_chip_open_by_label(descr);
+		if (!chip) {
+			if (strncmp(descr, dev_dir, sizeof(dev_dir) - 1))
+				chip = gpiod_chip_open_by_name(descr);
+			else
+				chip = gpiod_chip_open(descr);
+		}
+	}
+
+	return chip;
 }
 
 void gpiod_chip_close(struct gpiod_chip *chip)

@@ -884,8 +884,8 @@ struct gpiod_chip * gpiod_chip_open_by_label(const char *label) GPIOD_API;
  * @return GPIO chip handle or NULL if an error occurred.
  *
  * This routine tries to figure out whether the user passed it the path to
- * the GPIO chip, its name or number as a string. Then it tries to open it
- * using one of the other gpiod_chip_open** routines.
+ * the GPIO chip, its name, label or number as a string. Then it tries to
+ * open it using one of the other gpiod_chip_open** routines.
  */
 struct gpiod_chip * gpiod_chip_open_lookup(const char *descr) GPIOD_API;
 
