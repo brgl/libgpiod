@@ -379,13 +379,12 @@ static void test_prepare(struct gu_chip_descr *descr)
 				die("unable to determine the chip number");
 		}
 	}
+	closedir(dir);
 
 	if (descr->num_chips != current)
 		die("number of requested and detected mockup gpiochips is not the same");
 
 	qsort(ctx->chips, ctx->num_chips, sizeof(*ctx->chips), chipcmp);
-
-	closedir(dir);
 }
 
 static void test_teardown(void)
