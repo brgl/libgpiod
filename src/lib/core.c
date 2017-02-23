@@ -689,7 +689,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 	memset(&data, 0, sizeof(data));
 
 	for (i = 0; i < bulk->num_lines; i++)
-		data.values[i] = (__u8)!!values[i];
+		data.values[i] = (uint8_t)!!values[i];
 
 	status = gpio_ioctl(line_get_handle_fd(bulk->lines[0]),
 			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
