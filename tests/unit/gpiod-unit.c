@@ -14,15 +14,14 @@
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
-#include <time.h>
-#include <dirent.h>
 #include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/time.h>
+#include <poll.h>
 #include <libkmod.h>
+#include <libudev.h>
 
 #define NORETURN __attribute__((noreturn))
+
+static const char mockup_devpath[] = "/devices/platform/gpio-mockup/gpiochip";
 
 struct mockup_chip {
 	char *path;
@@ -34,7 +33,6 @@ struct test_context {
 	struct mockup_chip **chips;
 	size_t num_chips;
 	bool test_failed;
-	struct timeval mod_loaded_ts;
 };
 
 static struct {
@@ -116,21 +114,6 @@ static char * xstrdup(const char *str)
 	ret = strdup(str);
 	if (!ret)
 		die("out of memory");
-
-	return ret;
-}
-
-static GU_PRINTF(1, 2) char * xasprintf(const char *fmt, ...)
-{
-	int status;
-	va_list va;
-	char *ret;
-
-	va_start(va, fmt);
-	status = vasprintf(&ret, fmt, va);
-	if (status < 0)
-		die_perr("asprintf");
-	va_end(va);
 
 	return ret;
 }
@@ -296,7 +279,6 @@ static void test_load_module(struct gu_chip_descr *descr)
 
 	modarg[modarg_len - 1] = '\0'; /* Remove the last comma. */
 
-	gettimeofday(&globals.test_ctx.mod_loaded_ts, NULL);
 	status = kmod_module_probe_insert_module(globals.module, 0,
 						 modarg, NULL, NULL, NULL);
 	if (status)
@@ -308,31 +290,6 @@ static void test_load_module(struct gu_chip_descr *descr)
 	free(line_sizes);
 }
 
-/*
- * To see if given chip is a mockup chip, check if it was created after
- * inserting the gpio-mockup module. It's not too clever, but works well
- * enough...
- */
-static bool is_mockup_chip(const char *name)
-{
-	struct timeval gdev_created_ts;
-	struct stat gdev_stat;
-	char *path;
-	int status;
-
-	path = xasprintf("/dev/%s", name);
-
-	status = stat(path, &gdev_stat);
-	free(path);
-	if (status < 0)
-		die_perr("stat");
-
-	gdev_created_ts.tv_sec = gdev_stat.st_ctim.tv_sec;
-	gdev_created_ts.tv_usec = gdev_stat.st_ctim.tv_nsec / 1000;
-
-	return timercmp(&globals.test_ctx.mod_loaded_ts, &gdev_created_ts, >=);
-}
-
 static int chipcmp(const void *c1, const void *c2)
 {
 	const struct mockup_chip *chip1 = *(const struct mockup_chip **)c1;
@@ -341,48 +298,90 @@ static int chipcmp(const void *c1, const void *c2)
 	return strcmp(chip1->name, chip2->name);
 }
 
+static bool devpath_is_mockup(const char *devpath)
+{
+	return !strncmp(devpath, mockup_devpath, sizeof(mockup_devpath) - 1);
+}
+
 static void test_prepare(struct gu_chip_descr *descr)
 {
+	const char *devpath, *devnode, *sysname;
+	struct udev_monitor *monitor;
+	unsigned int detected = 0;
 	struct test_context *ctx;
 	struct mockup_chip *chip;
-	unsigned int current = 0;
-	struct dirent *dentry;
+	struct udev_device *dev;
+	struct udev *udev_ctx;
+	struct pollfd pfd;
 	int status;
-	DIR *dir;
 
 	ctx = &globals.test_ctx;
 	memset(ctx, 0, sizeof(*ctx));
-
-	test_load_module(descr);
-
 	ctx->num_chips = descr->num_chips;
 	ctx->chips = xzalloc(sizeof(*ctx->chips) * ctx->num_chips);
 
-	dir = opendir("/dev");
-	if (!dir)
-		die_perr("error opening /dev");
+	/*
+	 * We'll setup the udev monitor, insert the module and wait for the
+	 * mockup gpiochips to appear.
+	 */
 
-	for (dentry = readdir(dir); dentry; dentry = readdir(dir)) {
-		if (strncmp(dentry->d_name, "gpiochip", 8) == 0) {
-			if (!is_mockup_chip(dentry->d_name))
-				continue;
+	udev_ctx = udev_new();
+	if (!udev_ctx)
+		die_perr("error creating udev context");
 
-			chip = xzalloc(sizeof(*chip));
-			ctx->chips[current++] = chip;
+	monitor = udev_monitor_new_from_netlink(udev_ctx, "udev");
+	if (!monitor)
+		die_perr("error creating udev monitor");
 
-			chip->name = xstrdup(dentry->d_name);
-			chip->path = xasprintf("/dev/%s", dentry->d_name);
+	status = udev_monitor_filter_add_match_subsystem_devtype(monitor,
+								 "gpio", NULL);
+	if (status < 0)
+		die_perr("error adding udev filters");
 
-			status = sscanf(dentry->d_name,
-					"gpiochip%u", &chip->number);
-			if (status != 1)
-				die("unable to determine the chip number");
-		}
+	status = udev_monitor_enable_receiving(monitor);
+	if (status < 0)
+		die_perr("error enabling udev event receiving");
+
+	test_load_module(descr);
+
+	pfd.fd = udev_monitor_get_fd(monitor);
+	pfd.events = POLLIN | POLLPRI;
+
+	while (ctx->num_chips > detected) {
+		status = poll(&pfd, 1, 5000);
+		if (status < 0)
+			die_perr("error polling for uevents");
+		else if (status == 0)
+			die("timeout waiting for gpiochips");
+
+		dev = udev_monitor_receive_device(monitor);
+		if (!dev)
+			die_perr("error reading device info");
+
+		devpath = udev_device_get_devpath(dev);
+		devnode = udev_device_get_devnode(dev);
+		sysname = udev_device_get_sysname(dev);
+		if (!devpath || !devnode || !sysname)
+			goto cont;
+
+		if (!devpath_is_mockup(devpath))
+			goto cont;
+
+		chip = xzalloc(sizeof(*chip));
+		chip->name = xstrdup(sysname);
+		chip->path = xstrdup(devnode);
+		status = sscanf(sysname, "gpiochip%u", &chip->number);
+		if (status != 1)
+			die("unable to determine chip number");
+
+		ctx->chips[detected++] = chip;
+
+cont:
+		udev_device_unref(dev);
 	}
-	closedir(dir);
 
-	if (descr->num_chips != current)
-		die("number of requested and detected mockup gpiochips is not the same");
+	udev_monitor_unref(monitor);
+	udev_unref(udev_ctx);
 
 	qsort(ctx->chips, ctx->num_chips, sizeof(*ctx->chips), chipcmp);
 }

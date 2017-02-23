@@ -106,7 +106,10 @@ if test "x$with_tools" = xtrue
 then
 	AC_CHECK_LIB([kmod], [kmod_module_probe_insert_module], [],
 		[AC_MSG_ERROR([libkmod not found (needed to build tests])])
+	AC_CHECK_LIB([udev], [udev_monitor_new_from_netlink], [],
+		[AC_MSG_ERROR([libudev not found (needed to build tests])])
 	AC_CHECK_HEADERS([libkmod.h], [], [HEADER_NOT_FOUND_TESTS([libkmod.h])])
+	AC_CHECK_HEADERS([libudev.h], [], [HEADER_NOT_FOUND_TESTS([libudev.h])])
 	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
 fi
 
