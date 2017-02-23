@@ -380,10 +380,10 @@ static void test_prepare(struct gu_chip_descr *descr)
 		}
 	}
 
-	qsort(ctx->chips, ctx->num_chips, sizeof(*ctx->chips), chipcmp);
-
 	if (descr->num_chips != current)
 		die("number of requested and detected mockup gpiochips is not the same");
+
+	qsort(ctx->chips, ctx->num_chips, sizeof(*ctx->chips), chipcmp);
 
 	closedir(dir);
 }
