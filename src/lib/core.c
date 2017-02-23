@@ -158,12 +158,12 @@ static const char * strerror_r_wrapper(int errnum, char *buf, size_t buflen)
 
 const char * gpiod_strerror(int errnum)
 {
-	if (errnum < __GPIOD_ERRNO_OFFSET)
+	if (errnum < _GPIOD_ERRNO_OFFSET)
 		return strerror_r_wrapper(errnum, errmsg, sizeof(errmsg));
-	else if (errnum > __GPIOD_MAX_ERR)
+	else if (errnum > _GPIOD_MAX_ERR)
 		return "invalid error number";
 	else
-		return error_descr[errnum - __GPIOD_ERRNO_OFFSET];
+		return error_descr[errnum - _GPIOD_ERRNO_OFFSET];
 }
 
 const char * gpiod_last_strerror(void)

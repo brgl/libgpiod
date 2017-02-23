@@ -70,13 +70,13 @@ struct gpiod_chip_iter;
 /**
  * @brief Private: offset for all libgpiod error numbers.
  */
-#define __GPIOD_ERRNO_OFFSET	10000
+#define _GPIOD_ERRNO_OFFSET	10000
 
 /**
  * @brief libgpiod-specific error numbers.
  */
 enum {
-	GPIOD_ESUCCESS = __GPIOD_ERRNO_OFFSET,
+	GPIOD_ESUCCESS = _GPIOD_ERRNO_OFFSET,
 	/**< No error. */
 	GPIOD_EREQUEST,
 	/**< The caller has no ownership of this line. */
@@ -88,7 +88,7 @@ enum {
 	/**< This line is currently in use. */
 	GPIOD_ELINEMAX,
 	/**< Number of lines in the request exceeds limit. */
-	__GPIOD_MAX_ERR,
+	_GPIOD_MAX_ERR,
 	/**< Private: number of libgpiod-specific error numbers. */
 };
 
