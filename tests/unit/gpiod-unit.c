@@ -118,22 +118,6 @@ static char * xstrdup(const char *str)
 	return ret;
 }
 
-static GU_PRINTF(2, 3) char * xcasprintf(size_t *count, const char *fmt, ...)
-{
-	int status;
-	va_list va;
-	char *ret;
-
-	va_start(va, fmt);
-	status = vasprintf(&ret, fmt, va);
-	if (status < 0)
-		die_perr("asprintf");
-	va_end(va);
-
-	*count = status;
-	return ret;
-}
-
 static void  check_chip_index(unsigned int index)
 {
 	if (index >= globals.test_ctx.num_chips)
@@ -246,7 +230,7 @@ static void check_gpio_mockup(void)
 static void test_load_module(struct gu_chip_descr *descr)
 {
 	char *modarg, *tmp_modarg;
-	size_t modarg_len, count;
+	size_t modarg_len;
 	char **line_sizes;
 	unsigned int i;
 	int status;
@@ -255,9 +239,11 @@ static void test_load_module(struct gu_chip_descr *descr)
 
 	modarg_len = strlen("gpio_mockup_ranges=");
 	for (i = 0; i < descr->num_chips; i++) {
-		line_sizes[i] = xcasprintf(&count, "-1,%u,",
-					   descr->num_lines[i]);
-		modarg_len += count;
+		status = asprintf(&line_sizes[i],
+				  "-1,%u,", descr->num_lines[i]);
+		if (status < 0)
+			die_perr("asprintf");
+		modarg_len += status;
 	}
 
 	modarg = xzalloc(modarg_len + 1);
