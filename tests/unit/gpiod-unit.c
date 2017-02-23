@@ -124,49 +124,6 @@ static void  check_chip_index(unsigned int index)
 		die("invalid chip number requested from test code");
 }
 
-const char * gu_chip_path(unsigned int index)
-{
-	check_chip_index(index);
-
-	return globals.test_ctx.chips[index]->path;
-}
-
-const char * gu_chip_name(unsigned int index)
-{
-	check_chip_index(index);
-
-	return globals.test_ctx.chips[index]->name;
-}
-
-unsigned int gu_chip_num(unsigned int index)
-{
-	check_chip_index(index);
-
-	return globals.test_ctx.chips[index]->number;
-}
-
-void _gu_register_test(struct gu_test *test)
-{
-	struct gu_test *tmp;
-
-	if (!globals.test_list_head) {
-		globals.test_list_head = globals.test_list_tail = test;
-		test->_next = NULL;
-	} else {
-		tmp = globals.test_list_tail;
-		globals.test_list_tail = test;
-		test->_next = NULL;
-		tmp->_next = test;
-	}
-
-	globals.num_tests++;
-}
-
-void _gu_set_test_failed(void)
-{
-	globals.test_ctx.test_failed = true;
-}
-
 static bool mockup_loaded(void)
 {
 	int state;
@@ -449,4 +406,47 @@ void gu_release_line(struct gpiod_line **line)
 {
 	if (*line)
 		gpiod_line_release(*line);
+}
+
+const char * gu_chip_path(unsigned int index)
+{
+	check_chip_index(index);
+
+	return globals.test_ctx.chips[index]->path;
+}
+
+const char * gu_chip_name(unsigned int index)
+{
+	check_chip_index(index);
+
+	return globals.test_ctx.chips[index]->name;
+}
+
+unsigned int gu_chip_num(unsigned int index)
+{
+	check_chip_index(index);
+
+	return globals.test_ctx.chips[index]->number;
+}
+
+void _gu_register_test(struct gu_test *test)
+{
+	struct gu_test *tmp;
+
+	if (!globals.test_list_head) {
+		globals.test_list_head = globals.test_list_tail = test;
+		test->_next = NULL;
+	} else {
+		tmp = globals.test_list_tail;
+		globals.test_list_tail = test;
+		test->_next = NULL;
+		tmp->_next = test;
+	}
+
+	globals.num_tests++;
+}
+
+void _gu_set_test_failed(void)
+{
+	globals.test_ctx.test_failed = true;
 }
