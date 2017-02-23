@@ -12,9 +12,9 @@
 
 static void line_request_output(void)
 {
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
 	GU_CLEANUP(gu_release_line) struct gpiod_line *line_0 = NULL;
 	GU_CLEANUP(gu_release_line) struct gpiod_line *line_1 = NULL;
-	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
 	int status;
 
 	chip = gpiod_chip_open(gu_chip_path(0));
@@ -39,8 +39,8 @@ GU_DEFINE_TEST(line_request_output,
 
 static void line_set_value(void)
 {
-	GU_CLEANUP(gu_release_line) struct gpiod_line *line = NULL;
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
+	GU_CLEANUP(gu_release_line) struct gpiod_line *line = NULL;
 	int status;
 
 	chip = gpiod_chip_open(gu_chip_path(0));
