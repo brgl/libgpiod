@@ -435,24 +435,24 @@ static void line_maybe_update(struct gpiod_line *line)
 		line_set_needs_update(line);
 }
 
-static bool line_bulk_is_reserved(struct gpiod_line_bulk *line_bulk)
+static bool line_bulk_is_reserved(struct gpiod_line_bulk *bulk)
 {
 	unsigned int i;
 
-	for (i = 0; i < line_bulk->num_lines; i++) {
-		if (!gpiod_line_is_reserved(line_bulk->lines[i]))
+	for (i = 0; i < bulk->num_lines; i++) {
+		if (!gpiod_line_is_reserved(bulk->lines[i]))
 			return false;
 	}
 
 	return true;
 }
 
-static bool line_bulk_is_event_configured(struct gpiod_line_bulk *line_bulk)
+static bool line_bulk_is_event_configured(struct gpiod_line_bulk *bulk)
 {
 	unsigned int i;
 
-	for (i = 0; i < line_bulk->num_lines; i++) {
-		if (!gpiod_line_event_configured(line_bulk->lines[i]))
+	for (i = 0; i < bulk->num_lines; i++) {
+		if (!gpiod_line_event_configured(bulk->lines[i]))
 			return false;
 	}
 
@@ -497,16 +497,16 @@ int gpiod_line_request(struct gpiod_line *line,
 	return gpiod_line_request_bulk(&bulk, config, &default_val);
 }
 
-static bool verify_line_bulk(struct gpiod_line_bulk *line_bulk)
+static bool verify_line_bulk(struct gpiod_line_bulk *bulk)
 {
 	struct gpiod_line *line;
 	struct gpiod_chip *chip;
 	unsigned int i;
 
-	chip = gpiod_line_get_chip(line_bulk->lines[0]);
+	chip = gpiod_line_get_chip(bulk->lines[0]);
 
-	for (i = 1; i < line_bulk->num_lines; i++) {
-		line = line_bulk->lines[i];
+	for (i = 1; i < bulk->num_lines; i++) {
+		line = bulk->lines[i];
 
 		if (chip != gpiod_line_get_chip(line)) {
 			set_last_error(GPIOD_EBULKINCOH);
