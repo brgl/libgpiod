@@ -48,6 +48,17 @@ GU_DEFINE_TEST(chip_open_notty,
 	       "gpiod_chip_open() notty",
 	       GU_LINES_UNNAMED, { 8 });
 
+static void chip_open_by_name_good(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
+
+	chip = gpiod_chip_open_by_name(gu_chip_name(0));
+	GU_ASSERT_NOT_NULL(chip);
+}
+GU_DEFINE_TEST(chip_open_by_name_good,
+	       "gpiod_chip_open_by_name() good",
+	       GU_LINES_UNNAMED, { 8 });
+
 static void chip_open_by_number_good(void)
 {
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
