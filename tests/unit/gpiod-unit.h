@@ -92,6 +92,7 @@ void gu_release_line(struct gpiod_line **line);
 #define GU_ASSERT_RET_OK(status)	GU_ASSERT(status == 0)
 #define GU_ASSERT_NULL(ptr)		GU_ASSERT(ptr == NULL)
 #define GU_ASSERT_EQ(a1, a2)		GU_ASSERT(a1 == a2)
+#define GU_ASSERT_NOTEQ(a1, a2)		GU_ASSERT(a1 != a2)
 #define GU_ASSERT_STR_EQ(s1, s2)	GU_ASSERT(strcmp(s1, s2) == 0)
 
 #endif /* __GPIOD_UNIT_H__ */
