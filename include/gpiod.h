@@ -126,7 +126,7 @@ const char * gpiod_last_strerror(void) GPIOD_API;
  * @param device Name, path or number of the gpiochip.
  * @param offsets An array of offsets of lines whose values should be read.
  * @param values A buffer in which the values will be stored.
- * @param num_lines Number of lines.
+ * @param num_lines Number of lines, must be > 0.
  * @param active_low The active state of the lines - true if low.
  * @return 0 if the operation succeeds, -1 on error.
  */
@@ -168,7 +168,7 @@ typedef void (*gpiod_set_value_cb)(void *);
  * @param device Name, path or number of the gpiochip.
  * @param offsets An array of offsets of lines whose values should be set.
  * @param values An array of integers containing new values.
- * @param num_lines Number of lines.
+ * @param num_lines Number of lines, must be > 0.
  * @param active_low The active state of the lines - true if low.
  * @param cb Callback function that will be called right after the values are
  *        set.
@@ -301,7 +301,9 @@ enum {
 /**
  * @brief Helper structure for storing a set of GPIO line objects.
  *
- * This structure is used in all operations involving sets of GPIO lines.
+ * This structure is used in all operations involving sets of GPIO lines. If
+ * a bulk object is being passed to a function while containing zero lines,
+ * the result is undefined.
  */
 struct gpiod_line_bulk {
 	struct gpiod_line *lines[GPIOD_REQUEST_MAX_LINES];
