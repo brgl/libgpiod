@@ -304,11 +304,12 @@ static void test_prepare(struct gu_chip_descr *descr)
 		devpath = udev_device_get_devpath(dev);
 		devnode = udev_device_get_devnode(dev);
 		sysname = udev_device_get_sysname(dev);
-		if (!devpath || !devnode || !sysname)
-			goto cont;
 
-		if (!devpath_is_mockup(devpath))
-			goto cont;
+		if (!devpath || !devnode || !sysname ||
+		    !devpath_is_mockup(devpath)) {
+			udev_device_unref(dev);
+			continue;
+		}
 
 		chip = xzalloc(sizeof(*chip));
 		chip->name = xstrdup(sysname);
@@ -318,8 +319,6 @@ static void test_prepare(struct gu_chip_descr *descr)
 			die("unable to determine chip number");
 
 		ctx->chips[detected++] = chip;
-
-cont:
 		udev_device_unref(dev);
 	}
 
