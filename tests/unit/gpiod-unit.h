@@ -41,13 +41,6 @@ struct _gu_test {
 void _gu_register_test(struct _gu_test *test);
 void _gu_test_failed(const char *fmt, ...) GU_PRINTF(1, 2);
 
-#define GU_REGISTER_TEST(test)						\
-	static GU_INIT void _gu_register_##test(void)			\
-	{								\
-		_gu_register_test(&test);				\
-	}								\
-	static int _gu_##test##_sentinel GU_UNUSED
-
 /*
  * This macro should be used for code brevity instead of manually declaring
  * the gu_test structure.
@@ -72,7 +65,11 @@ void _gu_test_failed(const char *fmt, ...) GU_PRINTF(1, 2);
 			.named_lines = _a_named_lines,			\
 		},							\
 	};								\
-	GU_REGISTER_TEST(_##_a_func##_descr)
+	static GU_INIT void _gu_register_##_a_func##_test(void)		\
+	{								\
+		_gu_register_test(&_##_a_func##_descr);			\
+	}								\
+	static int _gu_##_a_func##_sentinel GU_UNUSED
 
 enum {
 	GU_LINES_UNNAMED = false,
