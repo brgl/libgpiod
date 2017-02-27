@@ -52,7 +52,7 @@ static void vmsg(FILE *stream, const char *hdr, const char *fmt, va_list va)
 	fputc('\n', stream);
 }
 
-void gu_msg(const char *fmt, ...)
+static void GU_PRINTF(1, 2) gu_msg(const char *fmt, ...)
 {
 	va_list va;
 
@@ -61,7 +61,7 @@ void gu_msg(const char *fmt, ...)
 	va_end(va);
 }
 
-void gu_err(const char *fmt, ...)
+static void GU_PRINTF(1, 2) gu_err(const char *fmt, ...)
 {
 	va_list va;
 
@@ -451,7 +451,13 @@ void _gu_register_test(struct gu_test *test)
 	globals.num_tests++;
 }
 
-void _gu_set_test_failed(void)
+void _gu_test_failed(const char *fmt, ...)
 {
+	va_list va;
+
+	va_start(va, fmt);
+	vmsg(stderr, "ERROR", fmt, va);
+	va_end(va);
+
 	globals.test_ctx.test_failed = true;
 }

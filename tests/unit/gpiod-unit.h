@@ -39,7 +39,7 @@ struct gu_test {
 };
 
 void _gu_register_test(struct gu_test *test);
-void _gu_set_test_failed(void);
+void _gu_test_failed(const char *fmt, ...) GU_PRINTF(1, 2);
 
 #define GU_REGISTER_TEST(test)						\
 	static GU_INIT void _gu_register_##test(void)			\
@@ -66,9 +66,6 @@ enum {
 	GU_LINES_NAMED = true,
 };
 
-void GU_PRINTF(1, 2) gu_msg(const char *fmt, ...);
-void GU_PRINTF(1, 2) gu_err(const char *fmt, ...);
-
 const char * gu_chip_path(unsigned int index);
 const char * gu_chip_name(unsigned int index);
 unsigned int gu_chip_num(unsigned int index);
@@ -82,9 +79,9 @@ void gu_release_line(struct gpiod_line **line);
 #define GU_ASSERT(statement)						\
 	do {								\
 		if (!(statement)) {					\
-			gu_err("assertion failed (%s:%d): '%s'",	\
-			       __FILE__, __LINE__, #statement);		\
-			_gu_set_test_failed();				\
+			_gu_test_failed(				\
+				"assertion failed (%s:%d): '%s'",	\
+				__FILE__, __LINE__, #statement);	\
 			return;						\
 		}							\
 	} while (0)
