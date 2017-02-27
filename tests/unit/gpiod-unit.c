@@ -36,8 +36,8 @@ struct test_context {
 };
 
 static struct {
-	struct gu_test *test_list_head;
-	struct gu_test *test_list_tail;
+	struct _gu_test *test_list_head;
+	struct _gu_test *test_list_tail;
 	unsigned int num_tests;
 	unsigned int tests_failed;
 	struct kmod_ctx *module_ctx;
@@ -184,7 +184,7 @@ static void check_gpio_mockup(void)
 	gu_msg("gpio-mockup ok");
 }
 
-static void test_load_module(struct gu_chip_descr *descr)
+static void test_load_module(struct _gu_chip_descr *descr)
 {
 	char *modarg, *tmp_modarg;
 	size_t modarg_len;
@@ -246,7 +246,7 @@ static bool devpath_is_mockup(const char *devpath)
 	return !strncmp(devpath, mockup_devpath, sizeof(mockup_devpath) - 1);
 }
 
-static void test_prepare(struct gu_chip_descr *descr)
+static void test_prepare(struct _gu_chip_descr *descr)
 {
 	const char *devpath, *devnode, *sysname;
 	struct udev_monitor *monitor;
@@ -351,7 +351,7 @@ static void test_teardown(void)
 
 int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 {
-	struct gu_test *test;
+	struct _gu_test *test;
 
 	atexit(module_cleanup);
 
@@ -434,9 +434,9 @@ unsigned int gu_chip_num(unsigned int index)
 	return globals.test_ctx.chips[index]->number;
 }
 
-void _gu_register_test(struct gu_test *test)
+void _gu_register_test(struct _gu_test *test)
 {
-	struct gu_test *tmp;
+	struct _gu_test *tmp;
 
 	if (!globals.test_list_head) {
 		globals.test_list_head = globals.test_list_tail = test;

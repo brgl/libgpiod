@@ -23,22 +23,22 @@
 
 typedef void (*gu_test_func)(void);
 
-struct gu_chip_descr {
+struct _gu_chip_descr {
 	unsigned int num_chips;
 	unsigned int *num_lines;
 	bool named_lines;
 };
 
-struct gu_test {
-	struct gu_test *_next;
+struct _gu_test {
+	struct _gu_test *_next;
 
 	const char *name;
 	gu_test_func func;
 
-	struct gu_chip_descr chip_descr;
+	struct _gu_chip_descr chip_descr;
 };
 
-void _gu_register_test(struct gu_test *test);
+void _gu_register_test(struct _gu_test *test);
 void _gu_test_failed(const char *fmt, ...) GU_PRINTF(1, 2);
 
 #define GU_REGISTER_TEST(test)						\
@@ -63,7 +63,7 @@ void _gu_test_failed(const char *fmt, ...) GU_PRINTF(1, 2);
  */
 #define GU_DEFINE_TEST(_a_func, _a_name, _a_named_lines, ...)		\
 	static unsigned int _##_a_func##_lines[] = __VA_ARGS__;		\
-	static struct gu_test _##_a_func##_descr = {			\
+	static struct _gu_test _##_a_func##_descr = {			\
 		.name = _a_name,					\
 		.func = _a_func,					\
 		.chip_descr = {						\
