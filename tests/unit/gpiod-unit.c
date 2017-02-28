@@ -118,6 +118,31 @@ static char * xstrdup(const char *str)
 	return ret;
 }
 
+static GU_PRINTF(2, 3) char * xappend(char *str, const char *fmt, ...)
+{
+	char *new, *ret;
+	va_list va;
+	int status;
+
+	va_start(va, fmt);
+	status = vasprintf(&new, fmt, va);
+	va_end(va);
+	if (status < 0)
+		die_perr("vasprintf");
+
+	if (!str)
+		return new;
+
+	ret = realloc(str, strlen(str) + strlen(new) + 1);
+	if (!ret)
+		die("out of memory");
+
+	strcat(ret, new);
+	free(new);
+
+	return ret;
+}
+
 static void check_chip_index(unsigned int index)
 {
 	if (index >= globals.test_ctx.num_chips)
@@ -186,33 +211,14 @@ static void check_gpio_mockup(void)
 
 static void test_load_module(struct _gu_chip_descr *descr)
 {
-	char *modarg, *tmp_modarg;
-	size_t modarg_len;
-	char **line_sizes;
 	unsigned int i;
+	char *modarg;
 	int status;
 
-	line_sizes = xzalloc(sizeof(char *) * descr->num_chips);
-
-	modarg_len = strlen("gpio_mockup_ranges=");
-	for (i = 0; i < descr->num_chips; i++) {
-		status = asprintf(&line_sizes[i],
-				  "-1,%u,", descr->num_lines[i]);
-		if (status < 0)
-			die_perr("asprintf");
-		modarg_len += status;
-	}
-
-	modarg = xzalloc(modarg_len + 1);
-	tmp_modarg = modarg;
-
-	status = sprintf(tmp_modarg, "gpio_mockup_ranges=");
-	tmp_modarg += status;
-
-	for (i = 0; i < descr->num_chips; i++) {
-		status = sprintf(tmp_modarg, "%s", line_sizes[i]);
-		tmp_modarg += status;
-	}
+	modarg = xappend(NULL, "gpio_mockup_ranges=");
+	for (i = 0; i < descr->num_chips; i++)
+		modarg = xappend(modarg, "-1,%u,", descr->num_lines[i]);
+	modarg[strlen(modarg) - 1] = '\0'; /* Remove the last comma. */
 
 	/*
 	 * TODO Once the support for named lines in the gpio-mockup module
@@ -220,17 +226,12 @@ static void test_load_module(struct _gu_chip_descr *descr)
 	 * the test description and setting the corresponding module param.
 	 */
 
-	modarg[modarg_len - 1] = '\0'; /* Remove the last comma. */
-
 	status = kmod_module_probe_insert_module(globals.module, 0,
 						 modarg, NULL, NULL, NULL);
 	if (status)
 		die_perr("unable to load gpio-mockup");
 
 	free(modarg);
-	for (i = 0; i < descr->num_chips; i++)
-		free(line_sizes[i]);
-	free(line_sizes);
 }
 
 static int chipcmp(const void *c1, const void *c2)
