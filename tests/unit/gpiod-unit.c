@@ -118,7 +118,7 @@ static char * xstrdup(const char *str)
 	return ret;
 }
 
-static void  check_chip_index(unsigned int index)
+static void check_chip_index(unsigned int index)
 {
 	if (index >= globals.test_ctx.num_chips)
 		die("invalid chip number requested from test code");
