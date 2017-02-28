@@ -102,7 +102,7 @@ AC_DEFUN([HEADER_NOT_FOUND_TESTS],
 AC_DEFUN([FUNC_NOT_FOUND_TESTS],
 	[ERR_NOT_FOUND([$1()], [tests])])
 
-if test "x$with_tools" = xtrue
+if test "x$with_tests" = xtrue
 then
 	AC_CHECK_LIB([kmod], [kmod_module_probe_insert_module], [],
 		[AC_MSG_ERROR([libkmod not found (needed to build tests])])
