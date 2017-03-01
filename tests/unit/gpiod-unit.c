@@ -61,7 +61,7 @@ static void GU_PRINTF(1, 2) msg(const char *fmt, ...)
 	va_end(va);
 }
 
-static void GU_PRINTF(1, 2) gu_err(const char *fmt, ...)
+static void GU_PRINTF(1, 2) err(const char *fmt, ...)
 {
 	va_list va;
 
@@ -387,7 +387,7 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 	if (!globals.tests_failed)
 		msg("all tests passed");
 	else
-		gu_err("%u out of %u tests failed",
+		err("%u out of %u tests failed",
 		       globals.tests_failed, globals.num_tests);
 
 	return globals.tests_failed ? EXIT_FAILURE : EXIT_SUCCESS;
