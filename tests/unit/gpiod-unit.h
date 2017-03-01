@@ -39,7 +39,7 @@ struct _gu_test {
 };
 
 void _gu_register_test(struct _gu_test *test);
-void _gu_test_failed(const char *fmt, ...) GU_PRINTF(1, 2);
+void _gu_test_failed(const char *fmt, ...);
 
 /*
  * This macro should be used for code brevity instead of manually declaring

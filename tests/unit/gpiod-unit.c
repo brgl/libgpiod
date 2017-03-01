@@ -52,7 +52,7 @@ static void vmsg(FILE *stream, const char *hdr, const char *fmt, va_list va)
 	fputc('\n', stream);
 }
 
-static void GU_PRINTF(1, 2) msg(const char *fmt, ...)
+static GU_PRINTF(1, 2) void msg(const char *fmt, ...)
 {
 	va_list va;
 
@@ -61,7 +61,7 @@ static void GU_PRINTF(1, 2) msg(const char *fmt, ...)
 	va_end(va);
 }
 
-static void GU_PRINTF(1, 2) err(const char *fmt, ...)
+static GU_PRINTF(1, 2) void err(const char *fmt, ...)
 {
 	va_list va;
 
@@ -70,7 +70,7 @@ static void GU_PRINTF(1, 2) err(const char *fmt, ...)
 	va_end(va);
 }
 
-static void GU_PRINTF(1, 2) NORETURN die(const char *fmt, ...)
+static GU_PRINTF(1, 2) NORETURN void die(const char *fmt, ...)
 {
 	va_list va;
 
@@ -81,7 +81,7 @@ static void GU_PRINTF(1, 2) NORETURN die(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-static void GU_PRINTF(1, 2) NORETURN die_perr(const char *fmt, ...)
+static GU_PRINTF(1, 2) NORETURN void die_perr(const char *fmt, ...)
 {
 	va_list va;
 
@@ -461,7 +461,7 @@ void _gu_register_test(struct _gu_test *test)
 	globals.num_tests++;
 }
 
-void _gu_test_failed(const char *fmt, ...)
+GU_PRINTF(1, 2) void _gu_test_failed(const char *fmt, ...)
 {
 	va_list va;
 
