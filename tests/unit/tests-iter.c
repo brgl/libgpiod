@@ -86,3 +86,51 @@ static void chip_iter_noclose(void)
 GU_DEFINE_TEST(chip_iter_noclose,
 	       "gpiod_chip iterator noclose",
 	       GU_LINES_UNNAMED, { 8, 8, 8 });
+
+static void line_iter(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line_iter iter;
+	struct gpiod_line *line;
+	unsigned int i = 0;
+
+	chip = gpiod_chip_open(gu_chip_path(0));
+	GU_ASSERT_NOT_NULL(chip);
+
+	gpiod_line_iter_init(&iter, chip);
+
+	gpiod_foreach_line(&iter, line) {
+		GU_ASSERT(!gpiod_line_iter_err(&iter));
+		GU_ASSERT_EQ(i, gpiod_line_offset(line));
+		i++;
+	}
+
+	GU_ASSERT_EQ(8, i);
+}
+GU_DEFINE_TEST(line_iter, "line iterator",
+	       GU_LINES_UNNAMED, { 8 });
+
+static void line_iter_static_initializer(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line *line;
+	unsigned int i = 0;
+
+	chip = gpiod_chip_open(gu_chip_path(0));
+	GU_ASSERT_NOT_NULL(chip);
+
+	{
+		struct gpiod_line_iter iter = GPIOD_LINE_ITER_INITIALIZER(chip);
+
+		gpiod_foreach_line(&iter, line) {
+			GU_ASSERT(!gpiod_line_iter_err(&iter));
+			GU_ASSERT_EQ(i, gpiod_line_offset(line));
+			i++;
+		}
+	}
+
+	GU_ASSERT_EQ(8, i);
+}
+GU_DEFINE_TEST(line_iter_static_initializer,
+	       "line iterator static initializer",
+	       GU_LINES_UNNAMED, { 8 });
