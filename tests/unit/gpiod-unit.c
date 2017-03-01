@@ -19,7 +19,8 @@
 #include <libkmod.h>
 #include <libudev.h>
 
-#define NORETURN __attribute__((noreturn))
+#define NORETURN	__attribute__((noreturn))
+#define MALLOC		__attribute__((malloc))
 
 static const char mockup_devpath[] = "/devices/platform/gpio-mockup/gpiochip";
 
@@ -146,7 +147,7 @@ static GU_PRINTF(1, 2) NORETURN void die_perr(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-static void * xzalloc(size_t size)
+static MALLOC void * xzalloc(size_t size)
 {
 	void *ptr;
 
@@ -159,7 +160,7 @@ static void * xzalloc(size_t size)
 	return ptr;
 }
 
-static char * xstrdup(const char *str)
+static MALLOC char * xstrdup(const char *str)
 {
 	char *ret;
 
@@ -170,7 +171,7 @@ static char * xstrdup(const char *str)
 	return ret;
 }
 
-static GU_PRINTF(2, 3) char * xappend(char *str, const char *fmt, ...)
+static MALLOC GU_PRINTF(2, 3) char * xappend(char *str, const char *fmt, ...)
 {
 	char *new, *ret;
 	va_list va;
