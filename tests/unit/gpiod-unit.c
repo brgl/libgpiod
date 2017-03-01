@@ -33,6 +33,7 @@ struct test_context {
 	struct mockup_chip **chips;
 	size_t num_chips;
 	bool test_failed;
+	char *failed_msg;
 };
 
 static struct {
@@ -45,11 +46,35 @@ static struct {
 	struct test_context test_ctx;
 } globals;
 
-static void vmsg(FILE *stream, const char *hdr, const char *fmt, va_list va)
+static void pr_raw_v(const char *fmt, va_list va)
 {
-	fprintf(stream, "[%.5s] ", hdr);
-	vfprintf(stream, fmt, va);
-	fputc('\n', stream);
+	vfprintf(stderr, fmt, va);
+}
+
+static GU_PRINTF(1, 2) void pr_raw(const char *fmt, ...)
+{
+	va_list va;
+
+	va_start(va, fmt);
+	pr_raw_v(fmt, va);
+	va_end(va);
+}
+
+static void print_header(const char *hdr)
+{
+	pr_raw("[%-5s] ", hdr);
+}
+
+static void vmsgn(const char *hdr, const char *fmt, va_list va)
+{
+	print_header(hdr);
+	pr_raw_v(fmt, va);
+}
+
+static void vmsg(const char *hdr, const char *fmt, va_list va)
+{
+	vmsgn(hdr, fmt, va);
+	pr_raw("\n");
 }
 
 static GU_PRINTF(1, 2) void msg(const char *fmt, ...)
@@ -57,16 +82,7 @@ static GU_PRINTF(1, 2) void msg(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	vmsg(stderr, " INFO", fmt, va);
-	va_end(va);
-}
-
-static GU_PRINTF(1, 2) void err(const char *fmt, ...)
-{
-	va_list va;
-
-	va_start(va, fmt);
-	vmsg(stderr, "ERROR", fmt, va);
+	vmsg("INFO", fmt, va);
 	va_end(va);
 }
 
@@ -75,7 +91,7 @@ static GU_PRINTF(1, 2) NORETURN void die(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	vmsg(stderr, "FATAL", fmt, va);
+	vmsg("FATAL", fmt, va);
 	va_end(va);
 
 	exit(EXIT_FAILURE);
@@ -86,9 +102,8 @@ static GU_PRINTF(1, 2) NORETURN void die_perr(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	fprintf(stderr, "[FATAL] ");
-	vfprintf(stderr, fmt, va);
-	fprintf(stderr, ": %s\n", strerror(errno));
+	vmsgn("FATAL", fmt, va);
+	pr_raw(": %s\n", strerror(errno));
 	va_end(va);
 
 	exit(EXIT_FAILURE);
@@ -375,11 +390,17 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 	for (test = globals.test_list_head; test; test = test->_next) {
 		test_prepare(&test->chip_descr);
 
+		print_header("INFO");
+		pr_raw("test '%s': ", test->name);
+
 		test->func();
-		msg("test '%s': %s", test->name,
-		       globals.test_ctx.test_failed ? "FAILED" : "OK");
-		if (globals.test_ctx.test_failed)
+
+		if (globals.test_ctx.test_failed) {
 			globals.tests_failed++;
+			pr_raw("\n\tFAILED: %s\n", globals.test_ctx.failed_msg);
+		} else {
+			pr_raw("OK\n");
+		}
 
 		test_teardown();
 	}
@@ -387,7 +408,7 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 	if (!globals.tests_failed)
 		msg("all tests passed");
 	else
-		err("%u out of %u tests failed",
+		msg("%u out of %u tests failed",
 		       globals.tests_failed, globals.num_tests);
 
 	return globals.tests_failed ? EXIT_FAILURE : EXIT_SUCCESS;
@@ -463,11 +484,14 @@ void _gu_register_test(struct _gu_test *test)
 
 GU_PRINTF(1, 2) void _gu_test_failed(const char *fmt, ...)
 {
+	int status;
 	va_list va;
 
 	va_start(va, fmt);
-	vmsg(stderr, "ERROR", fmt, va);
+	status = vasprintf(&globals.test_ctx.failed_msg, fmt, va);
 	va_end(va);
+	if (status < 0)
+		die_perr("vasprintf");
 
 	globals.test_ctx.test_failed = true;
 }
