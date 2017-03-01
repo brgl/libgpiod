@@ -317,7 +317,7 @@ struct gpiod_line_bulk {
  *
  * This macro simply sets the internally held number of lines to 0.
  */
-#define GPIOD_LINE_BULK_INITIALIZER	{ .num_lines = 0, }
+#define GPIOD_LINE_BULK_INITIALIZER	{ { NULL }, 0 }
 
 /**
  * @brief Initialize a GPIO bulk object.
@@ -465,19 +465,9 @@ int gpiod_line_request(struct gpiod_line *line,
  * @param active_low Active state of the line (true if low).
  * @return 0 if the line was properly reserved, -1 on failure.
  */
-static inline int gpiod_line_request_input(struct gpiod_line *line,
-					   const char *consumer,
-					   bool active_low)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.direction = GPIOD_DIRECTION_INPUT,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
-	};
-
-	return gpiod_line_request(line, &config, 0);
-}
+int gpiod_line_request_input(struct gpiod_line *line,
+			     const char *consumer,
+			     bool active_low) GPIOD_API;
 
 /**
  * @brief Reserve a single line, set the direction to output.
@@ -487,19 +477,8 @@ static inline int gpiod_line_request_input(struct gpiod_line *line,
  * @param default_val Default line value.
  * @return 0 if the line was properly reserved, -1 on failure.
  */
-static inline int gpiod_line_request_output(struct gpiod_line *line,
-					    const char *consumer,
-					    bool active_low, int default_val)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.direction = GPIOD_DIRECTION_OUTPUT,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
-	};
-
-	return gpiod_line_request(line, &config, default_val);
-}
+int gpiod_line_request_output(struct gpiod_line *line, const char *consumer,
+			      bool active_low, int default_val) GPIOD_API;
 
 /**
  * @brief Reserve a set of GPIO lines.
@@ -525,19 +504,9 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
  * @param active_low Active state of the lines (true if low).
  * @return 0 if the lines were properly reserved, -1 on failure.
  */
-static inline int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
-						const char *consumer,
-						bool active_low)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.direction = GPIOD_DIRECTION_INPUT,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
-	};
-
-	return gpiod_line_request_bulk(bulk, &config, 0);
-}
+int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
+				  const char *consumer,
+				  bool active_low) GPIOD_API;
 
 /**
  * @brief Reserve a set of GPIO lines, set the direction to output.
@@ -547,20 +516,9 @@ static inline int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
  * @param default_vals Default line values.
  * @return 0 if the lines were properly reserved, -1 on failure.
  */
-static inline int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
-						 const char *consumer,
-						 bool active_low,
-						 const int *default_vals)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.direction = GPIOD_DIRECTION_OUTPUT,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
-	};
-
-	return gpiod_line_request_bulk(bulk, &config, default_vals);
-}
+int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
+				   const char *consumer, bool active_low,
+				   const int *default_vals) GPIOD_API;
 
 /**
  * @brief Release a previously reserved line.
@@ -708,20 +666,9 @@ int gpiod_line_event_request(struct gpiod_line *line,
 			     struct gpiod_line_evreq_config *config) GPIOD_API;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-static inline int _gpiod_line_event_request_type(struct gpiod_line *line,
-						 const char *consumer,
-						 bool active_low,
-						 int type)
-{
-	struct gpiod_line_evreq_config config = {
-		.consumer = consumer,
-		.event_type = type,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
-	};
-
-	return gpiod_line_event_request(line, &config);
-}
+int _gpiod_line_event_request_type(struct gpiod_line *line,
+				   const char *consumer, bool active_low,
+				   int type) GPIOD_API;
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
@@ -1080,12 +1027,7 @@ struct gpiod_line_iter {
  * @brief Static initializer for line iterators.
  * @param chip The gpiochip object whose lines we want to iterate over.
  */
-#define GPIOD_LINE_ITER_INITIALIZER(chip) 				\
-	{								\
-		.offset = 0,						\
-		.chip = (chip),						\
-		.state = GPIOD_LINE_ITER_INIT,				\
-	}
+#define GPIOD_LINE_ITER_INITIALIZER(chip) { 0, (chip), GPIOD_LINE_ITER_INIT }
 
 /**
  * @brief Initialize a GPIO line iterator.

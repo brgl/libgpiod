@@ -499,6 +499,32 @@ int gpiod_line_request(struct gpiod_line *line,
 	return gpiod_line_request_bulk(&bulk, config, &default_val);
 }
 
+int gpiod_line_request_input(struct gpiod_line *line,
+			     const char *consumer, bool active_low)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.direction = GPIOD_DIRECTION_INPUT,
+		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					   : GPIOD_ACTIVE_STATE_HIGH,
+	};
+
+	return gpiod_line_request(line, &config, 0);
+}
+
+int gpiod_line_request_output(struct gpiod_line *line, const char *consumer,
+			      bool active_low, int default_val)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.direction = GPIOD_DIRECTION_OUTPUT,
+		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					   : GPIOD_ACTIVE_STATE_HIGH,
+	};
+
+	return gpiod_line_request(line, &config, default_val);
+}
+
 static bool verify_line_bulk(struct gpiod_line_bulk *bulk)
 {
 	struct gpiod_line *line;
@@ -584,6 +610,33 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 	}
 
 	return 0;
+}
+
+int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
+				  const char *consumer, bool active_low)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.direction = GPIOD_DIRECTION_INPUT,
+		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					   : GPIOD_ACTIVE_STATE_HIGH,
+	};
+
+	return gpiod_line_request_bulk(bulk, &config, 0);
+}
+
+int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
+				   const char *consumer, bool active_low,
+				   const int *default_vals)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.direction = GPIOD_DIRECTION_OUTPUT,
+		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					   : GPIOD_ACTIVE_STATE_HIGH,
+	};
+
+	return gpiod_line_request_bulk(bulk, &config, default_vals);
 }
 
 void gpiod_line_release(struct gpiod_line *line)
@@ -783,6 +836,20 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	line_set_state(line, LINE_EVENT);
 
 	return 0;
+}
+
+int _gpiod_line_event_request_type(struct gpiod_line *line,
+				   const char *consumer, bool active_low,
+				   int type)
+{
+	struct gpiod_line_evreq_config config = {
+		.consumer = consumer,
+		.event_type = type,
+		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					   : GPIOD_ACTIVE_STATE_HIGH,
+	};
+
+	return gpiod_line_event_request(line, &config);
 }
 
 void gpiod_line_event_release(struct gpiod_line *line)
