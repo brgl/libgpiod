@@ -665,12 +665,6 @@ struct gpiod_line_event {
 int gpiod_line_event_request(struct gpiod_line *line,
 			     struct gpiod_line_evreq_config *config) GPIOD_API;
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-int _gpiod_line_event_request_type(struct gpiod_line *line,
-				   const char *consumer, bool active_low,
-				   int type) GPIOD_API;
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
-
 /**
  * @brief Request rising edge event notifications on a single line.
  * @param line GPIO line object.
@@ -678,13 +672,9 @@ int _gpiod_line_event_request_type(struct gpiod_line *line,
  * @param active_low Active state of the line - true if low.
  * @return 0 if the operation succeeds, -1 on failure.
  */
-static inline int gpiod_line_event_request_rising(struct gpiod_line *line,
-						  const char *consumer,
-						  bool active_low)
-{
-	return _gpiod_line_event_request_type(line, consumer, active_low,
-					      GPIOD_EVENT_RISING_EDGE);
-}
+int gpiod_line_event_request_rising(struct gpiod_line *line,
+				    const char *consumer,
+				    bool active_low) GPIOD_API;
 
 /**
  * @brief Request falling edge event notifications on a single line.
@@ -693,13 +683,9 @@ static inline int gpiod_line_event_request_rising(struct gpiod_line *line,
  * @param active_low Active state of the line - true if low.
  * @return 0 if the operation succeeds, -1 on failure.
  */
-static inline int gpiod_line_event_request_falling(struct gpiod_line *line,
-						   const char *consumer,
-						   bool active_low)
-{
-	return _gpiod_line_event_request_type(line, consumer, active_low,
-					      GPIOD_EVENT_FALLING_EDGE);
-}
+int gpiod_line_event_request_falling(struct gpiod_line *line,
+				     const char *consumer,
+				     bool active_low) GPIOD_API;
 
 /**
  * @brief Request all event type notifications on a single line.
@@ -708,13 +694,9 @@ static inline int gpiod_line_event_request_falling(struct gpiod_line *line,
  * @param active_low Active state of the line - true if low.
  * @return 0 if the operation succeeds, -1 on failure.
  */
-static inline int gpiod_line_event_request_all(struct gpiod_line *line,
-					       const char *consumer,
-					       bool active_low)
-{
-	return _gpiod_line_event_request_type(line, consumer, active_low,
-					      GPIOD_EVENT_BOTH_EDGES);
-}
+int gpiod_line_event_request_all(struct gpiod_line *line,
+				 const char *consumer,
+				 bool active_low) GPIOD_API;
 
 /**
  * @brief Stop listening for events and release the line.

@@ -838,9 +838,9 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	return 0;
 }
 
-int _gpiod_line_event_request_type(struct gpiod_line *line,
-				   const char *consumer, bool active_low,
-				   int type)
+static int line_event_request_type(struct gpiod_line *line,
+				   const char *consumer,
+				   bool active_low, int type)
 {
 	struct gpiod_line_evreq_config config = {
 		.consumer = consumer,
@@ -850,6 +850,27 @@ int _gpiod_line_event_request_type(struct gpiod_line *line,
 	};
 
 	return gpiod_line_event_request(line, &config);
+}
+
+int gpiod_line_event_request_rising(struct gpiod_line *line,
+				    const char *consumer, bool active_low)
+{
+	return line_event_request_type(line, consumer, active_low,
+				       GPIOD_EVENT_RISING_EDGE);
+}
+
+int gpiod_line_event_request_falling(struct gpiod_line *line,
+				     const char *consumer, bool active_low)
+{
+	return line_event_request_type(line, consumer, active_low,
+				       GPIOD_EVENT_FALLING_EDGE);
+}
+
+int gpiod_line_event_request_all(struct gpiod_line *line,
+				 const char *consumer, bool active_low)
+{
+	return line_event_request_type(line, consumer, active_low,
+				       GPIOD_EVENT_BOTH_EDGES);
 }
 
 void gpiod_line_event_release(struct gpiod_line *line)
