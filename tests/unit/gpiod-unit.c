@@ -46,6 +46,32 @@ static struct {
 	struct test_context test_ctx;
 } globals;
 
+enum {
+	CNORM = 0,
+	CGREEN,
+	CRED,
+	CREDBOLD,
+	CYELLOW,
+};
+
+static const char *term_colors[] = {
+	"\033[0m",
+	"\033[32m",
+	"\033[31m",
+	"\033[1m\033[31m",
+	"\033[33m",
+};
+
+static void set_color(int color)
+{
+	fprintf(stderr, "%s", term_colors[color]);
+}
+
+static void reset_color(void)
+{
+	fprintf(stderr, "%s", term_colors[CNORM]);
+}
+
 static void pr_raw_v(const char *fmt, va_list va)
 {
 	vfprintf(stderr, fmt, va);
@@ -60,20 +86,22 @@ static GU_PRINTF(1, 2) void pr_raw(const char *fmt, ...)
 	va_end(va);
 }
 
-static void print_header(const char *hdr)
+static void print_header(const char *hdr, int color)
 {
+	set_color(color);
 	pr_raw("[%-5s] ", hdr);
+	reset_color();
 }
 
-static void vmsgn(const char *hdr, const char *fmt, va_list va)
+static void vmsgn(const char *hdr, int color, const char *fmt, va_list va)
 {
-	print_header(hdr);
+	print_header(hdr, color);
 	pr_raw_v(fmt, va);
 }
 
-static void vmsg(const char *hdr, const char *fmt, va_list va)
+static void vmsg(const char *hdr, int color, const char *fmt, va_list va)
 {
-	vmsgn(hdr, fmt, va);
+	vmsgn(hdr, color, fmt, va);
 	pr_raw("\n");
 }
 
@@ -82,7 +110,16 @@ static GU_PRINTF(1, 2) void msg(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	vmsg("INFO", fmt, va);
+	vmsg("INFO", CGREEN, fmt, va);
+	va_end(va);
+}
+
+static GU_PRINTF(1, 2) void err(const char *fmt, ...)
+{
+	va_list va;
+
+	va_start(va, fmt);
+	vmsg("ERROR", CRED, fmt, va);
 	va_end(va);
 }
 
@@ -91,7 +128,7 @@ static GU_PRINTF(1, 2) NORETURN void die(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	vmsg("FATAL", fmt, va);
+	vmsg("FATAL", CRED, fmt, va);
 	va_end(va);
 
 	exit(EXIT_FAILURE);
@@ -102,7 +139,7 @@ static GU_PRINTF(1, 2) NORETURN void die_perr(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	vmsgn("FATAL", fmt, va);
+	vmsgn("FATAL", CRED, fmt, va);
 	pr_raw(": %s\n", strerror(errno));
 	va_end(va);
 
@@ -390,16 +427,23 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 	for (test = globals.test_list_head; test; test = test->_next) {
 		test_prepare(&test->chip_descr);
 
-		print_header("INFO");
+		print_header("TEST", CYELLOW);
 		pr_raw("test '%s': ", test->name);
 
 		test->func();
 
 		if (globals.test_ctx.test_failed) {
 			globals.tests_failed++;
-			pr_raw("\n\tFAILED: %s\n", globals.test_ctx.failed_msg);
+			set_color(CREDBOLD);
+			pr_raw("FAILED:");
+			reset_color();
+			set_color(CRED);
+			pr_raw("\n\t\t'%s': %s\n", test->name, globals.test_ctx.failed_msg);
+			reset_color();
 		} else {
+			set_color(CGREEN);
 			pr_raw("OK\n");
+			reset_color();
 		}
 
 		test_teardown();
@@ -408,8 +452,8 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 	if (!globals.tests_failed)
 		msg("all tests passed");
 	else
-		msg("%u out of %u tests failed",
-		       globals.tests_failed, globals.num_tests);
+		err("%u out of %u tests failed",
+		    globals.tests_failed, globals.num_tests);
 
 	return globals.tests_failed ? EXIT_FAILURE : EXIT_SUCCESS;
 }
