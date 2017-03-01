@@ -52,7 +52,7 @@ static void vmsg(FILE *stream, const char *hdr, const char *fmt, va_list va)
 	fputc('\n', stream);
 }
 
-static void GU_PRINTF(1, 2) gu_msg(const char *fmt, ...)
+static void GU_PRINTF(1, 2) msg(const char *fmt, ...)
 {
 	va_list va;
 
@@ -163,7 +163,7 @@ static bool mockup_loaded(void)
 
 static void module_cleanup(void)
 {
-	gu_msg("cleaning up");
+	msg("cleaning up");
 
 	if (mockup_loaded())
 		kmod_module_remove_module(globals.module, 0);
@@ -180,7 +180,7 @@ static void check_gpio_mockup(void)
 	const char *modpath;
 	int status;
 
-	gu_msg("checking gpio-mockup availability");
+	msg("checking gpio-mockup availability");
 
 	globals.module_ctx = kmod_new(NULL, NULL);
 	if (!globals.module_ctx)
@@ -206,7 +206,7 @@ static void check_gpio_mockup(void)
 	if (status)
 		die_perr("unable to remove gpio-mockup");
 
-	gu_msg("gpio-mockup ok");
+	msg("gpio-mockup ok");
 }
 
 static void test_load_module(struct _gu_chip_descr *descr)
@@ -365,18 +365,18 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 
 	atexit(module_cleanup);
 
-	gu_msg("libgpiod unit-test suite");
-	gu_msg("%u tests registered", globals.num_tests);
+	msg("libgpiod unit-test suite");
+	msg("%u tests registered", globals.num_tests);
 
 	check_gpio_mockup();
 
-	gu_msg("running tests");
+	msg("running tests");
 
 	for (test = globals.test_list_head; test; test = test->_next) {
 		test_prepare(&test->chip_descr);
 
 		test->func();
-		gu_msg("test '%s': %s", test->name,
+		msg("test '%s': %s", test->name,
 		       globals.test_ctx.test_failed ? "FAILED" : "OK");
 		if (globals.test_ctx.test_failed)
 			globals.tests_failed++;
@@ -385,7 +385,7 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 	}
 
 	if (!globals.tests_failed)
-		gu_msg("all tests passed");
+		msg("all tests passed");
 	else
 		gu_err("%u out of %u tests failed",
 		       globals.tests_failed, globals.num_tests);
