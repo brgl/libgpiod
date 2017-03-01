@@ -93,15 +93,15 @@ static void print_header(const char *hdr, int color)
 	reset_color();
 }
 
-static void vmsgn(const char *hdr, int color, const char *fmt, va_list va)
+static void vmsgn(const char *hdr, int hdr_clr, const char *fmt, va_list va)
 {
-	print_header(hdr, color);
+	print_header(hdr, hdr_clr);
 	pr_raw_v(fmt, va);
 }
 
-static void vmsg(const char *hdr, int color, const char *fmt, va_list va)
+static void vmsg(const char *hdr, int hdr_clr, const char *fmt, va_list va)
 {
-	vmsgn(hdr, color, fmt, va);
+	vmsgn(hdr, hdr_clr, fmt, va);
 	pr_raw("\n");
 }
 
