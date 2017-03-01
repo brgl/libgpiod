@@ -23,6 +23,8 @@
 #include <poll.h>
 #include <linux/gpio.h>
 
+#define MALLOC __attribute__((malloc))
+
 struct gpiod_chip {
 	int fd;
 	struct gpiochip_info cinfo;
@@ -95,7 +97,7 @@ static void last_error_from_errno(void)
 	last_error = errno;
 }
 
-static void * zalloc(size_t size)
+static MALLOC void * zalloc(size_t size)
 {
 	void *ptr;
 
