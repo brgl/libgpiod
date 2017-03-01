@@ -326,6 +326,15 @@ static void test_prepare(struct _gu_chip_descr *descr)
 	udev_monitor_unref(monitor);
 	udev_unref(udev_ctx);
 
+	/*
+	 * We can't assume that the order in which the mockup gpiochip
+	 * devices are created will be deterministic, yet we want the
+	 * index passed to the gu_chip_*() functions to correspond with the
+	 * order in which the chips were defined in the GU_DEFINE_TEST()
+	 * macro.
+	 *
+	 * Once all gpiochips are there, sort them by name.
+	 */
 	qsort(ctx->chips, ctx->num_chips, sizeof(*ctx->chips), chipcmp);
 }
 
