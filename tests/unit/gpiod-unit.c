@@ -429,7 +429,7 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 		test_prepare(&test->chip_descr);
 
 		print_header("TEST", CYELLOW);
-		pr_raw("test '%s': ", test->name);
+		pr_raw("'%s': ", test->name);
 
 		test->func();
 
