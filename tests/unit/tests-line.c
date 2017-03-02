@@ -63,6 +63,30 @@ GU_DEFINE_TEST(line_request_already_requested,
 	       "gpiod_line_request() - already requested",
 	       GU_LINES_UNNAMED, { 8 });
 
+static void line_consumer(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line *line;
+	int status;
+
+	chip = gpiod_chip_open(gu_chip_path(0));
+	GU_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_get_line(chip, 0);
+	GU_ASSERT_NOT_NULL(line);
+
+	GU_ASSERT_NULL(gpiod_line_consumer(line));
+
+	status = gpiod_line_request_input(line, "gpiod-unit", false);
+	GU_ASSERT_RET_OK(status);
+
+	GU_ASSERT(!gpiod_line_needs_update(line));
+	GU_ASSERT_STR_EQ(gpiod_line_consumer(line), "gpiod-unit");
+}
+GU_DEFINE_TEST(line_consumer,
+	       "gpiod_line_consumer() - good",
+	       GU_LINES_UNNAMED, { 8 });
+
 static void line_request_bulk_output(void)
 {
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chipA = NULL;
