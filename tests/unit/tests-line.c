@@ -37,6 +37,100 @@ GU_DEFINE_TEST(line_request_output,
 	       "line_request_output()",
 	       GU_LINES_UNNAMED, { 8 });
 
+static void line_request_bulk_output(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chipA = NULL;
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chipB = NULL;
+	GU_CLEANUP(gu_release_line) struct gpiod_line *lineA0 = NULL;
+	GU_CLEANUP(gu_release_line) struct gpiod_line *lineA1 = NULL;
+	GU_CLEANUP(gu_release_line) struct gpiod_line *lineA2 = NULL;
+	GU_CLEANUP(gu_release_line) struct gpiod_line *lineA3 = NULL;
+	GU_CLEANUP(gu_release_line) struct gpiod_line *lineB0 = NULL;
+	GU_CLEANUP(gu_release_line) struct gpiod_line *lineB1 = NULL;
+	GU_CLEANUP(gu_release_line) struct gpiod_line *lineB2 = NULL;
+	GU_CLEANUP(gu_release_line) struct gpiod_line *lineB3 = NULL;
+	struct gpiod_line_bulk bulkA;
+	struct gpiod_line_bulk bulkB = GPIOD_LINE_BULK_INITIALIZER;
+	int status;
+	int valA[4], valB[4];
+
+	chipA = gpiod_chip_open(gu_chip_path(0));
+	chipB = gpiod_chip_open(gu_chip_path(1));
+	GU_ASSERT_NOT_NULL(chipA);
+	GU_ASSERT_NOT_NULL(chipB);
+
+	gpiod_line_bulk_init(&bulkA);
+
+	lineA0 = gpiod_chip_get_line(chipA, 0);
+	lineA1 = gpiod_chip_get_line(chipA, 1);
+	lineA2 = gpiod_chip_get_line(chipA, 2);
+	lineA3 = gpiod_chip_get_line(chipA, 3);
+	lineB0 = gpiod_chip_get_line(chipB, 0);
+	lineB1 = gpiod_chip_get_line(chipB, 1);
+	lineB2 = gpiod_chip_get_line(chipB, 2);
+	lineB3 = gpiod_chip_get_line(chipB, 3);
+
+	GU_ASSERT_NOT_NULL(lineA0);
+	GU_ASSERT_NOT_NULL(lineA1);
+	GU_ASSERT_NOT_NULL(lineA2);
+	GU_ASSERT_NOT_NULL(lineA3);
+	GU_ASSERT_NOT_NULL(lineB0);
+	GU_ASSERT_NOT_NULL(lineB1);
+	GU_ASSERT_NOT_NULL(lineB2);
+	GU_ASSERT_NOT_NULL(lineB3);
+
+	gpiod_line_bulk_add(&bulkA, lineA0);
+	gpiod_line_bulk_add(&bulkA, lineA1);
+	gpiod_line_bulk_add(&bulkA, lineA2);
+	gpiod_line_bulk_add(&bulkA, lineA3);
+	gpiod_line_bulk_add(&bulkB, lineB0);
+	gpiod_line_bulk_add(&bulkB, lineB1);
+	gpiod_line_bulk_add(&bulkB, lineB2);
+	gpiod_line_bulk_add(&bulkB, lineB3);
+
+	valA[0] = 1;
+	valA[1] = 0;
+	valA[2] = 0;
+	valA[3] = 1;
+	status = gpiod_line_request_bulk_output(&bulkA, "gpiod-unit",
+						false, valA);
+	GU_ASSERT_RET_OK(status);
+
+	valB[0] = 0;
+	valB[1] = 1;
+	valB[2] = 0;
+	valB[3] = 1;
+	status = gpiod_line_request_bulk_output(&bulkB, "gpiod-unit",
+						false, valB);
+	GU_ASSERT_RET_OK(status);
+
+	memset(valA, 0, sizeof(valA));
+	memset(valB, 0, sizeof(valB));
+
+	status = gpiod_line_get_value_bulk(&bulkA, valA);
+	GU_ASSERT_RET_OK(status);
+	GU_ASSERT_EQ(valA[0], 1);
+	GU_ASSERT_EQ(valA[1], 0);
+	GU_ASSERT_EQ(valA[2], 0);
+	GU_ASSERT_EQ(valA[3], 1);
+
+	status = gpiod_line_get_value_bulk(&bulkB, valB);
+	GU_ASSERT_RET_OK(status);
+	GU_ASSERT_EQ(valB[0], 0);
+	GU_ASSERT_EQ(valB[1], 1);
+	GU_ASSERT_EQ(valB[2], 0);
+	GU_ASSERT_EQ(valB[3], 1);
+
+	gpiod_line_release_bulk(&bulkA);
+	gpiod_line_release_bulk(&bulkB);
+
+	lineA0 = lineA1 = lineA2 = lineA3 = NULL;
+	lineB0 = lineB1 = lineB2 = lineB3 = NULL;
+}
+GU_DEFINE_TEST(line_request_bulk_output,
+	       "gpiod_line_request_bulk_output()",
+	       GU_LINES_UNNAMED, { 8, 8 });
+
 static void line_set_value(void)
 {
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
