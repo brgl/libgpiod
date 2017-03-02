@@ -17,4 +17,5 @@ gpiod_unit_SOURCES =	gpiod-unit.c \
 			tests-chip.c \
 			tests-iter.c \
 			tests-line.c \
+			tests-misc.c \
 			tests-simple-api.c
