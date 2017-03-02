@@ -88,6 +88,36 @@ GU_DEFINE_TEST(chip_iter_noclose,
 	       "gpiod_chip_iter - simple loop, noclose variant",
 	       GU_LINES_UNNAMED, { 8, 8, 8 });
 
+static void chip_iter_break(void)
+{
+	GU_CLEANUP(gu_free_chip_iter) struct gpiod_chip_iter *iter = NULL;
+	struct gpiod_chip *chip;
+	int i = 0;
+
+	iter = gpiod_chip_iter_new();
+	GU_ASSERT_NOT_NULL(iter);
+
+	gpiod_foreach_chip(iter, chip) {
+		GU_ASSERT(!gpiod_chip_iter_err(iter));
+
+		if ((strcmp(gpiod_chip_label(chip), "gpio-mockup-A") == 0) ||
+		    (strcmp(gpiod_chip_label(chip), "gpio-mockup-B") == 0) ||
+		    (strcmp(gpiod_chip_label(chip), "gpio-mockup-C") == 0))
+			i++;
+
+		if (i == 3)
+			break;
+	}
+
+	gpiod_chip_iter_free(iter);
+	iter = NULL;
+
+	GU_ASSERT_EQ(i, 3);
+}
+GU_DEFINE_TEST(chip_iter_break,
+	       "gpiod_chip_iter - break",
+	       GU_LINES_UNNAMED, { 8, 8, 8, 8, 8 });
+
 static void line_iter(void)
 {
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
