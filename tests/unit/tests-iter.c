@@ -36,7 +36,8 @@ static void chip_iter(void)
 	GU_ASSERT(B);
 	GU_ASSERT(C);
 }
-GU_DEFINE_TEST(chip_iter, "gpiod_chip iterator",
+GU_DEFINE_TEST(chip_iter,
+	       "gpiod_chip_iter - simple loop",
 	       GU_LINES_UNNAMED, { 8, 8, 8 });
 
 static void chip_iter_noclose(void)
@@ -84,7 +85,7 @@ static void chip_iter_noclose(void)
 	GU_ASSERT_STR_EQ(gpiod_chip_label(chipC), "gpio-mockup-C");
 }
 GU_DEFINE_TEST(chip_iter_noclose,
-	       "gpiod_chip iterator noclose",
+	       "gpiod_chip_iter - simple loop, noclose variant",
 	       GU_LINES_UNNAMED, { 8, 8, 8 });
 
 static void line_iter(void)
@@ -107,7 +108,8 @@ static void line_iter(void)
 
 	GU_ASSERT_EQ(8, i);
 }
-GU_DEFINE_TEST(line_iter, "line iterator",
+GU_DEFINE_TEST(line_iter,
+	       "gpiod_line_iter - simple loop, check offsets",
 	       GU_LINES_UNNAMED, { 8 });
 
 static void line_iter_static_initializer(void)
@@ -132,5 +134,5 @@ static void line_iter_static_initializer(void)
 	GU_ASSERT_EQ(8, i);
 }
 GU_DEFINE_TEST(line_iter_static_initializer,
-	       "line iterator static initializer",
+	       "gpiod_line_iter - simple loop, static initializer",
 	       GU_LINES_UNNAMED, { 8 });

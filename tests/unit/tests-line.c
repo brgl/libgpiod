@@ -34,7 +34,7 @@ static void line_request_output(void)
 	GU_ASSERT_EQ(gpiod_line_get_value(line_1), 1);
 }
 GU_DEFINE_TEST(line_request_output,
-	       "line_request_output()",
+	       "gpiod_line_request_output() - good",
 	       GU_LINES_UNNAMED, { 8 });
 
 static void line_request_bulk_output(void)
@@ -128,7 +128,7 @@ static void line_request_bulk_output(void)
 	lineB0 = lineB1 = lineB2 = lineB3 = NULL;
 }
 GU_DEFINE_TEST(line_request_bulk_output,
-	       "gpiod_line_request_bulk_output()",
+	       "gpiod_line_request_bulk_output() - good",
 	       GU_LINES_UNNAMED, { 8, 8 });
 
 static void line_request_bulk_different_chips(void)
@@ -173,7 +173,7 @@ static void line_request_bulk_different_chips(void)
 	GU_ASSERT_EQ(gpiod_errno(), GPIOD_EBULKINCOH);
 }
 GU_DEFINE_TEST(line_request_bulk_different_chips,
-	       "gpiod_line_request_bulk() different chips",
+	       "gpiod_line_request_bulk() - different chips",
 	       GU_LINES_UNNAMED, { 8, 8 });
 
 static void line_set_value(void)
@@ -197,5 +197,5 @@ static void line_set_value(void)
 	GU_ASSERT_EQ(gpiod_line_get_value(line), 0);
 }
 GU_DEFINE_TEST(line_set_value,
-	       "line_set_value()",
+	       "gpiod_line_set_value() - good",
 	       GU_LINES_UNNAMED, { 8 });

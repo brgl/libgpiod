@@ -25,7 +25,7 @@ static void simple_set_get_value(void)
 	GU_ASSERT_EQ(ret, 1);
 }
 GU_DEFINE_TEST(simple_set_get_value,
-	       "simple set/get value",
+	       "simple set/get value - single line",
 	       GU_LINES_UNNAMED, { 8 });
 
 static void simple_set_get_value_multiple(void)
@@ -80,7 +80,7 @@ static void simple_set_get_value_multiple(void)
 	GU_ASSERT_EQ(values[9], 0);
 }
 GU_DEFINE_TEST(simple_set_get_value_multiple,
-	       "simple set/get value multiple",
+	       "simple set/get value - multiple lines",
 	       GU_LINES_UNNAMED, { 16 });
 
 static void simple_get_value_multiple_max_lines(void)
@@ -96,7 +96,7 @@ static void simple_get_value_multiple_max_lines(void)
 	GU_ASSERT_EQ(gpiod_errno(), GPIOD_ELINEMAX);
 }
 GU_DEFINE_TEST(simple_get_value_multiple_max_lines,
-	       "gpiod_simple_get_value_multiple() max lines",
+	       "gpiod_simple_get_value_multiple() exceed max lines",
 	       GU_LINES_UNNAMED, { 128 });
 
 static void simple_set_value_multiple_max_lines(void)
@@ -112,5 +112,5 @@ static void simple_set_value_multiple_max_lines(void)
 	GU_ASSERT_EQ(gpiod_errno(), GPIOD_ELINEMAX);
 }
 GU_DEFINE_TEST(simple_set_value_multiple_max_lines,
-	       "gpiod_simple_set_value_multiple() max lines",
+	       "gpiod_simple_set_value_multiple() exceed max lines",
 	       GU_LINES_UNNAMED, { 128 });

@@ -21,7 +21,7 @@ static void chip_open_good(void)
 	GU_ASSERT_NOT_NULL(chip);
 }
 GU_DEFINE_TEST(chip_open_good,
-	       "gpiod_chip_open() good",
+	       "gpiod_chip_open() - good",
 	       GU_LINES_UNNAMED, { 8 });
 
 static void chip_open_nonexistent(void)
@@ -33,7 +33,7 @@ static void chip_open_nonexistent(void)
 	GU_ASSERT_EQ(gpiod_errno(), ENOENT);
 }
 GU_DEFINE_TEST(chip_open_nonexistent,
-	       "gpiod_chip_open() nonexistent",
+	       "gpiod_chip_open() - nonexistent chip",
 	       GU_LINES_UNNAMED, { 8 });
 
 static void chip_open_notty(void)
@@ -45,7 +45,7 @@ static void chip_open_notty(void)
 	GU_ASSERT_EQ(gpiod_errno(), ENOTTY);
 }
 GU_DEFINE_TEST(chip_open_notty,
-	       "gpiod_chip_open() notty",
+	       "gpiod_chip_open() - notty",
 	       GU_LINES_UNNAMED, { 8 });
 
 static void chip_open_by_name_good(void)
@@ -56,7 +56,7 @@ static void chip_open_by_name_good(void)
 	GU_ASSERT_NOT_NULL(chip);
 }
 GU_DEFINE_TEST(chip_open_by_name_good,
-	       "gpiod_chip_open_by_name() good",
+	       "gpiod_chip_open_by_name() - good",
 	       GU_LINES_UNNAMED, { 8 });
 
 static void chip_open_by_number_good(void)
@@ -67,7 +67,7 @@ static void chip_open_by_number_good(void)
 	GU_ASSERT_NOT_NULL(chip);
 }
 GU_DEFINE_TEST(chip_open_by_number_good,
-	       "gpiod_chip_open_by_number() good",
+	       "gpiod_chip_open_by_number() - good",
 	       GU_LINES_UNNAMED, { 8 });
 
 static void chip_open_lookup(void)
@@ -96,7 +96,7 @@ static void chip_open_lookup(void)
 	GU_ASSERT_STR_EQ(gpiod_chip_name(chip_by_label), gu_chip_name(1));
 }
 GU_DEFINE_TEST(chip_open_lookup,
-	       "gpiod_chip_open_lookup()",
+	       "gpiod_chip_open_lookup() - good",
 	       GU_LINES_UNNAMED, { 8, 8, 8 });
 
 static void chip_open_by_label_good(void)
@@ -108,7 +108,7 @@ static void chip_open_by_label_good(void)
 	GU_ASSERT_STR_EQ(gpiod_chip_name(chip), gu_chip_name(3));
 }
 GU_DEFINE_TEST(chip_open_by_label_good,
-	       "chip_open_by_label() good",
+	       "gpiod_chip_open_by_label() - good",
 	       GU_LINES_UNNAMED, { 4, 4, 4, 4, 4 });
 
 static void chip_open_by_label_bad(void)
@@ -119,7 +119,7 @@ static void chip_open_by_label_bad(void)
 	GU_ASSERT_NULL(chip);
 }
 GU_DEFINE_TEST(chip_open_by_label_bad,
-	       "chip_open_by_label() bad",
+	       "gpiod_chip_open_by_label() - bad",
 	       GU_LINES_UNNAMED, { 4, 4, 4, 4, 4 });
 
 static void chip_name(void)
@@ -139,7 +139,9 @@ static void chip_name(void)
 	GU_ASSERT_STR_EQ(gpiod_chip_name(chip1), gu_chip_name(1));
 	GU_ASSERT_STR_EQ(gpiod_chip_name(chip2), gu_chip_name(2));
 }
-GU_DEFINE_TEST(chip_name, "gpiod_chip_name()", GU_LINES_UNNAMED, { 8, 8, 8 });
+GU_DEFINE_TEST(chip_name,
+	       "gpiod_chip_name()",
+	       GU_LINES_UNNAMED, { 8, 8, 8 });
 
 static void chip_label(void)
 {
@@ -158,7 +160,8 @@ static void chip_label(void)
 	GU_ASSERT_STR_EQ(gpiod_chip_label(chip1), "gpio-mockup-B");
 	GU_ASSERT_STR_EQ(gpiod_chip_label(chip2), "gpio-mockup-C");
 }
-GU_DEFINE_TEST(chip_label, "gpiod_chip_label()",
+GU_DEFINE_TEST(chip_label,
+	       "gpiod_chip_label()",
 	       GU_LINES_UNNAMED, { 8, 8, 8 });
 
 static void chip_num_lines(void)
@@ -186,5 +189,6 @@ static void chip_num_lines(void)
 	GU_ASSERT_EQ(gpiod_chip_num_lines(chip3), 16);
 	GU_ASSERT_EQ(gpiod_chip_num_lines(chip4), 32);
 }
-GU_DEFINE_TEST(chip_num_lines, "chip_num_lines()",
+GU_DEFINE_TEST(chip_num_lines,
+	       "gpiod_chip_num_lines()",
 	       GU_LINES_UNNAMED, { 1, 4, 8, 16, 32 });
