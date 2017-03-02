@@ -442,6 +442,7 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 			pr_raw("\n\t\t'%s': %s\n",
 			       test->name, globals.test_ctx.failed_msg);
 			reset_color();
+			free(globals.test_ctx.failed_msg);
 		} else {
 			set_color(CGREEN);
 			pr_raw("OK\n");
