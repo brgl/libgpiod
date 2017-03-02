@@ -533,10 +533,10 @@ static bool verify_line_bulk(struct gpiod_line_bulk *bulk)
 
 	chip = gpiod_line_get_chip(bulk->lines[0]);
 
-	for (i = 1; i < bulk->num_lines; i++) {
+	for (i = 0; i < bulk->num_lines; i++) {
 		line = bulk->lines[i];
 
-		if (chip != gpiod_line_get_chip(line)) {
+		if (i > 0 && chip != gpiod_line_get_chip(line)) {
 			set_last_error(GPIOD_EBULKINCOH);
 			return false;
 		}
