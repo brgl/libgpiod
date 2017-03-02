@@ -131,6 +131,51 @@ GU_DEFINE_TEST(line_request_bulk_output,
 	       "gpiod_line_request_bulk_output()",
 	       GU_LINES_UNNAMED, { 8, 8 });
 
+static void line_request_bulk_different_chips(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chipA = NULL;
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chipB = NULL;
+	struct gpiod_line_request_config req;
+	struct gpiod_line *lineA0 = NULL;
+	struct gpiod_line *lineA1 = NULL;
+	struct gpiod_line *lineB0 = NULL;
+	struct gpiod_line *lineB1 = NULL;
+	struct gpiod_line_bulk bulk;
+	int status;
+
+	chipA = gpiod_chip_open(gu_chip_path(0));
+	chipB = gpiod_chip_open(gu_chip_path(1));
+	GU_ASSERT_NOT_NULL(chipA);
+	GU_ASSERT_NOT_NULL(chipB);
+
+	lineA0 = gpiod_chip_get_line(chipA, 0);
+	lineA1 = gpiod_chip_get_line(chipA, 1);
+	lineB0 = gpiod_chip_get_line(chipB, 0);
+	lineB1 = gpiod_chip_get_line(chipB, 1);
+
+	GU_ASSERT_NOT_NULL(lineA0);
+	GU_ASSERT_NOT_NULL(lineA1);
+	GU_ASSERT_NOT_NULL(lineB0);
+	GU_ASSERT_NOT_NULL(lineB1);
+
+	gpiod_line_bulk_init(&bulk);
+	gpiod_line_bulk_add(&bulk, lineA0);
+	gpiod_line_bulk_add(&bulk, lineA1);
+	gpiod_line_bulk_add(&bulk, lineB0);
+	gpiod_line_bulk_add(&bulk, lineB1);
+
+	req.consumer = "gpiod-unit";
+	req.direction = GPIOD_DIRECTION_INPUT;
+	req.active_state = GPIOD_ACTIVE_STATE_HIGH;
+
+	status = gpiod_line_request_bulk(&bulk, &req, NULL);
+	GU_ASSERT_NOTEQ(status, 0);
+	GU_ASSERT_EQ(gpiod_errno(), GPIOD_EBULKINCOH);
+}
+GU_DEFINE_TEST(line_request_bulk_different_chips,
+	       "gpiod_line_request_bulk() different chips",
+	       GU_LINES_UNNAMED, { 8, 8 });
+
 static void line_set_value(void)
 {
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
