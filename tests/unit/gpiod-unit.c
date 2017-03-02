@@ -485,12 +485,6 @@ void gu_free_chip_iter_noclose(struct gpiod_chip_iter **iter)
 		gpiod_chip_iter_free_noclose(*iter);
 }
 
-void gu_release_line(struct gpiod_line **line)
-{
-	if (*line)
-		gpiod_line_release(*line);
-}
-
 const char * gu_chip_path(unsigned int index)
 {
 	check_chip_index(index);

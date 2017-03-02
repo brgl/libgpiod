@@ -13,8 +13,8 @@
 static void line_request_output(void)
 {
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *line_0 = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *line_1 = NULL;
+	struct gpiod_line *line_0;
+	struct gpiod_line *line_1;
 	int status;
 
 	chip = gpiod_chip_open(gu_chip_path(0));
@@ -32,6 +32,9 @@ static void line_request_output(void)
 
 	GU_ASSERT_EQ(gpiod_line_get_value(line_0), 0);
 	GU_ASSERT_EQ(gpiod_line_get_value(line_1), 1);
+
+	gpiod_line_release(line_0);
+	gpiod_line_release(line_1);
 }
 GU_DEFINE_TEST(line_request_output,
 	       "gpiod_line_request_output() - good",
@@ -41,14 +44,14 @@ static void line_request_bulk_output(void)
 {
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chipA = NULL;
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chipB = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *lineA0 = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *lineA1 = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *lineA2 = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *lineA3 = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *lineB0 = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *lineB1 = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *lineB2 = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *lineB3 = NULL;
+	struct gpiod_line *lineA0;
+	struct gpiod_line *lineA1;
+	struct gpiod_line *lineA2;
+	struct gpiod_line *lineA3;
+	struct gpiod_line *lineB0;
+	struct gpiod_line *lineB1;
+	struct gpiod_line *lineB2;
+	struct gpiod_line *lineB3;
 	struct gpiod_line_bulk bulkA;
 	struct gpiod_line_bulk bulkB = GPIOD_LINE_BULK_INITIALIZER;
 	int status;
@@ -123,9 +126,6 @@ static void line_request_bulk_output(void)
 
 	gpiod_line_release_bulk(&bulkA);
 	gpiod_line_release_bulk(&bulkB);
-
-	lineA0 = lineA1 = lineA2 = lineA3 = NULL;
-	lineB0 = lineB1 = lineB2 = lineB3 = NULL;
 }
 GU_DEFINE_TEST(line_request_bulk_output,
 	       "gpiod_line_request_bulk_output() - good",
@@ -136,10 +136,10 @@ static void line_request_bulk_different_chips(void)
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chipA = NULL;
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chipB = NULL;
 	struct gpiod_line_request_config req;
-	struct gpiod_line *lineA0 = NULL;
-	struct gpiod_line *lineA1 = NULL;
-	struct gpiod_line *lineB0 = NULL;
-	struct gpiod_line *lineB1 = NULL;
+	struct gpiod_line *lineA0;
+	struct gpiod_line *lineA1;
+	struct gpiod_line *lineB0;
+	struct gpiod_line *lineB1;
 	struct gpiod_line_bulk bulk;
 	int status;
 
@@ -179,7 +179,7 @@ GU_DEFINE_TEST(line_request_bulk_different_chips,
 static void line_set_value(void)
 {
 	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
-	GU_CLEANUP(gu_release_line) struct gpiod_line *line = NULL;
+	struct gpiod_line *line;
 	int status;
 
 	chip = gpiod_chip_open(gu_chip_path(0));
@@ -195,6 +195,8 @@ static void line_set_value(void)
 	GU_ASSERT_EQ(gpiod_line_get_value(line), 1);
 	GU_ASSERT_RET_OK(gpiod_line_set_value(line, 0));
 	GU_ASSERT_EQ(gpiod_line_get_value(line), 0);
+
+	gpiod_line_release(line);
 }
 GU_DEFINE_TEST(line_set_value,
 	       "gpiod_line_set_value() - good",

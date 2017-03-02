@@ -106,7 +106,6 @@ void gu_close_chip(struct gpiod_chip **chip);
 void gu_free_str(char **str);
 void gu_free_chip_iter(struct gpiod_chip_iter **iter);
 void gu_free_chip_iter_noclose(struct gpiod_chip_iter **iter);
-void gu_release_line(struct gpiod_line **line);
 
 #define GU_ASSERT(statement)						\
 	do {								\
