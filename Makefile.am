@@ -6,6 +6,7 @@
 # as published by the Free Software Foundation.
 #
 
+ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
 SUBDIRS = include src
 
