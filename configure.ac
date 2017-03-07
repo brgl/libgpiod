@@ -96,21 +96,15 @@ AC_ARG_ENABLE([tests],
 	[with_tests=false])
 AM_CONDITIONAL([WITH_TESTS], [test "x$with_tests" = xtrue])
 
-AC_DEFUN([HEADER_NOT_FOUND_TESTS],
-	[ERR_NOT_FOUND([$1 header], [tests])])
-
 AC_DEFUN([FUNC_NOT_FOUND_TESTS],
 	[ERR_NOT_FOUND([$1()], [tests])])
 
 if test "x$with_tests" = xtrue
 then
-	AC_CHECK_LIB([kmod], [kmod_module_probe_insert_module], [],
-		[AC_MSG_ERROR([libkmod not found (needed to build tests])])
-	AC_CHECK_LIB([udev], [udev_monitor_new_from_netlink], [],
-		[AC_MSG_ERROR([libudev not found (needed to build tests])])
-	AC_CHECK_HEADERS([libkmod.h], [], [HEADER_NOT_FOUND_TESTS([libkmod.h])])
-	AC_CHECK_HEADERS([libudev.h], [], [HEADER_NOT_FOUND_TESTS([libudev.h])])
 	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
+
+	PKG_CHECK_MODULES(KMOD, libkmod)
+	PKG_CHECK_MODULES(UDEV, libudev)
 fi
 
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])

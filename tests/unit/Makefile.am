@@ -7,8 +7,8 @@
 #
 
 AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_builddir)/config.h
-AM_CFLAGS += -Wall -Wextra -g
-LDADD = ../../src/lib/libgpiod.la -lkmod -ludev
+AM_CFLAGS += -Wall -Wextra -g $(KMOD_CFLAGS) $(UDEV_CFLAGS)
+LDADD = ../../src/lib/libgpiod.la $(KMOD_LIBS) $(UDEV_LIBS)
 
 check_PROGRAMS = gpiod-unit
 TESTS = $(check_PROGRAMS)
