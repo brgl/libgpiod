@@ -14,6 +14,7 @@ DEPENDENCIES = libgpiod.la
 check_PROGRAMS = gpiod-unit
 
 gpiod_unit_SOURCES =	gpiod-unit.c \
+			gpiod-unit.h \
 			tests-chip.c \
 			tests-iter.c \
 			tests-line.c \
