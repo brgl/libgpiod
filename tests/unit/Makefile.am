@@ -6,10 +6,9 @@
 # as published by the Free Software Foundation.
 #
 
-AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_srcdir)/config.h
+AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_builddir)/config.h
 AM_CFLAGS += -Wall -Wextra -g
-LDADD = -lgpiod -L$(top_srcdir)/src/lib -lkmod -ludev
-DEPENDENCIES = libgpiod.la
+LDADD = ../../src/lib/libgpiod.la -lkmod -ludev
 
 check_PROGRAMS = gpiod-unit
 
