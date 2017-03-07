@@ -11,6 +11,7 @@ AM_CFLAGS += -Wall -Wextra -g
 LDADD = ../../src/lib/libgpiod.la -lkmod -ludev
 
 check_PROGRAMS = gpiod-unit
+TESTS = $(check_PROGRAMS)
 
 gpiod_unit_SOURCES =	gpiod-unit.c \
 			gpiod-unit.h \
