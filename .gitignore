@@ -1,5 +1,6 @@
 !.gitignore
 libgpiod.la
+libtools-common.la
 gpiodetect
 gpioinfo
 gpioget
