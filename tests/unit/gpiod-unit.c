@@ -292,7 +292,7 @@ static int chipcmp(const void *c1, const void *c2)
 	const struct mockup_chip *chip1 = *(const struct mockup_chip **)c1;
 	const struct mockup_chip *chip2 = *(const struct mockup_chip **)c2;
 
-	return strcmp(chip1->name, chip2->name);
+	return chip1->number > chip2->number;
 }
 
 static bool devpath_is_mockup(const char *devpath)
@@ -386,7 +386,7 @@ static void test_prepare(struct _gu_chip_descr *descr)
 	 * order in which the chips were defined in the GU_DEFINE_TEST()
 	 * macro.
 	 *
-	 * Once all gpiochips are there, sort them by name.
+	 * Once all gpiochips are there, sort them by chip number.
 	 */
 	qsort(ctx->chips, ctx->num_chips, sizeof(*ctx->chips), chipcmp);
 }
