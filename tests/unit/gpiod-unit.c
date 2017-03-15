@@ -296,11 +296,8 @@ static void test_load_module(struct _gu_chip_descr *descr)
 		modarg = xappend(modarg, "-1,%u,", descr->num_lines[i]);
 	modarg[strlen(modarg) - 1] = '\0'; /* Remove the last comma. */
 
-	/*
-	 * TODO Once the support for named lines in the gpio-mockup module
-	 * is merged upstream, implement checking the named_lines field of
-	 * the test description and setting the corresponding module param.
-	 */
+	if (descr->named_lines)
+		modarg = xappend(modarg, " gpio_mockup_named_lines");
 
 	status = kmod_module_probe_insert_module(globals.module, 0,
 						 modarg, NULL, NULL, NULL);
