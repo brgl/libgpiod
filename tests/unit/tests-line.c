@@ -248,3 +248,19 @@ static void line_set_value(void)
 GU_DEFINE_TEST(line_set_value,
 	       "gpiod_line_set_value() - good",
 	       GU_LINES_UNNAMED, { 8 });
+
+static void line_find_by_name_good(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line *line;
+
+	line = gpiod_line_find_by_name("gpio-mockup-C-12");
+	GU_ASSERT_NOT_NULL(line);
+	chip = gpiod_line_get_chip(line);
+
+	GU_ASSERT_STR_EQ(gpiod_chip_label(chip), "gpio-mockup-C");
+	GU_ASSERT_EQ(gpiod_line_offset(line), 12);
+}
+GU_DEFINE_TEST(line_find_by_name_good,
+	       "gpiod_line_find_by_name() - good",
+	       GU_LINES_NAMED, { 16, 16, 32, 16 });
