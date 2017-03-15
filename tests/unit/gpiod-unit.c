@@ -18,6 +18,7 @@
 #include <poll.h>
 #include <libkmod.h>
 #include <libudev.h>
+#include <sys/utsname.h>
 
 #define NORETURN	__attribute__((noreturn))
 #define MALLOC		__attribute__((malloc))
@@ -228,6 +229,28 @@ static void module_cleanup(void)
 		kmod_unref(globals.module_ctx);
 }
 
+static void check_kernel(void)
+{
+	int status, version, patchlevel;
+	struct utsname un;
+
+	msg("checking the linux kernel version");
+
+	status = uname(&un);
+	if (status)
+		die_perr("uname");
+
+	status = sscanf(un.release, "%d.%d", &version, &patchlevel);
+	if (status != 2)
+		die("error reading kernel release version");
+
+	if (version < 4 || patchlevel < 11)
+		die("linux kernel version must be at least v4.11 - got v%d.%d",
+		    version, patchlevel);
+
+	msg("kernel release is v%d.%d - ok to run tests", version, patchlevel);
+}
+
 static void check_gpio_mockup(void)
 {
 	const char *modpath;
@@ -421,6 +444,7 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 	msg("libgpiod unit-test suite");
 	msg("%u tests registered", globals.num_tests);
 
+	check_kernel();
 	check_gpio_mockup();
 
 	msg("running tests");
