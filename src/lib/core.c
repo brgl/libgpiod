@@ -314,8 +314,10 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 		}
 
 		status = callback(evtype, &event.ts, cbdata);
-		if (status == GPIOD_EVENT_CB_STOP)
+		if (status == GPIOD_EVENT_CB_STOP) {
+			status = 0;
 			goto out;
+		}
 	}
 
 out:
