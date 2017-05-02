@@ -114,3 +114,36 @@ static void simple_set_value_multiple_max_lines(void)
 GU_DEFINE_TEST(simple_set_value_multiple_max_lines,
 	       "gpiod_simple_set_value_multiple() exceed max lines",
 	       GU_LINES_UNNAMED, { 128 });
+
+struct simple_event_data {
+	bool got_event;
+};
+
+static int simple_event_cb(int evtype GU_UNUSED,
+			   const struct timespec *ts GU_UNUSED,
+			   void *data)
+{
+	struct simple_event_data *evdata = data;
+
+	evdata->got_event = true;
+
+	return GPIOD_EVENT_CB_STOP;
+}
+
+static void simple_event_loop(void)
+{
+	struct simple_event_data evdata = { false };
+	struct timespec ts = { 1, 0 };
+	int status;
+
+	gu_set_event(0, 3, GU_EVENT_ALTERNATING, 100);
+
+	status = gpiod_simple_event_loop("gpiod-unit", gu_chip_name(0), 3,
+					 false, &ts, simple_event_cb, &evdata);
+
+	GU_ASSERT_RET_OK(status);
+	GU_ASSERT(evdata.got_event);
+}
+GU_DEFINE_TEST(simple_event_loop,
+	       "gpiod_simple_event_loop() - single event",
+	       GU_LINES_UNNAMED, { 8 });
