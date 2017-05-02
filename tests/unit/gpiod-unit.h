@@ -91,6 +91,15 @@ const char * gu_chip_path(unsigned int index);
 const char * gu_chip_name(unsigned int index);
 unsigned int gu_chip_num(unsigned int index);
 
+enum {
+	GU_EVENT_FALLING,
+	GU_EVENT_RISING,
+	GU_EVENT_ALTERNATING,
+};
+
+void gu_set_event(unsigned int chip_index,
+		  unsigned int line_offset, int event_type, unsigned int freq);
+
 /*
  * Every GU_ASSERT_*() macro expansion can make a test function return, so it
  * would be quite difficult to keep track of every resource allocation. At

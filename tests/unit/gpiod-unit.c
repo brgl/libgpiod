@@ -18,6 +18,8 @@
 #include <poll.h>
 #include <libkmod.h>
 #include <libudev.h>
+#include <pthread.h>
+#include <sys/time.h>
 #include <sys/utsname.h>
 
 #define NORETURN	__attribute__((noreturn))
@@ -31,11 +33,24 @@ struct mockup_chip {
 	unsigned int number;
 };
 
+struct event_thread {
+	pthread_t thread_id;
+	pthread_mutex_t lock;
+	pthread_cond_t cond;
+	bool running;
+	bool should_stop;
+	unsigned int chip_index;
+	unsigned int line_offset;
+	unsigned int freq;
+	int event_type;
+};
+
 struct test_context {
 	struct mockup_chip **chips;
 	size_t num_chips;
 	bool test_failed;
 	char *failed_msg;
+	struct event_thread event;
 };
 
 static struct {
@@ -229,6 +244,74 @@ static void module_cleanup(void)
 		kmod_unref(globals.module_ctx);
 }
 
+static void event_lock(void)
+{
+	pthread_mutex_lock(&globals.test_ctx.event.lock);
+}
+
+static void event_unlock(void)
+{
+	pthread_mutex_unlock(&globals.test_ctx.event.lock);
+}
+
+static void * event_worker(void *data GU_UNUSED)
+{
+	struct event_thread *ev = &globals.test_ctx.event;
+	struct timeval tv_now, tv_add, tv_res;
+	struct timespec ts;
+	int status, i, fd;
+	char *path;
+	ssize_t rd;
+	char buf;
+
+	for (i = 0;; i++) {
+		event_lock();
+		if (ev->should_stop) {
+			event_unlock();
+			break;
+		}
+
+		gettimeofday(&tv_now, NULL);
+		tv_add.tv_sec = 0;
+		tv_add.tv_usec = ev->freq * 1000;
+		timeradd(&tv_now, &tv_add, &tv_res);
+		ts.tv_sec = tv_res.tv_sec;
+		ts.tv_nsec = tv_res.tv_usec * 1000;
+
+		status = pthread_cond_timedwait(&ev->cond, &ev->lock, &ts);
+		if (status != 0 && status != ETIMEDOUT)
+			die("error waiting for conditional variable: %s",
+			    strerror(status));
+
+		path = xappend(NULL,
+			       "/sys/kernel/debug/gpio-mockup-event/gpio-mockup-%c/%u",
+			       'A' + ev->chip_index, ev->line_offset);
+
+		fd = open(path, O_RDWR);
+		free(path);
+		if (fd < 0)
+			die_perr("error opening gpio event file");
+
+		if (ev->event_type == GU_EVENT_RISING)
+			buf = '1';
+		else if (ev->event_type == GU_EVENT_FALLING)
+			buf = '0';
+		else
+			buf = i % 2 == 0 ? '1' : '0';
+
+		rd = write(fd, &buf, 1);
+		close(fd);
+		if (rd < 0)
+			die_perr("error writing to gpio event file");
+		else if (rd != 1)
+			die("invalid write size to gpio event file");
+
+		event_unlock();
+	}
+
+	return NULL;
+}
+
 static void check_kernel(void)
 {
 	int status, version, patchlevel;
@@ -336,6 +419,8 @@ static void test_prepare(struct _gu_chip_descr *descr)
 	memset(ctx, 0, sizeof(*ctx));
 	ctx->num_chips = descr->num_chips;
 	ctx->chips = xzalloc(sizeof(*ctx->chips) * ctx->num_chips);
+	pthread_mutex_init(&ctx->event.lock, NULL);
+	pthread_cond_init(&ctx->event.cond, NULL);
 
 	/*
 	 * We'll setup the udev monitor, insert the module and wait for the
@@ -414,8 +499,28 @@ static void test_prepare(struct _gu_chip_descr *descr)
 static void test_teardown(void)
 {
 	struct mockup_chip *chip;
+	struct event_thread *ev;
 	unsigned int i;
 	int status;
+
+	event_lock();
+	ev = &globals.test_ctx.event;
+
+	if (ev->running) {
+		ev->should_stop = true;
+		pthread_cond_broadcast(&ev->cond);
+		event_unlock();
+
+		status = pthread_join(globals.test_ctx.event.thread_id, NULL);
+		if (status != 0)
+			die("error joining event thread: %s",
+			    strerror(status));
+
+		pthread_mutex_destroy(&globals.test_ctx.event.lock);
+		pthread_cond_destroy(&globals.test_ctx.event.cond);
+	} else {
+		event_unlock();
+	}
 
 	for (i = 0; i < globals.test_ctx.num_chips; i++) {
 		chip = globals.test_ctx.chips[i];
@@ -556,4 +661,32 @@ GU_PRINTF(1, 2) void _gu_test_failed(const char *fmt, ...)
 		die_perr("vasprintf");
 
 	globals.test_ctx.test_failed = true;
+}
+
+void gu_set_event(unsigned int chip_index,
+		  unsigned int line_offset, int event_type, unsigned int freq)
+{
+	struct event_thread *ev = &globals.test_ctx.event;
+	int status;
+
+	event_lock();
+
+	if (!ev->running) {
+		status = pthread_create(&ev->thread_id, NULL,
+					event_worker, NULL);
+		if (status != 0)
+			die("error creating event thread: %s",
+			    strerror(status));
+
+		ev->running = true;
+	}
+
+	ev->chip_index = chip_index;
+	ev->line_offset = line_offset;
+	ev->event_type = event_type;
+	ev->freq = freq;
+
+	pthread_cond_broadcast(&ev->cond);
+
+	event_unlock();
 }
