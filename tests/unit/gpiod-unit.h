@@ -126,6 +126,7 @@ void gu_free_chip_iter_noclose(struct gpiod_chip_iter **iter);
 		}							\
 	} while (0)
 
+#define GU_ASSERT_FALSE(statement)	GU_ASSERT(!(statement))
 #define GU_ASSERT_NOT_NULL(ptr)		GU_ASSERT(ptr != NULL)
 #define GU_ASSERT_RET_OK(status)	GU_ASSERT(status == 0)
 #define GU_ASSERT_NULL(ptr)		GU_ASSERT(ptr == NULL)
