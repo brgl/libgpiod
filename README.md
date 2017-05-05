@@ -100,6 +100,27 @@ Examples:
     # anything. Find the line by name.
     # gpiomon --num-events=1 --silent `gpiofind "USR-IN"`
 
+TESTING
+-------
+
+A comprehensive unit testing framework is included with the library and can be
+used to test both the library code and the linux kernel user-space interface.
+
+The minimum kernel version required to run the tests is 4.11. The tests work
+together with the gpio-mockup kernel module which must be enabled. NOTE: the
+module must not be built-in.
+
+To build the testing executable run:
+
+    ./configure --enable-tests
+    make check
+
+As opposed to standard autotools projects, libgpiod doesn't execute any tests
+when invoking 'make check'. Instead the user must run them manually with
+superuser privileges:
+
+    sudo ./tests/unit/gpiod-unit
+
 CONTRIBUTING
 ------------
 
