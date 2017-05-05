@@ -1,0 +1,45 @@
+libgpiod v0.1.3
+===============
+
+Bug fixes:
+- this time the bug making it impossible to request both types of line events was really fixed
+- pass the O_CLOEXEC flag to open() when opening the GPIO chip device file
+
+libgpiod v0.1.2
+===============
+
+Bug fixes:
+- include <poll.h> instead of <sys/poll.h> in gpioset
+- fix a formatting issue in gpioinfo for chips with >100 GPIO lines
+- fix a bug when requesting both-edges event notifications
+
+libgpiod v0.1.1
+===============
+
+Bug fixes:
+- fix short options in gpiomon (short opt for --silent was missing)
+- correct the kernel headers requirements in README
+- include <time.h> for struct timespec
+- include <poll.h> instead of <sys/poll.h>
+- detect the version of strerror_r()
+
+libgpiod v0.1
+=============
+
+First version of libgpiod.
+
+It's currently possible to:
+- get and set the values of multiple GPIO lines with a single function call
+- monitor a GPIO line for events
+- enumerate all GPIO chips present in the system
+- enumerate all GPIO lines exposed by a chip
+- extract information about GPIO chips (label, name, number of lines)
+- extract information about GPIO lines (name, flags, state, user)
+
+Tools provided with the library are:
+- gpioget - read values from GPIO lines
+- gpioset - set values of GPIO lines
+- gpiodetect - list GPIO chips
+- gpioinfo - print info about GPIO lines exposed by a chip
+- gpiomon - monitor a GPIO line for events
+- gpiofind - find a GPIO line by name
