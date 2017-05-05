@@ -264,3 +264,31 @@ static void line_find_by_name_good(void)
 GU_DEFINE_TEST(line_find_by_name_good,
 	       "gpiod_line_find_by_name() - good",
 	       GU_LINES_NAMED, { 16, 16, 32, 16 });
+
+static void line_direction(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line *line;
+	int status;
+
+	chip = gpiod_chip_open(gu_chip_path(0));
+	GU_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_get_line(chip, 5);
+	GU_ASSERT_NOT_NULL(line);
+
+	status = gpiod_line_request_output(line, "gpiod-unit", false, 0);
+	GU_ASSERT_RET_OK(status);
+
+	GU_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_OUTPUT);
+
+	gpiod_line_release(line);
+
+	status = gpiod_line_request_input(line, "gpiod-unit", false);
+	GU_ASSERT_RET_OK(status);
+
+	GU_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_INPUT);
+}
+GU_DEFINE_TEST(line_direction,
+	       "gpiod_line_direction() - set & get",
+	       GU_LINES_UNNAMED, { 8 });
