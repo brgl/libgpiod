@@ -357,7 +357,8 @@ static void check_gpio_mockup(void)
 
 	/* Then see if we can freely load and unload it. */
 	status = kmod_module_probe_insert_module(globals.module, 0,
-						 NULL, NULL, NULL, NULL);
+						 "gpio_mockup_ranges=-1,4",
+						 NULL, NULL, NULL);
 	if (status)
 		die_perr("unable to load gpio-mockup");
 
