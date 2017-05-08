@@ -1,3 +1,26 @@
+libgpiod v0.2
+=============
+
+New features:
+- relicensed under LGPLv2.1
+- implemented a unit testing framework together with a comprehensive
+  set of test cases
+- added a non-closing variant of the gpiochip iterator and foreach
+  macro [by Clemens Gruber]
+- added gpiod_chip_open_by_label()
+
+Improvements:
+- Makefiles & build commands have been reworked [by Thierry Reding]
+- documentation updates
+- code shrinkage here and there
+- coding style fixes
+- removed all designated initializers from the header for better standards
+  compliance
+
+Bug fixes:
+- fix the return value of gpiod_simple_event_loop()
+- don't try to process docs if doxygen is not installed
+
 libgpiod v0.1.3
 ===============
 
