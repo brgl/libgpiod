@@ -496,6 +496,30 @@ static void test_prepare(struct _gu_chip_descr *descr)
 	qsort(ctx->chips, ctx->num_chips, sizeof(*ctx->chips), chipcmp);
 }
 
+static void test_run(struct _gu_test *test)
+{
+	print_header("TEST", CYELLOW);
+	pr_raw("'%s': ", test->name);
+
+	test->func();
+
+	if (globals.test_ctx.test_failed) {
+		globals.tests_failed++;
+		set_color(CREDBOLD);
+		pr_raw("FAILED:");
+		reset_color();
+		set_color(CRED);
+		pr_raw("\n\t\t'%s': %s\n",
+		       test->name, globals.test_ctx.failed_msg);
+		reset_color();
+		free(globals.test_ctx.failed_msg);
+	} else {
+		set_color(CGREEN);
+		pr_raw("OK\n");
+		reset_color();
+	}
+}
+
 static void test_teardown(void)
 {
 	struct mockup_chip *chip;
@@ -553,28 +577,7 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 
 	for (test = globals.test_list_head; test; test = test->_next) {
 		test_prepare(&test->chip_descr);
-
-		print_header("TEST", CYELLOW);
-		pr_raw("'%s': ", test->name);
-
-		test->func();
-
-		if (globals.test_ctx.test_failed) {
-			globals.tests_failed++;
-			set_color(CREDBOLD);
-			pr_raw("FAILED:");
-			reset_color();
-			set_color(CRED);
-			pr_raw("\n\t\t'%s': %s\n",
-			       test->name, globals.test_ctx.failed_msg);
-			reset_color();
-			free(globals.test_ctx.failed_msg);
-		} else {
-			set_color(CGREEN);
-			pr_raw("OK\n");
-			reset_color();
-		}
-
+		test_run(test);
 		test_teardown();
 	}
 
