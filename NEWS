@@ -2,7 +2,8 @@ libgpiod v0.1.3
 ===============
 
 Bug fixes:
-- this time the bug making it impossible to request both types of line events was really fixed
+- this time the bug making it impossible to request both types of line events
+  was really fixed
 - pass the O_CLOEXEC flag to open() when opening the GPIO chip device file
 
 libgpiod v0.1.2
