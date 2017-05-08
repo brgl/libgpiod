@@ -320,3 +320,47 @@ static void line_active_state(void)
 GU_DEFINE_TEST(line_active_state,
 	       "gpiod_line_active_state() - set & get",
 	       GU_LINES_UNNAMED, { 8 });
+
+static void line_misc_flags(void)
+{
+	GU_CLEANUP(gu_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line_request_config config;
+	struct gpiod_line *line;
+	int status;
+
+	chip = gpiod_chip_open(gu_chip_path(0));
+	GU_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_get_line(chip, 2);
+	GU_ASSERT_NOT_NULL(line);
+
+	GU_ASSERT_FALSE(gpiod_line_is_used_by_kernel(line));
+	GU_ASSERT_FALSE(gpiod_line_is_open_drain(line));
+	GU_ASSERT_FALSE(gpiod_line_is_open_source(line));
+
+	config.direction = GPIOD_DIRECTION_INPUT;
+	config.consumer = "gpiod-unit";
+	config.active_state = GPIOD_ACTIVE_STATE_HIGH;
+	config.flags = GPIOD_REQUEST_OPEN_DRAIN;
+
+	status = gpiod_line_request(line, &config, 0);
+	GU_ASSERT_RET_OK(status);
+
+	GU_ASSERT(gpiod_line_is_used_by_kernel(line));
+	GU_ASSERT(gpiod_line_is_open_drain(line));
+	GU_ASSERT_FALSE(gpiod_line_is_open_source(line));
+
+	gpiod_line_release(line);
+
+	config.flags = GPIOD_REQUEST_OPEN_SOURCE;
+
+	status = gpiod_line_request(line, &config, 0);
+	GU_ASSERT_RET_OK(status);
+
+	GU_ASSERT(gpiod_line_is_used_by_kernel(line));
+	GU_ASSERT_FALSE(gpiod_line_is_open_drain(line));
+	GU_ASSERT(gpiod_line_is_open_source(line));
+}
+GU_DEFINE_TEST(line_misc_flags,
+	       "gpiod_line - misc flags",
+	       GU_LINES_UNNAMED, { 8 });
