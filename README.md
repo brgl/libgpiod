@@ -119,7 +119,7 @@ As opposed to standard autotools projects, libgpiod doesn't execute any tests
 when invoking 'make check'. Instead the user must run them manually with
 superuser privileges:
 
-    sudo ./tests/unit/gpiod-unit
+    sudo ./tests/gpiod-unit
 
 CONTRIBUTING
 ------------
