@@ -369,7 +369,7 @@ static void check_gpio_mockup(void)
 	msg("gpio-mockup ok");
 }
 
-static void test_load_module(struct _test_chip_descr *descr)
+static void load_module(struct _test_chip_descr *descr)
 {
 	unsigned int i;
 	char *modarg;
@@ -404,7 +404,7 @@ static bool devpath_is_mockup(const char *devpath)
 	return !strncmp(devpath, mockup_devpath, sizeof(mockup_devpath) - 1);
 }
 
-static void test_prepare(struct _test_chip_descr *descr)
+static void prepare_test(struct _test_chip_descr *descr)
 {
 	const char *devpath, *devnode, *sysname;
 	struct udev_monitor *monitor;
@@ -445,7 +445,7 @@ static void test_prepare(struct _test_chip_descr *descr)
 	if (status < 0)
 		die_perr("error enabling udev event receiving");
 
-	test_load_module(descr);
+	load_module(descr);
 
 	pfd.fd = udev_monitor_get_fd(monitor);
 	pfd.events = POLLIN | POLLPRI;
@@ -497,7 +497,7 @@ static void test_prepare(struct _test_chip_descr *descr)
 	qsort(ctx->chips, ctx->num_chips, sizeof(*ctx->chips), chipcmp);
 }
 
-static void test_run(struct _test_case *test)
+static void run_test(struct _test_case *test)
 {
 	print_header("TEST", CYELLOW);
 	pr_raw("'%s': ", test->name);
@@ -521,7 +521,7 @@ static void test_run(struct _test_case *test)
 	}
 }
 
-static void test_teardown(void)
+static void teardown_test(void)
 {
 	struct mockup_chip *chip;
 	struct event_thread *ev;
@@ -577,9 +577,9 @@ int main(int argc TEST_UNUSED, char **argv TEST_UNUSED)
 	msg("running tests");
 
 	for (test = globals.test_list_head; test; test = test->_next) {
-		test_prepare(&test->chip_descr);
-		test_run(test);
-		test_teardown();
+		prepare_test(&test->chip_descr);
+		run_test(test);
+		teardown_test();
 	}
 
 	if (!globals.tests_failed)
