@@ -38,7 +38,7 @@ static void chip_iter(void)
 }
 TEST_DEFINE(chip_iter,
 	    "gpiod_chip_iter - simple loop",
-	    TEST_LINES_UNNAMED, { 8, 8, 8 });
+	    0, { 8, 8, 8 });
 
 static void chip_iter_noclose(void)
 {
@@ -86,7 +86,7 @@ static void chip_iter_noclose(void)
 }
 TEST_DEFINE(chip_iter_noclose,
 	    "gpiod_chip_iter - simple loop, noclose variant",
-	    TEST_LINES_UNNAMED, { 8, 8, 8 });
+	    0, { 8, 8, 8 });
 
 static void chip_iter_break(void)
 {
@@ -116,7 +116,7 @@ static void chip_iter_break(void)
 }
 TEST_DEFINE(chip_iter_break,
 	    "gpiod_chip_iter - break",
-	    TEST_LINES_UNNAMED, { 8, 8, 8, 8, 8 });
+	    0, { 8, 8, 8, 8, 8 });
 
 static void line_iter(void)
 {
@@ -140,7 +140,7 @@ static void line_iter(void)
 }
 TEST_DEFINE(line_iter,
 	    "gpiod_line_iter - simple loop, check offsets",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void line_iter_static_initializer(void)
 {
@@ -165,4 +165,4 @@ static void line_iter_static_initializer(void)
 }
 TEST_DEFINE(line_iter_static_initializer,
 	    "gpiod_line_iter - simple loop, static initializer",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });

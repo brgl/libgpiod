@@ -20,7 +20,7 @@ static void version_string(void)
 }
 TEST_DEFINE(version_string,
 	    "gpiod_version_string()",
-	    TEST_LINES_UNNAMED, { 1 });
+	    0, { 1 });
 
 static void error_handling(void)
 {
@@ -39,4 +39,4 @@ static void error_handling(void)
 }
 TEST_DEFINE(error_handling,
 	    "error handling",
-	    TEST_LINES_UNNAMED, { 1 });
+	    0, { 1 });

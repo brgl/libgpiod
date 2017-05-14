@@ -28,7 +28,7 @@ static void simple_set_get_value(void)
 }
 TEST_DEFINE(simple_set_get_value,
 	    "simple set/get value - single line",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void simple_set_get_value_multiple(void)
 {
@@ -83,7 +83,7 @@ static void simple_set_get_value_multiple(void)
 }
 TEST_DEFINE(simple_set_get_value_multiple,
 	    "simple set/get value - multiple lines",
-	    TEST_LINES_UNNAMED, { 16 });
+	    0, { 16 });
 
 static void simple_get_value_multiple_max_lines(void)
 {
@@ -99,7 +99,7 @@ static void simple_get_value_multiple_max_lines(void)
 }
 TEST_DEFINE(simple_get_value_multiple_max_lines,
 	    "gpiod_simple_get_value_multiple() exceed max lines",
-	    TEST_LINES_UNNAMED, { 128 });
+	    0, { 128 });
 
 static void simple_set_value_multiple_max_lines(void)
 {
@@ -115,7 +115,7 @@ static void simple_set_value_multiple_max_lines(void)
 }
 TEST_DEFINE(simple_set_value_multiple_max_lines,
 	    "gpiod_simple_set_value_multiple() exceed max lines",
-	    TEST_LINES_UNNAMED, { 128 });
+	    0, { 128 });
 
 struct simple_event_data {
 	bool got_event;
@@ -148,4 +148,4 @@ static void simple_event_loop(void)
 }
 TEST_DEFINE(simple_event_loop,
 	    "gpiod_simple_event_loop() - single event",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });

@@ -20,6 +20,7 @@
 #define TEST_UNUSED		__attribute__((unused))
 #define TEST_PRINTF(fmt, arg)	__attribute__((format(printf, fmt, arg)))
 #define TEST_CLEANUP(func)	__attribute__((cleanup(func)))
+#define TEST_BIT(nr)		(1UL << (nr))
 
 #define TEST_ARRAY_SIZE(x)	(sizeof(x) / sizeof(*(x)))
 
@@ -28,7 +29,7 @@ typedef void (*_test_func)(void);
 struct _test_chip_descr {
 	unsigned int num_chips;
 	unsigned int *num_lines;
-	bool named_lines;
+	int flags;
 };
 
 struct _test_case {
@@ -43,6 +44,10 @@ struct _test_case {
 void _test_register(struct _test_case *test);
 void _test_print_failed(const char *fmt, ...) TEST_PRINTF(1, 2);
 
+enum {
+	TEST_FLAG_NAMED_LINES = TEST_BIT(0),
+};
+
 /*
  * This macro should be used for code brevity instead of manually declaring
  * the _test_case structure.
@@ -50,13 +55,13 @@ void _test_print_failed(const char *fmt, ...) TEST_PRINTF(1, 2);
  * The macro accepts the following arguments:
  *   _a_func: name of the test function
  *   _a_name: name of the test case (will be shown to user)
- *   _a_named_lines: indicate whether we want the GPIO lines to be named
+ *   _a_flags: various switches for the test case
  *
  * The last argument must be an array of unsigned integers specifying the
  * number of GPIO lines in each subsequent mockup chip. The size of this
  * array will at the same time specify the number of gpiochips to create.
  */
-#define TEST_DEFINE(_a_func, _a_name, _a_named_lines, ...)		\
+#define TEST_DEFINE(_a_func, _a_name, _a_flags, ...)			\
 	static unsigned int _##_a_func##_lines[] = __VA_ARGS__;		\
 	static struct _test_case _##_a_func##_descr = {			\
 		.name = _a_name,					\
@@ -65,7 +70,7 @@ void _test_print_failed(const char *fmt, ...) TEST_PRINTF(1, 2);
 			.num_chips = TEST_ARRAY_SIZE(			\
 						_##_a_func##_lines),	\
 			.num_lines = _##_a_func##_lines,		\
-			.named_lines = _a_named_lines,			\
+			.flags = _a_flags,				\
 		},							\
 	};								\
 	static TEST_INIT void _test_register_##_a_func##_test(void)	\
@@ -73,11 +78,6 @@ void _test_print_failed(const char *fmt, ...) TEST_PRINTF(1, 2);
 		_test_register(&_##_a_func##_descr);			\
 	}								\
 	static int _test_##_a_func##_sentinel TEST_UNUSED
-
-enum {
-	TEST_LINES_UNNAMED = false,
-	TEST_LINES_NAMED = true,
-};
 
 /*
  * We want libgpiod tests to co-exist with gpiochips created by other GPIO

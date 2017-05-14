@@ -39,7 +39,7 @@ static void event_rising_edge_good(void)
 }
 TEST_DEFINE(event_rising_edge_good,
 	    "events - receive single rising edge event",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void event_falling_edge_good(void)
 {
@@ -70,7 +70,7 @@ static void event_falling_edge_good(void)
 }
 TEST_DEFINE(event_falling_edge_good,
 	    "events - receive single falling edge event",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void event_rising_edge_ignore_falling(void)
 {
@@ -95,7 +95,7 @@ static void event_rising_edge_ignore_falling(void)
 }
 TEST_DEFINE(event_rising_edge_ignore_falling,
 	    "events - request rising edge & ignore falling edge events",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void event_rising_edge_active_low(void)
 {
@@ -126,7 +126,7 @@ static void event_rising_edge_active_low(void)
 }
 TEST_DEFINE(event_rising_edge_active_low,
 	    "events - single rising edge event with low active state",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void event_get_value(void)
 {
@@ -163,4 +163,4 @@ static void event_get_value(void)
 }
 TEST_DEFINE(event_get_value,
 	    "events - mixing events and gpiod_line_get_value()",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });

@@ -380,7 +380,7 @@ static void load_module(struct _test_chip_descr *descr)
 		modarg = xappend(modarg, "-1,%u,", descr->num_lines[i]);
 	modarg[strlen(modarg) - 1] = '\0'; /* Remove the last comma. */
 
-	if (descr->named_lines)
+	if (descr->flags & TEST_FLAG_NAMED_LINES)
 		modarg = xappend(modarg, " gpio_mockup_named_lines");
 
 	status = kmod_module_probe_insert_module(globals.module, 0,

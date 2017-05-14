@@ -38,7 +38,7 @@ static void line_request_output(void)
 }
 TEST_DEFINE(line_request_output,
 	    "gpiod_line_request_output() - good",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void line_request_already_requested(void)
 {
@@ -61,7 +61,7 @@ static void line_request_already_requested(void)
 }
 TEST_DEFINE(line_request_already_requested,
 	    "gpiod_line_request() - already requested",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void line_consumer(void)
 {
@@ -85,7 +85,7 @@ static void line_consumer(void)
 }
 TEST_DEFINE(line_consumer,
 	    "gpiod_line_consumer() - good",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void line_request_bulk_output(void)
 {
@@ -176,7 +176,7 @@ static void line_request_bulk_output(void)
 }
 TEST_DEFINE(line_request_bulk_output,
 	    "gpiod_line_request_bulk_output() - good",
-	    TEST_LINES_UNNAMED, { 8, 8 });
+	    0, { 8, 8 });
 
 static void line_request_bulk_different_chips(void)
 {
@@ -221,7 +221,7 @@ static void line_request_bulk_different_chips(void)
 }
 TEST_DEFINE(line_request_bulk_different_chips,
 	    "gpiod_line_request_bulk() - different chips",
-	    TEST_LINES_UNNAMED, { 8, 8 });
+	    0, { 8, 8 });
 
 static void line_set_value(void)
 {
@@ -247,7 +247,7 @@ static void line_set_value(void)
 }
 TEST_DEFINE(line_set_value,
 	    "gpiod_line_set_value() - good",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void line_find_by_name_good(void)
 {
@@ -263,7 +263,7 @@ static void line_find_by_name_good(void)
 }
 TEST_DEFINE(line_find_by_name_good,
 	    "gpiod_line_find_by_name() - good",
-	    TEST_LINES_NAMED, { 16, 16, 32, 16 });
+	    TEST_FLAG_NAMED_LINES, { 16, 16, 32, 16 });
 
 static void line_direction(void)
 {
@@ -291,7 +291,7 @@ static void line_direction(void)
 }
 TEST_DEFINE(line_direction,
 	    "gpiod_line_direction() - set & get",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void line_active_state(void)
 {
@@ -319,7 +319,7 @@ static void line_active_state(void)
 }
 TEST_DEFINE(line_active_state,
 	    "gpiod_line_active_state() - set & get",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void line_misc_flags(void)
 {
@@ -363,4 +363,4 @@ static void line_misc_flags(void)
 }
 TEST_DEFINE(line_misc_flags,
 	    "gpiod_line - misc flags",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });

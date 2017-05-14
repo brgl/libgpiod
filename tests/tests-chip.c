@@ -22,7 +22,7 @@ static void chip_open_good(void)
 }
 TEST_DEFINE(chip_open_good,
 	    "gpiod_chip_open() - good",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void chip_open_nonexistent(void)
 {
@@ -34,7 +34,7 @@ static void chip_open_nonexistent(void)
 }
 TEST_DEFINE(chip_open_nonexistent,
 	    "gpiod_chip_open() - nonexistent chip",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void chip_open_notty(void)
 {
@@ -46,7 +46,7 @@ static void chip_open_notty(void)
 }
 TEST_DEFINE(chip_open_notty,
 	    "gpiod_chip_open() - notty",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void chip_open_by_name_good(void)
 {
@@ -57,7 +57,7 @@ static void chip_open_by_name_good(void)
 }
 TEST_DEFINE(chip_open_by_name_good,
 	    "gpiod_chip_open_by_name() - good",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void chip_open_by_number_good(void)
 {
@@ -68,7 +68,7 @@ static void chip_open_by_number_good(void)
 }
 TEST_DEFINE(chip_open_by_number_good,
 	    "gpiod_chip_open_by_number() - good",
-	    TEST_LINES_UNNAMED, { 8 });
+	    0, { 8 });
 
 static void chip_open_lookup(void)
 {
@@ -97,7 +97,7 @@ static void chip_open_lookup(void)
 }
 TEST_DEFINE(chip_open_lookup,
 	    "gpiod_chip_open_lookup() - good",
-	    TEST_LINES_UNNAMED, { 8, 8, 8 });
+	    0, { 8, 8, 8 });
 
 static void chip_open_by_label_good(void)
 {
@@ -109,7 +109,7 @@ static void chip_open_by_label_good(void)
 }
 TEST_DEFINE(chip_open_by_label_good,
 	    "gpiod_chip_open_by_label() - good",
-	    TEST_LINES_UNNAMED, { 4, 4, 4, 4, 4 });
+	    0, { 4, 4, 4, 4, 4 });
 
 static void chip_open_by_label_bad(void)
 {
@@ -120,7 +120,7 @@ static void chip_open_by_label_bad(void)
 }
 TEST_DEFINE(chip_open_by_label_bad,
 	    "gpiod_chip_open_by_label() - bad",
-	    TEST_LINES_UNNAMED, { 4, 4, 4, 4, 4 });
+	    0, { 4, 4, 4, 4, 4 });
 
 static void chip_name(void)
 {
@@ -141,7 +141,7 @@ static void chip_name(void)
 }
 TEST_DEFINE(chip_name,
 	    "gpiod_chip_name()",
-	    TEST_LINES_UNNAMED, { 8, 8, 8 });
+	    0, { 8, 8, 8 });
 
 static void chip_label(void)
 {
@@ -162,7 +162,7 @@ static void chip_label(void)
 }
 TEST_DEFINE(chip_label,
 	    "gpiod_chip_label()",
-	    TEST_LINES_UNNAMED, { 8, 8, 8 });
+	    0, { 8, 8, 8 });
 
 static void chip_num_lines(void)
 {
@@ -191,4 +191,4 @@ static void chip_num_lines(void)
 }
 TEST_DEFINE(chip_num_lines,
 	    "gpiod_chip_num_lines()",
-	    TEST_LINES_UNNAMED, { 1, 4, 8, 16, 32 });
+	    0, { 1, 4, 8, 16, 32 });
