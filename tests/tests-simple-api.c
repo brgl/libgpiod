@@ -14,14 +14,14 @@ static void simple_set_get_value(void)
 {
 	int ret;
 
-	ret = gpiod_simple_get_value("gpiod-unit", gu_chip_name(0), 3, false);
+	ret = gpiod_simple_get_value(GU_CONSUMER, gu_chip_name(0), 3, false);
 	GU_ASSERT_EQ(ret, 0);
 
-	ret = gpiod_simple_set_value("gpiod-unit", gu_chip_name(0),
+	ret = gpiod_simple_set_value(GU_CONSUMER, gu_chip_name(0),
 				     3, 1, false, NULL, NULL);
 	GU_ASSERT_RET_OK(ret);
 
-	ret = gpiod_simple_get_value("gpiod-unit", gu_chip_name(0), 3, false);
+	ret = gpiod_simple_get_value(GU_CONSUMER, gu_chip_name(0), 3, false);
 	GU_ASSERT_EQ(ret, 1);
 }
 GU_DEFINE_TEST(simple_set_get_value,
@@ -33,7 +33,7 @@ static void simple_set_get_value_multiple(void)
 	unsigned int offsets[] = { 0, 1, 2, 3, 4, 5, 6, 12, 13, 15 };
 	int values[10], ret;
 
-	ret = gpiod_simple_get_value_multiple("gpiod-unit", gu_chip_name(0),
+	ret = gpiod_simple_get_value_multiple(GU_CONSUMER, gu_chip_name(0),
 					      offsets, values, 10, false);
 	GU_ASSERT_RET_OK(ret);
 
@@ -59,12 +59,12 @@ static void simple_set_get_value_multiple(void)
 	values[8] = 0;
 	values[9] = 0;
 
-	ret = gpiod_simple_set_value_multiple("gpiod-unit", gu_chip_name(0),
+	ret = gpiod_simple_set_value_multiple(GU_CONSUMER, gu_chip_name(0),
 					      offsets, values, 10, false,
 					      NULL, NULL);
 	GU_ASSERT_RET_OK(ret);
 
-	ret = gpiod_simple_get_value_multiple("gpiod-unit", gu_chip_name(0),
+	ret = gpiod_simple_get_value_multiple(GU_CONSUMER, gu_chip_name(0),
 					      offsets, values, 10, false);
 	GU_ASSERT_RET_OK(ret);
 
@@ -88,7 +88,7 @@ static void simple_get_value_multiple_max_lines(void)
 	unsigned int offsets[GPIOD_REQUEST_MAX_LINES + 1];
 	int values[GPIOD_REQUEST_MAX_LINES + 1], ret;
 
-	ret = gpiod_simple_get_value_multiple("gpiod-unit", gu_chip_name(0),
+	ret = gpiod_simple_get_value_multiple(GU_CONSUMER, gu_chip_name(0),
 					      offsets, values,
 					      GPIOD_REQUEST_MAX_LINES + 1,
 					      false);
@@ -104,7 +104,7 @@ static void simple_set_value_multiple_max_lines(void)
 	unsigned int offsets[GPIOD_REQUEST_MAX_LINES + 1];
 	int values[GPIOD_REQUEST_MAX_LINES + 1], ret;
 
-	ret = gpiod_simple_set_value_multiple("gpiod-unit", gu_chip_name(0),
+	ret = gpiod_simple_set_value_multiple(GU_CONSUMER, gu_chip_name(0),
 					      offsets, values,
 					      GPIOD_REQUEST_MAX_LINES + 1,
 					      false, NULL, NULL);
@@ -138,7 +138,7 @@ static void simple_event_loop(void)
 
 	gu_set_event(0, 3, GU_EVENT_ALTERNATING, 100);
 
-	status = gpiod_simple_event_loop("gpiod-unit", gu_chip_name(0), 3,
+	status = gpiod_simple_event_loop(GU_CONSUMER, gu_chip_name(0), 3,
 					 false, &ts, simple_event_cb, &evdata);
 
 	GU_ASSERT_RET_OK(status);

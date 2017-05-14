@@ -14,6 +14,8 @@
 #include <gpiod.h>
 #include <string.h>
 
+#define GU_CONSUMER		"gpiod-test"
+
 #define GU_INIT			__attribute__((constructor))
 #define GU_UNUSED		__attribute__((unused))
 #define GU_PRINTF(fmt, arg)	__attribute__((format(printf, fmt, arg)))

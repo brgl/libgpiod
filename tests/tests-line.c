@@ -25,9 +25,9 @@ static void line_request_output(void)
 	GU_ASSERT_NOT_NULL(line_0);
 	GU_ASSERT_NOT_NULL(line_1);
 
-	status = gpiod_line_request_output(line_0, "gpiod-unit", false, 0);
+	status = gpiod_line_request_output(line_0, GU_CONSUMER, false, 0);
 	GU_ASSERT_RET_OK(status);
-	status = gpiod_line_request_output(line_1, "gpiod-unit", false, 1);
+	status = gpiod_line_request_output(line_1, GU_CONSUMER, false, 1);
 	GU_ASSERT_RET_OK(status);
 
 	GU_ASSERT_EQ(gpiod_line_get_value(line_0), 0);
@@ -52,10 +52,10 @@ static void line_request_already_requested(void)
 	line = gpiod_chip_get_line(chip, 0);
 	GU_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_input(line, "gpiod-unit", false);
+	status = gpiod_line_request_input(line, GU_CONSUMER, false);
 	GU_ASSERT_RET_OK(status);
 
-	status = gpiod_line_request_input(line, "gpiod-unit", false);
+	status = gpiod_line_request_input(line, GU_CONSUMER, false);
 	GU_ASSERT_NOTEQ(status, 0);
 	GU_ASSERT_EQ(gpiod_errno(), GPIOD_ELINEBUSY);
 }
@@ -77,11 +77,11 @@ static void line_consumer(void)
 
 	GU_ASSERT_NULL(gpiod_line_consumer(line));
 
-	status = gpiod_line_request_input(line, "gpiod-unit", false);
+	status = gpiod_line_request_input(line, GU_CONSUMER, false);
 	GU_ASSERT_RET_OK(status);
 
 	GU_ASSERT(!gpiod_line_needs_update(line));
-	GU_ASSERT_STR_EQ(gpiod_line_consumer(line), "gpiod-unit");
+	GU_ASSERT_STR_EQ(gpiod_line_consumer(line), GU_CONSUMER);
 }
 GU_DEFINE_TEST(line_consumer,
 	       "gpiod_line_consumer() - good",
@@ -142,7 +142,7 @@ static void line_request_bulk_output(void)
 	valA[1] = 0;
 	valA[2] = 0;
 	valA[3] = 1;
-	status = gpiod_line_request_bulk_output(&bulkA, "gpiod-unit",
+	status = gpiod_line_request_bulk_output(&bulkA, GU_CONSUMER,
 						false, valA);
 	GU_ASSERT_RET_OK(status);
 
@@ -150,7 +150,7 @@ static void line_request_bulk_output(void)
 	valB[1] = 1;
 	valB[2] = 0;
 	valB[3] = 1;
-	status = gpiod_line_request_bulk_output(&bulkB, "gpiod-unit",
+	status = gpiod_line_request_bulk_output(&bulkB, GU_CONSUMER,
 						false, valB);
 	GU_ASSERT_RET_OK(status);
 
@@ -211,7 +211,7 @@ static void line_request_bulk_different_chips(void)
 	gpiod_line_bulk_add(&bulk, lineB0);
 	gpiod_line_bulk_add(&bulk, lineB1);
 
-	req.consumer = "gpiod-unit";
+	req.consumer = GU_CONSUMER;
 	req.direction = GPIOD_DIRECTION_INPUT;
 	req.active_state = GPIOD_ACTIVE_STATE_HIGH;
 
@@ -235,7 +235,7 @@ static void line_set_value(void)
 	line = gpiod_chip_get_line(chip, 2);
 	GU_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_output(line, "gpiod-unit", false, 0);
+	status = gpiod_line_request_output(line, GU_CONSUMER, false, 0);
 	GU_ASSERT_RET_OK(status);
 
 	GU_ASSERT_RET_OK(gpiod_line_set_value(line, 1));
@@ -277,14 +277,14 @@ static void line_direction(void)
 	line = gpiod_chip_get_line(chip, 5);
 	GU_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_output(line, "gpiod-unit", false, 0);
+	status = gpiod_line_request_output(line, GU_CONSUMER, false, 0);
 	GU_ASSERT_RET_OK(status);
 
 	GU_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_OUTPUT);
 
 	gpiod_line_release(line);
 
-	status = gpiod_line_request_input(line, "gpiod-unit", false);
+	status = gpiod_line_request_input(line, GU_CONSUMER, false);
 	GU_ASSERT_RET_OK(status);
 
 	GU_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_INPUT);
@@ -305,14 +305,14 @@ static void line_active_state(void)
 	line = gpiod_chip_get_line(chip, 5);
 	GU_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_input(line, "gpiod-unit", false);
+	status = gpiod_line_request_input(line, GU_CONSUMER, false);
 	GU_ASSERT_RET_OK(status);
 
 	GU_ASSERT_EQ(gpiod_line_active_state(line), GPIOD_ACTIVE_STATE_HIGH);
 
 	gpiod_line_release(line);
 
-	status = gpiod_line_request_input(line, "gpiod-unit", true);
+	status = gpiod_line_request_input(line, GU_CONSUMER, true);
 	GU_ASSERT_RET_OK(status);
 
 	GU_ASSERT_EQ(gpiod_line_direction(line), GPIOD_ACTIVE_STATE_LOW);
@@ -339,7 +339,7 @@ static void line_misc_flags(void)
 	GU_ASSERT_FALSE(gpiod_line_is_open_source(line));
 
 	config.direction = GPIOD_DIRECTION_INPUT;
-	config.consumer = "gpiod-unit";
+	config.consumer = GU_CONSUMER;
 	config.active_state = GPIOD_ACTIVE_STATE_HIGH;
 	config.flags = GPIOD_REQUEST_OPEN_DRAIN;
 

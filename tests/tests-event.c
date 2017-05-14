@@ -24,7 +24,7 @@ static void event_rising_edge_good(void)
 	line = gpiod_chip_get_line(chip, 7);
 	GU_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_event_request_rising(line, "gpiod-unit", false);
+	status = gpiod_line_event_request_rising(line, GU_CONSUMER, false);
 	GU_ASSERT_RET_OK(status);
 
 	gu_set_event(0, 7, GU_EVENT_RISING, 100);
@@ -55,7 +55,7 @@ static void event_falling_edge_good(void)
 	line = gpiod_chip_get_line(chip, 7);
 	GU_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_event_request_falling(line, "gpiod-unit", false);
+	status = gpiod_line_event_request_falling(line, GU_CONSUMER, false);
 	GU_ASSERT_RET_OK(status);
 
 	gu_set_event(0, 7, GU_EVENT_FALLING, 100);
@@ -85,7 +85,7 @@ static void event_rising_edge_ignore_falling(void)
 	line = gpiod_chip_get_line(chip, 7);
 	GU_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_event_request_rising(line, "gpiod-unit", false);
+	status = gpiod_line_event_request_rising(line, GU_CONSUMER, false);
 	GU_ASSERT_RET_OK(status);
 
 	gu_set_event(0, 7, GU_EVENT_FALLING, 100);
@@ -111,7 +111,7 @@ static void event_rising_edge_active_low(void)
 	line = gpiod_chip_get_line(chip, 7);
 	GU_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_event_request_rising(line, "gpiod-unit", true);
+	status = gpiod_line_event_request_rising(line, GU_CONSUMER, true);
 	GU_ASSERT_RET_OK(status);
 
 	gu_set_event(0, 7, GU_EVENT_RISING, 100);
@@ -142,7 +142,7 @@ static void event_get_value(void)
 	line = gpiod_chip_get_line(chip, 7);
 	GU_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_event_request_rising(line, "gpiod-unit", false);
+	status = gpiod_line_event_request_rising(line, GU_CONSUMER, false);
 	GU_ASSERT_RET_OK(status);
 
 	status = gpiod_line_get_value(line);
