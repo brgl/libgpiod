@@ -54,8 +54,8 @@ struct test_context {
 };
 
 static struct {
-	struct _gu_test *test_list_head;
-	struct _gu_test *test_list_tail;
+	struct _test_case *test_list_head;
+	struct _test_case *test_list_tail;
 	unsigned int num_tests;
 	unsigned int tests_failed;
 	struct kmod_ctx *module_ctx;
@@ -94,7 +94,7 @@ static void pr_raw_v(const char *fmt, va_list va)
 	vfprintf(stderr, fmt, va);
 }
 
-static GU_PRINTF(1, 2) void pr_raw(const char *fmt, ...)
+static TEST_PRINTF(1, 2) void pr_raw(const char *fmt, ...)
 {
 	va_list va;
 
@@ -122,7 +122,7 @@ static void vmsg(const char *hdr, int hdr_clr, const char *fmt, va_list va)
 	pr_raw("\n");
 }
 
-static GU_PRINTF(1, 2) void msg(const char *fmt, ...)
+static TEST_PRINTF(1, 2) void msg(const char *fmt, ...)
 {
 	va_list va;
 
@@ -131,7 +131,7 @@ static GU_PRINTF(1, 2) void msg(const char *fmt, ...)
 	va_end(va);
 }
 
-static GU_PRINTF(1, 2) void err(const char *fmt, ...)
+static TEST_PRINTF(1, 2) void err(const char *fmt, ...)
 {
 	va_list va;
 
@@ -140,7 +140,7 @@ static GU_PRINTF(1, 2) void err(const char *fmt, ...)
 	va_end(va);
 }
 
-static GU_PRINTF(1, 2) NORETURN void die(const char *fmt, ...)
+static TEST_PRINTF(1, 2) NORETURN void die(const char *fmt, ...)
 {
 	va_list va;
 
@@ -151,7 +151,7 @@ static GU_PRINTF(1, 2) NORETURN void die(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-static GU_PRINTF(1, 2) NORETURN void die_perr(const char *fmt, ...)
+static TEST_PRINTF(1, 2) NORETURN void die_perr(const char *fmt, ...)
 {
 	va_list va;
 
@@ -187,7 +187,7 @@ static MALLOC char * xstrdup(const char *str)
 	return ret;
 }
 
-static MALLOC GU_PRINTF(2, 3) char * xappend(char *str, const char *fmt, ...)
+static MALLOC TEST_PRINTF(2, 3) char * xappend(char *str, const char *fmt, ...)
 {
 	char *new, *ret;
 	va_list va;
@@ -254,7 +254,7 @@ static void event_unlock(void)
 	pthread_mutex_unlock(&globals.test_ctx.event.lock);
 }
 
-static void * event_worker(void *data GU_UNUSED)
+static void * event_worker(void *data TEST_UNUSED)
 {
 	struct event_thread *ev = &globals.test_ctx.event;
 	struct timeval tv_now, tv_add, tv_res;
@@ -292,9 +292,9 @@ static void * event_worker(void *data GU_UNUSED)
 		if (fd < 0)
 			die_perr("error opening gpio event file");
 
-		if (ev->event_type == GU_EVENT_RISING)
+		if (ev->event_type == TEST_EVENT_RISING)
 			buf = '1';
-		else if (ev->event_type == GU_EVENT_FALLING)
+		else if (ev->event_type == TEST_EVENT_FALLING)
 			buf = '0';
 		else
 			buf = i % 2 == 0 ? '1' : '0';
@@ -369,7 +369,7 @@ static void check_gpio_mockup(void)
 	msg("gpio-mockup ok");
 }
 
-static void test_load_module(struct _gu_chip_descr *descr)
+static void test_load_module(struct _test_chip_descr *descr)
 {
 	unsigned int i;
 	char *modarg;
@@ -404,7 +404,7 @@ static bool devpath_is_mockup(const char *devpath)
 	return !strncmp(devpath, mockup_devpath, sizeof(mockup_devpath) - 1);
 }
 
-static void test_prepare(struct _gu_chip_descr *descr)
+static void test_prepare(struct _test_chip_descr *descr)
 {
 	const char *devpath, *devnode, *sysname;
 	struct udev_monitor *monitor;
@@ -488,8 +488,8 @@ static void test_prepare(struct _gu_chip_descr *descr)
 	/*
 	 * We can't assume that the order in which the mockup gpiochip
 	 * devices are created will be deterministic, yet we want the
-	 * index passed to the gu_chip_*() functions to correspond with the
-	 * order in which the chips were defined in the GU_DEFINE_TEST()
+	 * index passed to the test_chip_*() functions to correspond with the
+	 * order in which the chips were defined in the TEST_DEFINE()
 	 * macro.
 	 *
 	 * Once all gpiochips are there, sort them by chip number.
@@ -497,7 +497,7 @@ static void test_prepare(struct _gu_chip_descr *descr)
 	qsort(ctx->chips, ctx->num_chips, sizeof(*ctx->chips), chipcmp);
 }
 
-static void test_run(struct _gu_test *test)
+static void test_run(struct _test_case *test)
 {
 	print_header("TEST", CYELLOW);
 	pr_raw("'%s': ", test->name);
@@ -562,9 +562,9 @@ static void test_teardown(void)
 		die_perr("unable to remove gpio-mockup");
 }
 
-int main(int argc GU_UNUSED, char **argv GU_UNUSED)
+int main(int argc TEST_UNUSED, char **argv TEST_UNUSED)
 {
-	struct _gu_test *test;
+	struct _test_case *test;
 
 	atexit(module_cleanup);
 
@@ -591,54 +591,54 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 	return globals.tests_failed ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
-void gu_close_chip(struct gpiod_chip **chip)
+void test_close_chip(struct gpiod_chip **chip)
 {
 	if (*chip)
 		gpiod_chip_close(*chip);
 }
 
-void gu_free_str(char **str)
+void test_free_str(char **str)
 {
 	if (*str)
 		free(*str);
 }
 
-void gu_free_chip_iter(struct gpiod_chip_iter **iter)
+void test_free_chip_iter(struct gpiod_chip_iter **iter)
 {
 	if (*iter)
 		gpiod_chip_iter_free(*iter);
 }
 
-void gu_free_chip_iter_noclose(struct gpiod_chip_iter **iter)
+void test_free_chip_iter_noclose(struct gpiod_chip_iter **iter)
 {
 	if (*iter)
 		gpiod_chip_iter_free_noclose(*iter);
 }
 
-const char * gu_chip_path(unsigned int index)
+const char * test_chip_path(unsigned int index)
 {
 	check_chip_index(index);
 
 	return globals.test_ctx.chips[index]->path;
 }
 
-const char * gu_chip_name(unsigned int index)
+const char * test_chip_name(unsigned int index)
 {
 	check_chip_index(index);
 
 	return globals.test_ctx.chips[index]->name;
 }
 
-unsigned int gu_chip_num(unsigned int index)
+unsigned int test_chip_num(unsigned int index)
 {
 	check_chip_index(index);
 
 	return globals.test_ctx.chips[index]->number;
 }
 
-void _gu_register_test(struct _gu_test *test)
+void _test_register(struct _test_case *test)
 {
-	struct _gu_test *tmp;
+	struct _test_case *tmp;
 
 	if (!globals.test_list_head) {
 		globals.test_list_head = globals.test_list_tail = test;
@@ -653,7 +653,7 @@ void _gu_register_test(struct _gu_test *test)
 	globals.num_tests++;
 }
 
-GU_PRINTF(1, 2) void _gu_test_failed(const char *fmt, ...)
+TEST_PRINTF(1, 2) void _test_print_failed(const char *fmt, ...)
 {
 	int status;
 	va_list va;
@@ -667,8 +667,8 @@ GU_PRINTF(1, 2) void _gu_test_failed(const char *fmt, ...)
 	globals.test_ctx.test_failed = true;
 }
 
-void gu_set_event(unsigned int chip_index,
-		  unsigned int line_offset, int event_type, unsigned int freq)
+void test_set_event(unsigned int chip_index, unsigned int line_offset,
+		    int event_type, unsigned int freq)
 {
 	struct event_thread *ev = &globals.test_ctx.event;
 	int status;
