@@ -653,7 +653,7 @@ void _test_register(struct _test_case *test)
 	globals.num_tests++;
 }
 
-TEST_PRINTF(1, 2) void _test_print_failed(const char *fmt, ...)
+void _test_print_failed(const char *fmt, ...)
 {
 	int status;
 	va_list va;

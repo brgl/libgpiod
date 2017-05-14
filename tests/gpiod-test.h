@@ -41,7 +41,7 @@ struct _test_case {
 };
 
 void _test_register(struct _test_case *test);
-void _test_print_failed(const char *fmt, ...);
+void _test_print_failed(const char *fmt, ...) TEST_PRINTF(1, 2);
 
 /*
  * This macro should be used for code brevity instead of manually declaring
