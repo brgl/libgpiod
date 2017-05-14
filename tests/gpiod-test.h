@@ -23,7 +23,7 @@
 
 #define TEST_ARRAY_SIZE(x)	(sizeof(x) / sizeof(*(x)))
 
-typedef void (*test_func)(void);
+typedef void (*_test_func)(void);
 
 struct _test_chip_descr {
 	unsigned int num_chips;
@@ -35,7 +35,7 @@ struct _test_case {
 	struct _test_case *_next;
 
 	const char *name;
-	test_func func;
+	_test_func func;
 
 	struct _test_chip_descr chip_descr;
 };
