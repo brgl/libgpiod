@@ -8,7 +8,7 @@
  * as published by the Free Software Foundation.
  */
 
-#include "gpiod-unit.h"
+#include "gpiod-test.h"
 
 static void chip_iter(void)
 {

@@ -1,5 +1,5 @@
 /*
- * Unit testing framework for libgpiod.
+ * Testing framework for libgpiod.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *
@@ -8,8 +8,8 @@
  * as published by the Free Software Foundation.
  */
 
-#ifndef __GPIOD_UNIT_H__
-#define __GPIOD_UNIT_H__
+#ifndef __GPIOD_TEST_H__
+#define __GPIOD_TEST_H__
 
 #include <gpiod.h>
 #include <string.h>
@@ -134,4 +134,4 @@ void gu_free_chip_iter_noclose(struct gpiod_chip_iter **iter);
 #define GU_ASSERT_NOTEQ(a1, a2)		GU_ASSERT(a1 != a2)
 #define GU_ASSERT_STR_EQ(s1, s2)	GU_ASSERT(strcmp(s1, s2) == 0)
 
-#endif /* __GPIOD_UNIT_H__ */
+#endif /* __GPIOD_TEST_H__ */

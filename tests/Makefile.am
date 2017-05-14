@@ -11,10 +11,10 @@ AM_CFLAGS += -Wall -Wextra -g $(KMOD_CFLAGS) $(UDEV_CFLAGS)
 AM_LDFLAGS = -pthread
 LDADD = ../src/lib/libgpiod.la $(KMOD_LIBS) $(UDEV_LIBS)
 
-check_PROGRAMS = gpiod-unit
+check_PROGRAMS = gpiod-test
 
-gpiod_unit_SOURCES =	gpiod-unit.c \
-			gpiod-unit.h \
+gpiod_test_SOURCES =	gpiod-test.c \
+			gpiod-test.h \
 			tests-chip.c \
 			tests-event.c \
 			tests-iter.c \
@@ -24,7 +24,7 @@ gpiod_unit_SOURCES =	gpiod-unit.c \
 
 check: check-am
 	@echo " ********************************************************"
-	@echo " * Unit tests have been built as tests/gpio-unit.       *"
+	@echo " * Tests have been built as tests/gpio-test.            *"
 	@echo " *                                                      *"
 	@echo " * They require linux kernel version >=v4.11 and the    *"
 	@echo " * gpio-mockup module (must not be built-in).           *"

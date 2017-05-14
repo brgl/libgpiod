@@ -1,5 +1,5 @@
 /*
- * Unit testing framework for libgpiod.
+ * Testing framework for libgpiod.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *
@@ -8,7 +8,7 @@
  * as published by the Free Software Foundation.
  */
 
-#include "gpiod-unit.h"
+#include "gpiod-test.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -568,7 +568,7 @@ int main(int argc GU_UNUSED, char **argv GU_UNUSED)
 
 	atexit(module_cleanup);
 
-	msg("libgpiod unit-test suite");
+	msg("libgpiod test suite");
 	msg("%u tests registered", globals.num_tests);
 
 	check_kernel();

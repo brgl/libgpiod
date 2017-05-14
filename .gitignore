@@ -30,4 +30,4 @@ m4/
 stamp-h1
 
 # unit tests
-gpiod-unit
+gpiod-test

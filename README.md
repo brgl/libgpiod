@@ -103,7 +103,7 @@ Examples:
 TESTING
 -------
 
-A comprehensive unit testing framework is included with the library and can be
+A comprehensive testing framework is included with the library and can be
 used to test both the library code and the linux kernel user-space interface.
 
 The minimum kernel version required to run the tests is 4.11. The tests work
@@ -119,7 +119,7 @@ As opposed to standard autotools projects, libgpiod doesn't execute any tests
 when invoking 'make check'. Instead the user must run them manually with
 superuser privileges:
 
-    sudo ./tests/gpiod-unit
+    sudo ./tests/gpiod-test
 
 CONTRIBUTING
 ------------
