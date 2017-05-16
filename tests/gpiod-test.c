@@ -522,7 +522,7 @@ static void run_test(struct _test_case *test)
 		free(globals.test_ctx.failed_msg);
 	} else {
 		set_color(CGREEN);
-		pr_raw("OK\n");
+		pr_raw("PASS\n");
 		reset_color();
 	}
 }
