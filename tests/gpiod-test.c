@@ -284,32 +284,33 @@ static void * event_worker(void *data TEST_UNUSED)
 		ts.tv_nsec = tv_res.tv_usec * 1000;
 
 		status = pthread_cond_timedwait(&ev->cond, &ev->lock, &ts);
-		if (status != 0 && status != ETIMEDOUT)
+		if (status == ETIMEDOUT) {
+			path = xappend(NULL,
+				       "/sys/kernel/debug/gpio-mockup-event/gpio-mockup-%c/%u",
+				       'A' + ev->chip_index, ev->line_offset);
+
+			fd = open(path, O_RDWR);
+			free(path);
+			if (fd < 0)
+				die_perr("error opening gpio event file");
+
+			if (ev->event_type == TEST_EVENT_RISING)
+				buf = '1';
+			else if (ev->event_type == TEST_EVENT_FALLING)
+				buf = '0';
+			else
+				buf = i % 2 == 0 ? '1' : '0';
+
+			rd = write(fd, &buf, 1);
+			close(fd);
+			if (rd < 0)
+				die_perr("error writing to gpio event file");
+			else if (rd != 1)
+				die("invalid write size to gpio event file");
+		} else if (status != 0) {
 			die("error waiting for conditional variable: %s",
 			    strerror(status));
-
-		path = xappend(NULL,
-			       "/sys/kernel/debug/gpio-mockup-event/gpio-mockup-%c/%u",
-			       'A' + ev->chip_index, ev->line_offset);
-
-		fd = open(path, O_RDWR);
-		free(path);
-		if (fd < 0)
-			die_perr("error opening gpio event file");
-
-		if (ev->event_type == TEST_EVENT_RISING)
-			buf = '1';
-		else if (ev->event_type == TEST_EVENT_FALLING)
-			buf = '0';
-		else
-			buf = i % 2 == 0 ? '1' : '0';
-
-		rd = write(fd, &buf, 1);
-		close(fd);
-		if (rd < 0)
-			die_perr("error writing to gpio event file");
-		else if (rd != 1)
-			die("invalid write size to gpio event file");
+		}
 
 		event_unlock();
 	}
