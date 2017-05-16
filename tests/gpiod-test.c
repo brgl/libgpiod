@@ -61,6 +61,7 @@ static struct {
 	struct kmod_ctx *module_ctx;
 	struct kmod_module *module;
 	struct test_context test_ctx;
+	pid_t main_pid;
 } globals;
 
 enum {
@@ -232,6 +233,10 @@ static bool mockup_loaded(void)
 
 static void module_cleanup(void)
 {
+	/* Don't cleanup from child processes. */
+	if (globals.main_pid != getpid())
+		return;
+
 	msg("cleaning up");
 
 	if (mockup_loaded())
@@ -566,6 +571,7 @@ int main(int argc TEST_UNUSED, char **argv TEST_UNUSED)
 {
 	struct _test_case *test;
 
+	globals.main_pid = getpid();
 	atexit(module_cleanup);
 
 	msg("libgpiod test suite");
