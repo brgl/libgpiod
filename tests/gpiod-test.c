@@ -644,6 +644,9 @@ static void load_module(struct _test_chip_descr *descr)
 	char *modarg;
 	int status;
 
+	if (descr->num_chips == 0)
+		return;
+
 	modarg = xappend(NULL, "gpio_mockup_ranges=");
 	for (i = 0; i < descr->num_chips; i++)
 		modarg = xappend(modarg, "-1,%u,", descr->num_lines[i]);
@@ -836,9 +839,11 @@ static void teardown_test(void)
 
 	free(globals.test_ctx.chips);
 
-	status = kmod_module_remove_module(globals.module, 0);
-	if (status)
-		die_perr("unable to remove gpio-mockup");
+	if (mockup_loaded()) {
+		status = kmod_module_remove_module(globals.module, 0);
+		if (status)
+			die_perr("unable to remove gpio-mockup");
+	}
 }
 
 int main(int argc TEST_UNUSED, char **argv)
