@@ -39,4 +39,4 @@ static void error_handling(void)
 }
 TEST_DEFINE(error_handling,
 	    "error handling",
-	    0, { 1 });
+	    0, { });
