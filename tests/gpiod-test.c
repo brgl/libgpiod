@@ -21,6 +21,7 @@
 #include <libkmod.h>
 #include <libudev.h>
 #include <pthread.h>
+#include <regex.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
 #include <sys/types.h>
@@ -979,4 +980,32 @@ void test_set_event(unsigned int chip_index, unsigned int line_offset,
 	pthread_cond_broadcast(&ev->cond);
 
 	event_unlock();
+}
+
+bool test_regex_match(const char *str, const char *pattern)
+{
+	char errbuf[128];
+	regex_t regex;
+	bool ret;
+	int rv;
+
+	rv = regcomp(&regex, pattern, REG_EXTENDED | REG_NEWLINE);
+	if (rv) {
+		regerror(rv, &regex, errbuf, sizeof(errbuf));
+		die("unable to compile regex '%s': %s", pattern, errbuf);
+	}
+
+	rv = regexec(&regex, str, 0, 0, 0);
+	if (rv == REG_NOERROR) {
+		ret = true;
+	} else if (rv == REG_NOMATCH) {
+		ret = false;
+	} else {
+		regerror(rv, &regex, errbuf, sizeof(errbuf));
+		die("unable to run a regex match: %s", errbuf);
+	}
+
+	regfree(&regex);
+
+	return ret;
 }

@@ -127,6 +127,8 @@ void test_free_str(char **str);
 void test_free_chip_iter(struct gpiod_chip_iter **iter);
 void test_free_chip_iter_noclose(struct gpiod_chip_iter **iter);
 
+bool test_regex_match(const char *str, const char *pattern);
+
 #define TEST_ASSERT(statement)						\
 	do {								\
 		if (!(statement)) {					\
@@ -145,5 +147,6 @@ void test_free_chip_iter_noclose(struct gpiod_chip_iter **iter);
 #define TEST_ASSERT_NOTEQ(a1, a2)	TEST_ASSERT(a1 != a2)
 #define TEST_ASSERT_STR_EQ(s1, s2)	TEST_ASSERT(strcmp(s1, s2) == 0)
 #define TEST_ASSERT_STR_CONTAINS(s, p)	TEST_ASSERT(strstr(s, p) != NULL)
+#define TEST_ASSERT_REGEX_MATCH(s, p)	TEST_ASSERT(test_regex_match(s, p))
 
 #endif /* __GPIOD_TEST_H__ */
