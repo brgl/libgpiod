@@ -16,11 +16,16 @@
 #include <errno.h>
 #include <unistd.h>
 #include <poll.h>
+#include <signal.h>
+#include <libgen.h>
 #include <libkmod.h>
 #include <libudev.h>
 #include <pthread.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/signalfd.h>
 
 #define NORETURN	__attribute__((noreturn))
 #define MALLOC		__attribute__((malloc))
@@ -45,12 +50,25 @@ struct event_thread {
 	int event_type;
 };
 
+struct gpiotool_proc {
+	pid_t pid;
+	bool running;
+	int stdin_fd;
+	int stdout_fd;
+	int stderr_fd;
+	char *stdout;
+	char *stderr;
+	int sig_fd;
+	int exit_status;
+};
+
 struct test_context {
 	struct mockup_chip **chips;
 	size_t num_chips;
 	bool test_failed;
 	char *failed_msg;
 	struct event_thread event;
+	struct gpiotool_proc tool_proc;
 };
 
 static struct {
@@ -62,6 +80,7 @@ static struct {
 	struct kmod_module *module;
 	struct test_context test_ctx;
 	pid_t main_pid;
+	char *progpath;
 } globals;
 
 enum {
@@ -318,6 +337,250 @@ static void * event_worker(void *data TEST_UNUSED)
 	return NULL;
 }
 
+static void gpiotool_proc_make_pipes(int *in_fds, int *out_fds, int *err_fds)
+{
+	int status, i, *fds[3];
+
+	fds[0] = in_fds;
+	fds[1] = out_fds;
+	fds[2] = err_fds;
+
+	for (i = 0; i < 3; i++) {
+		status = pipe(fds[i]);
+		if (status < 0)
+			die_perr("unable to create a pipe");
+	}
+}
+
+static void gpiotool_proc_dup_fds(int in_fd, int out_fd, int err_fd)
+{
+	int old_fds[3], new_fds[3], i, status;
+
+	old_fds[0] = in_fd;
+	old_fds[1] = out_fd;
+	old_fds[2] = err_fd;
+
+	new_fds[0] = STDIN_FILENO;
+	new_fds[1] = STDOUT_FILENO;
+	new_fds[2] = STDERR_FILENO;
+
+	for (i = 0; i < 3; i++) {
+		status = dup2(old_fds[i], new_fds[i]);
+		if (status < 0)
+			die_perr("unable to duplicate a file descriptor");
+
+		close(old_fds[i]);
+	}
+}
+
+static char * gpiotool_proc_get_path(const char *tool)
+{
+	char *path, *progpath, *progdir;
+
+	progpath = xstrdup(globals.progpath);
+	progdir = dirname(progpath);
+	path = xappend(NULL, "%s/../../src/tools/%s", progdir, tool);
+	free(progpath);
+
+	return path;
+}
+
+static NORETURN void gpiotool_proc_exec(const char *path, va_list va)
+{
+	size_t num_args;
+	unsigned int i;
+	char **argv;
+	va_list va2;
+
+	va_copy(va2, va);
+	for (num_args = 2; va_arg(va2, char *) != NULL; num_args++);
+	va_end(va2);
+
+	argv = xzalloc(num_args * sizeof(char *));
+
+	argv[0] = (char *)path;
+	for (i = 1; i < num_args; i++)
+		argv[i] = va_arg(va, char *);
+	va_end(va);
+
+	execv(path, argv);
+	die_perr("unable to exec '%s'", path);
+}
+
+static void gpiotool_proc_cleanup(void)
+{
+	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
+
+	if (proc->stdout)
+		free(proc->stdout);
+
+	if (proc->stderr)
+		free(proc->stderr);
+
+	proc->stdout = proc->stderr = NULL;
+}
+
+void test_tool_signal(int signum)
+{
+	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
+	int rv;
+
+	rv = kill(proc->pid, signum);
+	if (rv)
+		die_perr("unable to send signal to process %d", proc->pid);
+}
+
+void test_gpiotool_run(char *tool, ...)
+{
+	int in_fds[2], out_fds[2], err_fds[2], status;
+	struct gpiotool_proc *proc;
+	sigset_t sigmask;
+	char *path;
+	va_list va;
+
+	proc = &globals.test_ctx.tool_proc;
+	if (proc->running)
+		die("unable to start %s - another tool already running", tool);
+
+	if (proc->pid)
+		gpiotool_proc_cleanup();
+
+	event_lock();
+	if (globals.test_ctx.event.running)
+		die("refusing to fork when the event thread is running");
+
+	gpiotool_proc_make_pipes(in_fds, out_fds, err_fds);
+	path = gpiotool_proc_get_path(tool);
+
+	status = access(path, R_OK | X_OK);
+	if (status)
+		die_perr("unable to execute '%s'", path);
+
+	sigemptyset(&sigmask);
+	sigaddset(&sigmask, SIGCHLD);
+
+	status = sigprocmask(SIG_BLOCK, &sigmask, NULL);
+	if (status)
+		die_perr("unable to mask signals");
+
+	proc->sig_fd = signalfd(-1, &sigmask, 0);
+	if (proc->sig_fd < 0)
+		die_perr("unable to create signalfd");
+
+	proc->pid = fork();
+	if (proc->pid < 0) {
+		die_perr("unable to fork");
+	} else if (proc->pid == 0) {
+		/* Child process. */
+		close(proc->sig_fd);
+		gpiotool_proc_dup_fds(in_fds[0], out_fds[1], err_fds[1]);
+		va_start(va, tool);
+		gpiotool_proc_exec(path, va);
+	} else {
+		/* Parent process. */
+		close(in_fds[0]);
+		proc->stdin_fd = in_fds[1];
+		close(out_fds[1]);
+		proc->stdout_fd = out_fds[0];
+		close(err_fds[1]);
+		proc->stderr_fd = err_fds[0];
+
+		proc->running = true;
+	}
+
+	event_unlock();
+	free(path);
+}
+
+static void gpiotool_readall(int fd, char **out)
+{
+	char buf[1024], *tmp = NULL;
+	ssize_t rd;
+
+	for (;;) {
+		memset(buf, 0, sizeof(buf));
+		rd = read(fd, buf, sizeof(buf));
+		if (rd < 0)
+			die_perr("error reading output from subprocess");
+		else if (rd == 0) {
+			*out = tmp;
+			return;
+		}
+
+		tmp = xappend(tmp, buf);
+	}
+}
+
+void test_tool_wait(void)
+{
+	struct gpiotool_proc *proc;
+	struct pollfd pfd;
+	int status;
+
+	proc = &globals.test_ctx.tool_proc;
+
+	if (!proc->running)
+		die("gpiotool process not running");
+
+	pfd.fd = proc->sig_fd;
+	pfd.events = POLLIN | POLLPRI;
+
+	status = poll(&pfd, 1, 5000);
+	if (status == 0) {
+		/*
+		 * If a tool program is taking longer than 5 seconds to
+		 * terminate, then something's wrong. Kill it before dying.
+		 */
+		test_tool_signal(SIGKILL);
+		die("tool program is taking too long to terminate");
+	} else if (status < 0) {
+		/* Error in poll() - we still need to kill the process. */
+		test_tool_signal(SIGKILL);
+		die_perr("error when polling the signalfd");
+	}
+
+	close(proc->sig_fd);
+
+	gpiotool_readall(proc->stdout_fd, &proc->stdout);
+	gpiotool_readall(proc->stderr_fd, &proc->stderr);
+
+	waitpid(proc->pid, &proc->exit_status, 0);
+
+	close(proc->stdin_fd);
+	close(proc->stdout_fd);
+	close(proc->stderr_fd);
+
+	proc->running = false;
+}
+
+const char * test_tool_stdout(void)
+{
+	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
+
+	return proc->stdout;
+}
+
+const char * test_tool_stderr(void)
+{
+	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
+
+	return proc->stderr;
+}
+
+bool test_tool_exited(void)
+{
+	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
+
+	return WIFEXITED(proc->exit_status);
+}
+
+int test_tool_exit_status(void)
+{
+	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
+
+	return WEXITSTATUS(proc->exit_status);
+}
+
 static void check_kernel(void)
 {
 	int status, version, patchlevel;
@@ -529,6 +792,7 @@ static void run_test(struct _test_case *test)
 
 static void teardown_test(void)
 {
+	struct gpiotool_proc *tool_proc;
 	struct mockup_chip *chip;
 	struct event_thread *ev;
 	unsigned int i;
@@ -553,6 +817,15 @@ static void teardown_test(void)
 		event_unlock();
 	}
 
+	tool_proc = &globals.test_ctx.tool_proc;
+	if (tool_proc->running) {
+		test_tool_signal(SIGKILL);
+		test_tool_wait();
+	}
+
+	if (tool_proc->pid)
+		gpiotool_proc_cleanup();
+
 	for (i = 0; i < globals.test_ctx.num_chips; i++) {
 		chip = globals.test_ctx.chips[i];
 
@@ -568,11 +841,12 @@ static void teardown_test(void)
 		die_perr("unable to remove gpio-mockup");
 }
 
-int main(int argc TEST_UNUSED, char **argv TEST_UNUSED)
+int main(int argc TEST_UNUSED, char **argv)
 {
 	struct _test_case *test;
 
 	globals.main_pid = getpid();
+	globals.progpath = argv[0];
 	atexit(module_cleanup);
 
 	msg("libgpiod test suite");

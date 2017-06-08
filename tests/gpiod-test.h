@@ -103,6 +103,14 @@ enum {
 void test_set_event(unsigned int chip_index, unsigned int line_offset,
 		    int event_type, unsigned int freq);
 
+void test_gpiotool_run(char *tool, ...);
+void test_tool_wait(void);
+const char * test_tool_stdout(void);
+const char * test_tool_stderr(void);
+bool test_tool_exited(void);
+int test_tool_exit_status(void);
+void test_tool_signal(int signum);
+
 /*
  * Every TEST_ASSERT_*() macro expansion can make a test function return, so
  * it would be quite difficult to keep track of every resource allocation. At
