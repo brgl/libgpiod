@@ -20,7 +20,7 @@ static void version_string(void)
 }
 TEST_DEFINE(version_string,
 	    "gpiod_version_string()",
-	    0, { 1 });
+	    0, { });
 
 static void error_handling(void)
 {
