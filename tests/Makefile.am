@@ -22,6 +22,12 @@ gpiod_test_SOURCES =	gpiod-test.c \
 			tests-misc.c \
 			tests-simple-api.c
 
+if WITH_TOOLS
+
+gpiod_test_SOURCES +=	tests-gpiodetect.c
+
+endif
+
 check: check-am
 	@echo " ********************************************************"
 	@echo " * Tests have been built as tests/gpio-test.            *"
