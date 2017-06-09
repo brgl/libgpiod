@@ -64,5 +64,5 @@ static void gpioinfo_one_exported(void)
 	TEST_ASSERT_REGEX_MATCH(test_tool_stdout(), ptrn);
 }
 TEST_DEFINE(gpioinfo_one_exported,
-	    "tools: gpioinfo - one exported",
+	    "tools: gpioinfo - exported line",
 	    0, { 4, 8 });

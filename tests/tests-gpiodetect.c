@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 
-static void gpiodetect_good(void)
+static void gpiodetect_simple(void)
 {
 	TEST_CLEANUP(test_free_str) char *pattern0 = NULL;
 	TEST_CLEANUP(test_free_str) char *pattern1 = NULL;
@@ -41,6 +41,6 @@ static void gpiodetect_good(void)
 	TEST_ASSERT_STR_CONTAINS(test_tool_stdout(), pattern2);
 	TEST_ASSERT_NULL(test_tool_stderr());
 }
-TEST_DEFINE(gpiodetect_good,
-	    "tools: gpiodetect - good",
+TEST_DEFINE(gpiodetect_simple,
+	    "tools: gpiodetect - simple",
 	    0, { 4, 8, 16 });
