@@ -126,8 +126,12 @@ static TEST_PRINTF(1, 2) void pr_raw(const char *fmt, ...)
 
 static void print_header(const char *hdr, int color)
 {
+	char buf[9];
+
+	snprintf(buf, sizeof(buf), "[%s]", hdr);
+
 	set_color(color);
-	pr_raw("[%-5s] ", hdr);
+	pr_raw("%-8s", buf);
 	reset_color();
 }
 
