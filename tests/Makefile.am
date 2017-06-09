@@ -25,6 +25,7 @@ gpiod_test_SOURCES =	gpiod-test.c \
 if WITH_TOOLS
 
 gpiod_test_SOURCES +=	tests-gpiodetect.c \
+			tests-gpiofind.c \
 			tests-gpioinfo.c
 
 endif
