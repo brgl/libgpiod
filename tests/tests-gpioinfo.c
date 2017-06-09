@@ -41,6 +41,7 @@ static void gpioinfo_one_exported(void)
 	rv = asprintf(&ptrn,
 		      "\\s+line\\s+7:\\s+unnamed\\s+\\\"%s\\\"\\s+input\\s+active-low",
 		      TEST_CONSUMER);
+	TEST_ASSERT(rv > 0);
 
 	chip = gpiod_chip_open(test_chip_path(1));
 	TEST_ASSERT_NOT_NULL(chip);
