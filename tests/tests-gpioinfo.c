@@ -34,8 +34,8 @@ TEST_DEFINE(gpioinfo_simple,
 static void gpioinfo_one_exported(void)
 {
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP(test_free_str) char *ptrn;
 	struct gpiod_line *line;
-	char *ptrn;
 	int rv;
 
 	rv = asprintf(&ptrn,
