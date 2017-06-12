@@ -44,3 +44,18 @@ static void gpiodetect_simple(void)
 TEST_DEFINE(gpiodetect_simple,
 	    "tools: gpiodetect - simple",
 	    0, { 4, 8, 16 });
+
+static void gpiodetect_invalid_args(void)
+{
+	test_gpiotool_run("gpiodetect", "unused argument", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(), "unrecognized argument");
+}
+TEST_DEFINE(gpiodetect_invalid_args,
+	    "tools: gpiodetect - invalid arguments",
+	    0, { });
