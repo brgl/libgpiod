@@ -110,6 +110,7 @@ const char * test_tool_stderr(void);
 bool test_tool_exited(void);
 int test_tool_exit_status(void);
 void test_tool_signal(int signum);
+void test_tool_stdin_write(const char *fmt, ...) TEST_PRINTF(1, 2);
 
 /*
  * Every TEST_ASSERT_*() macro expansion can make a test function return, so

@@ -446,6 +446,28 @@ void test_tool_signal(int signum)
 		die_perr("unable to send signal to process %d", proc->pid);
 }
 
+void test_tool_stdin_write(const char *fmt, ...)
+{
+	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
+	ssize_t written;
+	va_list va;
+	char *in;
+	int rv;
+
+	va_start(va, fmt);
+	rv = vasprintf(&in, fmt, va);
+	va_end(va);
+	if (rv < 0)
+		die_perr("error building string");
+
+	written = write(proc->stdin_fd, in, rv);
+	free(in);
+	if (written < 0)
+		die_perr("error writing to child process' stdin");
+	if (written != rv)
+		die("unable to write all data to child process' stdin");
+}
+
 void test_tool_run(char *tool, ...)
 {
 	int in_fds[2], out_fds[2], err_fds[2], status;
