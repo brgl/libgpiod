@@ -51,6 +51,46 @@ TEST_DEFINE(gpioget_read_all_lines,
 	    "tools: gpioget - read all lines",
 	    0, { 8, 8, 8 });
 
+static void gpioget_read_some_lines(void)
+{
+	unsigned int offsets[3];
+	int rv, values[3];
+
+	test_tool_run("gpioget", "gpiochip1",
+		      "0", "1", "4", "6", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "0 0 0 0\n");
+
+	offsets[0] = 1;
+	offsets[1] = 4;
+	offsets[2] = 6;
+
+	values[0] = values[1] = values[3] = 1;
+
+	rv = gpiod_simple_set_value_multiple(TEST_CONSUMER, test_chip_name(1),
+					     offsets, values, 3, false,
+					     NULL, NULL);
+	TEST_ASSERT_RET_OK(rv);
+
+	test_tool_run("gpioget", "gpiochip1",
+			      "0", "1", "4", "6", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "0 1 1 1\n");
+}
+TEST_DEFINE(gpioget_read_some_lines,
+	    "tools: gpioget - read some lines",
+	    0, { 8, 8, 8 });
+
 static void gpioget_no_arguments(void)
 {
 	test_tool_run("gpioget", (char *)NULL);
