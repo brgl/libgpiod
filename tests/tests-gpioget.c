@@ -50,3 +50,35 @@ static void gpioget_read_all_lines(void)
 TEST_DEFINE(gpioget_read_all_lines,
 	    "tools: gpioget - read all lines",
 	    0, { 8, 8, 8 });
+
+static void gpioget_no_arguments(void)
+{
+	test_tool_run("gpioget", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "gpiochip must be specified");
+}
+TEST_DEFINE(gpioget_no_arguments,
+	    "tools: gpioget - no arguments",
+	    0, { });
+
+static void gpioget_no_lines_specified(void)
+{
+	test_tool_run("gpioget", "gpiochip1", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "at least one gpio line offset must be specified");
+}
+TEST_DEFINE(gpioget_no_lines_specified,
+	    "tools: gpioget - no lines specified",
+	    0, { 4, 4 });
