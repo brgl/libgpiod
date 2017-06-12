@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 	argv += optind;
 
 	if (argc != 1)
-		die("GPIO line name must be specified");
+		die("exactly one GPIO line name must be specified");
 
 	line = gpiod_line_find_by_name(argv[0]);
 	if (!line)
