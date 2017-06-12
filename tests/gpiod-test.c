@@ -551,9 +551,11 @@ static void gpiotool_readall(int fd, char **out)
 
 void test_tool_wait(void)
 {
+	struct signalfd_siginfo sinfo;
 	struct gpiotool_proc *proc;
 	struct pollfd pfd;
 	int status;
+	ssize_t rd;
 
 	proc = &globals.test_ctx.tool_proc;
 
@@ -577,7 +579,12 @@ void test_tool_wait(void)
 		die_perr("error when polling the signalfd");
 	}
 
+	rd = read(proc->sig_fd, &sinfo, sizeof(sinfo));
 	close(proc->sig_fd);
+	if (rd < 0)
+		die_perr("error reading signal info");
+	else if (rd != sizeof(sinfo))
+		die("invalid size of signal info");
 
 	gpiotool_readall(proc->stdout_fd, &proc->stdout);
 	gpiotool_readall(proc->stderr_fd, &proc->stderr);
