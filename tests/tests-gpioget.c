@@ -82,3 +82,20 @@ static void gpioget_no_lines_specified(void)
 TEST_DEFINE(gpioget_no_lines_specified,
 	    "tools: gpioget - no lines specified",
 	    0, { 4, 4 });
+
+static void gpioget_too_many_lines_specified(void)
+{
+	test_tool_run("gpioget", "gpiochip1",
+		      "0", "1", "2", "3", "4", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "error reading GPIO values");
+}
+TEST_DEFINE(gpioget_too_many_lines_specified,
+	    "tools: gpioget - too many lines specified",
+	    0, { 4 });
