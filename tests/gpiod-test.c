@@ -201,6 +201,17 @@ static MALLOC void * xzalloc(size_t size)
 	return ptr;
 }
 
+static MALLOC void * xcalloc(size_t nmemb, size_t size)
+{
+	void *ptr;
+
+	ptr = calloc(nmemb, size);
+	if (!ptr)
+		die("out of memory");
+
+	return ptr;
+}
+
 static MALLOC char * xstrdup(const char *str)
 {
 	char *ret;
@@ -401,7 +412,7 @@ static NORETURN void gpiotool_proc_exec(const char *path, va_list va)
 	for (num_args = 2; va_arg(va2, char *) != NULL; num_args++);
 	va_end(va2);
 
-	argv = xzalloc(num_args * sizeof(char *));
+	argv = xcalloc(num_args, sizeof(char *));
 
 	argv[0] = (char *)path;
 	for (i = 1; i < num_args; i++)
@@ -696,7 +707,7 @@ static void prepare_test(struct _test_chip_descr *descr)
 	ctx = &globals.test_ctx;
 	memset(ctx, 0, sizeof(*ctx));
 	ctx->num_chips = descr->num_chips;
-	ctx->chips = xzalloc(sizeof(*ctx->chips) * ctx->num_chips);
+	ctx->chips = xcalloc(ctx->num_chips, sizeof(*ctx->chips));
 	pthread_mutex_init(&ctx->event.lock, NULL);
 	pthread_cond_init(&ctx->event.cond, NULL);
 
