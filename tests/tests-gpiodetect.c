@@ -30,7 +30,7 @@ static void gpiodetect_simple(void)
 	TEST_ASSERT(ret1 > 0);
 	TEST_ASSERT(ret2 > 0);
 
-	test_gpiotool_run("gpiodetect", (char *)NULL);
+	test_tool_run("gpiodetect", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -47,7 +47,7 @@ TEST_DEFINE(gpiodetect_simple,
 
 static void gpiodetect_invalid_args(void)
 {
-	test_gpiotool_run("gpiodetect", "unused argument", (char *)NULL);
+	test_tool_run("gpiodetect", "unused argument", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());

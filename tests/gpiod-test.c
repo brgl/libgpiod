@@ -435,7 +435,7 @@ void test_tool_signal(int signum)
 		die_perr("unable to send signal to process %d", proc->pid);
 }
 
-void test_gpiotool_run(char *tool, ...)
+void test_tool_run(char *tool, ...)
 {
 	int in_fds[2], out_fds[2], err_fds[2], status;
 	struct gpiotool_proc *proc;

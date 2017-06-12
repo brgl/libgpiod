@@ -14,7 +14,7 @@
 
 static void gpioinfo_simple(void)
 {
-	test_gpiotool_run("gpioinfo", (char *)NULL);
+	test_tool_run("gpioinfo", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -52,7 +52,7 @@ static void gpioinfo_one_exported(void)
 	rv = gpiod_line_request_input(line, TEST_CONSUMER, true);
 	TEST_ASSERT_RET_OK(rv);
 
-	test_gpiotool_run("gpioinfo", (char *)NULL);
+	test_tool_run("gpioinfo", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());

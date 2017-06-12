@@ -20,7 +20,7 @@ static void gpiofind_found(void)
 	rv = asprintf(&output, "%s 7\n", test_chip_name(1));
 	TEST_ASSERT(rv > 0);
 
-	test_gpiotool_run("gpiofind", "gpio-mockup-B-7", (char *)NULL);
+	test_tool_run("gpiofind", "gpio-mockup-B-7", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -35,7 +35,7 @@ TEST_DEFINE(gpiofind_found,
 
 static void gpiofind_not_found(void)
 {
-	test_gpiotool_run("gpiofind", "nonexistent", (char *)NULL);
+	test_tool_run("gpiofind", "nonexistent", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -49,7 +49,7 @@ TEST_DEFINE(gpiofind_not_found,
 
 static void gpiofind_invalid_args(void)
 {
-	test_gpiotool_run("gpiofind", (char *)NULL);
+	test_tool_run("gpiofind", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -59,7 +59,7 @@ static void gpiofind_invalid_args(void)
 	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
 				 "exactly one GPIO line name must be specified");
 
-	test_gpiotool_run("gpiofind", "first argument",
+	test_tool_run("gpiofind", "first argument",
 			  "second argument", (char *)NULL);
 	test_tool_wait();
 
