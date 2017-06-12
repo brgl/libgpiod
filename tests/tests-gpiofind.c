@@ -46,3 +46,30 @@ static void gpiofind_not_found(void)
 TEST_DEFINE(gpiofind_not_found,
 	    "tools: gpiofind - not found",
 	    TEST_FLAG_NAMED_LINES, { 4, 8 });
+
+static void gpiofind_invalid_args(void)
+{
+	test_gpiotool_run("gpiofind", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "exactly one GPIO line name must be specified");
+
+	test_gpiotool_run("gpiofind", "first argument",
+			  "second argument", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "exactly one GPIO line name must be specified");
+}
+TEST_DEFINE(gpiofind_invalid_args,
+	    "tools: gpiofind - invalid arguments",
+	    0, { });
