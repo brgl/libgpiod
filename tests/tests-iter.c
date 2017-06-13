@@ -44,9 +44,9 @@ static void chip_iter_noclose(void)
 {
 	TEST_CLEANUP(test_free_chip_iter_noclose)
 			struct gpiod_chip_iter *iter = NULL;
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipA;
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipB;
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipC;
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipA = NULL;
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipB = NULL;
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipC = NULL;
 	struct gpiod_chip *chip;
 	bool A, B, C;
 
