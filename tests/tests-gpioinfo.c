@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 
-static void gpioinfo_simple(void)
+static void gpioinfo_dump_all_chips(void)
 {
 	test_tool_run("gpioinfo", (char *)NULL);
 	test_tool_wait();
@@ -27,11 +27,11 @@ static void gpioinfo_simple(void)
 	TEST_ASSERT_REGEX_MATCH(test_tool_stdout(),
 				"\\s+line\\s+7:\\s+unnamed\\s+unused\\s+output\\s+active-high");
 }
-TEST_DEFINE(gpioinfo_simple,
-	    "tools: gpioinfo - simple",
+TEST_DEFINE(gpioinfo_dump_all_chips,
+	    "tools: gpioinfo - dump all chips",
 	    0, { 4, 8 });
 
-static void gpioinfo_one_exported(void)
+static void gpioinfo_dump_all_chips_one_exported(void)
 {
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
 	TEST_CLEANUP(test_free_str) char *ptrn = NULL;
@@ -64,11 +64,11 @@ static void gpioinfo_one_exported(void)
 				"\\s+line\\s+0:\\s+unnamed\\s+unused\\s+output\\s+active-high");
 	TEST_ASSERT_REGEX_MATCH(test_tool_stdout(), ptrn);
 }
-TEST_DEFINE(gpioinfo_one_exported,
-	    "tools: gpioinfo - exported line",
+TEST_DEFINE(gpioinfo_dump_all_chips_one_exported,
+	    "tools: gpioinfo - dump all chips (one line exported)",
 	    0, { 4, 8 });
 
-static void gpioinfo_print_one_chip(void)
+static void gpioinfo_dump_one_chip(void)
 {
 	test_tool_run("gpioinfo", "gpiochip1", (char *)NULL);
 	test_tool_wait();
@@ -83,11 +83,11 @@ static void gpioinfo_print_one_chip(void)
 	TEST_ASSERT_REGEX_NOMATCH(test_tool_stdout(),
 				  "\\s+line\\s+7:\\s+unnamed\\s+unused\\s+output\\s+active-high");
 }
-TEST_DEFINE(gpioinfo_print_one_chip,
-	    "tools: gpioinfo - print one chip",
+TEST_DEFINE(gpioinfo_dump_one_chip,
+	    "tools: gpioinfo - dump one chip",
 	    0, { 8, 4 });
 
-static void gpioinfo_print_all_but_one_chip(void)
+static void gpioinfo_dump_all_but_one_chip(void)
 {
 	test_tool_run("gpioinfo", "gpiochip0",
 		      "gpiochip1", "gpiochip3", (char *)NULL);
@@ -105,8 +105,8 @@ static void gpioinfo_print_all_but_one_chip(void)
 	TEST_ASSERT_REGEX_NOMATCH(test_tool_stdout(),
 				  "\\s+line\\s+7:\\s+unnamed\\s+unused\\s+output\\s+active-high");
 }
-TEST_DEFINE(gpioinfo_print_all_but_one_chip,
-	    "tools: gpioinfo - print all but one chip",
+TEST_DEFINE(gpioinfo_dump_all_but_one_chip,
+	    "tools: gpioinfo - dump all but one chip",
 	    0, { 4, 4, 8, 4 });
 
 static void gpioinfo_inexistent_chip(void)
