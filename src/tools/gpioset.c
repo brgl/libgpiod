@@ -241,7 +241,7 @@ int main(int argc, char **argv)
 		die("gpiochip must be specified");
 
 	if (argc < 2)
-		die("at least one gpio line offset to value mapping must be specified");
+		die("at least one GPIO line offset to value mapping must be specified");
 
 	device = argv[0];
 

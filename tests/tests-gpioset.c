@@ -271,7 +271,7 @@ static void gpioset_no_lines_specified(void)
 	TEST_ASSERT_NULL(test_tool_stdout());
 	TEST_ASSERT_NOT_NULL(test_tool_stderr());
 	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
-				 "at least one gpio line offset to value mapping must be specified");
+				 "at least one GPIO line offset to value mapping must be specified");
 }
 TEST_DEFINE(gpioset_no_lines_specified,
 	    "tools: gpioset - no lines specified",
