@@ -171,3 +171,34 @@ static void gpioset_set_some_lines_and_wait_for_signal(void)
 TEST_DEFINE(gpioset_set_some_lines_and_wait_for_signal,
 	    "tools: gpioset - set some lines and wait for signal",
 	    0, { 8, 8, 8 });
+
+static void gpioset_set_some_lines_and_wait_time(void)
+{
+	unsigned int offsets[3];
+	int rv, values[3];
+
+	test_tool_run("gpioset", "--mode=time", "--usec=100000", "gpiochip0",
+		      "1=1", "2=0", "5=1", (char *)NULL);
+	usleep(200000);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+
+	offsets[0] = 1;
+	offsets[1] = 2;
+	offsets[2] = 5;
+
+	rv = gpiod_simple_get_value_multiple(TEST_CONSUMER, test_chip_name(0),
+					     offsets, values, 3, false);
+	TEST_ASSERT_RET_OK(rv);
+
+	TEST_ASSERT_EQ(values[0], 1);
+	TEST_ASSERT_EQ(values[1], 0);
+	TEST_ASSERT_EQ(values[2], 1);
+}
+TEST_DEFINE(gpioset_set_some_lines_and_wait_time,
+	    "tools: gpioset - set some lines and wait for specified time",
+	    0, { 8, 8, 8 });
