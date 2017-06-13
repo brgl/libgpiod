@@ -554,6 +554,7 @@ void test_tool_wait(void)
 	struct signalfd_siginfo sinfo;
 	struct gpiotool_proc *proc;
 	struct pollfd pfd;
+	sigset_t sigmask;
 	int status;
 	ssize_t rd;
 
@@ -585,6 +586,13 @@ void test_tool_wait(void)
 		die_perr("error reading signal info");
 	else if (rd != sizeof(sinfo))
 		die("invalid size of signal info");
+
+	sigemptyset(&sigmask);
+	sigaddset(&sigmask, SIGCHLD);
+
+	status = sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
+	if (status)
+		die_perr("unable to unblock signals");
 
 	gpiotool_readall(proc->stdout_fd, &proc->stdout);
 	gpiotool_readall(proc->stderr_fd, &proc->stderr);
