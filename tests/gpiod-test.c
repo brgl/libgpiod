@@ -499,7 +499,7 @@ void test_tool_run(char *tool, ...)
 
 	status = sigprocmask(SIG_BLOCK, &sigmask, NULL);
 	if (status)
-		die_perr("unable to mask signals");
+		die_perr("unable to block SIGCHLD");
 
 	proc->sig_fd = signalfd(-1, &sigmask, 0);
 	if (proc->sig_fd < 0)
@@ -592,7 +592,7 @@ void test_tool_wait(void)
 
 	status = sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
 	if (status)
-		die_perr("unable to unblock signals");
+		die_perr("unable to unblock SIGCHLD");
 
 	gpiotool_readall(proc->stdout_fd, &proc->stdout);
 	gpiotool_readall(proc->stderr_fd, &proc->stderr);
