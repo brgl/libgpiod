@@ -244,3 +244,143 @@ static void gpioset_set_some_lines_and_wait_time(void)
 TEST_DEFINE(gpioset_set_some_lines_and_wait_time,
 	    "tools: gpioset - set some lines and wait for specified time",
 	    0, { 8, 8, 8 });
+
+static void gpioset_no_arguments(void)
+{
+	test_tool_run("gpioset", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "gpiochip must be specified");
+}
+TEST_DEFINE(gpioset_no_arguments,
+	    "tools: gpioset - no arguments",
+	    0, { });
+
+static void gpioset_no_lines_specified(void)
+{
+	test_tool_run("gpioset", "gpiochip1", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "at least one gpio line offset to value mapping must be specified");
+}
+TEST_DEFINE(gpioset_no_lines_specified,
+	    "tools: gpioset - no lines specified",
+	    0, { 4, 4 });
+
+static void gpioset_too_many_lines_specified(void)
+{
+	test_tool_run("gpioset", "gpiochip1",
+		      "0=1", "1=1", "2=1", "3=1", "4=1", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "error setting the GPIO line values");
+}
+TEST_DEFINE(gpioset_too_many_lines_specified,
+	    "tools: gpioset - too many lines specified",
+	    0, { 4 });
+
+static void gpioset_sec_usec_without_time(void)
+{
+	test_tool_run("gpioset", "--mode=exit", "--sec=1",
+		      "gpiochip1", "0=1", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "can't specify seconds in this mode");
+
+	test_tool_run("gpioset", "--mode=exit", "--usec=100",
+		      "gpiochip1", "0=1", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "can't specify microseconds in this mode");
+}
+TEST_DEFINE(gpioset_sec_usec_without_time,
+	    "tools: gpioset - using --sec/--usec with mode other than 'time'",
+	    0, { 4 });
+
+static void gpioset_invalid_mapping(void)
+{
+	test_tool_run("gpioset", "gpiochip0", "0=c", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "invalid offset<->value mapping");
+}
+TEST_DEFINE(gpioset_invalid_mapping,
+	    "tools: gpioset - invalid offset<->value mapping",
+	    0, { 4 });
+
+static void gpioset_invalid_value(void)
+{
+	test_tool_run("gpioset", "gpiochip0", "0=3", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(), "value must be 0 or 1");
+}
+TEST_DEFINE(gpioset_invalid_value,
+	    "tools: gpioset - value different than 0 or 1",
+	    0, { 4 });
+
+static void gpioset_invalid_offset(void)
+{
+	test_tool_run("gpioset", "gpiochip0", "4000000000=1", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(), "invalid offset");
+}
+TEST_DEFINE(gpioset_invalid_offset,
+	    "tools: gpioset - invalid offset",
+	    0, { 4 });
+
+static void gpioset_daeminize_in_wrong_mode(void)
+{
+	test_tool_run("gpioset", "--background",
+		      "gpiochip0", "0=1", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "can't daemonize in this mode");
+}
+TEST_DEFINE(gpioset_daeminize_in_wrong_mode,
+	    "tools: gpioset - daemonize in wrong mode",
+	    0, { 4 });
