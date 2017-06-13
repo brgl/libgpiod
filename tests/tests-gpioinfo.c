@@ -67,3 +67,44 @@ static void gpioinfo_one_exported(void)
 TEST_DEFINE(gpioinfo_one_exported,
 	    "tools: gpioinfo - exported line",
 	    0, { 4, 8 });
+
+static void gpioinfo_print_one_chip(void)
+{
+	test_tool_run("gpioinfo", "gpiochip1", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_STR_NOTCONT(test_tool_stdout(), "gpiochip0 - 8 lines:");
+	TEST_ASSERT_STR_CONTAINS(test_tool_stdout(), "gpiochip1 - 4 lines:");
+	TEST_ASSERT_REGEX_MATCH(test_tool_stdout(),
+				"\\s+line\\s+0:\\s+unnamed\\s+unused\\s+output\\s+active-high");
+	TEST_ASSERT_REGEX_NOMATCH(test_tool_stdout(),
+				  "\\s+line\\s+7:\\s+unnamed\\s+unused\\s+output\\s+active-high");
+}
+TEST_DEFINE(gpioinfo_print_one_chip,
+	    "tools: gpioinfo - print one chip",
+	    0, { 8, 4 });
+
+static void gpioinfo_print_all_but_one_chip(void)
+{
+	test_tool_run("gpioinfo", "gpiochip0",
+		      "gpiochip1", "gpiochip3", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_STR_NOTCONT(test_tool_stdout(), "gpiochip2 - 8 lines:");
+	TEST_ASSERT_STR_CONTAINS(test_tool_stdout(), "gpiochip0 - 4 lines:");
+	TEST_ASSERT_STR_CONTAINS(test_tool_stdout(), "gpiochip1 - 4 lines:");
+	TEST_ASSERT_STR_CONTAINS(test_tool_stdout(), "gpiochip3 - 4 lines:");
+	TEST_ASSERT_REGEX_MATCH(test_tool_stdout(),
+				"\\s+line\\s+0:\\s+unnamed\\s+unused\\s+output\\s+active-high");
+	TEST_ASSERT_REGEX_NOMATCH(test_tool_stdout(),
+				  "\\s+line\\s+7:\\s+unnamed\\s+unused\\s+output\\s+active-high");
+}
+TEST_DEFINE(gpioinfo_print_all_but_one_chip,
+	    "tools: gpioinfo - print all but one chip",
+	    0, { 4, 4, 8, 4 });
