@@ -108,3 +108,19 @@ static void gpioinfo_print_all_but_one_chip(void)
 TEST_DEFINE(gpioinfo_print_all_but_one_chip,
 	    "tools: gpioinfo - print all but one chip",
 	    0, { 4, 4, 8, 4 });
+
+static void gpioinfo_inexistent_chip(void)
+{
+	test_tool_run("gpioinfo", "inexistent", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "looking up chip inexistent");
+}
+TEST_DEFINE(gpioinfo_inexistent_chip,
+	    "tools: gpioinfo - inexistent chip",
+	    0, { 8, 4 });
