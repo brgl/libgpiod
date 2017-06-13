@@ -218,7 +218,8 @@ static void gpioset_set_some_lines_and_wait_time(void)
 	unsigned int offsets[3];
 	int rv, values[3];
 
-	test_tool_run("gpioset", "--mode=time", "--usec=100000", "gpiochip0",
+	test_tool_run("gpioset", "--mode=time",
+		      "--usec=100000", "--sec=0", "gpiochip0",
 		      "1=1", "2=0", "5=1", (char *)NULL);
 	usleep(200000);
 	test_tool_wait();
