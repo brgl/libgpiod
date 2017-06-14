@@ -158,6 +158,9 @@ int main(int argc, char **argv)
 	if (argc < 2)
 		die("GPIO line offset must be specified");
 
+	if (argc > 2)
+		die("watching more than one GPIO line unsupported");
+
 	device = argv[0];
 	offset = strtoul(argv[1], &end, 10);
 	if (*end != '\0' || offset > INT_MAX)
