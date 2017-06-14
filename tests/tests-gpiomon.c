@@ -22,7 +22,7 @@ static void gpiomon_single_rising_edge_event(void)
 	TEST_ASSERT_NOT_NULL(test_tool_stdout());
 	TEST_ASSERT_NULL(test_tool_stderr());
 	TEST_ASSERT_REGEX_MATCH(test_tool_stdout(),
-				"RISING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[[0-9]+\\.[0-9]+\\]");
+				"event\\:\\s+RISING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[[0-9]+\\.[0-9]+\\]");
 }
 TEST_DEFINE(gpiomon_single_rising_edge_event,
 	    "tools: gpiomon - single rising edge event",
@@ -56,9 +56,9 @@ static void gpiomon_four_alternating_events(void)
 	TEST_ASSERT_NOT_NULL(test_tool_stdout());
 	TEST_ASSERT_NULL(test_tool_stderr());
 	TEST_ASSERT_REGEX_MATCH(test_tool_stdout(),
-				"FALLING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[[0-9]+\\.[0-9]+\\]");
+				"event\\:\\s+FALLING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[[0-9]+\\.[0-9]+\\]");
 	TEST_ASSERT_REGEX_MATCH(test_tool_stdout(),
-				"RISING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[[0-9]+\\.[0-9]+\\]");
+				"event\\:\\s+RISING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[[0-9]+\\.[0-9]+\\]");
 }
 TEST_DEFINE(gpiomon_four_alternating_events,
 	    "tools: gpiomon - four alternating events",
