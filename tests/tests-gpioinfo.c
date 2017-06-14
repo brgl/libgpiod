@@ -70,7 +70,7 @@ TEST_DEFINE(gpioinfo_dump_all_chips_one_exported,
 
 static void gpioinfo_dump_one_chip(void)
 {
-	test_tool_run("gpioinfo", "gpiochip1", (char *)NULL);
+	test_tool_run("gpioinfo", test_chip_name(1), (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -89,8 +89,8 @@ TEST_DEFINE(gpioinfo_dump_one_chip,
 
 static void gpioinfo_dump_all_but_one_chip(void)
 {
-	test_tool_run("gpioinfo", "gpiochip0",
-		      "gpiochip1", "gpiochip3", (char *)NULL);
+	test_tool_run("gpioinfo", test_chip_name(0),
+		      test_chip_name(1), test_chip_name(3), (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());

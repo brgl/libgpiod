@@ -18,7 +18,7 @@ static void gpioset_set_lines_and_exit(void)
 	unsigned int offsets[8];
 	int rv, values[8];
 
-	test_tool_run("gpioset", "gpiochip2",
+	test_tool_run("gpioset", test_chip_name(2),
 		      "0=0", "1=0", "2=1", "3=1",
 		      "4=1", "5=1", "6=0", "7=1", (char *)NULL);
 	test_tool_wait();
@@ -59,7 +59,7 @@ static void gpioset_set_lines_and_exit_active_low(void)
 	unsigned int offsets[8];
 	int rv, values[8];
 
-	test_tool_run("gpioset", "--active-low", "gpiochip2",
+	test_tool_run("gpioset", "--active-low", test_chip_name(2),
 		      "0=0", "1=0", "2=1", "3=1",
 		      "4=1", "5=1", "6=0", "7=1", (char *)NULL);
 	test_tool_wait();
@@ -100,7 +100,7 @@ static void gpioset_set_lines_and_exit_explicit_mode(void)
 	unsigned int offsets[8];
 	int rv, values[8];
 
-	test_tool_run("gpioset", "--mode=exit", "gpiochip2",
+	test_tool_run("gpioset", "--mode=exit", test_chip_name(2),
 		      "0=0", "1=0", "2=1", "3=1",
 		      "4=1", "5=1", "6=0", "7=1", (char *)NULL);
 	test_tool_wait();
@@ -141,7 +141,7 @@ static void gpioset_set_some_lines_and_wait_for_enter(void)
 	unsigned int offsets[5];
 	int rv, values[5];
 
-	test_tool_run("gpioset", "--mode=wait", "gpiochip2",
+	test_tool_run("gpioset", "--mode=wait", test_chip_name(2),
 		      "1=0", "2=1", "5=1", "6=0", "7=1", (char *)NULL);
 	test_tool_stdin_write("\n");
 	test_tool_wait();
@@ -179,7 +179,7 @@ static void gpioset_set_some_lines_and_wait_for_signal(void)
 	int rv, values[5];
 
 	for (i = 0; i < TEST_ARRAY_SIZE(signals); i++) {
-		test_tool_run("gpioset", "--mode=signal", "gpiochip2",
+		test_tool_run("gpioset", "--mode=signal", test_chip_name(2),
 			      "1=0", "2=1", "5=0", "6=0", "7=1", (char *)NULL);
 		usleep(200000);
 		test_tool_signal(signals[i]);
@@ -219,7 +219,7 @@ static void gpioset_set_some_lines_and_wait_time(void)
 	int rv, values[3];
 
 	test_tool_run("gpioset", "--mode=time",
-		      "--usec=100000", "--sec=0", "gpiochip0",
+		      "--usec=100000", "--sec=0", test_chip_name(0),
 		      "1=1", "2=0", "5=1", (char *)NULL);
 	usleep(200000);
 	test_tool_wait();
@@ -263,7 +263,7 @@ TEST_DEFINE(gpioset_no_arguments,
 
 static void gpioset_no_lines_specified(void)
 {
-	test_tool_run("gpioset", "gpiochip1", (char *)NULL);
+	test_tool_run("gpioset", test_chip_name(1), (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -279,7 +279,7 @@ TEST_DEFINE(gpioset_no_lines_specified,
 
 static void gpioset_too_many_lines_specified(void)
 {
-	test_tool_run("gpioset", "gpiochip1",
+	test_tool_run("gpioset", test_chip_name(0),
 		      "0=1", "1=1", "2=1", "3=1", "4=1", (char *)NULL);
 	test_tool_wait();
 
@@ -297,7 +297,7 @@ TEST_DEFINE(gpioset_too_many_lines_specified,
 static void gpioset_sec_usec_without_time(void)
 {
 	test_tool_run("gpioset", "--mode=exit", "--sec=1",
-		      "gpiochip1", "0=1", (char *)NULL);
+		      test_chip_name(0), "0=1", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -308,7 +308,7 @@ static void gpioset_sec_usec_without_time(void)
 				 "can't specify seconds in this mode");
 
 	test_tool_run("gpioset", "--mode=exit", "--usec=100",
-		      "gpiochip1", "0=1", (char *)NULL);
+		      test_chip_name(0), "0=1", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -324,7 +324,7 @@ TEST_DEFINE(gpioset_sec_usec_without_time,
 
 static void gpioset_invalid_mapping(void)
 {
-	test_tool_run("gpioset", "gpiochip0", "0=c", (char *)NULL);
+	test_tool_run("gpioset", test_chip_name(0), "0=c", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -340,7 +340,7 @@ TEST_DEFINE(gpioset_invalid_mapping,
 
 static void gpioset_invalid_value(void)
 {
-	test_tool_run("gpioset", "gpiochip0", "0=3", (char *)NULL);
+	test_tool_run("gpioset", test_chip_name(0), "0=3", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -355,7 +355,8 @@ TEST_DEFINE(gpioset_invalid_value,
 
 static void gpioset_invalid_offset(void)
 {
-	test_tool_run("gpioset", "gpiochip0", "4000000000=1", (char *)NULL);
+	test_tool_run("gpioset", test_chip_name(0),
+		      "4000000000=1", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -371,7 +372,7 @@ TEST_DEFINE(gpioset_invalid_offset,
 static void gpioset_daeminize_in_wrong_mode(void)
 {
 	test_tool_run("gpioset", "--background",
-		      "gpiochip0", "0=1", (char *)NULL);
+		      test_chip_name(0), "0=1", (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());

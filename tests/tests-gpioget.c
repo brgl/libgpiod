@@ -15,7 +15,7 @@ static void gpioget_read_all_lines(void)
 	unsigned int offsets[4];
 	int rv, values[4];
 
-	test_tool_run("gpioget", "gpiochip1",
+	test_tool_run("gpioget", test_chip_name(1),
 		      "0", "1", "2", "3", "4", "5", "6", "7", (char *)NULL);
 	test_tool_wait();
 
@@ -37,7 +37,7 @@ static void gpioget_read_all_lines(void)
 					     NULL, NULL);
 	TEST_ASSERT_RET_OK(rv);
 
-	test_tool_run("gpioget", "gpiochip1",
+	test_tool_run("gpioget", test_chip_name(1),
 		      "0", "1", "2", "3", "4", "5", "6", "7", (char *)NULL);
 	test_tool_wait();
 
@@ -56,7 +56,7 @@ static void gpioget_read_all_lines_active_low(void)
 	unsigned int offsets[4];
 	int rv, values[4];
 
-	test_tool_run("gpioget", "--active-low", "gpiochip1",
+	test_tool_run("gpioget", "--active-low", test_chip_name(1),
 		      "0", "1", "2", "3", "4", "5", "6", "7", (char *)NULL);
 	test_tool_wait();
 
@@ -78,7 +78,7 @@ static void gpioget_read_all_lines_active_low(void)
 					     NULL, NULL);
 	TEST_ASSERT_RET_OK(rv);
 
-	test_tool_run("gpioget", "--active-low", "gpiochip1",
+	test_tool_run("gpioget", "--active-low", test_chip_name(1),
 		      "0", "1", "2", "3", "4", "5", "6", "7", (char *)NULL);
 	test_tool_wait();
 
@@ -97,7 +97,7 @@ static void gpioget_read_some_lines(void)
 	unsigned int offsets[3];
 	int rv, values[3];
 
-	test_tool_run("gpioget", "gpiochip1",
+	test_tool_run("gpioget", test_chip_name(1),
 		      "0", "1", "4", "6", (char *)NULL);
 	test_tool_wait();
 
@@ -118,7 +118,7 @@ static void gpioget_read_some_lines(void)
 					     NULL, NULL);
 	TEST_ASSERT_RET_OK(rv);
 
-	test_tool_run("gpioget", "gpiochip1",
+	test_tool_run("gpioget", test_chip_name(1),
 			      "0", "1", "4", "6", (char *)NULL);
 	test_tool_wait();
 
@@ -150,7 +150,7 @@ TEST_DEFINE(gpioget_no_arguments,
 
 static void gpioget_no_lines_specified(void)
 {
-	test_tool_run("gpioget", "gpiochip1", (char *)NULL);
+	test_tool_run("gpioget", test_chip_name(1), (char *)NULL);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -166,7 +166,7 @@ TEST_DEFINE(gpioget_no_lines_specified,
 
 static void gpioget_too_many_lines_specified(void)
 {
-	test_tool_run("gpioget", "gpiochip1",
+	test_tool_run("gpioget", test_chip_name(0),
 		      "0", "1", "2", "3", "4", (char *)NULL);
 	test_tool_wait();
 
