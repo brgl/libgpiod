@@ -28,6 +28,7 @@ gpiod_test_SOURCES +=	tests-gpiodetect.c \
 			tests-gpiofind.c \
 			tests-gpioget.c \
 			tests-gpioinfo.c \
+			tests-gpiomon.c \
 			tests-gpioset.c
 
 endif
