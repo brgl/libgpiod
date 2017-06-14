@@ -76,7 +76,7 @@ static void chip_open_lookup(void)
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip_by_name = NULL;
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip_by_path = NULL;
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip_by_num = NULL;
-	TEST_CLEANUP(test_free_str) char *chip_num;
+	TEST_CLEANUP(test_free_str) char *chip_num = NULL;
 
 	TEST_ASSERT(asprintf(&chip_num, "%u", test_chip_num(1)) > 0);
 
