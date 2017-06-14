@@ -156,7 +156,7 @@ int main(int argc, char **argv)
 		die("gpiochip must be specified");
 
 	if (argc < 2)
-		die("gpio line offset must be specified");
+		die("GPIO line offset must be specified");
 
 	device = argv[0];
 	offset = strtoul(argv[1], &end, 10);
