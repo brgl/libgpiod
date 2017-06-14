@@ -75,7 +75,7 @@ static int event_callback(int type, const struct timespec *ts, void *data)
 		break;
 	case GPIOD_EVENT_CB_FALLING_EDGE:
 		if (cbdata->watch_falling) {
-			evname = "FALLING_EDGE";
+			evname = "FALLING EDGE";
 			cbdata->num_events_done++;
 		}
 		break;
