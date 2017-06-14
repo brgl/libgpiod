@@ -111,7 +111,7 @@ static void gpioget_read_some_lines(void)
 	offsets[1] = 4;
 	offsets[2] = 6;
 
-	values[0] = values[1] = values[3] = 1;
+	values[0] = values[1] = values[2] = 1;
 
 	rv = gpiod_simple_set_value_multiple(TEST_CONSUMER, test_chip_name(1),
 					     offsets, values, 3, false,
