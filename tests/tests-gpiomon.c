@@ -190,3 +190,88 @@ static void gpiomon_more_than_one_line_given(void)
 TEST_DEFINE(gpiomon_more_than_one_line_given,
 	    "tools: gpiomon - more than one line given",
 	    0, { 4 });
+
+static void gpiomon_custom_format_event_and_offset(void)
+{
+	test_tool_run("gpiomon", "--num-events=1", "--format=%e %o",
+		      test_chip_name(0), "3", (char *)NULL);
+	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "1 3\n");
+}
+TEST_DEFINE(gpiomon_custom_format_event_and_offset,
+	    "tools: gpiomon - custom output format: event and offset",
+	    0, { 8, 8 });
+
+static void gpiomon_custom_format_event_and_offset_joined(void)
+{
+	test_tool_run("gpiomon", "--num-events=1", "--format=%e%o",
+		      test_chip_name(0), "3", (char *)NULL);
+	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "13\n");
+}
+TEST_DEFINE(gpiomon_custom_format_event_and_offset_joined,
+	    "tools: gpiomon - custom output format: event and offset, joined strings",
+	    0, { 8, 8 });
+
+static void gpiomon_custom_format_timestamp(void)
+{
+	test_tool_run("gpiomon", "--num-events=1", "--format=%e %o %s.%n",
+		      test_chip_name(0), "3", (char *)NULL);
+	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_REGEX_MATCH(test_tool_stdout(), "1 3 [0-9]+\\.[0-9]+");
+}
+TEST_DEFINE(gpiomon_custom_format_timestamp,
+	    "tools: gpiomon - custom output format: timestamp",
+	    0, { 8, 8 });
+
+static void gpiomon_custom_format_double_percent(void)
+{
+	test_tool_run("gpiomon", "--num-events=1", "--format=%%e",
+		      test_chip_name(0), "3", (char *)NULL);
+	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "%e\n");
+}
+TEST_DEFINE(gpiomon_custom_format_double_percent,
+	    "tools: gpiomon - custom output format: double percent",
+	    0, { 8, 8 });
+
+static void gpiomon_custom_format_unknown_specifier(void)
+{
+	test_tool_run("gpiomon", "--num-events=1", "--format=%w",
+		      test_chip_name(0), "3", (char *)NULL);
+	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "%w\n");
+}
+TEST_DEFINE(gpiomon_custom_format_unknown_specifier,
+	    "tools: gpiomon - custom output format: unknown specifier",
+	    0, { 8, 8 });

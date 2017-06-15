@@ -25,10 +25,11 @@ static const struct option longopts[] = {
 	{ "silent",		no_argument,		NULL,	's' },
 	{ "rising-edge",	no_argument,		NULL,	'r' },
 	{ "falling-edge",	no_argument,		NULL,	'f' },
+	{ "format",		required_argument,	NULL,	'F' },
 	{ 0 },
 };
 
-static const char *const shortopts = "+hvln:srf";
+static const char *const shortopts = "+hvln:srfF:";
 
 static void print_help(void)
 {
@@ -43,6 +44,13 @@ static void print_help(void)
 	printf("  -s, --silent:\t\tdon't print event info\n");
 	printf("  -r, --rising-edge:\tonly process rising edge events\n");
 	printf("  -f, --falling-edge:\tonly process falling edge events\n");
+	printf("  -F, --format=FMT\tspecify custom output format\n");
+	printf("\n");
+	printf("Format specifiers:\n");
+	printf("  %%o:  GPIO line offset\n");
+	printf("  %%e:  event type (0 - falling edge, 1 rising edge)\n");
+	printf("  %%s:  seconds part of the event timestamp\n");
+	printf("  %%n:  nanoseconds part of the event timestamp\n");
 }
 
 static volatile bool do_run = true;
@@ -59,33 +67,126 @@ struct callback_data {
 	bool silent;
 	bool watch_rising;
 	bool watch_falling;
+	char *fmt;
 };
+
+static void replace_fmt(char **base, size_t off, const char *new)
+{
+	size_t newlen, baselen;
+	char *tmp;
+
+	newlen = strlen(new);
+	baselen = strlen(*base);
+
+	if (newlen > 2) {
+		/*
+		 * FIXME This should be done with realloc() but valgrind
+		 * is reporting problems with using uninitialized memory.
+		 *
+		 * Also: it could be made more efficient by allocating more
+		 * memory at the beginning and then doubling the size of the
+		 * buffer once the previous one is exhausted.
+		 */
+		tmp = malloc(baselen + newlen + 1);
+		if (!tmp)
+			die("out of memory");
+
+		memset(tmp, 0, baselen + newlen + 1);
+		strcpy(tmp, *base);
+		free(*base);
+		*base = tmp;
+	}
+
+	memmove(*base + off + newlen, *base + off + 2, baselen - off - 2);
+	strncpy(*base + off, new, newlen);
+
+	if (newlen < 2)
+		*(*base + baselen - 1) = '\0';
+}
+
+static void event_print_custom(int type, const struct timespec *ts,
+			       struct callback_data *data)
+{
+	char repbuf[64], *str, *pos, fmt;
+	size_t off;
+
+	str = strdup(data->fmt);
+	if (!str)
+		die("out of memory");
+
+	for (off = 0;;) {
+		pos = strchr(str + off, '%');
+		if (!pos)
+			break;
+
+		fmt = *(pos + 1);
+		off = pos - str;
+
+		if (fmt == '%') {
+			off += 2;
+			continue;
+		}
+
+		switch (fmt) {
+		case 'o':
+			snprintf(repbuf, sizeof(repbuf), "%u", data->offset);
+			replace_fmt(&str, off, repbuf);
+			break;
+		case 'e':
+			if (type == GPIOD_EVENT_CB_RISING_EDGE)
+				snprintf(repbuf, sizeof(repbuf), "1");
+			else
+				snprintf(repbuf, sizeof(repbuf), "0");
+			replace_fmt(&str, off, repbuf);
+			break;
+		case 's':
+			snprintf(repbuf, sizeof(repbuf), "%ld", ts->tv_sec);
+			replace_fmt(&str, off, repbuf);
+			break;
+		case 'n':
+			snprintf(repbuf, sizeof(repbuf), "%ld", ts->tv_nsec);
+			replace_fmt(&str, off, repbuf);
+			break;
+		default:
+			off += 2;
+			continue;
+		}
+
+		off += strlen(repbuf);
+	}
+
+	printf("%s\n", str);
+	free(str);
+}
+
+static void event_print_human_readable(int type, const struct timespec *ts,
+				       struct callback_data *data)
+{
+	char *evname;
+
+	if (type == GPIOD_EVENT_CB_RISING_EDGE)
+		evname = " RISING EDGE";
+	else
+		evname = "FALLING EDGE";
+
+	printf("event: %s offset: %u timestamp: [%8ld.%09ld]\n",
+	       evname, data->offset, ts->tv_sec, ts->tv_nsec);
+}
 
 static int event_callback(int type, const struct timespec *ts, void *data)
 {
 	struct callback_data *cbdata = data;
-	const char *evname = NULL;
 
-	switch (type) {
-	case GPIOD_EVENT_CB_RISING_EDGE:
-		if (cbdata->watch_rising) {
-			evname = " RISING EDGE";
-			cbdata->num_events_done++;
+	if ((type == GPIOD_EVENT_CB_FALLING_EDGE && cbdata->watch_falling)
+	    || (type == GPIOD_EVENT_CB_RISING_EDGE && cbdata->watch_rising)) {
+		if (!cbdata->silent) {
+			if (cbdata->fmt)
+				event_print_custom(type, ts, cbdata);
+			else
+				event_print_human_readable(type, ts, cbdata);
 		}
-		break;
-	case GPIOD_EVENT_CB_FALLING_EDGE:
-		if (cbdata->watch_falling) {
-			evname = "FALLING EDGE";
-			cbdata->num_events_done++;
-		}
-		break;
-	default:
-		break;
+		cbdata->num_events_done++;
 	}
-
-	if (evname && !cbdata->silent)
-		printf("event: %s offset: %u timestamp: [%8ld.%09ld]\n",
-		       evname, cbdata->offset, ts->tv_sec, ts->tv_nsec);
 
 	if (cbdata->num_events_wanted &&
 	    cbdata->num_events_done >= cbdata->num_events_wanted)
@@ -138,6 +239,9 @@ int main(int argc, char **argv)
 			break;
 		case 'f':
 			cbdata.watch_falling = true;
+			break;
+		case 'F':
+			cbdata.fmt = optarg;
 			break;
 		case '?':
 			die("try %s --help", get_progname());
