@@ -166,12 +166,25 @@ static TEST_PRINTF(1, 2) void err(const char *fmt, ...)
 	va_end(va);
 }
 
+static void die_test_cleanup(void)
+{
+	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
+	int status;
+
+	if (proc->running) {
+		kill(proc->pid, SIGKILL);
+		waitpid(proc->pid, &status, 0);
+	}
+
+	if (globals.test_ctx.running)
+		pr_raw("\n");
+}
+
 static TEST_PRINTF(1, 2) NORETURN void die(const char *fmt, ...)
 {
 	va_list va;
 
-	if (globals.test_ctx.running)
-		pr_raw("\n");
+	die_test_cleanup();
 
 	va_start(va, fmt);
 	vmsg("FATAL", CRED, fmt, va);
@@ -184,8 +197,7 @@ static TEST_PRINTF(1, 2) NORETURN void die_perr(const char *fmt, ...)
 {
 	va_list va;
 
-	if (globals.test_ctx.running)
-		pr_raw("\n");
+	die_test_cleanup();
 
 	va_start(va, fmt);
 	vmsgn("FATAL", CRED, fmt, va);
@@ -574,18 +586,10 @@ void test_tool_wait(void)
 	pfd.events = POLLIN | POLLPRI;
 
 	status = poll(&pfd, 1, 5000);
-	if (status == 0) {
-		/*
-		 * If a tool program is taking longer than 5 seconds to
-		 * terminate, then something's wrong. Kill it before dying.
-		 */
-		test_tool_signal(SIGKILL);
+	if (status == 0)
 		die("tool program is taking too long to terminate");
-	} else if (status < 0) {
-		/* Error in poll() - we still need to kill the process. */
-		test_tool_signal(SIGKILL);
+	else if (status < 0)
 		die_perr("error when polling the signalfd");
-	}
 
 	rd = read(proc->sig_fd, &sinfo, sizeof(sinfo));
 	close(proc->sig_fd);
