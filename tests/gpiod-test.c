@@ -70,6 +70,7 @@ struct test_context {
 	char *failed_msg;
 	struct event_thread event;
 	struct gpiotool_proc tool_proc;
+	bool running;
 };
 
 static struct {
@@ -169,6 +170,9 @@ static TEST_PRINTF(1, 2) NORETURN void die(const char *fmt, ...)
 {
 	va_list va;
 
+	if (globals.test_ctx.running)
+		pr_raw("\n");
+
 	va_start(va, fmt);
 	vmsg("FATAL", CRED, fmt, va);
 	va_end(va);
@@ -179,6 +183,9 @@ static TEST_PRINTF(1, 2) NORETURN void die(const char *fmt, ...)
 static TEST_PRINTF(1, 2) NORETURN void die_perr(const char *fmt, ...)
 {
 	va_list va;
+
+	if (globals.test_ctx.running)
+		pr_raw("\n");
 
 	va_start(va, fmt);
 	vmsgn("FATAL", CRED, fmt, va);
@@ -827,7 +834,9 @@ static void run_test(struct _test_case *test)
 	print_header("TEST", CYELLOW);
 	pr_raw("'%s': ", test->name);
 
+	globals.test_ctx.running = true;
 	test->func();
+	globals.test_ctx.running = false;
 
 	if (globals.test_ctx.test_failed) {
 		globals.tests_failed++;
