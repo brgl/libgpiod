@@ -564,6 +564,10 @@ static void gpiotool_readall(int fd, char **out)
 			return;
 		}
 
+		/*
+		 * FIXME This may lead to errors if the program prints
+		 * a string containing printf() format specifiers.
+		 */
 		tmp = xappend(tmp, buf);
 	}
 }
