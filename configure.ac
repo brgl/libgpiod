@@ -103,6 +103,7 @@ AC_DEFUN([FUNC_NOT_FOUND_TESTS],
 if test "x$with_tests" = xtrue
 then
 	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
+	AC_CHECK_FUNC([regexec], [], [FUNC_NOT_FOUND_TESTS([regexec])])
 
 	PKG_CHECK_MODULES(KMOD, libkmod)
 	PKG_CHECK_MODULES(UDEV, libudev)
