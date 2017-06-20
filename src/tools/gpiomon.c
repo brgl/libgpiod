@@ -123,7 +123,8 @@ static void event_print_custom(int type, const struct timespec *ts,
 		off = pos - str;
 
 		if (fmt == '%') {
-			off += 2;
+			memmove(str + off, str + off + 1, strlen(str) - off);
+			off += 1;
 			continue;
 		}
 
