@@ -105,8 +105,8 @@ then
 	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
 	AC_CHECK_FUNC([regexec], [], [FUNC_NOT_FOUND_TESTS([regexec])])
 
-	PKG_CHECK_MODULES(KMOD, libkmod)
-	PKG_CHECK_MODULES(UDEV, libudev)
+	PKG_CHECK_MODULES([KMOD], [libkmod >= 18])
+	PKG_CHECK_MODULES([UDEV], [libudev >= 215])
 fi
 
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
