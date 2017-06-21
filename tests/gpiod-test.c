@@ -23,6 +23,7 @@
 #include <libudev.h>
 #include <pthread.h>
 #include <regex.h>
+#include <ctype.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
 #include <sys/types.h>
@@ -84,6 +85,8 @@ static struct {
 	struct test_context test_ctx;
 	pid_t main_pid;
 	char *progpath;
+	int pipesize;
+	char *pipebuf;
 } globals;
 
 enum {
@@ -208,7 +211,7 @@ static TEST_PRINTF(1, 2) NORETURN void die_perr(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-static MALLOC void * xzalloc(size_t size)
+static MALLOC void * xmalloc(size_t size)
 {
 	void *ptr;
 
@@ -216,6 +219,14 @@ static MALLOC void * xzalloc(size_t size)
 	if (!ptr)
 		die("out of memory");
 
+	return ptr;
+}
+
+static MALLOC void * xzalloc(size_t size)
+{
+	void *ptr;
+
+	ptr = xmalloc(size);
 	memset(ptr, 0, size);
 
 	return ptr;
@@ -268,6 +279,32 @@ static MALLOC TEST_PRINTF(2, 3) char * xappend(char *str, const char *fmt, ...)
 	return ret;
 }
 
+static int get_pipesize(void)
+{
+	int pipe_fds[2], rv;
+
+	rv = pipe(pipe_fds);
+	if (rv < 0)
+		die_perr("unable to create a pipe");
+
+	/*
+	 * Since linux v2.6.11 the default pipe capacity is 16 system pages.
+	 * We make an assumption here that gpio-tools won't output more than
+	 * that, so we can read everything after the program terminated. If
+	 * they did output more than the pipe capacity however, the write()
+	 * system call would block and the process would be killed by the
+	 * testing framework.
+	 */
+	rv = fcntl(pipe_fds[0], F_GETPIPE_SZ);
+	if (rv < 0)
+		die_perr("unable to retrieve the pipe capacity");
+
+	close(pipe_fds[0]);
+	close(pipe_fds[1]);
+
+	return rv;
+}
+
 static void check_chip_index(unsigned int index)
 {
 	if (index >= globals.test_ctx.num_chips)
@@ -286,13 +323,15 @@ static bool mockup_loaded(void)
 	return state == KMOD_MODULE_LIVE;
 }
 
-static void module_cleanup(void)
+static void cleanup_func(void)
 {
 	/* Don't cleanup from child processes. */
 	if (globals.main_pid != getpid())
 		return;
 
 	msg("cleaning up");
+
+	free(globals.pipebuf);
 
 	if (mockup_loaded())
 		kmod_module_remove_module(globals.module, 0);
@@ -553,36 +592,23 @@ void test_tool_run(char *tool, ...)
 static void gpiotool_readall(int fd, char **out)
 {
 	ssize_t rd;
-	char *buf;
-	int psiz;
+	int i;
 
-	/*
-	 * Since linux v2.6.11 the default pipe capacity is 16 system pages.
-	 * We make an assumption here, that gpio-tools won't output more than
-	 * that, so we can read everything after the program terminated. If
-	 * they did output more than the pipe capacity however, the write()
-	 * would block and the process would be killed by the testing
-	 * framework.
-	 */
-	psiz = fcntl(fd, F_GETPIPE_SZ);
-	if (psiz < 0)
-		die_perr("error retrieving the pipe capacity");
-
-	buf = malloc(psiz);
-	if (!buf)
-		die("out of memory");
-
-	memset(buf, 0, psiz);
-	rd = read(fd, buf, psiz);
-	if (rd < 0)
+	memset(globals.pipebuf, 0, globals.pipesize);
+	rd = read(fd, globals.pipebuf, globals.pipesize);
+	if (rd < 0) {
 		die_perr("error reading output from subprocess");
-	else if (rd == 0)
+	} else if (rd == 0) {
 		*out = NULL;
-	else
-		*out = buf;
+	} else {
+		for (i = 0; i < rd; i++) {
+			if (!isascii(globals.pipebuf[i]))
+				die("GPIO tool program printed a non-ASCII character");
+		}
 
-	if (!*out)
-		free(buf);
+		*out = xzalloc(rd + 1);
+		memcpy(*out, globals.pipebuf, rd);
+	}
 }
 
 void test_tool_wait(void)
@@ -935,7 +961,9 @@ int main(int argc TEST_UNUSED, char **argv)
 
 	globals.main_pid = getpid();
 	globals.progpath = argv[0];
-	atexit(module_cleanup);
+	globals.pipesize = get_pipesize();
+	globals.pipebuf = xmalloc(globals.pipesize);
+	atexit(cleanup_func);
 
 	msg("libgpiod test suite");
 	msg("%u tests registered", globals.num_tests);
