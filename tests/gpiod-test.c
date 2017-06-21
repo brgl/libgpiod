@@ -15,6 +15,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <poll.h>
 #include <signal.h>
 #include <libgen.h>
@@ -551,25 +552,37 @@ void test_tool_run(char *tool, ...)
 
 static void gpiotool_readall(int fd, char **out)
 {
-	char buf[1024], *tmp = NULL;
 	ssize_t rd;
+	char *buf;
+	int psiz;
 
-	for (;;) {
-		memset(buf, 0, sizeof(buf));
-		rd = read(fd, buf, sizeof(buf));
-		if (rd < 0)
-			die_perr("error reading output from subprocess");
-		else if (rd == 0) {
-			*out = tmp;
-			return;
-		}
+	/*
+	 * Since linux v2.6.11 the default pipe capacity is 16 system pages.
+	 * We make an assumption here, that gpio-tools won't output more than
+	 * that, so we can read everything after the program terminated. If
+	 * they did output more than the pipe capacity however, the write()
+	 * would block and the process would be killed by the testing
+	 * framework.
+	 */
+	psiz = fcntl(fd, F_GETPIPE_SZ);
+	if (psiz < 0)
+		die_perr("error retrieving the pipe capacity");
 
-		/*
-		 * FIXME This may lead to errors if the program prints
-		 * a string containing printf() format specifiers.
-		 */
-		tmp = xappend(tmp, buf);
-	}
+	buf = malloc(psiz);
+	if (!buf)
+		die("out of memory");
+
+	memset(buf, 0, psiz);
+	rd = read(fd, buf, psiz);
+	if (rd < 0)
+		die_perr("error reading output from subprocess");
+	else if (rd == 0)
+		*out = NULL;
+	else
+		*out = buf;
+
+	if (!*out)
+		free(buf);
 }
 
 void test_tool_wait(void)
