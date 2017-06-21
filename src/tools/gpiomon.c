@@ -70,94 +70,56 @@ struct callback_data {
 	char *fmt;
 };
 
-static void replace_fmt(char **base, size_t off, const char *new)
-{
-	size_t newlen, baselen;
-	char *tmp;
-
-	newlen = strlen(new);
-	baselen = strlen(*base);
-
-	if (newlen > 2) {
-		/*
-		 * FIXME This should be done with realloc() but valgrind
-		 * is reporting problems with using uninitialized memory.
-		 *
-		 * Also: it could be made more efficient by allocating more
-		 * memory at the beginning and then doubling the size of the
-		 * buffer once the previous one is exhausted.
-		 */
-		tmp = malloc(baselen + newlen + 1);
-		if (!tmp)
-			die("out of memory");
-
-		memset(tmp, 0, baselen + newlen + 1);
-		strcpy(tmp, *base);
-		free(*base);
-		*base = tmp;
-	}
-
-	memmove(*base + off + newlen, *base + off + 2, baselen - off - 2);
-	strncpy(*base + off, new, newlen);
-
-	if (newlen < 2)
-		*(*base + baselen - 1) = '\0';
-}
-
 static void event_print_custom(int type, const struct timespec *ts,
 			       struct callback_data *data)
 {
-	char repbuf[64], *str, *pos, fmt;
-	size_t off;
+	char *prev, *curr, fmt;
 
-	str = strdup(data->fmt);
-	if (!str)
-		die("out of memory");
-
-	for (off = 0;;) {
-		pos = strchr(str + off, '%');
-		if (!pos)
+	for (prev = curr = data->fmt;;) {
+		curr = strchr(curr, '%');
+		if (!curr) {
+			fputs(prev, stdout);
 			break;
-
-		fmt = *(pos + 1);
-		off = pos - str;
-
-		if (fmt == '%') {
-			memmove(str + off, str + off + 1, strlen(str) - off);
-			off += 1;
-			continue;
 		}
+
+		if (prev != curr)
+			fwrite(prev, curr - prev, 1, stdout);
+
+		fmt = *(curr + 1);
 
 		switch (fmt) {
 		case 'o':
-			snprintf(repbuf, sizeof(repbuf), "%u", data->offset);
-			replace_fmt(&str, off, repbuf);
+			printf("%u", data->offset);
 			break;
 		case 'e':
 			if (type == GPIOD_EVENT_CB_RISING_EDGE)
-				snprintf(repbuf, sizeof(repbuf), "1");
+				fputc('1', stdout);
 			else
-				snprintf(repbuf, sizeof(repbuf), "0");
-			replace_fmt(&str, off, repbuf);
+				fputc('0', stdout);
 			break;
 		case 's':
-			snprintf(repbuf, sizeof(repbuf), "%ld", ts->tv_sec);
-			replace_fmt(&str, off, repbuf);
+			printf("%ld", ts->tv_sec);
 			break;
 		case 'n':
-			snprintf(repbuf, sizeof(repbuf), "%ld", ts->tv_nsec);
-			replace_fmt(&str, off, repbuf);
+			printf("%ld", ts->tv_nsec);
 			break;
+		case '%':
+			fputc('%', stdout);
+			break;
+		case '\0':
+			fputc('%', stdout);
+			goto end;
 		default:
-			off += 2;
-			continue;
+			fwrite(curr, 2, 1, stdout);
+			break;
 		}
 
-		off += strlen(repbuf);
+		curr += 2;
+		prev = curr;
 	}
 
-	printf("%s\n", str);
-	free(str);
+end:
+	fputc('\n', stdout);
 }
 
 static void event_print_human_readable(int type, const struct timespec *ts,

@@ -242,7 +242,24 @@ TEST_DEFINE(gpiomon_custom_format_timestamp,
 	    "tools: gpiomon - custom output format: timestamp",
 	    0, { 8, 8 });
 
-static void gpiomon_custom_format_double_percent(void)
+static void gpiomon_custom_format_double_percent_sign(void)
+{
+	test_tool_run("gpiomon", "--num-events=1", "--format=%%",
+		      test_chip_name(0), "3", (char *)NULL);
+	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "%\n");
+}
+TEST_DEFINE(gpiomon_custom_format_double_percent_sign,
+	    "tools: gpiomon - custom output format: double percent sign",
+	    0, { 8, 8 });
+
+static void gpiomon_custom_format_double_percent_sign_and_spec(void)
 {
 	test_tool_run("gpiomon", "--num-events=1", "--format=%%e",
 		      test_chip_name(0), "3", (char *)NULL);
@@ -255,8 +272,42 @@ static void gpiomon_custom_format_double_percent(void)
 	TEST_ASSERT_NULL(test_tool_stderr());
 	TEST_ASSERT_STR_EQ(test_tool_stdout(), "%e\n");
 }
-TEST_DEFINE(gpiomon_custom_format_double_percent,
-	    "tools: gpiomon - custom output format: double percent",
+TEST_DEFINE(gpiomon_custom_format_double_percent_sign_and_spec,
+	    "tools: gpiomon - custom output format: double percent sign with specifier",
+	    0, { 8, 8 });
+
+static void gpiomon_custom_format_single_percent_sign(void)
+{
+	test_tool_run("gpiomon", "--num-events=1", "--format=%",
+		      test_chip_name(0), "3", (char *)NULL);
+	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "%\n");
+}
+TEST_DEFINE(gpiomon_custom_format_single_percent_sign,
+	    "tools: gpiomon - custom output format: single percent sign",
+	    0, { 8, 8 });
+
+static void gpiomon_custom_format_single_percent_sign_between_chars(void)
+{
+	test_tool_run("gpiomon", "--num-events=1", "--format=foo % bar",
+		      test_chip_name(0), "3", (char *)NULL);
+	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "foo % bar\n");
+}
+TEST_DEFINE(gpiomon_custom_format_single_percent_sign_between_chars,
+	    "tools: gpiomon - custom output format: single percent sign between other characters",
 	    0, { 8, 8 });
 
 static void gpiomon_custom_format_unknown_specifier(void)
