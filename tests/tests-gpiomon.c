@@ -261,7 +261,7 @@ TEST_DEFINE(gpiomon_custom_format_double_percent,
 
 static void gpiomon_custom_format_unknown_specifier(void)
 {
-	test_tool_run("gpiomon", "--num-events=1", "--format=%w",
+	test_tool_run("gpiomon", "--num-events=1", "--format=%x",
 		      test_chip_name(0), "3", (char *)NULL);
 	test_set_event(0, 3, TEST_EVENT_RISING, 100);
 	test_tool_wait();
@@ -270,7 +270,7 @@ static void gpiomon_custom_format_unknown_specifier(void)
 	TEST_ASSERT_RET_OK(test_tool_exit_status());
 	TEST_ASSERT_NOT_NULL(test_tool_stdout());
 	TEST_ASSERT_NULL(test_tool_stderr());
-	TEST_ASSERT_STR_EQ(test_tool_stdout(), "%w\n");
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "%x\n");
 }
 TEST_DEFINE(gpiomon_custom_format_unknown_specifier,
 	    "tools: gpiomon - custom output format: unknown specifier",
