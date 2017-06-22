@@ -98,6 +98,10 @@ Examples:
     event:  RISING EDGE offset: 3 timestamp: [    1151.815449803]
     event:  RISING EDGE offset: 3 timestamp: [    1152.091556803]
 
+    # Wait for a single falling edge event. Specify a custom output format.
+    # gpiomon --format="%e %o %s %n" --falling-edge gpiochip1 4
+    0 4 1156 615459801
+
     # Pause execution until a single event of any type occurs. Don't print
     # anything. Find the line by name.
     # gpiomon --num-events=1 --silent `gpiofind "USR-IN"`
