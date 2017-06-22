@@ -37,10 +37,12 @@ API definitions.
 
 To build the project (including command-line utilities) run:
 
-    ./autogen.sh
-    ./configure --enable-tools=yes --prefix=<install path>
+    ./autogen.sh --enable-tools=yes --prefix=<install path>
     make
     make install
+
+The autogen script will execute ./configure and pass all the command-line
+arguments to it.
 
 TOOLS
 -----
