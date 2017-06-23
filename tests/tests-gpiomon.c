@@ -175,6 +175,30 @@ TEST_DEFINE(gpiomon_watch_multiple_lines,
 	    "tools: gpiomon - watch multiple lines",
 	    0, { 8, 8 });
 
+static void gpiomon_watch_multiple_lines_not_in_order(void)
+{
+	test_tool_run("gpiomon", "--format=%o", test_chip_name(0),
+		      "5", "2", "7", "1", "6", (char *)NULL);
+	test_set_event(0, 2, TEST_EVENT_ALTERNATING, 100);
+	usleep(150000);
+	test_set_event(0, 1, TEST_EVENT_ALTERNATING, 100);
+	usleep(150000);
+	test_set_event(0, 6, TEST_EVENT_ALTERNATING, 100);
+	usleep(150000);
+	test_tool_signal(SIGTERM);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "2\n1\n6\n");
+
+}
+TEST_DEFINE(gpiomon_watch_multiple_lines_not_in_order,
+	    "tools: gpiomon - watch multiple lines (offsets not in order)",
+	    0, { 8, 8 });
+
 static void gpiomon_no_arguments(void)
 {
 	test_tool_run("gpiomon", (char *)NULL);
