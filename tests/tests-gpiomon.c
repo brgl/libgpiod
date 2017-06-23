@@ -127,6 +127,11 @@ TEST_DEFINE(gpiomon_both_events_sigterm,
 	    "tools: gpiomon - receive both types of events and kill with SIGTERM",
 	    0, { 8, 8 });
 
+/*
+ * TODO There's a bug in the kernel with filtering out unwanted events. Until
+ * it gets fixed, we must skip this test case.
+ */
+#if 0
 static void gpiomon_ignore_falling_edge(void)
 {
 	test_tool_run("gpiomon", "--rising-edge",
@@ -143,6 +148,31 @@ static void gpiomon_ignore_falling_edge(void)
 }
 TEST_DEFINE(gpiomon_ignore_falling_edge,
 	    "tools: gpiomon - wait for rising edge events, ignore falling edge",
+	    0, { 8, 8 });
+#endif
+
+static void gpiomon_watch_multiple_lines(void)
+{
+	test_tool_run("gpiomon", "--format=%o", test_chip_name(0),
+		      "1", "2", "3", "4", "5", (char *)NULL);
+	test_set_event(0, 2, TEST_EVENT_ALTERNATING, 100);
+	usleep(150000);
+	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
+	usleep(150000);
+	test_set_event(0, 4, TEST_EVENT_ALTERNATING, 100);
+	usleep(150000);
+	test_tool_signal(SIGTERM);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_RET_OK(test_tool_exit_status());
+	TEST_ASSERT_NULL(test_tool_stderr());
+	TEST_ASSERT_NOT_NULL(test_tool_stdout());
+	TEST_ASSERT_STR_EQ(test_tool_stdout(), "2\n3\n4\n");
+
+}
+TEST_DEFINE(gpiomon_watch_multiple_lines,
+	    "tools: gpiomon - watch multiple lines",
 	    0, { 8, 8 });
 
 static void gpiomon_no_arguments(void)
@@ -187,26 +217,10 @@ static void gpiomon_line_out_of_range(void)
 	TEST_ASSERT_NULL(test_tool_stdout());
 	TEST_ASSERT_NOT_NULL(test_tool_stderr());
 	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
-				 "error waiting for events");
+				 "error retrieving GPIO line from chip");
 }
 TEST_DEFINE(gpiomon_line_out_of_range,
 	    "tools: gpiomon - line out of range",
-	    0, { 4 });
-
-static void gpiomon_more_than_one_line_given(void)
-{
-	test_tool_run("gpiomon", test_chip_name(0), "2", "3", (char *)NULL);
-	test_tool_wait();
-
-	TEST_ASSERT(test_tool_exited());
-	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
-	TEST_ASSERT_NULL(test_tool_stdout());
-	TEST_ASSERT_NOT_NULL(test_tool_stderr());
-	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
-				 "watching more than one GPIO line unsupported");
-}
-TEST_DEFINE(gpiomon_more_than_one_line_given,
-	    "tools: gpiomon - more than one line given",
 	    0, { 4 });
 
 static void gpiomon_custom_format_event_and_offset(void)

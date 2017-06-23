@@ -62,7 +62,7 @@ There are currently six command-line tools available:
 
 * gpiofind   - find the gpiochip name and line offset given the line name
 
-* gpiomon    - wait for events on a GPIO line, specify which events to watch,
+* gpiomon    - wait for events on GPIO lines, specify which events to watch,
                how many events to process before exiting or if the events
                should be reported to the console
 
@@ -105,6 +105,9 @@ Examples:
     # Pause execution until a single event of any type occurs. Don't print
     # anything. Find the line by name.
     $ gpiomon --num-events=1 --silent `gpiofind "USR-IN"`
+
+    # Monitor multiple lines, exit after the first event.
+    $ gpiomon --silent --num-events=1 gpiochip0 2 3 5
 
 TESTING
 -------

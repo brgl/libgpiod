@@ -1,5 +1,5 @@
 /*
- * Monitor events on a GPIO line.
+ * Monitor events on GPIO lines.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *
@@ -15,7 +15,11 @@
 #include <string.h>
 #include <getopt.h>
 #include <signal.h>
+#include <sys/signalfd.h>
 #include <limits.h>
+#include <poll.h>
+#include <errno.h>
+#include <unistd.h>
 
 static const struct option longopts[] = {
 	{ "help",		no_argument,		NULL,	'h' },
@@ -33,9 +37,9 @@ static const char *const shortopts = "+hvln:srfF:";
 
 static void print_help(void)
 {
-	printf("Usage: %s [OPTIONS] <chip name/number> <line offset>\n",
+	printf("Usage: %s [OPTIONS] <chip name/number> <offset 1> <offset 2> ...\n",
 	       get_progname());
-	printf("Wait for events on a GPIO line\n");
+	printf("Wait for events on GPIO lines\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -v, --version:\tdisplay the version and exit\n");
@@ -53,29 +57,22 @@ static void print_help(void)
 	printf("  %%n:  nanoseconds part of the event timestamp\n");
 }
 
-static volatile bool do_run = true;
-
-static void sighandler(int signum UNUSED)
-{
-	do_run = false;
-}
-
-struct callback_data {
+struct mon_ctx {
 	unsigned int offset;
-	unsigned int num_events_wanted;
-	unsigned int num_events_done;
+	unsigned int events_wanted;
+	unsigned int events_done;
 	bool silent;
-	bool watch_rising;
-	bool watch_falling;
 	char *fmt;
+	bool stop;
 };
 
-static void event_print_custom(int type, const struct timespec *ts,
-			       struct callback_data *data)
+static void event_print_custom(unsigned int offset,
+			       struct gpiod_line_event *ev,
+			       struct mon_ctx *ctx)
 {
 	char *prev, *curr, fmt;
 
-	for (prev = curr = data->fmt;;) {
+	for (prev = curr = ctx->fmt;;) {
 		curr = strchr(curr, '%');
 		if (!curr) {
 			fputs(prev, stdout);
@@ -89,19 +86,19 @@ static void event_print_custom(int type, const struct timespec *ts,
 
 		switch (fmt) {
 		case 'o':
-			printf("%u", data->offset);
+			printf("%u", offset);
 			break;
 		case 'e':
-			if (type == GPIOD_EVENT_CB_RISING_EDGE)
+			if (ev->event_type == GPIOD_EVENT_RISING_EDGE)
 				fputc('1', stdout);
 			else
 				fputc('0', stdout);
 			break;
 		case 's':
-			printf("%ld", ts->tv_sec);
+			printf("%ld", ev->ts.tv_sec);
 			break;
 		case 'n':
-			printf("%ld", ts->tv_nsec);
+			printf("%ld", ev->ts.tv_nsec);
 			break;
 		case '%':
 			fputc('%', stdout);
@@ -122,57 +119,72 @@ end:
 	fputc('\n', stdout);
 }
 
-static void event_print_human_readable(int type, const struct timespec *ts,
-				       struct callback_data *data)
+static void event_print_human_readable(unsigned int offset,
+				       struct gpiod_line_event *ev)
 {
 	char *evname;
 
-	if (type == GPIOD_EVENT_CB_RISING_EDGE)
+	if (ev->event_type == GPIOD_EVENT_RISING_EDGE)
 		evname = " RISING EDGE";
 	else
 		evname = "FALLING EDGE";
 
 	printf("event: %s offset: %u timestamp: [%8ld.%09ld]\n",
-	       evname, data->offset, ts->tv_sec, ts->tv_nsec);
+	       evname, offset, ev->ts.tv_sec, ev->ts.tv_nsec);
 }
 
-static int event_callback(int type, const struct timespec *ts, void *data)
+static void handle_event(unsigned int offset,
+			 struct gpiod_line_event *ev, struct mon_ctx *ctx)
 {
-	struct callback_data *cbdata = data;
-
-	if ((type == GPIOD_EVENT_CB_FALLING_EDGE && cbdata->watch_falling)
-	    || (type == GPIOD_EVENT_CB_RISING_EDGE && cbdata->watch_rising)) {
-		if (!cbdata->silent) {
-			if (cbdata->fmt)
-				event_print_custom(type, ts, cbdata);
-			else
-				event_print_human_readable(type, ts, cbdata);
-		}
-		cbdata->num_events_done++;
+	if (!ctx->silent) {
+		if (ctx->fmt)
+			event_print_custom(offset, ev, ctx);
+		else
+			event_print_human_readable(offset, ev);
 	}
+	ctx->events_done++;
 
-	if (cbdata->num_events_wanted &&
-	    cbdata->num_events_done >= cbdata->num_events_wanted)
-		do_run = false;
+	if (ctx->events_wanted && ctx->events_done >= ctx->events_wanted)
+		ctx->stop = true;
+}
 
-	if (!do_run)
-		return GPIOD_EVENT_CB_STOP;
+static int make_signalfd(void)
+{
+	sigset_t sigmask;
+	int sigfd, rv;
 
-	return GPIOD_EVENT_CB_OK;
+	sigemptyset(&sigmask);
+	sigaddset(&sigmask, SIGTERM);
+	sigaddset(&sigmask, SIGINT);
+
+	rv = sigprocmask(SIG_BLOCK, &sigmask, NULL);
+	if (rv < 0)
+		die("error masking signals: %s", strerror(errno));
+
+	sigfd = signalfd(-1, &sigmask, 0);
+	if (sigfd < 0)
+		die("error creating signalfd: %s", strerror(errno));
+
+	return sigfd;
 }
 
 int main(int argc, char **argv)
 {
-	struct callback_data cbdata;
-	bool active_low = false;
-	struct timespec timeout;
-	int optc, opti, status;
+	bool watch_rising = false, watch_falling = false, active_low = false;
+	struct gpiod_line_bulk linebulk = GPIOD_LINE_BULK_INITIALIZER;
+	int optc, opti, i, rv, sigfd, num_lines = 0, evdone, numev;
+	struct gpiod_line_evreq_config evconf;
+	struct gpiod_line_event evbuf;
+	struct gpiod_line *line;
+	struct gpiod_chip *chip;
+	struct mon_ctx config;
+	struct pollfd *pfds;
 	unsigned int offset;
-	char *device, *end;
+	char *end;
 
 	set_progname(argv[0]);
 
-	memset(&cbdata, 0, sizeof(cbdata));
+	memset(&config, 0, sizeof(config));
 
 	for (;;) {
 		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
@@ -190,21 +202,21 @@ int main(int argc, char **argv)
 			active_low = true;
 			break;
 		case 'n':
-			cbdata.num_events_wanted = strtoul(optarg, &end, 10);
+			config.events_wanted = strtoul(optarg, &end, 10);
 			if (*end != '\0')
 				die("invalid number: %s", optarg);
 			break;
 		case 's':
-			cbdata.silent = true;
+			config.silent = true;
 			break;
 		case 'r':
-			cbdata.watch_rising = true;
+			watch_rising = true;
 			break;
 		case 'f':
-			cbdata.watch_falling = true;
+			watch_falling = true;
 			break;
 		case 'F':
-			cbdata.fmt = optarg;
+			config.fmt = optarg;
 			break;
 		case '?':
 			die("try %s --help", get_progname());
@@ -212,9 +224,6 @@ int main(int argc, char **argv)
 			abort();
 		}
 	}
-
-	if (!cbdata.watch_rising && !cbdata.watch_falling)
-		cbdata.watch_rising = cbdata.watch_falling = true;
 
 	argc -= optind;
 	argv += optind;
@@ -225,26 +234,87 @@ int main(int argc, char **argv)
 	if (argc < 2)
 		die("GPIO line offset must be specified");
 
-	if (argc > 2)
-		die("watching more than one GPIO line unsupported");
+	chip = gpiod_chip_open_lookup(argv[0]);
+	if (!chip)
+		die_perror("error opening gpiochip '%s'", argv[0]);
 
-	device = argv[0];
-	offset = strtoul(argv[1], &end, 10);
-	if (*end != '\0' || offset > INT_MAX)
-		die("invalid GPIO offset: %s", argv[1]);
+	evconf.consumer = "gpiomon";
+	evconf.line_flags = 0;
+	evconf.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
+					 : GPIOD_ACTIVE_STATE_HIGH;
 
-	cbdata.offset = offset;
+	if (watch_falling && !watch_rising)
+		evconf.event_type = GPIOD_EVENT_FALLING_EDGE;
+	else if (watch_rising && !watch_falling)
+		evconf.event_type = GPIOD_EVENT_RISING_EDGE;
+	else
+		evconf.event_type = GPIOD_EVENT_BOTH_EDGES;
 
-	timeout.tv_sec = 0;
-	timeout.tv_nsec = 500000000;
+	for (i = 1; i < argc; i++) {
+		offset = strtoul(argv[i], &end, 10);
+		if (*end != '\0' || offset > INT_MAX)
+			die("invalid GPIO offset: %s", argv[i]);
 
-	signal(SIGINT, sighandler);
-	signal(SIGTERM, sighandler);
+		line = gpiod_chip_get_line(chip, offset);
+		if (!line)
+			die_perror("error retrieving GPIO line from chip");
 
-	status = gpiod_simple_event_loop("gpiomon", device, offset, active_low,
-					 &timeout, event_callback, &cbdata);
-	if (status < 0)
-		die_perror("error waiting for events");
+		rv = gpiod_line_event_request(line, &evconf);
+		if (rv)
+			die_perror("error configuring GPIO line events");
+
+		gpiod_line_bulk_add(&linebulk, line);
+		num_lines++;
+	}
+
+	pfds = calloc(sizeof(struct pollfd), num_lines + 1);
+	if (!pfds)
+		die("out of memory");
+
+	for (i = 0; i < num_lines; i++) {
+		pfds[i].fd = gpiod_line_event_get_fd(linebulk.lines[i]);
+		pfds[i].events = POLLIN | POLLPRI;
+	}
+
+	sigfd = make_signalfd();
+	pfds[i].fd = sigfd;
+	pfds[i].events = POLLIN | POLLPRI;
+
+	do {
+		numev = poll(pfds, num_lines + 1, 10000);
+		if (numev < 0)
+			die("error polling for events: %s", strerror(errno));
+		else if (numev == 0)
+			continue;
+
+		for (i = 0, evdone = 0; i < num_lines; i++) {
+			if (!pfds[i].revents)
+				continue;
+
+			rv = gpiod_line_event_read(linebulk.lines[i], &evbuf);
+			if (rv)
+				die_perror("error reading line event");
+
+			handle_event(gpiod_line_offset(linebulk.lines[i]),
+						       &evbuf, &config);
+			evdone++;
+
+			if (config.stop || evdone == numev)
+				break;
+		}
+
+		/*
+		 * There's a signal pending. No need to read it, we know we
+		 * should quit now.
+		 */
+		if (pfds[num_lines].revents) {
+			close(sigfd);
+			config.stop = true;
+		}
+	} while (!config.stop);
+
+	free(pfds);
+	gpiod_chip_close(chip);
 
 	return EXIT_SUCCESS;
 }
