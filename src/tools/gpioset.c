@@ -100,11 +100,11 @@ static void wait_signal(void *data)
 
 	status = sigprocmask(SIG_BLOCK, &sigmask, NULL);
 	if (status < 0)
-		die("sigprocmask: %s", strerror(errno));
+		die("error blocking signals: %s", strerror(errno));
 
 	sigfd = signalfd(-1, &sigmask, 0);
 	if (sigfd < 0)
-		die("signalfd: %s", strerror(errno));
+		die("error creating signalfd: %s", strerror(errno));
 
 	memset(&pfd, 0, sizeof(pfd));
 	pfd.fd = sigfd;
@@ -115,7 +115,7 @@ static void wait_signal(void *data)
 	for (;;) {
 		status = poll(&pfd, 1, 1000 /* one second */);
 		if (status < 0)
-			die("poll: %s", strerror(errno));
+			die("error polling for signals: %s", strerror(errno));
 		else if (status > 0)
 			break;
 	}
