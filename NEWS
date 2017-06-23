@@ -1,3 +1,20 @@
+libgpiod v0.3
+=============
+
+New features:
+- gpiomon can now watch multiple lines at the same time and supports custom
+  output formats which can be specified using the --format argument
+- testing framework can now test external programs: test cases for gpio-tools
+  have been added
+
+Improvements:
+- improve error messages
+- improve README examples
+- configure script improvements
+
+Bug fixes:
+- use correct UAPI flags when requesting line events
+
 libgpiod v0.2.1
 ===============
 
