@@ -199,6 +199,22 @@ TEST_DEFINE(gpiomon_watch_multiple_lines_not_in_order,
 	    "tools: gpiomon - watch multiple lines (offsets not in order)",
 	    0, { 8, 8 });
 
+static void gpiomon_request_the_same_line_twice(void)
+{
+	test_tool_run("gpiomon", test_chip_name(0), "2", "2", (char *)NULL);
+	test_tool_wait();
+
+	TEST_ASSERT(test_tool_exited());
+	TEST_ASSERT_EQ(test_tool_exit_status(), 1);
+	TEST_ASSERT_NULL(test_tool_stdout());
+	TEST_ASSERT_NOT_NULL(test_tool_stderr());
+	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
+				 "error configuring GPIO line events");
+}
+TEST_DEFINE(gpiomon_request_the_same_line_twice,
+	    "tools: gpiomon - request the same line twice",
+	    0, { 8, 8 });
+
 static void gpiomon_no_arguments(void)
 {
 	test_tool_run("gpiomon", (char *)NULL);
