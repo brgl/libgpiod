@@ -74,12 +74,6 @@ static bool is_unsigned_int(const char *str)
 	return *str == '\0';
 }
 
-static void nsec_to_timespec(uint64_t nsec, struct timespec *ts)
-{
-	ts->tv_sec = nsec / 1000000000ULL;
-	ts->tv_nsec = (nsec % 1000000000ULL);
-}
-
 int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 				    const unsigned int *offsets, int *values,
 				    unsigned int num_lines, bool active_low)
@@ -881,7 +875,9 @@ int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
 	event->event_type = evdata.id == GPIOEVENT_EVENT_RISING_EDGE
 						? GPIOD_EVENT_RISING_EDGE
 						: GPIOD_EVENT_FALLING_EDGE;
-	nsec_to_timespec(evdata.timestamp, &event->ts);
+
+	event->ts.tv_sec = evdata.timestamp / 1000000000ULL;
+	event->ts.tv_nsec = evdata.timestamp % 1000000000ULL;
 
 	return 0;
 }
