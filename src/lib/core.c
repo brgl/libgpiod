@@ -93,11 +93,6 @@ static void nsec_to_timespec(uint64_t nsec, struct timespec *ts)
 	ts->tv_nsec = (nsec % 1000000000ULL);
 }
 
-static int gpio_ioctl(int fd, unsigned long request, void *data)
-{
-	return ioctl(fd, request, data);
-}
-
 int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 				    const unsigned int *offsets, int *values,
 				    unsigned int num_lines, bool active_low)
@@ -405,7 +400,7 @@ int gpiod_line_update(struct gpiod_line *line)
 	chip = gpiod_line_get_chip(line);
 	fd = chip->fd;
 
-	status = gpio_ioctl(fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
+	status = ioctl(fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
 	if (status < 0)
 		return -1;
 
@@ -524,7 +519,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 	chip = gpiod_line_get_chip(bulk->lines[0]);
 	fd = chip->fd;
 
-	status = gpio_ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
+	status = ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
 	if (status < 0)
 		return -1;
 
@@ -637,7 +632,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 	else
 		fd = line_get_event_fd(first);
 
-	status = gpio_ioctl(fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
+	status = ioctl(fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
 
@@ -673,7 +668,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 	for (i = 0; i < bulk->num_lines; i++)
 		data.values[i] = (uint8_t)!!values[i];
 
-	status = gpio_ioctl(line_get_handle_fd(bulk->lines[0]),
+	status = ioctl(line_get_handle_fd(bulk->lines[0]),
 			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
@@ -756,7 +751,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	chip = gpiod_line_get_chip(line);
 	fd = chip->fd;
 
-	status = gpio_ioctl(fd, GPIO_GET_LINEEVENT_IOCTL, req);
+	status = ioctl(fd, GPIO_GET_LINEEVENT_IOCTL, req);
 	if (status < 0)
 		return -1;
 
@@ -919,7 +914,7 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 
 	chip->fd = fd;
 
-	status = gpio_ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &chip->cinfo);
+	status = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &chip->cinfo);
 	if (status < 0) {
 		close(chip->fd);
 		free(chip);
