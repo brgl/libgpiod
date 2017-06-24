@@ -23,8 +23,6 @@
 #include <poll.h>
 #include <linux/gpio.h>
 
-#define MALLOC __attribute__((malloc))
-
 struct gpiod_chip {
 	int fd;
 	struct gpiochip_info cinfo;
@@ -68,17 +66,6 @@ struct gpiod_chip_iter {
 
 static const char dev_dir[] = "/dev/";
 static const char cdev_prefix[] = "gpiochip";
-
-static MALLOC void * zalloc(size_t size)
-{
-	void *ptr;
-
-	ptr = malloc(size);
-	if (ptr)
-		memset(ptr, 0, size);
-
-	return ptr;
-}
 
 static bool is_unsigned_int(const char *str)
 {
@@ -486,9 +473,11 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 	if (!verify_line_bulk(bulk))
 		return -1;
 
-	handle = zalloc(sizeof(*handle));
+	handle = malloc(sizeof(*handle));
 	if (!handle)
 		return -1;
+
+	memset(handle, 0, sizeof(*handle));
 
 	req = &handle->request;
 
@@ -906,12 +895,13 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 	if (fd < 0)
 		return NULL;
 
-	chip = zalloc(sizeof(*chip));
+	chip = malloc(sizeof(*chip));
 	if (!chip) {
 		close(fd);
 		return NULL;
 	}
 
+	memset(chip, 0, sizeof(*chip));
 	chip->fd = fd;
 
 	status = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &chip->cinfo);
@@ -921,7 +911,7 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 		return NULL;
 	}
 
-	chip->lines = zalloc(chip->cinfo.lines * sizeof(*chip->lines));
+	chip->lines = calloc(chip->cinfo.lines, sizeof(*chip->lines));
 	if (!chip->lines) {
 		close(chip->fd);
 		free(chip);
@@ -1071,9 +1061,11 @@ struct gpiod_chip_iter * gpiod_chip_iter_new(void)
 {
 	struct gpiod_chip_iter *new;
 
-	new = zalloc(sizeof(*new));
+	new = malloc(sizeof(*new));
 	if (!new)
 		return NULL;
+
+	memset(new, 0, sizeof(*new));
 
 	new->dir = opendir(dev_dir);
 	if (!new->dir)
