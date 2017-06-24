@@ -10,6 +10,8 @@
 
 #include "gpiod-test.h"
 
+#include <errno.h>
+
 static void line_request_output(void)
 {
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
@@ -57,7 +59,7 @@ static void line_request_already_requested(void)
 
 	status = gpiod_line_request_input(line, TEST_CONSUMER, false);
 	TEST_ASSERT_NOTEQ(status, 0);
-	TEST_ASSERT_EQ(gpiod_errno(), GPIOD_ELINEBUSY);
+	TEST_ASSERT_EQ(errno, EBUSY);
 }
 TEST_DEFINE(line_request_already_requested,
 	    "gpiod_line_request() - already requested",
@@ -217,7 +219,7 @@ static void line_request_bulk_different_chips(void)
 
 	status = gpiod_line_request_bulk(&bulk, &req, NULL);
 	TEST_ASSERT_NOTEQ(status, 0);
-	TEST_ASSERT_EQ(gpiod_errno(), GPIOD_EBULKINCOH);
+	TEST_ASSERT_EQ(errno, EINVAL);
 }
 TEST_DEFINE(line_request_bulk_different_chips,
 	    "gpiod_line_request_bulk() - different chips",

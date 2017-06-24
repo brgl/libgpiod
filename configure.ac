@@ -44,7 +44,6 @@ AC_DEFUN([HEADER_NOT_FOUND_LIB],
 # This is always checked (library needs this)
 AC_HEADER_STDC
 AC_FUNC_MALLOC
-AC_FUNC_STRERROR_R
 AC_CHECK_FUNC([ioctl], [], [FUNC_NOT_FOUND_LIB([ioctl])])
 AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_LIB([asprintf])])
 AC_CHECK_FUNC([readdir], [], [FUNC_NOT_FOUND_LIB([readdir])])

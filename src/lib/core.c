@@ -69,45 +69,13 @@ struct gpiod_chip_iter {
 static const char dev_dir[] = "/dev/";
 static const char cdev_prefix[] = "gpiochip";
 
-/*
- * The longest error message in glibc is about 50 characters long so 64 should
- * be enough to store every error message in the future too.
- */
-#define ERRSTR_MAX 64
-
-static __thread int last_error;
-static __thread char errmsg[ERRSTR_MAX];
-
-static const char *const error_descr[] = {
-	"success",
-	"GPIO line not reserved",
-	"no events configured on GPIO line",
-	"GPIO lines in bulk don't belong to the same gpiochip",
-	"GPIO line currently in use",
-	"number of lines in the request exceeds limit",
-};
-
-static void set_last_error(int errnum)
-{
-	last_error = errnum;
-}
-
-static void last_error_from_errno(void)
-{
-	last_error = errno;
-}
-
 static MALLOC void * zalloc(size_t size)
 {
 	void *ptr;
 
 	ptr = malloc(size);
-	if (!ptr) {
-		set_last_error(ENOMEM);
-		return NULL;
-	}
-
-	memset(ptr, 0, size);
+	if (ptr)
+		memset(ptr, 0, size);
 
 	return ptr;
 }
@@ -127,50 +95,7 @@ static void nsec_to_timespec(uint64_t nsec, struct timespec *ts)
 
 static int gpio_ioctl(int fd, unsigned long request, void *data)
 {
-	int status;
-
-	status = ioctl(fd, request, data);
-	if (status < 0) {
-		last_error_from_errno();
-		return -1;
-	}
-
-	return 0;
-}
-
-int gpiod_errno(void)
-{
-	return last_error;
-}
-
-static const char * strerror_r_wrapper(int errnum, char *buf, size_t buflen)
-{
-#ifdef STRERROR_R_CHAR_P
-	return strerror_r(errnum, buf, buflen);
-#else
-	int status;
-
-	status = strerror_r(errnum, buf, buflen);
-	if (status != 0)
-		snprintf(buf, buflen, "error in strerror_r(): %d", status);
-
-	return buf;
-#endif
-}
-
-const char * gpiod_strerror(int errnum)
-{
-	if (errnum < _GPIOD_ERRNO_OFFSET)
-		return strerror_r_wrapper(errnum, errmsg, sizeof(errmsg));
-	else if (errnum > _GPIOD_MAX_ERR)
-		return "invalid error number";
-	else
-		return error_descr[errnum - _GPIOD_ERRNO_OFFSET];
-}
-
-const char * gpiod_last_strerror(void)
-{
-	return gpiod_strerror(gpiod_errno());
+	return ioctl(fd, request, data);
 }
 
 int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
@@ -184,7 +109,7 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 	int status;
 
 	if (num_lines > GPIOD_REQUEST_MAX_LINES) {
-		set_last_error(GPIOD_ELINEMAX);
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -232,7 +157,7 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 	int status;
 
 	if (num_lines > GPIOD_REQUEST_MAX_LINES) {
-		set_last_error(GPIOD_ELINEMAX);
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -297,7 +222,7 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 	for (;;) {
 		status = gpiod_line_event_wait(line, timeout);
 		if (status < 0) {
-			if (gpiod_errno() == EINTR)
+			if (errno == EINTR)
 				return evtype = GPIOD_EVENT_CB_TIMEOUT;
 			else
 				goto out;
@@ -539,12 +464,12 @@ static bool verify_line_bulk(struct gpiod_line_bulk *bulk)
 		line = bulk->lines[i];
 
 		if (i > 0 && chip != gpiod_line_get_chip(line)) {
-			set_last_error(GPIOD_EBULKINCOH);
+			errno = EINVAL;
 			return false;
 		}
 
 		if (!gpiod_line_is_free(line)) {
-			set_last_error(GPIOD_ELINEBUSY);
+			errno = EBUSY;
 			return false;
 		}
 	}
@@ -701,7 +626,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 
 	if (!line_bulk_is_reserved(bulk) &&
 	    !line_bulk_is_event_configured(bulk)) {
-		set_last_error(GPIOD_EREQUEST);
+		errno = EPERM;
 		return -1;
 	}
 
@@ -739,7 +664,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 	int status;
 
 	if (!line_bulk_is_reserved(bulk)) {
-		set_last_error(GPIOD_EREQUEST);
+		errno = EPERM;
 		return -1;
 	}
 
@@ -801,7 +726,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	int status, fd;
 
 	if (!gpiod_line_is_free(line)) {
-		set_last_error(GPIOD_ELINEBUSY);
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -907,7 +832,7 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	int status;
 
 	if (!line_bulk_is_event_configured(bulk)) {
-		set_last_error(GPIOD_EEVREQUEST);
+		errno = EPERM;
 		return -1;
 	}
 
@@ -921,12 +846,10 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	}
 
 	status = ppoll(fds, bulk->num_lines, timeout, NULL);
-	if (status < 0) {
-		last_error_from_errno();
+	if (status < 0)
 		return -1;
-	} else if (status == 0) {
+	else if (status == 0)
 		return 0;
-	}
 
 	for (i = 0; !fds[i].revents; i++);
 	if (line)
@@ -941,7 +864,7 @@ int gpiod_line_event_read(struct gpiod_line *line,
 	int fd;
 
 	if (!gpiod_line_event_configured(line)) {
-		set_last_error(GPIOD_EEVREQUEST);
+		errno = EPERM;
 		return -1;
 	}
 
@@ -965,10 +888,9 @@ int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
 
 	rd = read(fd, &evdata, sizeof(evdata));
 	if (rd < 0) {
-		last_error_from_errno();
 		return -1;
 	} else if (rd != sizeof(evdata)) {
-		set_last_error(EIO);
+		errno = EIO;
 		return -1;
 	}
 
@@ -986,10 +908,8 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 	int status, fd;
 
 	fd = open(path, O_RDWR | O_CLOEXEC);
-	if (fd < 0) {
-		last_error_from_errno();
+	if (fd < 0)
 		return NULL;
-	}
 
 	chip = zalloc(sizeof(*chip));
 	if (!chip) {
@@ -1023,10 +943,8 @@ struct gpiod_chip * gpiod_chip_open_by_name(const char *name)
 	int status;
 
 	status = asprintf(&path, "%s%s", dev_dir, name);
-	if (status < 0) {
-		last_error_from_errno();
+	if (status < 0)
 		return NULL;
-	}
 
 	chip = gpiod_chip_open(path);
 	free(path);
@@ -1041,10 +959,8 @@ struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num)
 	int status;
 
 	status = asprintf(&path, "%s%s%u", dev_dir, cdev_prefix, num);
-	if (!status) {
-		last_error_from_errno();
+	if (!status)
 		return NULL;
-	}
 
 	chip = gpiod_chip_open(path);
 	free(path);
@@ -1136,7 +1052,7 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 	int status;
 
 	if (offset >= chip->cinfo.lines) {
-		set_last_error(EINVAL);
+		errno = EINVAL;
 		return NULL;
 	}
 
@@ -1165,10 +1081,8 @@ struct gpiod_chip_iter * gpiod_chip_iter_new(void)
 		return NULL;
 
 	new->dir = opendir(dev_dir);
-	if (!new->dir) {
-		last_error_from_errno();
+	if (!new->dir)
 		return NULL;
-	}
 
 	new->state = CHIP_ITER_INIT;
 

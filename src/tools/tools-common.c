@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <libgen.h>
+#include <errno.h>
 
 #define NORETURN		__attribute__((noreturn))
 
@@ -51,7 +52,7 @@ void NORETURN PRINTF(1, 2) die_perror(const char *fmt, ...)
 	va_start(va, fmt);
 	fprintf(stderr, "%s: ", progname);
 	vfprintf(stderr, fmt, va);
-	fprintf(stderr, ": %s\n", gpiod_last_strerror());
+	fprintf(stderr, ": %s\n", strerror(errno));
 	va_end(va);
 
 	exit(EXIT_FAILURE);

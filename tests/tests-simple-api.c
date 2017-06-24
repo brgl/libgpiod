@@ -10,6 +10,8 @@
 
 #include "gpiod-test.h"
 
+#include <errno.h>
+
 static void simple_set_get_value(void)
 {
 	int ret;
@@ -95,7 +97,7 @@ static void simple_get_value_multiple_max_lines(void)
 					      GPIOD_REQUEST_MAX_LINES + 1,
 					      false);
 	TEST_ASSERT_NOTEQ(ret, 0);
-	TEST_ASSERT_EQ(gpiod_errno(), GPIOD_ELINEMAX);
+	TEST_ASSERT_EQ(errno, EINVAL);
 }
 TEST_DEFINE(simple_get_value_multiple_max_lines,
 	    "gpiod_simple_get_value_multiple() exceed max lines",
@@ -111,7 +113,7 @@ static void simple_set_value_multiple_max_lines(void)
 					      GPIOD_REQUEST_MAX_LINES + 1,
 					      false, NULL, NULL);
 	TEST_ASSERT_NOTEQ(ret, 0);
-	TEST_ASSERT_EQ(gpiod_errno(), GPIOD_ELINEMAX);
+	TEST_ASSERT_EQ(errno, EINVAL);
 }
 TEST_DEFINE(simple_set_value_multiple_max_lines,
 	    "gpiod_simple_set_value_multiple() exceed max lines",
