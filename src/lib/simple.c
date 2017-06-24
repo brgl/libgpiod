@@ -13,6 +13,19 @@
 #include <string.h>
 #include <errno.h>
 
+int gpiod_simple_get_value(const char *consumer, const char *device,
+			   unsigned int offset, bool active_low)
+{
+	int value, status;
+
+	status = gpiod_simple_get_value_multiple(consumer, device, &offset,
+						 &value, 1, active_low);
+	if (status < 0)
+		return status;
+
+	return value;
+}
+
 int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 				    const unsigned int *offsets, int *values,
 				    unsigned int num_lines, bool active_low)
@@ -57,6 +70,15 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 	gpiod_chip_close(chip);
 
 	return status;
+}
+
+int gpiod_simple_set_value(const char *consumer, const char *device,
+			   unsigned int offset, int value, bool active_low,
+			   gpiod_set_value_cb cb, void *data)
+{
+	return gpiod_simple_set_value_multiple(consumer, device, &offset,
+					       &value, 1, active_low,
+					       cb, data);
 }
 
 int gpiod_simple_set_value_multiple(const char *consumer, const char *device,

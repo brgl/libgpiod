@@ -83,19 +83,8 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
  * @param active_low The active state of this line - true if low.
  * @return 0 or 1 (GPIO value) if the operation succeeds, -1 on error.
  */
-static inline int gpiod_simple_get_value(const char *consumer,
-					 const char *device,
-					 unsigned int offset, bool active_low)
-{
-	int value, status;
-
-	status = gpiod_simple_get_value_multiple(consumer, device, &offset,
-						 &value, 1, active_low);
-	if (status < 0)
-		return status;
-
-	return value;
-}
+int gpiod_simple_get_value(const char *consumer, const char *device,
+			   unsigned int offset, bool active_low) GPIOD_API;
 
 /**
  * @brief Simple set value callback signature.
@@ -134,16 +123,9 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
  * @param data User data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
-static inline int gpiod_simple_set_value(const char *consumer,
-					 const char *device,
-					 unsigned int offset, int value,
-					 bool active_low,
-					 gpiod_set_value_cb cb, void *data)
-{
-	return gpiod_simple_set_value_multiple(consumer, device, &offset,
-					       &value, 1, active_low,
-					       cb, data);
-}
+int gpiod_simple_set_value(const char *consumer, const char *device,
+			   unsigned int offset, int value, bool active_low,
+			   gpiod_set_value_cb cb, void *data) GPIOD_API;
 
 /**
  * @brief Event types that can be passed to the simple event callback.
