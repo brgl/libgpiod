@@ -621,12 +621,6 @@ int gpiod_line_event_request_all(struct gpiod_line *line,
 				 bool active_low) GPIOD_API;
 
 /**
- * @brief Stop listening for events and release the line.
- * @param line GPIO line object.
- */
-void gpiod_line_event_release(struct gpiod_line *line) GPIOD_API;
-
-/**
  * @brief Check if event notifications are configured on this line.
  * @param line GPIO line object.
  * @return True if event notifications are configured. False otherwise.

@@ -183,7 +183,7 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 	}
 
 out:
-	gpiod_line_event_release(line);
+	gpiod_line_release(line);
 	gpiod_chip_close(chip);
 
 	return status;

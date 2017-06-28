@@ -395,9 +395,18 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 	for (i = 0; i < bulk->num_lines; i++) {
 		line = bulk->lines[i];
 
-		line_remove_handle(line);
+		if (line_get_state(line) == LINE_TAKEN)
+			line_remove_handle(line);
+		else if (line_get_state(line) == LINE_EVENT)
+			close(line_get_event_fd(line));
+
 		line_set_state(line, LINE_FREE);
-		line_maybe_update(line);
+		/*
+		 * FIXME This is a temporary check before we add a better way
+		 * to determine whether a line object is valid.
+		 */
+		if (line->chip)
+			line_maybe_update(line);
 	}
 }
 
@@ -611,12 +620,6 @@ int gpiod_line_event_request_all(struct gpiod_line *line,
 				       GPIOD_EVENT_BOTH_EDGES);
 }
 
-void gpiod_line_event_release(struct gpiod_line *line)
-{
-	close(line_get_event_fd(line));
-	line_set_state(line, LINE_FREE);
-}
-
 bool gpiod_line_event_configured(struct gpiod_line *line)
 {
 	return line_get_state(line) == LINE_EVENT;
@@ -827,17 +830,10 @@ struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
 
 void gpiod_chip_close(struct gpiod_chip *chip)
 {
-	struct gpiod_line *line;
 	unsigned int i;
 
-	for (i = 0; i < chip->cinfo.lines; i++) {
-		line = &chip->lines[i];
-
-		if (line_get_state(line) == LINE_TAKEN)
-			gpiod_line_release(line);
-		else if (line_get_state(line) == LINE_EVENT)
-			gpiod_line_event_release(line);
-	}
+	for (i = 0; i < chip->cinfo.lines; i++)
+		gpiod_line_release(&chip->lines[i]);
 
 	close(chip->fd);
 	free(chip->lines);
