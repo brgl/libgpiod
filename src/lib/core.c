@@ -885,8 +885,3 @@ struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
 {
 	return line->chip;
 }
-
-const char * gpiod_version_string(void)
-{
-	return GPIOD_VERSION_STR;
-}
