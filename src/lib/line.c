@@ -498,7 +498,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 		data.values[i] = (uint8_t)!!values[i];
 
 	status = ioctl(line_get_handle_fd(bulk->lines[0]),
-			    GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+		       GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
 
