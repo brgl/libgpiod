@@ -149,10 +149,13 @@ struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
 
 void gpiod_chip_close(struct gpiod_chip *chip)
 {
+	struct gpiod_line_bulk bulk;
 	unsigned int i;
 
+	gpiod_line_bulk_init(&bulk);
 	for (i = 0; i < chip->cinfo.lines; i++)
-		gpiod_line_release(line_array_member(chip->lines, i));
+		gpiod_line_bulk_add(&bulk, line_array_member(chip->lines, i));
+	gpiod_line_release_bulk(&bulk);
 
 	close(chip->fd);
 	line_array_free(chip->lines);
