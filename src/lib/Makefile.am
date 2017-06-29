@@ -7,7 +7,7 @@
 #
 
 lib_LTLIBRARIES = libgpiod.la
-libgpiod_la_SOURCES = chip.c core.c iter.c misc.c simple.c
+libgpiod_la_SOURCES = chip.c iter.c line.c misc.c simple.c
 libgpiod_la_CFLAGS = -Wall -Wextra -g
 libgpiod_la_CFLAGS += -fvisibility=hidden -I$(top_srcdir)/include/
 libgpiod_la_CFLAGS += -include $(top_builddir)/config.h

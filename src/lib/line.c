@@ -1,5 +1,5 @@
 /*
- * GPIO chardev utils for linux.
+ * GPIO line API for libgpiod.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *
@@ -10,16 +10,12 @@
 
 #include "gpiod-internal.h"
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include <errno.h>
-#include <dirent.h>
-#include <ctype.h>
 #include <unistd.h>
-#include <sys/ioctl.h>
 #include <poll.h>
+#include <errno.h>
+#include <sys/ioctl.h>
 #include <linux/gpio.h>
 
 enum {
@@ -43,11 +39,6 @@ struct gpiod_line {
 		struct gpioevent_request event;
 	};
 };
-
-void line_set_offset(struct gpiod_line *line, unsigned int offset)
-{
-	line->info.line_offset = offset;
-}
 
 static int line_get_state(struct gpiod_line *line)
 {
@@ -92,6 +83,36 @@ static void line_remove_handle(struct gpiod_line *line)
 		close(handle->request.fd);
 		free(handle);
 	}
+}
+
+void line_set_offset(struct gpiod_line *line, unsigned int offset)
+{
+	line->info.line_offset = offset;
+}
+
+struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
+{
+	return line->chip;
+}
+
+struct gpiod_line * line_array_alloc(size_t numlines)
+{
+	return calloc(numlines, sizeof(struct gpiod_line));
+}
+
+void line_array_free(struct gpiod_line *lines)
+{
+	free(lines);
+}
+
+struct gpiod_line * line_array_member(struct gpiod_line *lines, size_t index)
+{
+	return &lines[index];
+}
+
+void line_set_chip(struct gpiod_line *line, struct gpiod_chip *chip)
+{
+	line->chip = chip;
 }
 
 unsigned int gpiod_line_offset(struct gpiod_line *line)
@@ -699,29 +720,4 @@ int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
 	event->ts.tv_nsec = evdata.timestamp % 1000000000ULL;
 
 	return 0;
-}
-
-struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
-{
-	return line->chip;
-}
-
-struct gpiod_line * line_array_alloc(size_t numlines)
-{
-	return calloc(numlines, sizeof(struct gpiod_line));
-}
-
-void line_array_free(struct gpiod_line *lines)
-{
-	free(lines);
-}
-
-struct gpiod_line * line_array_member(struct gpiod_line *lines, size_t index)
-{
-	return &lines[index];
-}
-
-void line_set_chip(struct gpiod_line *line, struct gpiod_chip *chip)
-{
-	line->chip = chip;
 }
