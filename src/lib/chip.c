@@ -25,7 +25,7 @@ struct gpiod_chip {
 	struct gpiod_line *lines;
 };
 
-static bool is_unsigned_int(const char *str)
+static bool isuint(const char *str)
 {
 	for (; *str && isdigit(*str); str++);
 
@@ -132,7 +132,7 @@ struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
 {
 	struct gpiod_chip *chip;
 
-	if (is_unsigned_int(descr)) {
+	if (isuint(descr)) {
 		chip = gpiod_chip_open_by_number(strtoul(descr, NULL, 10));
 	} else {
 		chip = gpiod_chip_open_by_label(descr);
