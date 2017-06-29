@@ -1,5 +1,5 @@
 /*
- * GPIO chip API for libgpiod.
+ * GPIO chip handling.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *

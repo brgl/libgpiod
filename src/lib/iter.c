@@ -1,5 +1,5 @@
 /*
- * GPIO chip and line iterators for libgpiod.
+ * GPIO chip and line iterators.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *

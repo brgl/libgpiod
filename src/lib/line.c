@@ -1,5 +1,5 @@
 /*
- * GPIO line API for libgpiod.
+ * GPIO line handling.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *

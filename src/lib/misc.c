@@ -1,5 +1,5 @@
 /*
- * Misc definitions for libgpiod.
+ * Misc definitions.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *
