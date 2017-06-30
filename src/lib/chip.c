@@ -8,7 +8,7 @@
  * as published by the Free Software Foundation.
  */
 
-#include "gpiod-internal.h"
+#include "line.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -22,7 +22,7 @@
 struct gpiod_chip {
 	int fd;
 	struct gpiochip_info cinfo;
-	struct gpiod_line *lines;
+	struct gpiod_line **lines;
 };
 
 static bool isuint(const char *str)
@@ -30,11 +30,6 @@ static bool isuint(const char *str)
 	for (; *str && isdigit(*str); str++);
 
 	return *str == '\0';
-}
-
-int chip_get_fd(struct gpiod_chip *chip)
-{
-	return chip->fd;
 }
 
 struct gpiod_chip * gpiod_chip_open(const char *path)
@@ -62,7 +57,7 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 		return NULL;
 	}
 
-	chip->lines = line_array_alloc(chip->cinfo.lines);
+	chip->lines = calloc(chip->cinfo.lines, sizeof(struct gpiod_line *));
 	if (!chip->lines) {
 		close(chip->fd);
 		free(chip);
@@ -149,16 +144,17 @@ struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
 
 void gpiod_chip_close(struct gpiod_chip *chip)
 {
-	struct gpiod_line_bulk bulk;
 	unsigned int i;
 
-	gpiod_line_bulk_init(&bulk);
-	for (i = 0; i < chip->cinfo.lines; i++)
-		gpiod_line_bulk_add(&bulk, line_array_member(chip->lines, i));
-	gpiod_line_release_bulk(&bulk);
+	for (i = 0; i < chip->cinfo.lines; i++) {
+		if (chip->lines[i]) {
+			gpiod_line_release(chip->lines[i]);
+			line_free(chip->lines[i]);
+		}
+	}
 
 	close(chip->fd);
-	line_array_free(chip->lines);
+	free(chip->lines);
 	free(chip);
 }
 
@@ -188,9 +184,15 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 		return NULL;
 	}
 
-	line = line_array_member(chip->lines, offset);
-	line_set_offset(line, offset);
-	line_set_chip(line, chip);
+	if (!chip->lines[offset]) {
+		line = line_new(offset, chip, chip->fd);
+		if (!line)
+			return NULL;
+
+		chip->lines[offset] = line;
+	} else {
+		line = chip->lines[offset];
+	}
 
 	status = gpiod_line_update(line);
 	if (status < 0)
