@@ -20,8 +20,8 @@
 
 enum {
 	LINE_FREE = 0,
-	LINE_TAKEN,
-	LINE_EVENT,
+	LINE_REQUESTED_VALUES,
+	LINE_REQUESTED_EVENTS,
 };
 
 struct handle_data {
@@ -59,12 +59,13 @@ static int line_get_handle_fd(struct gpiod_line *line)
 {
 	int state = line_get_state(line);
 
-	return state == LINE_TAKEN ? line->handle->request.fd : -1;
+	return state == LINE_REQUESTED_VALUES ? line->handle->request.fd : -1;
 }
 
 static int line_get_event_fd(struct gpiod_line *line)
 {
-	return line_get_state(line) == LINE_EVENT ? line->event.fd : -1;
+	return line_get_state(line) == LINE_REQUESTED_EVENTS
+						? line->event.fd : -1;
 }
 
 static void line_set_handle(struct gpiod_line *line,
@@ -203,24 +204,12 @@ static void line_maybe_update(struct gpiod_line *line)
 		line_set_needs_update(line);
 }
 
-static bool line_bulk_is_reserved(struct gpiod_line_bulk *bulk)
+static bool line_bulk_is_requested(struct gpiod_line_bulk *bulk)
 {
 	unsigned int i;
 
 	for (i = 0; i < bulk->num_lines; i++) {
-		if (!gpiod_line_is_reserved(bulk->lines[i]))
-			return false;
-	}
-
-	return true;
-}
-
-static bool line_bulk_is_event_configured(struct gpiod_line_bulk *bulk)
-{
-	unsigned int i;
-
-	for (i = 0; i < bulk->num_lines; i++) {
-		if (!gpiod_line_event_configured(bulk->lines[i]))
+		if (!gpiod_line_is_requested(bulk->lines[i]))
 			return false;
 	}
 
@@ -266,9 +255,9 @@ int gpiod_line_request_input(struct gpiod_line *line,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.direction = GPIOD_DIRECTION_INPUT,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
+		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
+		.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
+					   : GPIOD_REQUEST_ACTIVE_HIGH,
 	};
 
 	return gpiod_line_request(line, &config, 0);
@@ -279,9 +268,9 @@ int gpiod_line_request_output(struct gpiod_line *line, const char *consumer,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.direction = GPIOD_DIRECTION_OUTPUT,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
+		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
+		.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
+					   : GPIOD_REQUEST_ACTIVE_HIGH,
 	};
 
 	return gpiod_line_request(line, &config, default_val);
@@ -312,18 +301,15 @@ static bool verify_line_bulk(struct gpiod_line_bulk *bulk)
 	return true;
 }
 
-int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
-			    const struct gpiod_line_request_config *config,
-			    const int *default_vals)
+static int line_request_values(struct gpiod_line_bulk *bulk,
+			       const struct gpiod_line_request_config *config,
+			       const int *default_vals)
 {
 	struct gpiohandle_request *req;
 	struct handle_data *handle;
 	struct gpiod_line *line;
-	int status, fd;
 	unsigned int i;
-
-	if (!verify_line_bulk(bulk))
-		return -1;
+	int rv, fd;
 
 	handle = malloc(sizeof(*handle));
 	if (!handle)
@@ -338,19 +324,23 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 	if (config->flags & GPIOD_REQUEST_OPEN_SOURCE)
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
 
-	if (config->direction == GPIOD_DIRECTION_INPUT)
+	if (config->request_type == GPIOD_REQUEST_DIRECTION_INPUT)
 		req->flags |= GPIOHANDLE_REQUEST_INPUT;
-	else if (config->direction == GPIOD_DIRECTION_OUTPUT)
+	else if (config->request_type == GPIOD_REQUEST_DIRECTION_OUTPUT)
 		req->flags |= GPIOHANDLE_REQUEST_OUTPUT;
 
-	if (config->active_state == GPIOD_ACTIVE_STATE_LOW)
+	if (config->active_state == GPIOD_REQUEST_ACTIVE_LOW) {
 		req->flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
+	} else if (config->active_state != GPIOD_REQUEST_ACTIVE_HIGH) {
+		errno = EINVAL;
+		return -1;
+	}
 
 	req->lines = bulk->num_lines;
 
 	for (i = 0; i < bulk->num_lines; i++) {
 		req->lineoffsets[i] = gpiod_line_offset(bulk->lines[i]);
-		if (config->direction == GPIOD_DIRECTION_OUTPUT)
+		if (config->request_type == GPIOD_REQUEST_DIRECTION_OUTPUT)
 			req->default_values[i] = !!default_vals[i];
 	}
 
@@ -359,19 +349,101 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 
 	fd = bulk->lines[0]->chip_ctx->fd;
 
-	status = ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
-	if (status < 0)
+	rv = ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
+	if (rv < 0)
 		return -1;
 
 	for (i = 0; i < bulk->num_lines; i++) {
 		line = bulk->lines[i];
 
 		line_set_handle(line, handle);
-		line_set_state(line, LINE_TAKEN);
+		line_set_state(line, LINE_REQUESTED_VALUES);
 		line_maybe_update(line);
 	}
 
 	return 0;
+}
+
+static int line_request_event_single(struct gpiod_line *line,
+			const struct gpiod_line_request_config *config)
+{
+	struct gpioevent_request *req;
+	int rv;
+
+	req = &line->event;
+
+	memset(req, 0, sizeof(*req));
+	strncpy(req->consumer_label, config->consumer,
+		sizeof(req->consumer_label) - 1);
+	req->lineoffset = gpiod_line_offset(line);
+	req->handleflags |= GPIOHANDLE_REQUEST_INPUT;
+
+	if (config->flags & GPIOD_REQUEST_OPEN_DRAIN)
+		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
+	if (config->flags & GPIOD_REQUEST_OPEN_SOURCE)
+		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
+
+	if (config->active_state == GPIOD_REQUEST_ACTIVE_LOW) {
+		req->handleflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
+	} else if (config->active_state != GPIOD_REQUEST_ACTIVE_HIGH) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (config->request_type == GPIOD_REQUEST_EVENT_RISING_EDGE)
+		req->eventflags |= GPIOEVENT_REQUEST_RISING_EDGE;
+	else if (config->request_type == GPIOD_REQUEST_EVENT_FALLING_EDGE)
+		req->eventflags |= GPIOEVENT_REQUEST_FALLING_EDGE;
+	else if (config->request_type == GPIOD_REQUEST_EVENT_BOTH_EDGES)
+		req->eventflags |= GPIOEVENT_REQUEST_BOTH_EDGES;
+
+	rv = ioctl(line->chip_ctx->fd, GPIO_GET_LINEEVENT_IOCTL, req);
+	if (rv < 0)
+		return -1;
+
+	line_set_state(line, LINE_REQUESTED_EVENTS);
+
+	return 0;
+}
+
+static int line_request_events(struct gpiod_line_bulk *bulk,
+			       const struct gpiod_line_request_config *config)
+{
+	unsigned int i, j;
+	int rv;
+
+	for (i = 0; i < bulk->num_lines; i++) {
+		rv = line_request_event_single(bulk->lines[i], config);
+		if (rv) {
+			for (j = i - 1; i > 0; i--)
+				gpiod_line_release(bulk->lines[j]);
+
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
+			    const struct gpiod_line_request_config *config,
+			    const int *default_vals)
+{
+	if (!verify_line_bulk(bulk))
+		return -1;
+
+	if (config->request_type == GPIOD_REQUEST_DIRECTION_AS_IS
+	    || config->request_type == GPIOD_REQUEST_DIRECTION_INPUT
+	    || config->request_type == GPIOD_REQUEST_DIRECTION_OUTPUT) {
+		return line_request_values(bulk, config, default_vals);
+	} else if (config->request_type == GPIOD_REQUEST_EVENT_FALLING_EDGE
+		 || config->request_type == GPIOD_REQUEST_EVENT_RISING_EDGE
+		 || config->request_type == GPIOD_REQUEST_EVENT_BOTH_EDGES) {
+		return line_request_events(bulk, config);
+	} else {
+		errno = EINVAL;
+		return -1;
+	}
 }
 
 int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
@@ -379,9 +451,9 @@ int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.direction = GPIOD_DIRECTION_INPUT,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
+		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
+		.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
+					   : GPIOD_REQUEST_ACTIVE_HIGH,
 	};
 
 	return gpiod_line_request_bulk(bulk, &config, 0);
@@ -393,9 +465,9 @@ int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.direction = GPIOD_DIRECTION_OUTPUT,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
+		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
+		.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
+					   : GPIOD_REQUEST_ACTIVE_HIGH,
 	};
 
 	return gpiod_line_request_bulk(bulk, &config, default_vals);
@@ -419,18 +491,19 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 	for (i = 0; i < bulk->num_lines; i++) {
 		line = bulk->lines[i];
 
-		if (line_get_state(line) == LINE_TAKEN)
+		if (line_get_state(line) == LINE_REQUESTED_VALUES)
 			line_remove_handle(line);
-		else if (line_get_state(line) == LINE_EVENT)
+		else if (line_get_state(line) == LINE_REQUESTED_EVENTS)
 			close(line_get_event_fd(line));
 
 		line_set_state(line, LINE_FREE);
 	}
 }
 
-bool gpiod_line_is_reserved(struct gpiod_line *line)
+bool gpiod_line_is_requested(struct gpiod_line *line)
 {
-	return line_get_state(line) == LINE_TAKEN;
+	return (line_get_state(line) == LINE_REQUESTED_VALUES
+		|| line_get_state(line) == LINE_REQUESTED_EVENTS);
 }
 
 bool gpiod_line_is_free(struct gpiod_line *line)
@@ -462,15 +535,14 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 
 	first = bulk->lines[0];
 
-	if (!line_bulk_is_reserved(bulk) &&
-	    !line_bulk_is_event_configured(bulk)) {
+	if (!line_bulk_is_requested(bulk)) {
 		errno = EPERM;
 		return -1;
 	}
 
 	memset(&data, 0, sizeof(data));
 
-	if (gpiod_line_is_reserved(first))
+	if (line_get_state(first) == LINE_REQUESTED_VALUES)
 		fd = line_get_handle_fd(first);
 	else
 		fd = line_get_event_fd(first);
@@ -501,7 +573,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 	unsigned int i;
 	int status;
 
-	if (!line_bulk_is_reserved(bulk)) {
+	if (!line_bulk_is_requested(bulk)) {
 		errno = EPERM;
 		return -1;
 	}
@@ -556,87 +628,39 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name)
 	return NULL;
 }
 
-int gpiod_line_event_request(struct gpiod_line *line,
-			     struct gpiod_line_evreq_config *config)
-{
-	struct gpioevent_request *req;
-	int rv;
-
-	if (!gpiod_line_is_free(line)) {
-		errno = EBUSY;
-		return -1;
-	}
-
-	req = &line->event;
-
-	memset(req, 0, sizeof(*req));
-	strncpy(req->consumer_label, config->consumer,
-		sizeof(req->consumer_label) - 1);
-	req->lineoffset = gpiod_line_offset(line);
-	req->handleflags |= GPIOHANDLE_REQUEST_INPUT;
-
-	if (config->line_flags & GPIOD_REQUEST_OPEN_DRAIN)
-		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
-	if (config->line_flags & GPIOD_REQUEST_OPEN_SOURCE)
-		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
-
-	if (config->active_state == GPIOD_ACTIVE_STATE_LOW)
-		req->handleflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
-
-	if (config->event_type == GPIOD_EVENT_RISING_EDGE)
-		req->eventflags |= GPIOEVENT_REQUEST_RISING_EDGE;
-	else if (config->event_type == GPIOD_EVENT_FALLING_EDGE)
-		req->eventflags |= GPIOEVENT_REQUEST_FALLING_EDGE;
-	else if (config->event_type == GPIOD_EVENT_BOTH_EDGES)
-		req->eventflags |= GPIOEVENT_REQUEST_BOTH_EDGES;
-
-	rv = ioctl(line->chip_ctx->fd, GPIO_GET_LINEEVENT_IOCTL, req);
-	if (rv < 0)
-		return -1;
-
-	line_set_state(line, LINE_EVENT);
-
-	return 0;
-}
-
 static int line_event_request_type(struct gpiod_line *line,
 				   const char *consumer,
 				   bool active_low, int type)
 {
-	struct gpiod_line_evreq_config config = {
+	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.event_type = type,
-		.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					   : GPIOD_ACTIVE_STATE_HIGH,
+		.request_type = type,
+		.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
+					   : GPIOD_REQUEST_ACTIVE_HIGH,
 	};
 
-	return gpiod_line_event_request(line, &config);
+	return gpiod_line_request(line, &config, 0);
 }
 
 int gpiod_line_event_request_rising(struct gpiod_line *line,
 				    const char *consumer, bool active_low)
 {
 	return line_event_request_type(line, consumer, active_low,
-				       GPIOD_EVENT_RISING_EDGE);
+				       GPIOD_REQUEST_EVENT_RISING_EDGE);
 }
 
 int gpiod_line_event_request_falling(struct gpiod_line *line,
 				     const char *consumer, bool active_low)
 {
 	return line_event_request_type(line, consumer, active_low,
-				       GPIOD_EVENT_FALLING_EDGE);
+				       GPIOD_REQUEST_EVENT_FALLING_EDGE);
 }
 
-int gpiod_line_event_request_all(struct gpiod_line *line,
-				 const char *consumer, bool active_low)
+int gpiod_line_event_request_both(struct gpiod_line *line,
+				  const char *consumer, bool active_low)
 {
 	return line_event_request_type(line, consumer, active_low,
-				       GPIOD_EVENT_BOTH_EDGES);
-}
-
-bool gpiod_line_event_configured(struct gpiod_line *line)
-{
-	return line_get_state(line) == LINE_EVENT;
+				       GPIOD_REQUEST_EVENT_BOTH_EDGES);
 }
 
 int gpiod_line_event_wait(struct gpiod_line *line,
@@ -658,11 +682,6 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	struct gpiod_line *linetmp;
 	unsigned int i;
 	int status;
-
-	if (!line_bulk_is_event_configured(bulk)) {
-		errno = EPERM;
-		return -1;
-	}
 
 	memset(fds, 0, sizeof(fds));
 
@@ -691,11 +710,6 @@ int gpiod_line_event_read(struct gpiod_line *line,
 {
 	int fd;
 
-	if (!gpiod_line_event_configured(line)) {
-		errno = EPERM;
-		return -1;
-	}
-
 	fd = line_get_event_fd(line);
 
 	return gpiod_line_event_read_fd(fd, event);
@@ -703,7 +717,7 @@ int gpiod_line_event_read(struct gpiod_line *line,
 
 int gpiod_line_event_get_fd(struct gpiod_line *line)
 {
-	return line_get_state(line) == LINE_EVENT
+	return line_get_state(line) == LINE_REQUESTED_EVENTS
 				? line_get_event_fd(line) : -1;
 }
 

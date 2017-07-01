@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 	bool watch_rising = false, watch_falling = false, active_low = false;
 	struct gpiod_line_bulk linebulk = GPIOD_LINE_BULK_INITIALIZER;
 	int optc, opti, i, rv, sigfd, num_lines = 0, evdone, numev;
-	struct gpiod_line_evreq_config evconf;
+	struct gpiod_line_request_config evconf;
 	struct gpiod_line_event evbuf;
 	struct gpiod_line *line;
 	struct gpiod_chip *chip;
@@ -239,16 +239,16 @@ int main(int argc, char **argv)
 		die_perror("error opening gpiochip '%s'", argv[0]);
 
 	evconf.consumer = "gpiomon";
-	evconf.line_flags = 0;
-	evconf.active_state = active_low ? GPIOD_ACTIVE_STATE_LOW
-					 : GPIOD_ACTIVE_STATE_HIGH;
+	evconf.flags = 0;
+	evconf.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
+					 : GPIOD_REQUEST_ACTIVE_HIGH;
 
 	if (watch_falling && !watch_rising)
-		evconf.event_type = GPIOD_EVENT_FALLING_EDGE;
+		evconf.request_type = GPIOD_REQUEST_EVENT_FALLING_EDGE;
 	else if (watch_rising && !watch_falling)
-		evconf.event_type = GPIOD_EVENT_RISING_EDGE;
+		evconf.request_type = GPIOD_REQUEST_EVENT_RISING_EDGE;
 	else
-		evconf.event_type = GPIOD_EVENT_BOTH_EDGES;
+		evconf.request_type = GPIOD_REQUEST_EVENT_BOTH_EDGES;
 
 	for (i = 1; i < argc; i++) {
 		offset = strtoul(argv[i], &end, 10);
@@ -259,7 +259,7 @@ int main(int argc, char **argv)
 		if (!line)
 			die_perror("error retrieving GPIO line from chip");
 
-		rv = gpiod_line_event_request(line, &evconf);
+		rv = gpiod_line_request(line, &evconf, 0);
 		if (rv)
 			die_perror("error configuring GPIO line events");
 

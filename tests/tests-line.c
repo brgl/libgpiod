@@ -242,7 +242,7 @@ static void line_request_bulk_different_chips(void)
 	gpiod_line_bulk_add(&bulk, lineB1);
 
 	req.consumer = TEST_CONSUMER;
-	req.direction = GPIOD_DIRECTION_INPUT;
+	req.request_type = GPIOD_REQUEST_DIRECTION_INPUT;
 	req.active_state = GPIOD_ACTIVE_STATE_HIGH;
 
 	status = gpiod_line_request_bulk(&bulk, &req, NULL);
@@ -345,7 +345,7 @@ static void line_active_state(void)
 	status = gpiod_line_request_input(line, TEST_CONSUMER, true);
 	TEST_ASSERT_RET_OK(status);
 
-	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_ACTIVE_STATE_LOW);
+	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_INPUT);
 }
 TEST_DEFINE(line_active_state,
 	    "gpiod_line_active_state() - set & get",
@@ -368,9 +368,9 @@ static void line_misc_flags(void)
 	TEST_ASSERT_FALSE(gpiod_line_is_open_drain(line));
 	TEST_ASSERT_FALSE(gpiod_line_is_open_source(line));
 
-	config.direction = GPIOD_DIRECTION_INPUT;
+	config.request_type = GPIOD_REQUEST_DIRECTION_INPUT;
 	config.consumer = TEST_CONSUMER;
-	config.active_state = GPIOD_ACTIVE_STATE_HIGH;
+	config.active_state = GPIOD_REQUEST_ACTIVE_HIGH;
 	config.flags = GPIOD_REQUEST_OPEN_DRAIN;
 
 	status = gpiod_line_request(line, &config, 0);

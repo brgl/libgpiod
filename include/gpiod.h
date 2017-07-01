@@ -181,28 +181,31 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
  */
 
 /**
- * @brief Available direction settings.
- *
- * These values are used both when requesting lines and when retrieving
- * line info.
+ * @brief Available types of requests.
  */
 enum {
-	GPIOD_DIRECTION_AS_IS,
-	/**< Only relevant for line requests - don't set the direction. */
-	GPIOD_DIRECTION_INPUT,
-	/**< Direction is input - we're reading the state of a GPIO line. */
-	GPIOD_DIRECTION_OUTPUT,
-	/**< Direction is output - we're driving the GPIO line. */
+	GPIOD_REQUEST_DIRECTION_AS_IS,
+	/**< Request the line(s), but don't change current direction. */
+	GPIOD_REQUEST_DIRECTION_INPUT,
+	/**< Request the line(s) for reading the GPIO line state. */
+	GPIOD_REQUEST_DIRECTION_OUTPUT,
+	/**< Request the line(s) for setting the GPIO line state. */
+	GPIOD_REQUEST_EVENT_FALLING_EDGE,
+	/**< Monitor both types of events. */
+	GPIOD_REQUEST_EVENT_RISING_EDGE,
+	/**< Only watch rising edge events. */
+	GPIOD_REQUEST_EVENT_BOTH_EDGES,
+	/**< Only watch falling edge events. */
 };
 
 /**
- * @brief Available active state settings.
+ * @brief Available active states for line requests.
  */
 enum {
-	GPIOD_ACTIVE_STATE_HIGH,
-	/**< The active state of a GPIO is active-high. */
-	GPIOD_ACTIVE_STATE_LOW,
-	/**< The active state of a GPIO is active-low. */
+	GPIOD_REQUEST_ACTIVE_HIGH,
+	/**< Request the line(s) with active-high state. */
+	GPIOD_REQUEST_ACTIVE_LOW,
+	/**< Request the line(s) with active-low state. */
 };
 
 /**
@@ -213,6 +216,26 @@ enum {
 	/**< The line is an open-drain port. */
 	GPIOD_REQUEST_OPEN_SOURCE	= GPIOD_BIT(1),
 	/**< The line is an open-source port. */
+};
+
+/**
+ * @brief Possible direction settings.
+ */
+enum {
+	GPIOD_DIRECTION_INPUT,
+	/**< Direction is input - we're reading the state of a GPIO line. */
+	GPIOD_DIRECTION_OUTPUT,
+	/**< Direction is output - we're driving the GPIO line. */
+};
+
+/**
+ * @brief Possible active state settings.
+ */
+enum {
+	GPIOD_ACTIVE_STATE_HIGH,
+	/**< The active state of a GPIO is active-high. */
+	GPIOD_ACTIVE_STATE_LOW,
+	/**< The active state of a GPIO is active-low. */
 };
 
 /**
@@ -356,8 +379,8 @@ bool gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API;
 struct gpiod_line_request_config {
 	const char *consumer;
 	/**< Name of the consumer. */
-	int direction;
-	/**< Requested direction. */
+	int request_type;
+	/**< Request type. */
 	int active_state;
 	/**< Requested active state configuration. */
 	int flags;
@@ -462,7 +485,7 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk) GPIOD_API;
  * @param line GPIO line object.
  * @return True if given line was requested, false otherwise.
  */
-bool gpiod_line_is_reserved(struct gpiod_line *line) GPIOD_API;
+bool gpiod_line_is_requested(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Check if the calling user has neither requested ownership of this
@@ -549,22 +572,6 @@ enum {
 	/**< Rising edge event. */
 	GPIOD_EVENT_FALLING_EDGE,
 	/**< Falling edge event. */
-	GPIOD_EVENT_BOTH_EDGES,
-	/**< Rising or falling edge event: only relevant for event requests. */
-};
-
-/**
- * @brief Structure holding configuration of a line event request.
- */
-struct gpiod_line_evreq_config {
-	const char *consumer;
-	/**< Name of the consumer. */
-	int event_type;
-	/**< Type of the event we want to be notified about. */
-	int active_state;
-	/**< GPIO line active state. */
-	int line_flags;
-	/**< Misc line flags - same as for line requests. */
 };
 
 /**
@@ -576,16 +583,6 @@ struct gpiod_line_event {
 	int event_type;
 	/**< Type of the event that occurred. */
 };
-
-/**
- * @brief Request event notifications for a single line.
- * @param line GPIO line object.
- * @param config Event request configuration.
- * @return 0 if the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
- */
-int gpiod_line_event_request(struct gpiod_line *line,
-			     struct gpiod_line_evreq_config *config) GPIOD_API;
 
 /**
  * @brief Request rising edge event notifications on a single line.
@@ -616,16 +613,9 @@ int gpiod_line_event_request_falling(struct gpiod_line *line,
  * @param active_low Active state of the line - true if low.
  * @return 0 if the operation succeeds, -1 on failure.
  */
-int gpiod_line_event_request_all(struct gpiod_line *line,
-				 const char *consumer,
-				 bool active_low) GPIOD_API;
-
-/**
- * @brief Check if event notifications are configured on this line.
- * @param line GPIO line object.
- * @return True if event notifications are configured. False otherwise.
- */
-bool gpiod_line_event_configured(struct gpiod_line *line) GPIOD_API;
+int gpiod_line_event_request_both(struct gpiod_line *line,
+				  const char *consumer,
+				  bool active_low) GPIOD_API;
 
 /**
  * @brief Wait for an event on a single line.
