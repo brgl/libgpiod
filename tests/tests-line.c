@@ -89,6 +89,34 @@ TEST_DEFINE(line_consumer,
 	    "gpiod_line_consumer() - good",
 	    0, { 8 });
 
+static void line_consumer_long_string(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line *line;
+	int status;
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_get_line(chip, 0);
+	TEST_ASSERT_NOT_NULL(line);
+
+	TEST_ASSERT_NULL(gpiod_line_consumer(line));
+
+	status = gpiod_line_request_input(line,
+					  "consumer string over 32 characters long",
+					  false);
+	TEST_ASSERT_RET_OK(status);
+
+	TEST_ASSERT(!gpiod_line_needs_update(line));
+	TEST_ASSERT_STR_EQ(gpiod_line_consumer(line),
+			   "consumer string over 32 charact");
+	TEST_ASSERT_EQ(strlen(gpiod_line_consumer(line)), 31);
+}
+TEST_DEFINE(line_consumer_long_string,
+	    "gpiod_line_consumer() - long consumer string",
+	    0, { 8 });
+
 static void line_request_bulk_output(void)
 {
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipA = NULL;
