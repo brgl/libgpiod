@@ -29,11 +29,15 @@ struct handle_data {
 	int refcount;
 };
 
+struct line_chip_ctx {
+	int fd;
+	struct gpiod_chip *chip;
+};
+
 struct gpiod_line {
 	int state;
 	bool up_to_date;
-	struct gpiod_chip *chip;
-	int fd;
+	struct line_chip_ctx *chip_ctx;
 	struct gpioline_info info;
 	union {
 		struct handle_data *handle;
@@ -86,8 +90,27 @@ static void line_remove_handle(struct gpiod_line *line)
 	}
 }
 
-struct gpiod_line *
-line_new(unsigned int offset, struct gpiod_chip *chip, int info_fd)
+struct line_chip_ctx * line_chip_ctx_new(struct gpiod_chip *chip, int fd)
+{
+	struct line_chip_ctx *chip_ctx;
+
+	chip_ctx = malloc(sizeof(*chip_ctx));
+	if (!chip_ctx)
+		return NULL;
+
+	chip_ctx->chip = chip;
+	chip_ctx->fd = fd;
+
+	return chip_ctx;
+}
+
+void line_chip_ctx_free(struct line_chip_ctx *chip_ctx)
+{
+	free(chip_ctx);
+}
+
+struct gpiod_line * line_new(unsigned int offset,
+			     struct line_chip_ctx *chip_ctx)
 {
 	struct gpiod_line *line;
 
@@ -98,8 +121,7 @@ line_new(unsigned int offset, struct gpiod_chip *chip, int info_fd)
 	memset(line, 0, sizeof(*line));
 
 	line->info.line_offset = offset;
-	line->chip = chip;
-	line->fd = info_fd;
+	line->chip_ctx = chip_ctx;
 
 	return line;
 }
@@ -116,12 +138,7 @@ void line_set_offset(struct gpiod_line *line, unsigned int offset)
 
 struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
 {
-	return line->chip;
-}
-
-void line_set_chip(struct gpiod_line *line, struct gpiod_chip *chip)
-{
-	line->chip = chip;
+	return line->chip_ctx->chip;
 }
 
 unsigned int gpiod_line_offset(struct gpiod_line *line)
@@ -217,14 +234,14 @@ bool gpiod_line_needs_update(struct gpiod_line *line)
 
 int gpiod_line_update(struct gpiod_line *line)
 {
-	int status;
+	int rv;
 
 	memset(line->info.name, 0, sizeof(line->info.name));
 	memset(line->info.consumer, 0, sizeof(line->info.consumer));
 	line->info.flags = 0;
 
-	status = ioctl(line->fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
-	if (status < 0)
+	rv = ioctl(line->chip_ctx->fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
+	if (rv < 0)
 		return -1;
 
 	line_set_updated(line);
@@ -340,7 +357,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 	strncpy(req->consumer_label, config->consumer,
 		sizeof(req->consumer_label) - 1);
 
-	fd = bulk->lines[0]->fd;
+	fd = bulk->lines[0]->chip_ctx->fd;
 
 	status = ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
 	if (status < 0)
@@ -543,7 +560,7 @@ int gpiod_line_event_request(struct gpiod_line *line,
 			     struct gpiod_line_evreq_config *config)
 {
 	struct gpioevent_request *req;
-	int status;
+	int rv;
 
 	if (!gpiod_line_is_free(line)) {
 		errno = EBUSY;
@@ -573,8 +590,8 @@ int gpiod_line_event_request(struct gpiod_line *line,
 	else if (config->event_type == GPIOD_EVENT_BOTH_EDGES)
 		req->eventflags |= GPIOEVENT_REQUEST_BOTH_EDGES;
 
-	status = ioctl(line->fd, GPIO_GET_LINEEVENT_IOCTL, req);
-	if (status < 0)
+	rv = ioctl(line->chip_ctx->fd, GPIO_GET_LINEEVENT_IOCTL, req);
+	if (rv < 0)
 		return -1;
 
 	line_set_state(line, LINE_EVENT);

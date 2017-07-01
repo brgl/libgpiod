@@ -13,8 +13,13 @@
 
 #include <gpiod.h>
 
-struct gpiod_line *
-line_new(unsigned int offset, struct gpiod_chip *chip, int info_fd);
+struct line_chip_ctx;
+
+struct line_chip_ctx * line_chip_ctx_new(struct gpiod_chip *chip, int fd);
+void line_chip_ctx_free(struct line_chip_ctx *chip_ctx);
+
+struct gpiod_line * line_new(unsigned int offset,
+			     struct line_chip_ctx *chip_ctx);
 void line_free(struct gpiod_line *line);
 
 #endif /* __GPIOD_INTERNAL_LINE_H__ */

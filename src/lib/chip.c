@@ -23,6 +23,7 @@ struct gpiod_chip {
 	int fd;
 	struct gpiochip_info cinfo;
 	struct gpiod_line **lines;
+	struct line_chip_ctx *chip_ctx;
 };
 
 static bool isuint(const char *str)
@@ -156,6 +157,9 @@ void gpiod_chip_close(struct gpiod_chip *chip)
 		}
 	}
 
+	if (chip->chip_ctx)
+		line_chip_ctx_free(chip->chip_ctx);
+
 	close(chip->fd);
 	free(chip->lines);
 	free(chip);
@@ -187,8 +191,14 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 		return NULL;
 	}
 
+	if (!chip->chip_ctx) {
+		chip->chip_ctx = line_chip_ctx_new(chip, chip->fd);
+		if (!chip->chip_ctx)
+			return NULL;
+	}
+
 	if (!chip->lines[offset]) {
-		line = line_new(offset, chip, chip->fd);
+		line = line_new(offset, chip->chip_ctx);
 		if (!line)
 			return NULL;
 
