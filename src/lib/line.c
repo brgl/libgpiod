@@ -408,12 +408,6 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 			close(line_get_event_fd(line));
 
 		line_set_state(line, LINE_FREE);
-		/*
-		 * FIXME This is a temporary check before we add a better way
-		 * to determine whether a line object is valid.
-		 */
-		if (line->chip)
-			line_maybe_update(line);
 	}
 }
 
