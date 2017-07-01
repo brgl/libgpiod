@@ -61,6 +61,17 @@ struct gpiod_chip_iter;
  */
 
 /**
+ * @brief Read current value from a single GPIO line.
+ * @param consumer Name of the consumer.
+ * @param device Name, path or number of the gpiochip.
+ * @param offset GPIO line offset on the chip.
+ * @param active_low The active state of this line - true if low.
+ * @return 0 or 1 (GPIO value) if the operation succeeds, -1 on error.
+ */
+int gpiod_simple_get_value(const char *consumer, const char *device,
+			   unsigned int offset, bool active_low) GPIOD_API;
+
+/**
  * @brief Read current values from a set of GPIO lines.
  * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
@@ -76,20 +87,26 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 				    bool active_low) GPIOD_API;
 
 /**
- * @brief Read current value from a single GPIO line.
- * @param consumer Name of the consumer.
- * @param device Name, path or number of the gpiochip.
- * @param offset GPIO line offset on the chip.
- * @param active_low The active state of this line - true if low.
- * @return 0 or 1 (GPIO value) if the operation succeeds, -1 on error.
- */
-int gpiod_simple_get_value(const char *consumer, const char *device,
-			   unsigned int offset, bool active_low) GPIOD_API;
-
-/**
  * @brief Simple set value callback signature.
  */
 typedef void (*gpiod_set_value_cb)(void *);
+
+/**
+ * @brief Set value of a single GPIO line.
+ * @param consumer Name of the consumer.
+ * @param device Name, path or number of the gpiochip.
+ * @param offset GPIO line offset on the chip.
+ * @param value New value.
+ * @param active_low The active state of this line - true if low.
+ * @param cb Callback function that will be called right after the value is
+ *        set. Users can use this, for example, to pause the execution after
+ *        toggling a GPIO.
+ * @param data User data that will be passed to the callback function.
+ * @return 0 if the operation succeeds, -1 on error.
+ */
+int gpiod_simple_set_value(const char *consumer, const char *device,
+			   unsigned int offset, int value, bool active_low,
+			   gpiod_set_value_cb cb, void *data) GPIOD_API;
 
 /**
  * @brief Set values of a set of a set of GPIO lines.
@@ -109,23 +126,6 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 				    const int *values, unsigned int num_lines,
 				    bool active_low, gpiod_set_value_cb cb,
 				    void *data) GPIOD_API;
-
-/**
- * @brief Set value of a single GPIO line.
- * @param consumer Name of the consumer.
- * @param device Name, path or number of the gpiochip.
- * @param offset GPIO line offset on the chip.
- * @param value New value.
- * @param active_low The active state of this line - true if low.
- * @param cb Callback function that will be called right after the value is
- *        set. Users can use this, for example, to pause the execution after
- *        toggling a GPIO.
- * @param data User data that will be passed to the callback function.
- * @return 0 if the operation succeeds, -1 on error.
- */
-int gpiod_simple_set_value(const char *consumer, const char *device,
-			   unsigned int offset, int value, bool active_low,
-			   gpiod_set_value_cb cb, void *data) GPIOD_API;
 
 /**
  * @brief Event types that can be passed to the simple event callback.
