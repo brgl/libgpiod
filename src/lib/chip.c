@@ -58,13 +58,6 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 		return NULL;
 	}
 
-	chip->lines = calloc(chip->cinfo.lines, sizeof(struct gpiod_line *));
-	if (!chip->lines) {
-		close(chip->fd);
-		free(chip);
-		return NULL;
-	}
-
 	return chip;
 }
 
@@ -148,20 +141,23 @@ void gpiod_chip_close(struct gpiod_chip *chip)
 	struct gpiod_line *line;
 	unsigned int i;
 
-	for (i = 0; i < chip->cinfo.lines; i++) {
-		line = chip->lines[i];
+	if (chip->lines) {
+		for (i = 0; i < chip->cinfo.lines; i++) {
+			line = chip->lines[i];
 
-		if (line) {
-			gpiod_line_release(line);
-			line_free(line);
+			if (line) {
+				gpiod_line_release(line);
+				line_free(line);
+			}
 		}
+
+		free(chip->lines);
 	}
 
 	if (chip->chip_ctx)
 		line_chip_ctx_free(chip->chip_ctx);
 
 	close(chip->fd);
-	free(chip->lines);
 	free(chip);
 }
 
@@ -189,6 +185,13 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 	if (offset >= chip->cinfo.lines) {
 		errno = EINVAL;
 		return NULL;
+	}
+
+	if (!chip->lines) {
+		chip->lines = calloc(chip->cinfo.lines,
+				     sizeof(struct gpiod_line *));
+		if (!chip->lines)
+			return NULL;
 	}
 
 	if (!chip->chip_ctx) {
