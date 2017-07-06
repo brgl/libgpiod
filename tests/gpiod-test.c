@@ -35,6 +35,10 @@
 
 static const char mockup_devpath[] = "/devices/platform/gpio-mockup/gpiochip";
 
+static const unsigned int min_kern_major = 4;
+static const unsigned int min_kern_minor = 11;
+static const unsigned int min_kern_release = 0;
+
 struct mockup_chip {
 	char *path;
 	char *name;
@@ -690,24 +694,47 @@ int test_tool_exit_status(void)
 
 static void check_kernel(void)
 {
-	int status, version, patchlevel;
+	unsigned int major, minor, release;
 	struct utsname un;
+	int rv;
 
 	msg("checking the linux kernel version");
 
-	status = uname(&un);
-	if (status)
+	rv = uname(&un);
+	if (rv)
 		die_perr("uname");
 
-	status = sscanf(un.release, "%d.%d", &version, &patchlevel);
-	if (status != 2)
+	rv = sscanf(un.release, "%u.%u.%u", &major, &minor, &release);
+	if (rv != 3)
 		die("error reading kernel release version");
 
-	if (version < 4 || patchlevel < 11)
-		die("linux kernel version must be at least v4.11 - got v%d.%d",
-		    version, patchlevel);
+	if (major < min_kern_major) {
+		goto bad_version;
+	} else if (major > min_kern_major) {
+		goto good_version;
+	} else {
+		if (minor < min_kern_minor) {
+			goto bad_version;
+		} else if (minor > min_kern_minor) {
+			goto good_version;
+		} else {
+			if (release < min_kern_release)
+				goto bad_version;
+			else
+				goto good_version;
+		}
+	}
 
-	msg("kernel release is v%d.%d - ok to run tests", version, patchlevel);
+good_version:
+	msg("kernel release is v%u.%u.%u - ok to run tests",
+	    major, minor, release);
+
+	return;
+
+bad_version:
+	die("linux kernel version must be at least v%u.%u.%u - got v%u.%u.%u",
+	    min_kern_major, min_kern_minor, min_kern_release,
+	    major, minor, release);
 }
 
 static void check_gpio_mockup(void)
