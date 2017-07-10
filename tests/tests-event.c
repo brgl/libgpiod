@@ -16,7 +16,7 @@ static void event_rising_edge_good(void)
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line_event ev;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -24,16 +24,16 @@ static void event_rising_edge_good(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_event_request_rising(line, TEST_CONSUMER, false);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER, false);
+	TEST_ASSERT_RET_OK(rv);
 
 	test_set_event(0, 7, TEST_EVENT_RISING, 100);
 
-	status = gpiod_line_event_wait(line, &ts);
-	TEST_ASSERT_EQ(status, 1);
+	rv = gpiod_line_event_wait(line, &ts);
+	TEST_ASSERT_EQ(rv, 1);
 
-	status = gpiod_line_event_read(line, &ev);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_event_read(line, &ev);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(ev.event_type, GPIOD_EVENT_RISING_EDGE);
 }
@@ -47,7 +47,7 @@ static void event_falling_edge_good(void)
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line_event ev;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -55,16 +55,17 @@ static void event_falling_edge_good(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_event_request_falling(line, TEST_CONSUMER, false);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_falling_edge_events(line,
+						    TEST_CONSUMER, false);
+	TEST_ASSERT_RET_OK(rv);
 
 	test_set_event(0, 7, TEST_EVENT_FALLING, 100);
 
-	status = gpiod_line_event_wait(line, &ts);
-	TEST_ASSERT_EQ(status, 1);
+	rv = gpiod_line_event_wait(line, &ts);
+	TEST_ASSERT_EQ(rv, 1);
 
-	status = gpiod_line_event_read(line, &ev);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_event_read(line, &ev);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(ev.event_type, GPIOD_EVENT_FALLING_EDGE);
 }
@@ -77,7 +78,7 @@ static void event_rising_edge_ignore_falling(void)
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
 	struct timespec ts = { 0, 300 };
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -85,13 +86,13 @@ static void event_rising_edge_ignore_falling(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_event_request_rising(line, TEST_CONSUMER, false);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER, false);
+	TEST_ASSERT_RET_OK(rv);
 
 	test_set_event(0, 7, TEST_EVENT_FALLING, 100);
 
-	status = gpiod_line_event_wait(line, &ts);
-	TEST_ASSERT_EQ(status, 0);
+	rv = gpiod_line_event_wait(line, &ts);
+	TEST_ASSERT_EQ(rv, 0);
 }
 TEST_DEFINE(event_rising_edge_ignore_falling,
 	    "events - request rising edge & ignore falling edge events",
@@ -103,7 +104,7 @@ static void event_rising_edge_active_low(void)
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line_event ev;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -111,16 +112,16 @@ static void event_rising_edge_active_low(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_event_request_rising(line, TEST_CONSUMER, true);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER, true);
+	TEST_ASSERT_RET_OK(rv);
 
 	test_set_event(0, 7, TEST_EVENT_RISING, 100);
 
-	status = gpiod_line_event_wait(line, &ts);
-	TEST_ASSERT_EQ(status, 1);
+	rv = gpiod_line_event_wait(line, &ts);
+	TEST_ASSERT_EQ(rv, 1);
 
-	status = gpiod_line_event_read(line, &ev);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_event_read(line, &ev);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(ev.event_type, GPIOD_EVENT_RISING_EDGE);
 }
@@ -134,7 +135,7 @@ static void event_get_value(void)
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line_event ev;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -142,24 +143,24 @@ static void event_get_value(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_event_request_rising(line, TEST_CONSUMER, false);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER, false);
+	TEST_ASSERT_RET_OK(rv);
 
-	status = gpiod_line_get_value(line);
-	TEST_ASSERT_EQ(status, 0);
+	rv = gpiod_line_get_value(line);
+	TEST_ASSERT_EQ(rv, 0);
 
 	test_set_event(0, 7, TEST_EVENT_RISING, 100);
 
-	status = gpiod_line_event_wait(line, &ts);
-	TEST_ASSERT_EQ(status, 1);
+	rv = gpiod_line_event_wait(line, &ts);
+	TEST_ASSERT_EQ(rv, 1);
 
-	status = gpiod_line_event_read(line, &ev);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_event_read(line, &ev);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(ev.event_type, GPIOD_EVENT_RISING_EDGE);
 
-	status = gpiod_line_get_value(line);
-	TEST_ASSERT_EQ(status, 1);
+	rv = gpiod_line_get_value(line);
+	TEST_ASSERT_EQ(rv, 1);
 }
 TEST_DEFINE(event_get_value,
 	    "events - mixing events and gpiod_line_get_value()",

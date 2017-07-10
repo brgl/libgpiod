@@ -426,6 +426,39 @@ int gpiod_line_request_output(struct gpiod_line *line, const char *consumer,
 			      bool active_low, int default_val) GPIOD_API;
 
 /**
+ * @brief Request rising edge event notifications on a single line.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param active_low Active state of the line - true if low.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
+					  const char *consumer,
+					  bool active_low) GPIOD_API;
+
+/**
+ * @brief Request falling edge event notifications on a single line.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param active_low Active state of the line - true if low.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
+					   const char *consumer,
+					   bool active_low) GPIOD_API;
+
+/**
+ * @brief Request all event type notifications on a single line.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param active_low Active state of the line - true if low.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_both_edges_events(struct gpiod_line *line,
+					 const char *consumer,
+					 bool active_low) GPIOD_API;
+
+/**
  * @brief Reserve a set of GPIO lines.
  * @param bulk Set of GPIO lines to reserve.
  * @param config Request options.
@@ -583,39 +616,6 @@ struct gpiod_line_event {
 	int event_type;
 	/**< Type of the event that occurred. */
 };
-
-/**
- * @brief Request rising edge event notifications on a single line.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @param active_low Active state of the line - true if low.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_event_request_rising(struct gpiod_line *line,
-				    const char *consumer,
-				    bool active_low) GPIOD_API;
-
-/**
- * @brief Request falling edge event notifications on a single line.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @param active_low Active state of the line - true if low.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_event_request_falling(struct gpiod_line *line,
-				     const char *consumer,
-				     bool active_low) GPIOD_API;
-
-/**
- * @brief Request all event type notifications on a single line.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @param active_low Active state of the line - true if low.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_event_request_both(struct gpiod_line *line,
-				  const char *consumer,
-				  bool active_low) GPIOD_API;
 
 /**
  * @brief Wait for an event on a single line.

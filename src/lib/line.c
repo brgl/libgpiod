@@ -642,22 +642,24 @@ static int line_event_request_type(struct gpiod_line *line,
 	return gpiod_line_request(line, &config, 0);
 }
 
-int gpiod_line_event_request_rising(struct gpiod_line *line,
-				    const char *consumer, bool active_low)
+int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
+					  const char *consumer,
+					  bool active_low)
 {
 	return line_event_request_type(line, consumer, active_low,
 				       GPIOD_REQUEST_EVENT_RISING_EDGE);
 }
 
-int gpiod_line_event_request_falling(struct gpiod_line *line,
-				     const char *consumer, bool active_low)
+int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
+					   const char *consumer,
+					   bool active_low)
 {
 	return line_event_request_type(line, consumer, active_low,
 				       GPIOD_REQUEST_EVENT_FALLING_EDGE);
 }
 
-int gpiod_line_event_request_both(struct gpiod_line *line,
-				  const char *consumer, bool active_low)
+int gpiod_line_request_both_edges_events(struct gpiod_line *line,
+					 const char *consumer, bool active_low)
 {
 	return line_event_request_type(line, consumer, active_low,
 				       GPIOD_REQUEST_EVENT_BOTH_EDGES);
