@@ -1,5 +1,5 @@
 /*
- * Line event test cases for libgpiod.
+ * This file is part of libgpiod.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *
@@ -7,6 +7,8 @@
  * under the terms of version 2.1 of the GNU Lesser General Public License
  * as published by the Free Software Foundation.
  */
+
+/* Test cases for GPIO line events. */
 
 #include "gpiod-test.h"
 

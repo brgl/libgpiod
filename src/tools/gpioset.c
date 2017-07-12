@@ -1,5 +1,5 @@
 /*
- * Set value of a GPIO line.
+ * This file is part of libgpiod.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *

@@ -1,5 +1,5 @@
 /*
- * Testing framework for libgpiod.
+ * This file is part of libgpiod.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *

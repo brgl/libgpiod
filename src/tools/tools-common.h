@@ -1,5 +1,5 @@
 /*
- * Common code for GPIO tools.
+ * This file is part of libgpiod.
  *
  * Copyright (C) 2017 Bartosz Golaszewski <bartekgola@gmail.com>
  *
