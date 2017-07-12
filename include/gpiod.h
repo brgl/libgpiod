@@ -174,6 +174,95 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 /**
  * @}
  *
+ * @defgroup __chips__ GPIO chip operations
+ * @{
+ *
+ * Functions and data structures dealing with GPIO chips.
+ */
+
+/**
+ * @brief Open a gpiochip by path.
+ * @param path Path to the gpiochip device file.
+ * @return GPIO chip handle or NULL if an error occurred.
+ */
+struct gpiod_chip * gpiod_chip_open(const char *path) GPIOD_API;
+
+/**
+ * @brief Open a gpiochip by name.
+ * @param name Name of the gpiochip to open.
+ * @return GPIO chip handle or NULL if an error occurred.
+ *
+ * This routine appends name to '/dev/' to create the path.
+ */
+struct gpiod_chip * gpiod_chip_open_by_name(const char *name) GPIOD_API;
+
+/**
+ * @brief Open a gpiochip by number.
+ * @param num Number of the gpiochip.
+ * @return GPIO chip handle or NULL if an error occurred.
+ *
+ * This routine appends num to '/dev/gpiochip' to create the path.
+ */
+struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num) GPIOD_API;
+
+/**
+ * @brief Open a gpiochip by label.
+ * @param label Label of the gpiochip to open.
+ * @return GPIO chip handle or NULL if the chip with given label was not found
+ *         or an error occured.
+ */
+struct gpiod_chip * gpiod_chip_open_by_label(const char *label) GPIOD_API;
+
+/**
+ * @brief Open a gpiochip based on the best guess what the path is.
+ * @param descr String describing the gpiochip.
+ * @return GPIO chip handle or NULL if an error occurred.
+ *
+ * This routine tries to figure out whether the user passed it the path to
+ * the GPIO chip, its name, label or number as a string. Then it tries to
+ * open it using one of the other gpiod_chip_open** routines.
+ */
+struct gpiod_chip * gpiod_chip_open_lookup(const char *descr) GPIOD_API;
+
+/**
+ * @brief Close a GPIO chip handle and release all allocated resources.
+ * @param chip The GPIO chip object.
+ */
+void gpiod_chip_close(struct gpiod_chip *chip) GPIOD_API;
+
+/**
+ * @brief Get the GPIO chip name as represented in the kernel.
+ * @param chip The GPIO chip object.
+ * @return Pointer to a human-readable string containing the chip name.
+ */
+const char * gpiod_chip_name(struct gpiod_chip *chip) GPIOD_API;
+
+/**
+ * @brief Get the GPIO chip label as represented in the kernel.
+ * @param chip The GPIO chip object.
+ * @return Pointer to a human-readable string containing the chip label.
+ */
+const char * gpiod_chip_label(struct gpiod_chip *chip) GPIOD_API;
+
+/**
+ * @brief Get the number of GPIO lines exposed by this chip.
+ * @param chip The GPIO chip object.
+ * @return Number of GPIO lines.
+ */
+unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip) GPIOD_API;
+
+/**
+ * @brief Get the handle to the GPIO line at given offset.
+ * @param chip The GPIO chip object.
+ * @param offset The offset of the GPIO line.
+ * @return Pointer to the GPIO line handle or NULL if an error occured.
+ */
+struct gpiod_line *
+gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
+
+/**
+ * @}
+ *
  * @defgroup __lines__ GPIO line operations
  * @{
  *
@@ -674,95 +763,6 @@ int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event) GPIOD_API;
 /**
  * @}
  *
- * @}
- *
- * @defgroup __chips__ GPIO chip operations
- * @{
- *
- * Functions and data structures dealing with GPIO chips.
- */
-
-/**
- * @brief Open a gpiochip by path.
- * @param path Path to the gpiochip device file.
- * @return GPIO chip handle or NULL if an error occurred.
- */
-struct gpiod_chip * gpiod_chip_open(const char *path) GPIOD_API;
-
-/**
- * @brief Open a gpiochip by name.
- * @param name Name of the gpiochip to open.
- * @return GPIO chip handle or NULL if an error occurred.
- *
- * This routine appends name to '/dev/' to create the path.
- */
-struct gpiod_chip * gpiod_chip_open_by_name(const char *name) GPIOD_API;
-
-/**
- * @brief Open a gpiochip by number.
- * @param num Number of the gpiochip.
- * @return GPIO chip handle or NULL if an error occurred.
- *
- * This routine appends num to '/dev/gpiochip' to create the path.
- */
-struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num) GPIOD_API;
-
-/**
- * @brief Open a gpiochip by label.
- * @param label Label of the gpiochip to open.
- * @return GPIO chip handle or NULL if the chip with given label was not found
- *         or an error occured.
- */
-struct gpiod_chip * gpiod_chip_open_by_label(const char *label) GPIOD_API;
-
-/**
- * @brief Open a gpiochip based on the best guess what the path is.
- * @param descr String describing the gpiochip.
- * @return GPIO chip handle or NULL if an error occurred.
- *
- * This routine tries to figure out whether the user passed it the path to
- * the GPIO chip, its name, label or number as a string. Then it tries to
- * open it using one of the other gpiod_chip_open** routines.
- */
-struct gpiod_chip * gpiod_chip_open_lookup(const char *descr) GPIOD_API;
-
-/**
- * @brief Close a GPIO chip handle and release all allocated resources.
- * @param chip The GPIO chip object.
- */
-void gpiod_chip_close(struct gpiod_chip *chip) GPIOD_API;
-
-/**
- * @brief Get the GPIO chip name as represented in the kernel.
- * @param chip The GPIO chip object.
- * @return Pointer to a human-readable string containing the chip name.
- */
-const char * gpiod_chip_name(struct gpiod_chip *chip) GPIOD_API;
-
-/**
- * @brief Get the GPIO chip label as represented in the kernel.
- * @param chip The GPIO chip object.
- * @return Pointer to a human-readable string containing the chip label.
- */
-const char * gpiod_chip_label(struct gpiod_chip *chip) GPIOD_API;
-
-/**
- * @brief Get the number of GPIO lines exposed by this chip.
- * @param chip The GPIO chip object.
- * @return Number of GPIO lines.
- */
-unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip) GPIOD_API;
-
-/**
- * @brief Get the handle to the GPIO line at given offset.
- * @param chip The GPIO chip object.
- * @param offset The offset of the GPIO line.
- * @return Pointer to the GPIO line handle or NULL if an error occured.
- */
-struct gpiod_line *
-gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
-
-/**
  * @}
  *
  * @defgroup __iterators__ Iterators for GPIO chips and lines
