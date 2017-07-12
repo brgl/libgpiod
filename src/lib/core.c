@@ -316,8 +316,9 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 			req->default_values[i] = !!default_vals[i];
 	}
 
-	strncpy(req->consumer_label, config->consumer,
-		sizeof(req->consumer_label) - 1);
+	if (config->consumer)
+		strncpy(req->consumer_label, config->consumer,
+			sizeof(req->consumer_label) - 1);
 
 	fd = bulk->lines[0]->chip->fd;
 
@@ -345,8 +346,11 @@ static int line_request_event_single(struct gpiod_line *line,
 	req = &line->event;
 
 	memset(req, 0, sizeof(*req));
-	strncpy(req->consumer_label, config->consumer,
-		sizeof(req->consumer_label) - 1);
+
+	if (config->consumer)
+		strncpy(req->consumer_label, config->consumer,
+			sizeof(req->consumer_label) - 1);
+
 	req->lineoffset = gpiod_line_offset(line);
 	req->handleflags |= GPIOHANDLE_REQUEST_INPUT;
 

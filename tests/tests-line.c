@@ -396,3 +396,41 @@ static void line_misc_flags(void)
 TEST_DEFINE(line_misc_flags,
 	    "gpiod_line - misc flags",
 	    0, { 8 });
+
+static void line_null_consumer(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line_request_config config;
+	struct gpiod_line *line;
+	int rv;
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_get_line(chip, 2);
+	TEST_ASSERT_NOT_NULL(line);
+
+	config.request_type = GPIOD_REQUEST_DIRECTION_INPUT;
+	config.consumer = NULL;
+	config.active_state = GPIOD_REQUEST_ACTIVE_HIGH;
+	config.flags = 0;
+
+	rv = gpiod_line_request(line, &config, 0);
+	TEST_ASSERT_RET_OK(rv);
+	TEST_ASSERT_STR_EQ(gpiod_line_consumer(line), "?");
+
+	gpiod_line_release(line);
+
+	/*
+	 * Internally we use different structures for event requests, so we
+	 * need to test that explicitly too.
+	 */
+	config.request_type = GPIOD_REQUEST_EVENT_BOTH_EDGES;
+
+	rv = gpiod_line_request(line, &config, 0);
+	TEST_ASSERT_RET_OK(rv);
+	TEST_ASSERT_STR_EQ(gpiod_line_consumer(line), "?");
+}
+TEST_DEFINE(line_null_consumer,
+	    "line request - NULL consumer string",
+	    0, { 8 });
