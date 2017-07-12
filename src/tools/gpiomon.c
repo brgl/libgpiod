@@ -239,9 +239,7 @@ int main(int argc, char **argv)
 		die_perror("error opening gpiochip '%s'", argv[0]);
 
 	evconf.consumer = "gpiomon";
-	evconf.flags = 0;
-	evconf.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
-					 : GPIOD_REQUEST_ACTIVE_HIGH;
+	evconf.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0;
 
 	if (watch_falling && !watch_rising)
 		evconf.request_type = GPIOD_REQUEST_EVENT_FALLING_EDGE;

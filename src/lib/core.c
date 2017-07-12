@@ -228,8 +228,7 @@ int gpiod_line_request_input(struct gpiod_line *line,
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
 		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
-		.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
-					   : GPIOD_REQUEST_ACTIVE_HIGH,
+		.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0,
 	};
 
 	return gpiod_line_request(line, &config, 0);
@@ -241,8 +240,7 @@ int gpiod_line_request_output(struct gpiod_line *line, const char *consumer,
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
 		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
-		.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
-					   : GPIOD_REQUEST_ACTIVE_HIGH,
+		.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0,
 	};
 
 	return gpiod_line_request(line, &config, default_val);
@@ -295,18 +293,13 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
 	if (config->flags & GPIOD_REQUEST_OPEN_SOURCE)
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
+	if (config->flags & GPIOD_REQUEST_ACTIVE_LOW)
+		req->flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
 	if (config->request_type == GPIOD_REQUEST_DIRECTION_INPUT)
 		req->flags |= GPIOHANDLE_REQUEST_INPUT;
 	else if (config->request_type == GPIOD_REQUEST_DIRECTION_OUTPUT)
 		req->flags |= GPIOHANDLE_REQUEST_OUTPUT;
-
-	if (config->active_state == GPIOD_REQUEST_ACTIVE_LOW) {
-		req->flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
-	} else if (config->active_state != GPIOD_REQUEST_ACTIVE_HIGH) {
-		errno = EINVAL;
-		return -1;
-	}
 
 	req->lines = bulk->num_lines;
 
@@ -358,13 +351,8 @@ static int line_request_event_single(struct gpiod_line *line,
 		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
 	if (config->flags & GPIOD_REQUEST_OPEN_SOURCE)
 		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
-
-	if (config->active_state == GPIOD_REQUEST_ACTIVE_LOW) {
+	if (config->flags & GPIOD_REQUEST_ACTIVE_LOW)
 		req->handleflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
-	} else if (config->active_state != GPIOD_REQUEST_ACTIVE_HIGH) {
-		errno = EINVAL;
-		return -1;
-	}
 
 	if (config->request_type == GPIOD_REQUEST_EVENT_RISING_EDGE)
 		req->eventflags |= GPIOEVENT_REQUEST_RISING_EDGE;
@@ -428,8 +416,7 @@ int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
 		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
-		.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
-					   : GPIOD_REQUEST_ACTIVE_HIGH,
+		.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0,
 	};
 
 	return gpiod_line_request_bulk(bulk, &config, 0);
@@ -442,8 +429,7 @@ int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
 		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
-		.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
-					   : GPIOD_REQUEST_ACTIVE_HIGH,
+		.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW: 0,
 	};
 
 	return gpiod_line_request_bulk(bulk, &config, default_vals);
@@ -611,8 +597,7 @@ static int line_event_request_type(struct gpiod_line *line,
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
 		.request_type = type,
-		.active_state = active_low ? GPIOD_REQUEST_ACTIVE_LOW
-					   : GPIOD_REQUEST_ACTIVE_HIGH,
+		.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0,
 	};
 
 	return gpiod_line_request(line, &config, 0);

@@ -288,16 +288,6 @@ enum {
 };
 
 /**
- * @brief Available active states for line requests.
- */
-enum {
-	GPIOD_REQUEST_ACTIVE_HIGH,
-	/**< Request the line(s) with active-high state. */
-	GPIOD_REQUEST_ACTIVE_LOW,
-	/**< Request the line(s) with active-low state. */
-};
-
-/**
  * @brief Miscellaneous GPIO flags.
  */
 enum {
@@ -305,6 +295,8 @@ enum {
 	/**< The line is an open-drain port. */
 	GPIOD_REQUEST_OPEN_SOURCE	= GPIOD_BIT(1),
 	/**< The line is an open-source port. */
+	GPIOD_REQUEST_ACTIVE_LOW	= GPIOD_BIT(2),
+	/**< The active state of the line is low (high is the default). */
 };
 
 /**
@@ -470,8 +462,6 @@ struct gpiod_line_request_config {
 	/**< Name of the consumer. */
 	int request_type;
 	/**< Request type. */
-	int active_state;
-	/**< Requested active state configuration. */
 	int flags;
 	/**< Other configuration flags. */
 };
