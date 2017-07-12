@@ -222,25 +222,47 @@ int gpiod_line_request(struct gpiod_line *line,
 	return gpiod_line_request_bulk(&bulk, config, &default_val);
 }
 
-int gpiod_line_request_input(struct gpiod_line *line,
-			     const char *consumer, bool active_low)
+int gpiod_line_request_input(struct gpiod_line *line, const char *consumer)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
 		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
-		.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0,
 	};
 
 	return gpiod_line_request(line, &config, 0);
 }
 
-int gpiod_line_request_output(struct gpiod_line *line, const char *consumer,
-			      bool active_low, int default_val)
+int gpiod_line_request_output(struct gpiod_line *line,
+			      const char *consumer, int default_val)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
 		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
-		.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0,
+	};
+
+	return gpiod_line_request(line, &config, default_val);
+}
+
+int gpiod_line_request_input_flags(struct gpiod_line *line,
+				   const char *consumer, int flags)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
+		.flags = flags,
+	};
+
+	return gpiod_line_request(line, &config, 0);
+}
+
+int gpiod_line_request_output_flags(struct gpiod_line *line,
+				    const char *consumer, int flags,
+				    int default_val)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
+		.flags = flags,
 	};
 
 	return gpiod_line_request(line, &config, default_val);
@@ -591,39 +613,59 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name)
 }
 
 static int line_event_request_type(struct gpiod_line *line,
-				   const char *consumer,
-				   bool active_low, int type)
+				   const char *consumer, int flags, int type)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
 		.request_type = type,
-		.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0,
+		.flags = flags,
 	};
 
 	return gpiod_line_request(line, &config, 0);
 }
 
 int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
-					  const char *consumer,
-					  bool active_low)
+					  const char *consumer)
 {
-	return line_event_request_type(line, consumer, active_low,
+	return line_event_request_type(line, consumer, 0,
 				       GPIOD_REQUEST_EVENT_RISING_EDGE);
 }
 
 int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
-					   const char *consumer,
-					   bool active_low)
+					   const char *consumer)
 {
-	return line_event_request_type(line, consumer, active_low,
+	return line_event_request_type(line, consumer, 0,
 				       GPIOD_REQUEST_EVENT_FALLING_EDGE);
 }
 
 int gpiod_line_request_both_edges_events(struct gpiod_line *line,
-					 const char *consumer, bool active_low)
+					 const char *consumer)
 {
-	return line_event_request_type(line, consumer, active_low,
+	return line_event_request_type(line, consumer, 0,
 				       GPIOD_REQUEST_EVENT_BOTH_EDGES);
+}
+
+int gpiod_line_request_rising_edge_events_flags(struct gpiod_line *line,
+						const char *consumer,
+						int flags)
+{
+	return line_event_request_type(line, consumer, flags,
+				       GPIOD_REQUEST_EVENT_RISING_EDGE);
+}
+
+int gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
+						 const char *consumer,
+						 int flags)
+{
+	return line_event_request_type(line, consumer, flags,
+				       GPIOD_REQUEST_EVENT_RISING_EDGE);
+}
+
+int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
+					       const char *consumer, int flags)
+{
+	return line_event_request_type(line, consumer, flags,
+				       GPIOD_REQUEST_EVENT_RISING_EDGE);
 }
 
 int gpiod_line_event_wait(struct gpiod_line *line,

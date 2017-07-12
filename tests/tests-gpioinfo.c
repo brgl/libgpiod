@@ -51,7 +51,8 @@ static void gpioinfo_dump_all_chips_one_exported(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	rv = gpiod_line_request_input(line, TEST_CONSUMER, true);
+	rv = gpiod_line_request_input_flags(line, TEST_CONSUMER,
+					    GPIOD_REQUEST_ACTIVE_LOW);
 	TEST_ASSERT_RET_OK(rv);
 
 	test_tool_run("gpioinfo", (char *)NULL);

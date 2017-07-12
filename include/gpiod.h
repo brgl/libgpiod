@@ -486,56 +486,102 @@ int gpiod_line_request(struct gpiod_line *line,
  * @brief Reserve a single line, set the direction to input.
  * @param line GPIO line object.
  * @param consumer Name of the consumer.
- * @param active_low Active state of the line (true if low).
  * @return 0 if the line was properly reserved, -1 on failure.
  */
 int gpiod_line_request_input(struct gpiod_line *line,
-			     const char *consumer,
-			     bool active_low) GPIOD_API;
+			     const char *consumer) GPIOD_API;
 
 /**
  * @brief Reserve a single line, set the direction to output.
  * @param line GPIO line object.
  * @param consumer Name of the consumer.
- * @param active_low Active state of the line (true if low).
  * @param default_val Default line value.
  * @return 0 if the line was properly reserved, -1 on failure.
  */
-int gpiod_line_request_output(struct gpiod_line *line, const char *consumer,
-			      bool active_low, int default_val) GPIOD_API;
+int gpiod_line_request_output(struct gpiod_line *line,
+			      const char *consumer, int default_val) GPIOD_API;
 
 /**
  * @brief Request rising edge event notifications on a single line.
  * @param line GPIO line object.
  * @param consumer Name of the consumer.
- * @param active_low Active state of the line - true if low.
  * @return 0 if the operation succeeds, -1 on failure.
  */
 int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
-					  const char *consumer,
-					  bool active_low) GPIOD_API;
+					  const char *consumer) GPIOD_API;
 
 /**
  * @brief Request falling edge event notifications on a single line.
  * @param line GPIO line object.
  * @param consumer Name of the consumer.
- * @param active_low Active state of the line - true if low.
  * @return 0 if the operation succeeds, -1 on failure.
  */
 int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
-					   const char *consumer,
-					   bool active_low) GPIOD_API;
+					   const char *consumer) GPIOD_API;
 
 /**
  * @brief Request all event type notifications on a single line.
  * @param line GPIO line object.
  * @param consumer Name of the consumer.
- * @param active_low Active state of the line - true if low.
  * @return 0 if the operation succeeds, -1 on failure.
  */
 int gpiod_line_request_both_edges_events(struct gpiod_line *line,
-					 const char *consumer,
-					 bool active_low) GPIOD_API;
+					 const char *consumer) GPIOD_API;
+
+/**
+ * @brief Reserve a single line, set the direction to input.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param flags Additional request flags.
+ * @return 0 if the line was properly reserved, -1 on failure.
+ */
+int gpiod_line_request_input_flags(struct gpiod_line *line,
+				   const char *consumer, int flags) GPIOD_API;
+
+/**
+ * @brief Reserve a single line, set the direction to output.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param flags Additional request flags.
+ * @param default_val Default line value.
+ * @return 0 if the line was properly reserved, -1 on failure.
+ */
+int gpiod_line_request_output_flags(struct gpiod_line *line,
+				    const char *consumer, int flags,
+				    int default_val) GPIOD_API;
+
+/**
+ * @brief Request rising edge event notifications on a single line.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param flags Additional request flags.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_rising_edge_events_flags(struct gpiod_line *line,
+						const char *consumer,
+						int flags) GPIOD_API;
+
+/**
+ * @brief Request falling edge event notifications on a single line.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param flags Additional request flags.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
+						 const char *consumer,
+						 int flags) GPIOD_API;
+
+/**
+ * @brief Request all event type notifications on a single line.
+ * @param line GPIO line object.
+ * @param consumer Name of the consumer.
+ * @param flags Additional request flags.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
+					       const char *consumer,
+					       int flags) GPIOD_API;
 
 /**
  * @brief Reserve a set of GPIO lines.

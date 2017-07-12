@@ -29,9 +29,9 @@ static void line_request_output(void)
 	TEST_ASSERT_NOT_NULL(line_0);
 	TEST_ASSERT_NOT_NULL(line_1);
 
-	status = gpiod_line_request_output(line_0, TEST_CONSUMER, false, 0);
+	status = gpiod_line_request_output(line_0, TEST_CONSUMER, 0);
 	TEST_ASSERT_RET_OK(status);
-	status = gpiod_line_request_output(line_1, TEST_CONSUMER, false, 1);
+	status = gpiod_line_request_output(line_1, TEST_CONSUMER, 1);
 	TEST_ASSERT_RET_OK(status);
 
 	TEST_ASSERT_EQ(gpiod_line_get_value(line_0), 0);
@@ -56,10 +56,10 @@ static void line_request_already_requested(void)
 	line = gpiod_chip_get_line(chip, 0);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER, false);
+	status = gpiod_line_request_input(line, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(status);
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER, false);
+	status = gpiod_line_request_input(line, TEST_CONSUMER);
 	TEST_ASSERT_NOTEQ(status, 0);
 	TEST_ASSERT_EQ(errno, EBUSY);
 }
@@ -81,7 +81,7 @@ static void line_consumer(void)
 
 	TEST_ASSERT_NULL(gpiod_line_consumer(line));
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER, false);
+	status = gpiod_line_request_input(line, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(status);
 
 	TEST_ASSERT(!gpiod_line_needs_update(line));
@@ -106,8 +106,7 @@ static void line_consumer_long_string(void)
 	TEST_ASSERT_NULL(gpiod_line_consumer(line));
 
 	status = gpiod_line_request_input(line,
-					  "consumer string over 32 characters long",
-					  false);
+					  "consumer string over 32 characters long");
 	TEST_ASSERT_RET_OK(status);
 
 	TEST_ASSERT(!gpiod_line_needs_update(line));
@@ -267,7 +266,7 @@ static void line_set_value(void)
 	line = gpiod_chip_get_line(chip, 2);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_output(line, TEST_CONSUMER, false, 0);
+	status = gpiod_line_request_output(line, TEST_CONSUMER, 0);
 	TEST_ASSERT_RET_OK(status);
 
 	TEST_ASSERT_RET_OK(gpiod_line_set_value(line, 1));
@@ -309,14 +308,14 @@ static void line_direction(void)
 	line = gpiod_chip_get_line(chip, 5);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_output(line, TEST_CONSUMER, false, 0);
+	status = gpiod_line_request_output(line, TEST_CONSUMER, 0);
 	TEST_ASSERT_RET_OK(status);
 
 	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_OUTPUT);
 
 	gpiod_line_release(line);
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER, false);
+	status = gpiod_line_request_input(line, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(status);
 
 	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_INPUT);
@@ -337,14 +336,15 @@ static void line_active_state(void)
 	line = gpiod_chip_get_line(chip, 5);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER, false);
+	status = gpiod_line_request_input(line, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(status);
 
 	TEST_ASSERT_EQ(gpiod_line_active_state(line), GPIOD_ACTIVE_STATE_HIGH);
 
 	gpiod_line_release(line);
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER, true);
+	status = gpiod_line_request_input_flags(line, TEST_CONSUMER,
+						GPIOD_REQUEST_ACTIVE_LOW);
 	TEST_ASSERT_RET_OK(status);
 
 	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_INPUT);

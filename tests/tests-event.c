@@ -26,7 +26,7 @@ static void event_rising_edge_good(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER, false);
+	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(rv);
 
 	test_set_event(0, 7, TEST_EVENT_RISING, 100);
@@ -57,8 +57,7 @@ static void event_falling_edge_good(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	rv = gpiod_line_request_falling_edge_events(line,
-						    TEST_CONSUMER, false);
+	rv = gpiod_line_request_falling_edge_events(line, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(rv);
 
 	test_set_event(0, 7, TEST_EVENT_FALLING, 100);
@@ -88,7 +87,7 @@ static void event_rising_edge_ignore_falling(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER, false);
+	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(rv);
 
 	test_set_event(0, 7, TEST_EVENT_FALLING, 100);
@@ -114,7 +113,8 @@ static void event_rising_edge_active_low(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER, true);
+	rv = gpiod_line_request_rising_edge_events_flags(line, TEST_CONSUMER,
+						GPIOD_REQUEST_ACTIVE_LOW);
 	TEST_ASSERT_RET_OK(rv);
 
 	test_set_event(0, 7, TEST_EVENT_RISING, 100);
@@ -145,7 +145,7 @@ static void event_get_value(void)
 	line = gpiod_chip_get_line(chip, 7);
 	TEST_ASSERT_NOT_NULL(line);
 
-	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER, false);
+	rv = gpiod_line_request_rising_edge_events(line, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(rv);
 
 	rv = gpiod_line_get_value(line);

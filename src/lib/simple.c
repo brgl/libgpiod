@@ -152,7 +152,8 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 		return -1;
 	}
 
-	status = gpiod_line_request_both_edges_events(line, consumer, active_low);
+	status = gpiod_line_request_both_edges_events_flags(line, consumer,
+							    active_low);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
