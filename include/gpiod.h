@@ -680,13 +680,6 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name) GPIOD_API;
 struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
 
 /**
- * @defgroup __line_events__ Line event operations
- * @{
- *
- * Functions and data structures for requesting and reading GPIO line events.
- */
-
-/**
  * @brief Event types.
  */
 enum {
@@ -761,8 +754,6 @@ int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
 int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event) GPIOD_API;
 
 /**
- * @}
- *
  * @}
  *
  * @defgroup __iterators__ Iterators for GPIO chips and lines
