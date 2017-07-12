@@ -10,11 +10,16 @@
 
 #include <gpiod.h>
 
+#include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <poll.h>
 #include <errno.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <linux/gpio.h>
 
@@ -29,21 +34,29 @@ struct handle_data {
 	int refcount;
 };
 
-struct line_chip_ctx {
-	int fd;
-	struct gpiod_chip *chip;
-};
-
 struct gpiod_line {
 	int state;
 	bool up_to_date;
-	struct line_chip_ctx *chip_ctx;
+	struct gpiod_chip *chip;
 	struct gpioline_info info;
 	union {
 		struct handle_data *handle;
 		struct gpioevent_request event;
 	};
 };
+
+struct gpiod_chip {
+	int fd;
+	struct gpiochip_info cinfo;
+	struct gpiod_line **lines;
+};
+
+static bool isuint(const char *str)
+{
+	for (; *str && isdigit(*str); str++);
+
+	return *str == '\0';
+}
 
 static int line_get_state(struct gpiod_line *line)
 {
@@ -91,47 +104,6 @@ static void line_remove_handle(struct gpiod_line *line)
 	}
 }
 
-struct line_chip_ctx * line_chip_ctx_new(struct gpiod_chip *chip, int fd)
-{
-	struct line_chip_ctx *chip_ctx;
-
-	chip_ctx = malloc(sizeof(*chip_ctx));
-	if (!chip_ctx)
-		return NULL;
-
-	chip_ctx->chip = chip;
-	chip_ctx->fd = fd;
-
-	return chip_ctx;
-}
-
-void line_chip_ctx_free(struct line_chip_ctx *chip_ctx)
-{
-	free(chip_ctx);
-}
-
-struct gpiod_line * line_new(unsigned int offset,
-			     struct line_chip_ctx *chip_ctx)
-{
-	struct gpiod_line *line;
-
-	line = malloc(sizeof(*line));
-	if (!line)
-		return NULL;
-
-	memset(line, 0, sizeof(*line));
-
-	line->info.line_offset = offset;
-	line->chip_ctx = chip_ctx;
-
-	return line;
-}
-
-void line_free(struct gpiod_line *line)
-{
-	free(line);
-}
-
 void line_set_offset(struct gpiod_line *line, unsigned int offset)
 {
 	line->info.line_offset = offset;
@@ -139,7 +111,7 @@ void line_set_offset(struct gpiod_line *line, unsigned int offset)
 
 struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
 {
-	return line->chip_ctx->chip;
+	return line->chip;
 }
 
 unsigned int gpiod_line_offset(struct gpiod_line *line)
@@ -229,7 +201,7 @@ int gpiod_line_update(struct gpiod_line *line)
 	memset(line->info.consumer, 0, sizeof(line->info.consumer));
 	line->info.flags = 0;
 
-	rv = ioctl(line->chip_ctx->fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
+	rv = ioctl(line->chip->fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
 	if (rv < 0)
 		return -1;
 
@@ -347,7 +319,7 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 	strncpy(req->consumer_label, config->consumer,
 		sizeof(req->consumer_label) - 1);
 
-	fd = bulk->lines[0]->chip_ctx->fd;
+	fd = bulk->lines[0]->chip->fd;
 
 	rv = ioctl(fd, GPIO_GET_LINEHANDLE_IOCTL, req);
 	if (rv < 0)
@@ -397,7 +369,7 @@ static int line_request_event_single(struct gpiod_line *line,
 	else if (config->request_type == GPIOD_REQUEST_EVENT_BOTH_EDGES)
 		req->eventflags |= GPIOEVENT_REQUEST_BOTH_EDGES;
 
-	rv = ioctl(line->chip_ctx->fd, GPIO_GET_LINEEVENT_IOCTL, req);
+	rv = ioctl(line->chip->fd, GPIO_GET_LINEEVENT_IOCTL, req);
 	if (rv < 0)
 		return -1;
 
@@ -746,4 +718,183 @@ int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
 	event->ts.tv_nsec = evdata.timestamp % 1000000000ULL;
 
 	return 0;
+}
+
+struct gpiod_chip * gpiod_chip_open(const char *path)
+{
+	struct gpiod_chip *chip;
+	int status, fd;
+
+	fd = open(path, O_RDWR | O_CLOEXEC);
+	if (fd < 0)
+		return NULL;
+
+	chip = malloc(sizeof(*chip));
+	if (!chip) {
+		close(fd);
+		return NULL;
+	}
+
+	memset(chip, 0, sizeof(*chip));
+	chip->fd = fd;
+
+	status = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &chip->cinfo);
+	if (status < 0) {
+		close(chip->fd);
+		free(chip);
+		return NULL;
+	}
+
+	return chip;
+}
+
+struct gpiod_chip * gpiod_chip_open_by_name(const char *name)
+{
+	struct gpiod_chip *chip;
+	char *path;
+	int status;
+
+	status = asprintf(&path, "/dev/%s", name);
+	if (status < 0)
+		return NULL;
+
+	chip = gpiod_chip_open(path);
+	free(path);
+
+	return chip;
+}
+
+struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num)
+{
+	struct gpiod_chip *chip;
+	char *path;
+	int status;
+
+	status = asprintf(&path, "/dev/gpiochip%u", num);
+	if (!status)
+		return NULL;
+
+	chip = gpiod_chip_open(path);
+	free(path);
+
+	return chip;
+}
+
+struct gpiod_chip * gpiod_chip_open_by_label(const char *label)
+{
+	struct gpiod_chip_iter *iter;
+	struct gpiod_chip *chip;
+
+	iter = gpiod_chip_iter_new();
+	if (!iter)
+		return NULL;
+
+	gpiod_foreach_chip(iter, chip) {
+		if (gpiod_chip_iter_err(iter))
+			goto out;
+
+		if (strcmp(label, gpiod_chip_label(chip)) == 0) {
+			gpiod_chip_iter_free_noclose(iter);
+			return chip;
+		}
+	}
+
+out:
+	gpiod_chip_iter_free(iter);
+	return  NULL;
+}
+
+struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
+{
+	struct gpiod_chip *chip;
+
+	if (isuint(descr)) {
+		chip = gpiod_chip_open_by_number(strtoul(descr, NULL, 10));
+	} else {
+		chip = gpiod_chip_open_by_label(descr);
+		if (!chip) {
+			if (strncmp(descr, "/dev/", 5))
+				chip = gpiod_chip_open_by_name(descr);
+			else
+				chip = gpiod_chip_open(descr);
+		}
+	}
+
+	return chip;
+}
+
+void gpiod_chip_close(struct gpiod_chip *chip)
+{
+	struct gpiod_line *line;
+	unsigned int i;
+
+	if (chip->lines) {
+		for (i = 0; i < chip->cinfo.lines; i++) {
+			line = chip->lines[i];
+			if (line) {
+				gpiod_line_release(line);
+				free(line);
+			}
+		}
+
+		free(chip->lines);
+	}
+
+	close(chip->fd);
+	free(chip);
+}
+
+const char * gpiod_chip_name(struct gpiod_chip *chip)
+{
+	return chip->cinfo.name[0] == '\0' ? NULL : chip->cinfo.name;
+}
+
+const char * gpiod_chip_label(struct gpiod_chip *chip)
+{
+	return chip->cinfo.label[0] == '\0' ? NULL : chip->cinfo.label;
+}
+
+unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip)
+{
+	return (unsigned int)chip->cinfo.lines;
+}
+
+struct gpiod_line *
+gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
+{
+	struct gpiod_line *line;
+	int status;
+
+	if (offset >= chip->cinfo.lines) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	if (!chip->lines) {
+		chip->lines = calloc(chip->cinfo.lines,
+				     sizeof(struct gpiod_line *));
+		if (!chip->lines)
+			return NULL;
+	}
+
+	if (!chip->lines[offset]) {
+		line = malloc(sizeof(*line));
+		if (!line)
+			return NULL;
+
+		memset(line, 0, sizeof(*line));
+
+		line->info.line_offset = offset;
+		line->chip = chip;
+
+		chip->lines[offset] = line;
+	} else {
+		line = chip->lines[offset];
+	}
+
+	status = gpiod_line_update(line);
+	if (status < 0)
+		return NULL;
+
+	return line;
 }
