@@ -646,6 +646,20 @@ int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
 				       GPIOD_REQUEST_EVENT_BOTH_EDGES);
 }
 
+static bool line_request_is_direction(int request)
+{
+	return request == GPIOD_REQUEST_DIRECTION_AS_IS
+	       || request == GPIOD_REQUEST_DIRECTION_INPUT
+	       || request == GPIOD_REQUEST_DIRECTION_OUTPUT;
+}
+
+static bool line_request_is_events(int request)
+{
+	return request == GPIOD_REQUEST_EVENT_FALLING_EDGE
+	       || request == GPIOD_REQUEST_EVENT_RISING_EDGE
+	       || request == GPIOD_REQUEST_EVENT_BOTH_EDGES;
+}
+
 int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 			    const struct gpiod_line_request_config *config,
 			    const int *default_vals)
@@ -653,13 +667,9 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 	if (!verify_line_bulk(bulk))
 		return -1;
 
-	if (config->request_type == GPIOD_REQUEST_DIRECTION_AS_IS
-	    || config->request_type == GPIOD_REQUEST_DIRECTION_INPUT
-	    || config->request_type == GPIOD_REQUEST_DIRECTION_OUTPUT) {
+	if (line_request_is_direction(config->request_type)) {
 		return line_request_values(bulk, config, default_vals);
-	} else if (config->request_type == GPIOD_REQUEST_EVENT_FALLING_EDGE
-		 || config->request_type == GPIOD_REQUEST_EVENT_RISING_EDGE
-		 || config->request_type == GPIOD_REQUEST_EVENT_BOTH_EDGES) {
+	} else if (line_request_is_events(config->request_type)) {
 		return line_request_events(bulk, config);
 	} else {
 		errno = EINVAL;
