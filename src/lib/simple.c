@@ -182,7 +182,7 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 						: GPIOD_EVENT_CB_FALLING_EDGE;
 		}
 
-		status = callback(evtype, &event.ts, cbdata);
+		status = callback(evtype, offset, &event.ts, cbdata);
 		if (status == GPIOD_EVENT_CB_STOP) {
 			status = 0;
 			goto out;

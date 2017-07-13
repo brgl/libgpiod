@@ -151,8 +151,13 @@ enum {
 
 /**
  * @brief Simple event callack signature.
+ *
+ * The callback function takes the following arguments: event type (int),
+ * GPIO line offset (unsigned int), event timestamp (const struct timespec *)
+ * and a pointer to user data.
  */
-typedef int (*gpiod_event_cb)(int, const struct timespec *, void *);
+typedef int (*gpiod_event_cb)(int, unsigned int,
+			      const struct timespec *, void *);
 
 /**
  * @brief Wait for events on a single GPIO line.

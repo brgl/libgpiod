@@ -122,23 +122,30 @@ TEST_DEFINE(simple_set_value_multiple_max_lines,
 	    0, { 128 });
 
 struct simple_event_data {
-	bool got_event;
+	bool got_rising_edge;
+	bool got_falling_edge;
+	unsigned int offset;
+	unsigned int count;
 };
 
-static int simple_event_cb(int evtype TEST_UNUSED,
-			   const struct timespec *ts TEST_UNUSED,
-			   void *data)
+static int simple_event_cb(int evtype, unsigned int offset,
+			   const struct timespec *ts TEST_UNUSED, void *data)
 {
 	struct simple_event_data *evdata = data;
 
-	evdata->got_event = true;
+	if (evtype == GPIOD_EVENT_CB_RISING_EDGE)
+		evdata->got_rising_edge = true;
+	else if (evtype == GPIOD_EVENT_CB_FALLING_EDGE)
+		evdata->got_falling_edge = true;
 
-	return GPIOD_EVENT_CB_STOP;
+	evdata->offset = offset;
+
+	return ++evdata->count == 2 ? GPIOD_EVENT_CB_STOP : GPIOD_EVENT_CB_OK;
 }
 
 static void simple_event_loop(void)
 {
-	struct simple_event_data evdata = { false };
+	struct simple_event_data evdata = { false, false, 0, 0 };
 	struct timespec ts = { 1, 0 };
 	int status;
 
@@ -148,7 +155,10 @@ static void simple_event_loop(void)
 					 false, &ts, simple_event_cb, &evdata);
 
 	TEST_ASSERT_RET_OK(status);
-	TEST_ASSERT(evdata.got_event);
+	TEST_ASSERT(evdata.got_rising_edge);
+	TEST_ASSERT(evdata.got_falling_edge);
+	TEST_ASSERT_EQ(evdata.count, 2);
+	TEST_ASSERT_EQ(evdata.offset, 3);
 }
 TEST_DEFINE(simple_event_loop,
 	    "gpiod_simple_event_loop() - single event",
