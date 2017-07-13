@@ -636,14 +636,14 @@ int gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
 						 int flags)
 {
 	return line_event_request_type(line, consumer, flags,
-				       GPIOD_REQUEST_EVENT_RISING_EDGE);
+				       GPIOD_REQUEST_EVENT_FALLING_EDGE);
 }
 
 int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
 					       const char *consumer, int flags)
 {
 	return line_event_request_type(line, consumer, flags,
-				       GPIOD_REQUEST_EVENT_RISING_EDGE);
+				       GPIOD_REQUEST_EVENT_BOTH_EDGES);
 }
 
 int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
