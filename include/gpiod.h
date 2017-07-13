@@ -621,6 +621,33 @@ int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
 				   const int *default_vals) GPIOD_API;
 
 /**
+ * @brief Request rising edge event notifications on a set of lines.
+ * @param bulk Set of GPIO lines to request.
+ * @param consumer Name of the consumer.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_bulk_rising_edge_events(struct gpiod_line_bulk *bulk,
+					       const char *consumer) GPIOD_API;
+
+/**
+ * @brief Request falling edge event notifications on a set of lines.
+ * @param bulk Set of GPIO lines to request.
+ * @param consumer Name of the consumer.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_bulk_falling_edge_events(struct gpiod_line_bulk *bulk,
+						const char *consumer) GPIOD_API;
+
+/**
+ * @brief Request all event type notifications on a set of lines.
+ * @param bulk Set of GPIO lines to request.
+ * @param consumer Name of the consumer.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_bulk_both_edges_events(struct gpiod_line_bulk *bulk,
+					      const char *consumer) GPIOD_API;
+
+/**
  * @brief Reserve a set of GPIO lines, set the direction to input.
  * @param bulk Set of GPIO lines to reserve.
  * @param consumer Name of the consumer.
@@ -642,6 +669,42 @@ int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
 int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
 					 const char *consumer, int flags,
 					 const int *default_vals) GPIOD_API;
+
+/**
+ * @brief Request rising edge event notifications on a set of lines.
+ * @param bulk Set of GPIO lines to request.
+ * @param consumer Name of the consumer.
+ * @param flags Additional request flags.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_bulk_rising_edge_events_flags(
+					struct gpiod_line_bulk *bulk,
+					const char *consumer,
+					int flags) GPIOD_API;
+
+/**
+ * @brief Request falling edge event notifications on a set of lines.
+ * @param bulk Set of GPIO lines to request.
+ * @param consumer Name of the consumer.
+ * @param flags Additional request flags.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_bulk_falling_edge_events_flags(
+					struct gpiod_line_bulk *bulk,
+					const char *consumer,
+					int flags) GPIOD_API;
+
+/**
+ * @brief Request all event type notifications on a set of lines.
+ * @param bulk Set of GPIO lines to request.
+ * @param consumer Name of the consumer.
+ * @param flags Additional request flags.
+ * @return 0 if the operation succeeds, -1 on failure.
+ */
+int gpiod_line_request_bulk_both_edges_events_flags(
+					struct gpiod_line_bulk *bulk,
+					const char *consumer,
+					int flags) GPIOD_API;
 
 /**
  * @brief Release a previously reserved line.

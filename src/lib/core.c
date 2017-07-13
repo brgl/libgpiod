@@ -690,6 +690,40 @@ int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
 	return gpiod_line_request_bulk(bulk, &config, default_vals);
 }
 
+static int line_event_request_type_bulk(struct gpiod_line_bulk *bulk,
+					const char *consumer,
+					int flags, int type)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.request_type = type,
+		.flags = flags,
+	};
+
+	return gpiod_line_request_bulk(bulk, &config, 0);
+}
+
+int gpiod_line_request_bulk_rising_edge_events(struct gpiod_line_bulk *bulk,
+					       const char *consumer)
+{
+	return line_event_request_type_bulk(bulk, consumer, 0,
+					    GPIOD_REQUEST_EVENT_RISING_EDGE);
+}
+
+int gpiod_line_request_bulk_falling_edge_events(struct gpiod_line_bulk *bulk,
+						const char *consumer)
+{
+	return line_event_request_type_bulk(bulk, consumer, 0,
+					    GPIOD_REQUEST_EVENT_FALLING_EDGE);
+}
+
+int gpiod_line_request_bulk_both_edges_events(struct gpiod_line_bulk *bulk,
+					      const char *consumer)
+{
+	return line_event_request_type_bulk(bulk, consumer, 0,
+					    GPIOD_REQUEST_EVENT_BOTH_EDGES);
+}
+
 int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
 					const char *consumer, int flags)
 {
@@ -713,6 +747,30 @@ int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
 	};
 
 	return gpiod_line_request_bulk(bulk, &config, default_vals);
+}
+
+int gpiod_line_request_bulk_rising_edge_events_flags(
+					struct gpiod_line_bulk *bulk,
+					const char *consumer, int flags)
+{
+	return line_event_request_type_bulk(bulk, consumer, flags,
+					    GPIOD_REQUEST_EVENT_RISING_EDGE);
+}
+
+int gpiod_line_request_bulk_falling_edge_events_flags(
+					struct gpiod_line_bulk *bulk,
+					const char *consumer, int flags)
+{
+	return line_event_request_type_bulk(bulk, consumer, flags,
+					    GPIOD_REQUEST_EVENT_FALLING_EDGE);
+}
+
+int gpiod_line_request_bulk_both_edges_events_flags(
+					struct gpiod_line_bulk *bulk,
+					const char *consumer, int flags)
+{
+	return line_event_request_type_bulk(bulk, consumer, flags,
+					    GPIOD_REQUEST_EVENT_BOTH_EDGES);
 }
 
 void gpiod_line_release(struct gpiod_line *line)
