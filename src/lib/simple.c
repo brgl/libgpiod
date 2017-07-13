@@ -35,8 +35,8 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
+	int status, flags;
 	unsigned int i;
-	int status;
 
 	if (num_lines > GPIOD_REQUEST_MAX_LINES) {
 		errno = EINVAL;
@@ -59,7 +59,9 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	status = gpiod_line_request_bulk_input(&bulk, consumer, active_low);
+	flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0;
+
+	status = gpiod_line_request_bulk_input_flags(&bulk, consumer, flags);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
@@ -92,8 +94,8 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
+	int status, flags;
 	unsigned int i;
-	int status;
 
 	if (num_lines > GPIOD_REQUEST_MAX_LINES) {
 		errno = EINVAL;
@@ -116,8 +118,10 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	status = gpiod_line_request_bulk_output(&bulk, consumer,
-						active_low, values);
+	flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0;
+
+	status = gpiod_line_request_bulk_output_flags(&bulk, consumer,
+						      flags, values);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;

@@ -668,25 +668,48 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 }
 
 int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
-				  const char *consumer, bool active_low)
+				  const char *consumer)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
 		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
-		.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0,
 	};
 
 	return gpiod_line_request_bulk(bulk, &config, 0);
 }
 
 int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
-				   const char *consumer, bool active_low,
+				   const char *consumer,
 				   const int *default_vals)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
 		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
-		.flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW: 0,
+	};
+
+	return gpiod_line_request_bulk(bulk, &config, default_vals);
+}
+
+int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
+					const char *consumer, int flags)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
+		.flags = flags,
+	};
+
+	return gpiod_line_request_bulk(bulk, &config, 0);
+}
+
+int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
+					 const char *consumer, int flags,
+					 const int *default_vals)
+{
+	struct gpiod_line_request_config config = {
+		.consumer = consumer,
+		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
+		.flags = flags,
 	};
 
 	return gpiod_line_request_bulk(bulk, &config, default_vals);

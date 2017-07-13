@@ -173,16 +173,14 @@ static void line_request_bulk_output(void)
 	valA[1] = 0;
 	valA[2] = 0;
 	valA[3] = 1;
-	status = gpiod_line_request_bulk_output(&bulkA, TEST_CONSUMER,
-						false, valA);
+	status = gpiod_line_request_bulk_output(&bulkA, TEST_CONSUMER, valA);
 	TEST_ASSERT_RET_OK(status);
 
 	valB[0] = 0;
 	valB[1] = 1;
 	valB[2] = 0;
 	valB[3] = 1;
-	status = gpiod_line_request_bulk_output(&bulkB, TEST_CONSUMER,
-						false, valB);
+	status = gpiod_line_request_bulk_output(&bulkB, TEST_CONSUMER, valB);
 	TEST_ASSERT_RET_OK(status);
 
 	memset(valA, 0, sizeof(valA));
