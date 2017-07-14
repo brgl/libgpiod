@@ -57,7 +57,8 @@ struct gpiod_chip_iter;
  * @defgroup __high_level__ High-level API
  * @{
  *
- * Simple high-level routines for straightforward GPIO manipulation.
+ * Simple high-level routines for straightforward GPIO manipulation without
+ * the need to use the gpiod_* structures or to keep track of resources.
  */
 
 /**
