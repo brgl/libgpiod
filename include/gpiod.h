@@ -8,15 +8,6 @@
  * as published by the Free Software Foundation.
  */
 
-/**
- * @mainpage libgpiod public API
- *
- * This is the documentation of the public API exported by libgpiod.
- *
- * <p>These functions and data structures allow to use all the functionalities
- * exposed by the linux GPIO character device interface.
- */
-
 #ifndef __LIBGPIOD_GPIOD_H__
 #define __LIBGPIOD_GPIOD_H__
 
@@ -27,6 +18,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @mainpage libgpiod public API
+ *
+ * This is the documentation of the public API exported by libgpiod.
+ *
+ * <p>These functions and data structures allow to use all the functionalities
+ * exposed by the linux GPIO character device interface.
+ */
 
 struct gpiod_chip;
 struct gpiod_line;
