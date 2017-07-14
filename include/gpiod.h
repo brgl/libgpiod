@@ -1082,6 +1082,9 @@ static inline bool gpiod_line_iter_err(const struct gpiod_line_iter *iter)
  * @param iter The GPIO line iterator object.
  * @return The offset of the last line we tried to open - whether we failed
  *         or succeeded to do so.
+ *
+ * If this function is called before gpiod_line_iter_next() is called at least
+ * once, the results are undefined.
  */
 static inline unsigned int
 gpiod_line_iter_last_offset(const struct gpiod_line_iter *iter)
