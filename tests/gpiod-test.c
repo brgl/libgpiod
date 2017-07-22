@@ -88,7 +88,6 @@ static struct {
 	struct kmod_module *module;
 	struct test_context test_ctx;
 	pid_t main_pid;
-	char *progpath;
 	int pipesize;
 	char *pipebuf;
 } globals;
@@ -456,7 +455,7 @@ static char * gpiotool_proc_get_path(const char *tool)
 {
 	char *path, *progpath, *progdir;
 
-	progpath = xstrdup(globals.progpath);
+	progpath = xstrdup(program_invocation_name);
 	progdir = dirname(progpath);
 	path = xappend(NULL, "%s/../../src/tools/%s", progdir, tool);
 	free(progpath);
@@ -982,12 +981,11 @@ static void teardown_test(void)
 	}
 }
 
-int main(int argc TEST_UNUSED, char **argv)
+int main(int argc TEST_UNUSED, char **argv TEST_UNUSED)
 {
 	struct _test_case *test;
 
 	globals.main_pid = getpid();
-	globals.progpath = argv[0];
 	globals.pipesize = get_pipesize();
 	globals.pipebuf = xmalloc(globals.pipesize);
 	atexit(cleanup_func);
