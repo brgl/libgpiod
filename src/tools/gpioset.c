@@ -183,8 +183,6 @@ int main(int argc, char **argv)
 	bool active_low = false;
 	char *device, *end;
 
-	set_progname(argv[0]);
-
 	memset(&cbdata, 0, sizeof(cbdata));
 
 	for (;;) {

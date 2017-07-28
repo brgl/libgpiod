@@ -43,8 +43,6 @@ int main(int argc, char **argv)
 	bool active_low = false;
 	char *device, *end;
 
-	set_progname(argv[0]);
-
 	for (;;) {
 		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
 		if (optc < 0)

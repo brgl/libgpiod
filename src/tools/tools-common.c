@@ -22,16 +22,9 @@
 
 #define NORETURN		__attribute__((noreturn))
 
-static char *progname = "unknown";
-
-void set_progname(char *name)
-{
-	progname = name;
-}
-
 const char * get_progname(void)
 {
-	return progname;
+	return program_invocation_name;
 }
 
 void NORETURN PRINTF(1, 2) die(const char *fmt, ...)
@@ -39,7 +32,7 @@ void NORETURN PRINTF(1, 2) die(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	fprintf(stderr, "%s: ", progname);
+	fprintf(stderr, "%s: ", program_invocation_name);
 	vfprintf(stderr, fmt, va);
 	fprintf(stderr, "\n");
 	va_end(va);
@@ -52,7 +45,7 @@ void NORETURN PRINTF(1, 2) die_perror(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	fprintf(stderr, "%s: ", progname);
+	fprintf(stderr, "%s: ", program_invocation_name);
 	vfprintf(stderr, fmt, va);
 	fprintf(stderr, ": %s\n", strerror(errno));
 	va_end(va);
@@ -62,20 +55,10 @@ void NORETURN PRINTF(1, 2) die_perror(const char *fmt, ...)
 
 void print_version(void)
 {
-	char *prog, *tmp;
-
-	tmp = strdup(progname);
-	if (!tmp)
-		prog = progname;
-	else
-		prog = basename(tmp);
-
-	printf("%s (libgpiod) %s\n", prog, gpiod_version_string());
+	printf("%s (libgpiod) %s\n",
+	       program_invocation_short_name, gpiod_version_string());
 	printf("Copyright (C) 2017 Bartosz Golaszewski\n");
 	printf("License: LGPLv2.1\n");
 	printf("This is free software: you are free to change and redistribute it.\n");
 	printf("There is NO WARRANTY, to the extent permitted by law.\n");
-
-	if (tmp)
-		free(tmp);
 }

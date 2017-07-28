@@ -38,8 +38,6 @@ int main(int argc, char **argv)
 	struct gpiod_chip *chip;
 	int optc, opti;
 
-	set_progname(argv[0]);
-
 	for (;;) {
 		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
 		if (optc < 0)

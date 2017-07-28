@@ -182,8 +182,6 @@ int main(int argc, char **argv)
 	unsigned int offset;
 	char *end;
 
-	set_progname(argv[0]);
-
 	memset(&config, 0, sizeof(config));
 
 	for (;;) {
