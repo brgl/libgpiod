@@ -129,11 +129,6 @@ TEST_DEFINE(gpiomon_both_events_sigterm,
 	    "tools: gpiomon - receive both types of events and kill with SIGTERM",
 	    0, { 8, 8 });
 
-/*
- * TODO There's a bug in the kernel with filtering out unwanted events. Until
- * it gets fixed, we must skip this test case.
- */
-#if 0
 static void gpiomon_ignore_falling_edge(void)
 {
 	test_tool_run("gpiomon", "--rising-edge",
@@ -151,7 +146,6 @@ static void gpiomon_ignore_falling_edge(void)
 TEST_DEFINE(gpiomon_ignore_falling_edge,
 	    "tools: gpiomon - wait for rising edge events, ignore falling edge",
 	    0, { 8, 8 });
-#endif
 
 static void gpiomon_watch_multiple_lines(void)
 {

@@ -36,8 +36,8 @@
 static const char mockup_devpath[] = "/devices/platform/gpio-mockup/gpiochip";
 
 static const unsigned int min_kern_major = 4;
-static const unsigned int min_kern_minor = 11;
-static const unsigned int min_kern_release = 0;
+static const unsigned int min_kern_minor = 12;
+static const unsigned int min_kern_release = 6;
 
 struct mockup_chip {
 	char *path;
