@@ -371,7 +371,7 @@ TEST_DEFINE(gpioset_invalid_offset,
 	    "tools: gpioset - invalid offset",
 	    0, { 4 });
 
-static void gpioset_daeminize_in_wrong_mode(void)
+static void gpioset_daemonize_in_wrong_mode(void)
 {
 	test_tool_run("gpioset", "--background",
 		      test_chip_name(0), "0=1", (char *)NULL);
@@ -384,6 +384,6 @@ static void gpioset_daeminize_in_wrong_mode(void)
 	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
 				 "can't daemonize in this mode");
 }
-TEST_DEFINE(gpioset_daeminize_in_wrong_mode,
+TEST_DEFINE(gpioset_daemonize_in_wrong_mode,
 	    "tools: gpioset - daemonize in wrong mode",
 	    0, { 4 });
