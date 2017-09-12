@@ -1,3 +1,16 @@
+libgpiod v0.3.1
+===============
+
+Bug fixes:
+- fix checking the kernel version in the test suite
+
+Improvements:
+- re-enable a test case previously broken by a bug in the kernel
+
+This is the first version hosted at kernel.org. README.md has been renamed to
+README as the .md file was not being packaged automatically by autotools,
+which went unnoticed due to not using 'make dist' until now.
+
 libgpiod v0.3
 =============
 
