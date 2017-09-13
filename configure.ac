@@ -27,6 +27,9 @@ AC_CONFIG_HEADER([config.h])
 
 AC_DEFINE([_GNU_SOURCE], [], [We want GNU extensions])
 
+# Silence warning: ar: 'u' modifier ignored since 'D' is the default
+AC_SUBST(AR_FLAGS, [cr])
+
 AM_PROG_AR
 AC_PROG_CC
 AC_PROG_LIBTOOL
