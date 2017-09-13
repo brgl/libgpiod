@@ -133,5 +133,6 @@ superuser privileges:
 CONTRIBUTING
 ------------
 
-Contributions are welcome - please use github pull-requests and issues and
-stick to the linux kernel coding style when submitting new code.
+Contributions are welcome - please send patches and bug reports to
+linux-gpio@vger.kernel.org and stick to the linux kernel coding style when
+submitting new code.
