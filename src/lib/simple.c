@@ -142,9 +142,9 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 			    gpiod_event_cb callback, void *cbdata)
 {
 	struct gpiod_line_event event;
+	int status, evtype, flags;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
-	int status, evtype;
 
 	chip = gpiod_chip_open_lookup(device);
 	if (!chip)
@@ -156,8 +156,10 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 		return -1;
 	}
 
+	flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0;
+
 	status = gpiod_line_request_both_edges_events_flags(line, consumer,
-							    active_low);
+							    flags);
 	if (status < 0) {
 		gpiod_chip_close(chip);
 		return -1;
