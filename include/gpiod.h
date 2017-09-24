@@ -374,6 +374,18 @@ static inline void gpiod_line_bulk_add(struct gpiod_line_bulk *bulk,
 }
 
 /**
+ * @brief Retrieve the line handle from a line bulk object at given offset.
+ * @param bulk Line bulk object.
+ * @param offset Line offset.
+ * @return Line handle at given offset.
+ */
+static inline struct gpiod_line *
+gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk, unsigned int offset)
+{
+	return bulk->lines[offset];
+}
+
+/**
  * @brief Read the GPIO line offset.
  * @param line GPIO line object.
  * @return Line offset.
