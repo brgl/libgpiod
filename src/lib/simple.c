@@ -70,7 +70,6 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 	memset(values, 0, sizeof(*values) * num_lines);
 	status = gpiod_line_get_value_bulk(&bulk, values);
 
-	gpiod_line_release_bulk(&bulk);
 	gpiod_chip_close(chip);
 
 	return status;
@@ -130,7 +129,6 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 	if (cb)
 		cb(data);
 
-	gpiod_line_release_bulk(&bulk);
 	gpiod_chip_close(chip);
 
 	return 0;
@@ -192,7 +190,6 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 	}
 
 out:
-	gpiod_line_release(line);
 	gpiod_chip_close(chip);
 
 	return status;
