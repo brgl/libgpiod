@@ -364,7 +364,7 @@ static void line_misc_flags(void)
 	line = gpiod_chip_get_line(chip, 2);
 	TEST_ASSERT_NOT_NULL(line);
 
-	TEST_ASSERT_FALSE(gpiod_line_is_used_by_kernel(line));
+	TEST_ASSERT_FALSE(gpiod_line_is_used(line));
 	TEST_ASSERT_FALSE(gpiod_line_is_open_drain(line));
 	TEST_ASSERT_FALSE(gpiod_line_is_open_source(line));
 
@@ -375,7 +375,7 @@ static void line_misc_flags(void)
 	status = gpiod_line_request(line, &config, 0);
 	TEST_ASSERT_RET_OK(status);
 
-	TEST_ASSERT(gpiod_line_is_used_by_kernel(line));
+	TEST_ASSERT(gpiod_line_is_used(line));
 	TEST_ASSERT(gpiod_line_is_open_drain(line));
 	TEST_ASSERT_FALSE(gpiod_line_is_open_source(line));
 
@@ -386,7 +386,7 @@ static void line_misc_flags(void)
 	status = gpiod_line_request(line, &config, 0);
 	TEST_ASSERT_RET_OK(status);
 
-	TEST_ASSERT(gpiod_line_is_used_by_kernel(line));
+	TEST_ASSERT(gpiod_line_is_used(line));
 	TEST_ASSERT_FALSE(gpiod_line_is_open_drain(line));
 	TEST_ASSERT(gpiod_line_is_open_source(line));
 }

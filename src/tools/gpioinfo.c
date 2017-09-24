@@ -24,8 +24,8 @@ struct flag {
 
 static const struct flag flags[] = {
 	{
-		.name = "kernel",
-		.is_set = gpiod_line_is_used_by_kernel,
+		.name = "used",
+		.is_set = gpiod_line_is_used,
 	},
 	{
 		.name = "open-drain",

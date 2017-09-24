@@ -321,7 +321,7 @@ int gpiod_line_active_state(struct gpiod_line *line)
 					: GPIOD_ACTIVE_STATE_HIGH;
 }
 
-bool gpiod_line_is_used_by_kernel(struct gpiod_line *line)
+bool gpiod_line_is_used(struct gpiod_line *line)
 {
 	return line->info.flags & GPIOLINE_FLAG_KERNEL;
 }

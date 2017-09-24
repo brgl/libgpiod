@@ -413,11 +413,15 @@ int gpiod_line_direction(struct gpiod_line *line) GPIOD_API;
 int gpiod_line_active_state(struct gpiod_line *line) GPIOD_API;
 
 /**
- * @brief Check if the line is used by the kernel.
+ * @brief Check if the line is currently in use.
  * @param line GPIO line object.
- * @return True if the line is used by the kernel, false otherwise.
+ * @return True if the line is in use, false otherwise.
+ *
+ * The user space can't know exactly why a line is busy. It may have been
+ * requested by another process or hogged by the kernel. It only matters that
+ * the line is used and we can't request it.
  */
-bool gpiod_line_is_used_by_kernel(struct gpiod_line *line) GPIOD_API;
+bool gpiod_line_is_used(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Check if the line is an open-drain GPIO.
