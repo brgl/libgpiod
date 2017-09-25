@@ -167,7 +167,7 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 		status = gpiod_line_event_wait(line, timeout);
 		if (status < 0) {
 			if (errno == EINTR)
-				return evtype = GPIOD_EVENT_CB_TIMEOUT;
+				evtype = GPIOD_EVENT_CB_TIMEOUT;
 			else
 				goto out;
 		} else if (status == 0) {
