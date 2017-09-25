@@ -152,7 +152,8 @@ static void simple_event_loop(void)
 	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
 
 	status = gpiod_simple_event_loop(TEST_CONSUMER, test_chip_name(0), 3,
-					 false, &ts, simple_event_cb, &evdata);
+					 false, &ts, NULL, simple_event_cb,
+					 &evdata);
 
 	TEST_ASSERT_RET_OK(status);
 	TEST_ASSERT(evdata.got_rising_edge);

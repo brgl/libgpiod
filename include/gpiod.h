@@ -155,27 +155,86 @@ enum {
  *
  * The callback function takes the following arguments: event type (int),
  * GPIO line offset (unsigned int), event timestamp (const struct timespec *)
- * and a pointer to user data.
+ * and a pointer to user data (void *).
  */
-typedef int (*gpiod_event_cb)(int, unsigned int,
-			      const struct timespec *, void *);
+typedef int (*gpiod_event_handle_cb)(int, unsigned int,
+				     const struct timespec *, void *);
+
+/**
+ * @brief Return status values that the simple event poll callback can return.
+ */
+enum {
+	GPIOD_EVENT_POLL_ERR = -1,
+	/**< Polling error occurred (the polling function should set errno). */
+	GPIOD_EVENT_POLL_TIMEOUT = 0,
+	/**< Poll timed out. */
+	GPIOD_EVENT_POLL_EVENT = 1,
+	/**< Line event occurred. */
+	GPIOD_EVENT_POLL_STOP = 2,
+	/**< The event loop should stop processing events. */
+};
+
+/**
+ * @brief Simple event poll callback signature.
+ *
+ * The poll callback function takes the following arguments: number of lines
+ * (unsigned int), an array of file descriptors on which input events should
+ * be monitored (const int *), pointer to an integer which the function should
+ * set to the offset in the fd array corresponding with the descriptor on which
+ * an event occurred (int *), poll timeout (const struct timespec *) and a
+ * pointer to user data (void *).
+ *
+ * The callback should poll for input events on the set of descriptors and
+ * return an appropriate value that can be interpreted by the event loop
+ * routine.
+ */
+typedef int (*gpiod_event_poll_cb)(unsigned int, const int *, unsigned int *,
+				   const struct timespec *, void *);
 
 /**
  * @brief Wait for events on a single GPIO line.
  * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
- * @param offset GPIO line offset on the chip.
+ * @param offset GPIO line offset to monitor.
  * @param active_low The active state of this line - true if low.
  * @param timeout Maximum wait time for each iteration.
- * @param callback Callback function to call on event occurence.
- * @param cbdata User data passed to the callback.
- * @return 0 no errors were encountered, -1 if an error occured.
+ * @param poll_cb Callback function to call when waiting for events.
+ * @param event_cb Callback function to call on event occurrence.
+ * @param data User data passed to the callback.
+ * @return 0 no errors were encountered, -1 if an error occurred.
  *
+ * The poll callback can be NULL in which case the routine will fall back to
+ * a basic, ppoll() based callback.
  */
 int gpiod_simple_event_loop(const char *consumer, const char *device,
 			    unsigned int offset, bool active_low,
 			    const struct timespec *timeout,
-			    gpiod_event_cb callback, void *cbdata) GPIOD_API;
+			    gpiod_event_poll_cb poll_cb,
+			    gpiod_event_handle_cb event_cb,
+			    void *data) GPIOD_API;
+
+/**
+ * @brief Wait for events on multiple GPIO lines.
+ * @param consumer Name of the consumer.
+ * @param device Name, path or number of the gpiochip.
+ * @param offsets Array of GPIO line offsets to monitor.
+ * @param num_lines Number of lines to monitor.
+ * @param active_low The active state of this line - true if low.
+ * @param timeout Maximum wait time for each iteration.
+ * @param poll_cb Callback function to call when waiting for events.
+ * @param event_cb Callback function to call on event occurrence.
+ * @param data User data passed to the callback.
+ * @return 0 no errors were encountered, -1 if an error occurred.
+ *
+ * The callback functions work just like in the single line variant.
+ */
+int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
+				     const unsigned int *offsets,
+				     unsigned int num_lines, bool active_low,
+				     const struct timespec *timeout,
+				     gpiod_event_poll_cb poll_cb,
+				     gpiod_event_handle_cb event_cb,
+				     void *data) GPIOD_API;
 
 /**
  * @}
