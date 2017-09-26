@@ -205,7 +205,7 @@ static void gpiomon_request_the_same_line_twice(void)
 	TEST_ASSERT_NULL(test_tool_stdout());
 	TEST_ASSERT_NOT_NULL(test_tool_stderr());
 	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
-				 "error configuring GPIO line events");
+				 "error waiting for events");
 }
 TEST_DEFINE(gpiomon_request_the_same_line_twice,
 	    "tools: gpiomon - request the same line twice",
@@ -253,7 +253,7 @@ static void gpiomon_line_out_of_range(void)
 	TEST_ASSERT_NULL(test_tool_stdout());
 	TEST_ASSERT_NOT_NULL(test_tool_stderr());
 	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
-				 "error retrieving GPIO line from chip");
+				 "error waiting for events");
 }
 TEST_DEFINE(gpiomon_line_out_of_range,
 	    "tools: gpiomon - line out of range",
