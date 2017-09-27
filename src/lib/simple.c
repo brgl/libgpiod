@@ -16,8 +16,6 @@
 #include <errno.h>
 #include <poll.h>
 
-#define UNUSED __attribute__((unused))
-
 int gpiod_simple_get_value(const char *consumer, const char *device,
 			   unsigned int offset, bool active_low)
 {
@@ -140,7 +138,7 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 static int basic_event_poll(unsigned int num_lines, const int *fds,
 			    unsigned int *event_offset,
 			    const struct timespec *timeout,
-			    void *data UNUSED)
+			    void *data GPIOD_UNUSED)
 {
 	struct pollfd poll_fds[GPIOD_REQUEST_MAX_LINES];
 	unsigned int i;

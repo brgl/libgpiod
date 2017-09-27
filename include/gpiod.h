@@ -52,6 +52,11 @@ struct gpiod_chip_iter;
 #define GPIOD_BIT(nr)		(1UL << (nr))
 
 /**
+ * @brief Marks a function argument or variable as potentially unused.
+ */
+#define GPIOD_UNUSED		__attribute__((unused))
+
+/**
  * @}
  *
  * @defgroup __high_level__ High-level API
