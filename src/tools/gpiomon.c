@@ -95,7 +95,7 @@ static void event_print_custom(unsigned int offset,
 			printf("%u", offset);
 			break;
 		case 'e':
-			if (event_type == GPIOD_EVENT_CB_RISING_EDGE)
+			if (event_type == GPIOD_SIMPLE_EVENT_CB_RISING_EDGE)
 				fputc('1', stdout);
 			else
 				fputc('0', stdout);
@@ -131,7 +131,7 @@ static void event_print_human_readable(unsigned int offset,
 {
 	char *evname;
 
-	if (event_type == GPIOD_EVENT_CB_RISING_EDGE)
+	if (event_type == GPIOD_SIMPLE_EVENT_CB_RISING_EDGE)
 		evname = " RISING EDGE";
 	else
 		evname = "FALLING EDGE";
@@ -161,14 +161,14 @@ static int poll_callback(unsigned int num_lines, const int *fds,
 
 	ret = poll(pfds, num_lines + 1, ts);
 	if (ret < 0)
-		return GPIOD_EVENT_POLL_ERR;
+		return GPIOD_SIMPLE_EVENT_POLL_RET_ERR;
 	else if (ret == 0)
-		return GPIOD_EVENT_POLL_TIMEOUT;
+		return GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT;
 
 	for (i = 0; i < num_lines; i++) {
 		if (pfds[i].revents) {
 			*event_offset = i;
-			return GPIOD_EVENT_POLL_EVENT;
+			return GPIOD_SIMPLE_EVENT_POLL_RET_EVENT;
 		}
 	}
 
@@ -178,7 +178,7 @@ static int poll_callback(unsigned int num_lines, const int *fds,
 	 */
 	close(ctx->sigfd);
 
-	return GPIOD_EVENT_POLL_STOP;
+	return GPIOD_SIMPLE_EVENT_POLL_RET_STOP;
 }
 
 static int event_callback(int event_type, unsigned int line_offset,
@@ -187,9 +187,9 @@ static int event_callback(int event_type, unsigned int line_offset,
 	struct mon_ctx *ctx = data;
 
 	if (!ctx->silent) {
-		if ((event_type == GPIOD_EVENT_CB_RISING_EDGE
+		if ((event_type == GPIOD_SIMPLE_EVENT_CB_RISING_EDGE
 		    && ctx->watch_rising)
-		    || (event_type == GPIOD_EVENT_CB_FALLING_EDGE
+		    || (event_type == GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE
 		    && ctx->watch_falling)) {
 			if (ctx->fmt)
 				event_print_custom(line_offset, timestamp,
@@ -203,9 +203,9 @@ static int event_callback(int event_type, unsigned int line_offset,
 	ctx->events_done++;
 
 	if (ctx->events_wanted && ctx->events_done >= ctx->events_wanted)
-		return GPIOD_EVENT_CB_STOP;
+		return GPIOD_SIMPLE_EVENT_CB_RET_STOP;
 
-	return GPIOD_EVENT_CB_OK;
+	return GPIOD_SIMPLE_EVENT_CB_RET_OK;
 }
 
 static int make_signalfd(void)

@@ -154,17 +154,17 @@ static int basic_event_poll(unsigned int num_lines, const int *fds,
 	status = ppoll(poll_fds, num_lines, timeout, NULL);
 	if (status < 0) {
 		if (errno == EINTR)
-			return GPIOD_EVENT_POLL_TIMEOUT;
+			return GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT;
 		else
-			return GPIOD_EVENT_POLL_ERR;
+			return GPIOD_SIMPLE_EVENT_POLL_RET_ERR;
 	} else if (status == 0) {
-		return GPIOD_EVENT_POLL_TIMEOUT;
+		return GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT;
 	}
 
 	for (i = 0; !poll_fds[i].revents; i++);
 	*event_offset = i;
 
-	return GPIOD_EVENT_POLL_EVENT;
+	return GPIOD_SIMPLE_EVENT_POLL_RET_EVENT;
 }
 
 int gpiod_simple_event_loop(const char *consumer, const char *device,
@@ -237,10 +237,10 @@ int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
 		ret = poll_cb(num_lines, fds, &event_offset, timeout, data);
 		if (ret < 0) {
 			goto out;
-		} else if (ret == GPIOD_EVENT_POLL_TIMEOUT) {
-			evtype = GPIOD_EVENT_CB_TIMEOUT;
+		} else if (ret == GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT) {
+			evtype = GPIOD_SIMPLE_EVENT_CB_TIMEOUT;
 			line_offset = 0;
-		} else if (ret == GPIOD_EVENT_POLL_STOP) {
+		} else if (ret == GPIOD_SIMPLE_EVENT_POLL_RET_STOP) {
 			ret = 0;
 			goto out;
 		} else {
@@ -250,14 +250,14 @@ int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
 				goto out;
 
 			evtype = event.event_type == GPIOD_EVENT_RISING_EDGE
-						? GPIOD_EVENT_CB_RISING_EDGE
-						: GPIOD_EVENT_CB_FALLING_EDGE;
+					? GPIOD_SIMPLE_EVENT_CB_RISING_EDGE
+					: GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE;
 
 			line_offset = offsets[event_offset];
 		}
 
 		ret = event_cb(evtype, line_offset, &event.ts, data);
-		if (ret == GPIOD_EVENT_CB_STOP) {
+		if (ret == GPIOD_SIMPLE_EVENT_CB_RET_STOP) {
 			ret = 0;
 			goto out;
 		}

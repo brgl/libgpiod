@@ -137,11 +137,11 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
  * @brief Event types that can be passed to the simple event callback.
  */
 enum {
-	GPIOD_EVENT_CB_TIMEOUT,
+	GPIOD_SIMPLE_EVENT_CB_TIMEOUT,
 	/**< Waiting for events timed out. */
-	GPIOD_EVENT_CB_RISING_EDGE,
+	GPIOD_SIMPLE_EVENT_CB_RISING_EDGE,
 	/**< Rising edge event occured. */
-	GPIOD_EVENT_CB_FALLING_EDGE,
+	GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE,
 	/**< Falling edge event occured. */
 };
 
@@ -149,9 +149,9 @@ enum {
  * @brief Return status values that the simple event callback can return.
  */
 enum {
-	GPIOD_EVENT_CB_OK = 0,
+	GPIOD_SIMPLE_EVENT_CB_RET_OK = 0,
 	/**< Continue processing events. */
-	GPIOD_EVENT_CB_STOP,
+	GPIOD_SIMPLE_EVENT_CB_RET_STOP,
 	/**< Stop processing events. */
 };
 
@@ -169,13 +169,13 @@ typedef int (*gpiod_event_handle_cb)(int, unsigned int,
  * @brief Return status values that the simple event poll callback can return.
  */
 enum {
-	GPIOD_EVENT_POLL_ERR = -1,
+	GPIOD_SIMPLE_EVENT_POLL_RET_ERR = -1,
 	/**< Polling error occurred (the polling function should set errno). */
-	GPIOD_EVENT_POLL_TIMEOUT = 0,
+	GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT = 0,
 	/**< Poll timed out. */
-	GPIOD_EVENT_POLL_EVENT = 1,
+	GPIOD_SIMPLE_EVENT_POLL_RET_EVENT = 1,
 	/**< Line event occurred. */
-	GPIOD_EVENT_POLL_STOP = 2,
+	GPIOD_SIMPLE_EVENT_POLL_RET_STOP = 2,
 	/**< The event loop should stop processing events. */
 };
 

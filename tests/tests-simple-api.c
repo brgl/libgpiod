@@ -133,14 +133,15 @@ static int simple_event_cb(int evtype, unsigned int offset,
 {
 	struct simple_event_data *evdata = data;
 
-	if (evtype == GPIOD_EVENT_CB_RISING_EDGE)
+	if (evtype == GPIOD_SIMPLE_EVENT_CB_RISING_EDGE)
 		evdata->got_rising_edge = true;
-	else if (evtype == GPIOD_EVENT_CB_FALLING_EDGE)
+	else if (evtype == GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE)
 		evdata->got_falling_edge = true;
 
 	evdata->offset = offset;
 
-	return ++evdata->count == 2 ? GPIOD_EVENT_CB_STOP : GPIOD_EVENT_CB_OK;
+	return ++evdata->count == 2 ? GPIOD_SIMPLE_EVENT_CB_RET_STOP
+				    : GPIOD_SIMPLE_EVENT_CB_RET_OK;
 }
 
 static void simple_event_loop(void)
