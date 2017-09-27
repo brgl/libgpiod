@@ -74,7 +74,7 @@ static void maybe_daemonize(bool daemonize)
 	}
 }
 
-static void wait_enter(void *data UNUSED)
+static void wait_enter(void *data GPIOD_UNUSED)
 {
 	getchar();
 }
