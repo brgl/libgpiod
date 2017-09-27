@@ -164,3 +164,32 @@ static void simple_event_loop(void)
 TEST_DEFINE(simple_event_loop,
 	    "gpiod_simple_event_loop() - single event",
 	    0, { 8 });
+
+static void simple_event_loop_multiple(void)
+{
+	struct simple_event_data evdata = { false, false, 0, 0 };
+	struct timespec ts = { 1, 0 };
+	unsigned int offsets[4];
+	int status;
+
+	offsets[0] = 2;
+	offsets[1] = 3;
+	offsets[2] = 5;
+	offsets[3] = 6;
+
+	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
+
+	status = gpiod_simple_event_loop_multiple(TEST_CONSUMER,
+						  test_chip_name(0), offsets,
+						  4, false, &ts, NULL,
+						  simple_event_cb, &evdata);
+
+	TEST_ASSERT_RET_OK(status);
+	TEST_ASSERT(evdata.got_rising_edge);
+	TEST_ASSERT(evdata.got_falling_edge);
+	TEST_ASSERT_EQ(evdata.count, 2);
+	TEST_ASSERT_EQ(evdata.offset, 3);
+}
+TEST_DEFINE(simple_event_loop_multiple,
+	    "gpiod_simple_event_loop_multiple() - single event",
+	    0, { 8 });
