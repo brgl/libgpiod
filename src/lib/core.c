@@ -938,6 +938,13 @@ struct gpiod_line * gpiod_line_find_by_name(const char *name)
 	return NULL;
 }
 
+void gpiod_line_close_chip(struct gpiod_line *line)
+{
+	struct gpiod_chip *chip = gpiod_line_get_chip(line);
+
+	gpiod_chip_close(chip);
+}
+
 int gpiod_line_event_wait(struct gpiod_line *line,
 			  const struct timespec *timeout)
 {
