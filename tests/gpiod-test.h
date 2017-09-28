@@ -126,6 +126,7 @@ void test_tool_stdin_write(const char *fmt, ...) TEST_PRINTF(1, 2);
  * The functions below can be reused by different tests for common use cases.
  */
 void test_close_chip(struct gpiod_chip **chip);
+void test_line_close_chip(struct gpiod_line **line);
 void test_free_str(char **str);
 void test_free_chip_iter(struct gpiod_chip_iter **iter);
 void test_free_chip_iter_noclose(struct gpiod_chip_iter **iter);

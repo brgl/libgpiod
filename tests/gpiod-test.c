@@ -1019,6 +1019,12 @@ void test_close_chip(struct gpiod_chip **chip)
 		gpiod_chip_close(*chip);
 }
 
+void test_line_close_chip(struct gpiod_line **line)
+{
+	if (*line)
+		gpiod_line_close_chip(*line);
+}
+
 void test_free_str(char **str)
 {
 	if (*str)
