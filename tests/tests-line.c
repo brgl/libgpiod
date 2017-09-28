@@ -280,14 +280,11 @@ TEST_DEFINE(line_set_value,
 
 static void line_find_by_name_good(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
-	struct gpiod_line *line;
+	TEST_CLEANUP(test_line_close_chip) struct gpiod_line *line = NULL;
 
 	line = gpiod_line_find_by_name("gpio-mockup-C-12");
 	TEST_ASSERT_NOT_NULL(line);
-	chip = gpiod_line_get_chip(line);
 
-	TEST_ASSERT_STR_EQ(gpiod_chip_label(chip), "gpio-mockup-C");
 	TEST_ASSERT_EQ(gpiod_line_offset(line), 12);
 }
 TEST_DEFINE(line_find_by_name_good,
