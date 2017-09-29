@@ -278,6 +278,30 @@ TEST_DEFINE(line_set_value,
 	    "gpiod_line_set_value() - good",
 	    0, { 8 });
 
+static void line_get_good(void)
+{
+	TEST_CLEANUP(test_line_close_chip) struct gpiod_line *line = NULL;
+
+	line = gpiod_line_get(test_chip_name(2), 18);
+	TEST_ASSERT_NOT_NULL(line);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 18);
+}
+TEST_DEFINE(line_get_good,
+	    "gpiod_line_get() - good",
+	    TEST_FLAG_NAMED_LINES, { 16, 16, 32, 16 });
+
+static void line_get_invalid_offset(void)
+{
+	TEST_CLEANUP(test_line_close_chip) struct gpiod_line *line = NULL;
+
+	line = gpiod_line_get(test_chip_name(3), 18);
+	TEST_ASSERT_NULL(line);
+	TEST_ASSERT_ERRNO_IS(EINVAL);
+}
+TEST_DEFINE(line_get_invalid_offset,
+	    "gpiod_line_get() - invalid offset",
+	    TEST_FLAG_NAMED_LINES, { 16, 16, 32, 16 });
+
 static void line_find_good(void)
 {
 	TEST_CLEANUP(test_line_close_chip) struct gpiod_line *line = NULL;

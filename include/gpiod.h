@@ -880,6 +880,21 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
 			      int *values) GPIOD_API;
 
 /**
+ * @brief Get a GPIO line handle by GPIO chip description and offset.
+ * @param device String describing the gpiochip.
+ * @param offset The offset of the GPIO line.
+ * @return GPIO line handle or NULL if an error occurred.
+ *
+ * This routine provides a shorter alternative to calling
+ * ::gpiod_chip_open_lookup and ::gpiod_chip_get_line.
+ *
+ * If this function succeeds, the caller is responsible for closing the
+ * associated GPIO chip.
+ */
+struct gpiod_line *
+gpiod_line_get(const char *device, unsigned int offset) GPIOD_API;
+
+/**
  * @brief Find a GPIO line by its name.
  * @param name Name of the GPIO line.
  * @return Returns the GPIO line handle if the line exists in the system or
