@@ -237,6 +237,26 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 	return line;
 }
 
+struct gpiod_line *
+gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
+{
+	struct gpiod_line_iter iter;
+	struct gpiod_line *line;
+
+	gpiod_line_iter_init(&iter, chip);
+	gpiod_foreach_line(&iter, line) {
+		if (gpiod_line_iter_err(&iter))
+			return NULL;
+
+		if (strcmp(gpiod_line_name(line), name) == 0)
+			return line;
+	}
+
+	errno = ENOENT;
+
+	return NULL;
+}
+
 static int line_get_state(struct gpiod_line *line)
 {
 	return line->state;

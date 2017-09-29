@@ -331,6 +331,19 @@ struct gpiod_line *
 gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
 
 /**
+ * @brief Find a GPIO line by name among lines associated with given GPIO chip.
+ * @param chip The GPIO chip object.
+ * @param name The name of the GPIO line.
+ * @return Pointer to the GPIO line handle or NULL if the line could not be
+ *         found or an error occurred.
+ *
+ * In case a line with given name is not associated with given chip, the
+ * functions sets errno to ENOENT.
+ */
+struct gpiod_line *
+gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
+
+/**
  * @}
  *
  * @defgroup __lines__ GPIO line operations
