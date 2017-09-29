@@ -147,6 +147,7 @@ bool test_regex_match(const char *str, const char *pattern);
 #define TEST_ASSERT_NOT_NULL(ptr)	TEST_ASSERT(ptr != NULL)
 #define TEST_ASSERT_RET_OK(status)	TEST_ASSERT(status == 0)
 #define TEST_ASSERT_NULL(ptr)		TEST_ASSERT(ptr == NULL)
+#define TEST_ASSERT_ERRNO_IS(errnum)	TEST_ASSERT(errno == errnum)
 #define TEST_ASSERT_EQ(a1, a2)		TEST_ASSERT(a1 == a2)
 #define TEST_ASSERT_NOTEQ(a1, a2)	TEST_ASSERT(a1 != a2)
 #define TEST_ASSERT_STR_EQ(s1, s2)	TEST_ASSERT(strcmp(s1, s2) == 0)
