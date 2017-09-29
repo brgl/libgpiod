@@ -923,37 +923,32 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 
 struct gpiod_line * gpiod_line_find(const char *name)
 {
-	struct gpiod_chip_iter *chip_iter;
-	struct gpiod_line_iter line_iter;
+	struct gpiod_chip_iter *iter;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
-	const char *line_name;
 
-	chip_iter = gpiod_chip_iter_new();
-	if (!chip_iter)
+	iter = gpiod_chip_iter_new();
+	if (!iter)
 		return NULL;
 
-	gpiod_foreach_chip(chip_iter, chip) {
-		if (gpiod_chip_iter_err(chip_iter))
-			continue;
+	gpiod_foreach_chip(iter, chip) {
+		if (gpiod_chip_iter_err(iter))
+			goto out;
 
-		gpiod_line_iter_init(&line_iter, chip);
-		gpiod_foreach_line(&line_iter, line) {
-			if (gpiod_line_iter_err(&line_iter))
-				continue;
-
-			line_name = gpiod_line_name(line);
-			if (!line_name)
-				continue;
-
-			if (strcmp(line_name, name) == 0) {
-				gpiod_chip_iter_free_noclose(chip_iter);
-				return line;
-			}
+		line = gpiod_chip_find_line(chip, name);
+		if (line) {
+			gpiod_chip_iter_free_noclose(iter);
+			return line;
 		}
+
+		if (errno != ENOENT)
+			goto out;
 	}
 
-	gpiod_chip_iter_free(chip_iter);
+	errno = ENOENT;
+
+out:
+	gpiod_chip_iter_free(iter);
 
 	return NULL;
 }

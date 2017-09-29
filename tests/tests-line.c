@@ -278,7 +278,7 @@ TEST_DEFINE(line_set_value,
 	    "gpiod_line_set_value() - good",
 	    0, { 8 });
 
-static void line_find_by_name_good(void)
+static void line_find_good(void)
 {
 	TEST_CLEANUP(test_line_close_chip) struct gpiod_line *line = NULL;
 
@@ -287,8 +287,20 @@ static void line_find_by_name_good(void)
 
 	TEST_ASSERT_EQ(gpiod_line_offset(line), 12);
 }
-TEST_DEFINE(line_find_by_name_good,
-	    "gpiod_line_find_by_name() - good",
+TEST_DEFINE(line_find_good,
+	    "gpiod_line_find() - good",
+	    TEST_FLAG_NAMED_LINES, { 16, 16, 32, 16 });
+
+static void line_find_not_found(void)
+{
+	TEST_CLEANUP(test_line_close_chip) struct gpiod_line *line = NULL;
+
+	line = gpiod_line_find("nonexistent");
+	TEST_ASSERT_NULL(line);
+	TEST_ASSERT_ERRNO_IS(ENOENT);
+}
+TEST_DEFINE(line_find_not_found,
+	    "gpiod_line_find() - not found",
 	    TEST_FLAG_NAMED_LINES, { 16, 16, 32, 16 });
 
 static void line_direction(void)

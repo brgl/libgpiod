@@ -883,10 +883,11 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
  * @brief Find a GPIO line by its name.
  * @param name Name of the GPIO line.
  * @return Returns the GPIO line handle if the line exists in the system or
- *         NULL if it couldn't be located.
+ *         NULL if it couldn't be located or an error occurred.
  *
  * If this routine succeeds, the user must manually close the GPIO chip owning
- * this line to avoid memory leaks.
+ * this line to avoid memory leaks. If the line could not be found, this
+ * functions sets errno to ENOENT.
  */
 struct gpiod_line * gpiod_line_find(const char *name) GPIOD_API;
 
