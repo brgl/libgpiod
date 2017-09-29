@@ -186,6 +186,9 @@ static int event_callback(int event_type, unsigned int line_offset,
 {
 	struct mon_ctx *ctx = data;
 
+	if (event_type == GPIOD_SIMPLE_EVENT_CB_TIMEOUT)
+		return GPIOD_SIMPLE_EVENT_CB_RET_OK;
+
 	if (!ctx->silent) {
 		if ((event_type == GPIOD_SIMPLE_EVENT_CB_RISING_EDGE
 		    && ctx->watch_rising)
