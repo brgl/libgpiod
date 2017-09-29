@@ -181,29 +181,39 @@ static int poll_callback(unsigned int num_lines, const int *fds,
 	return GPIOD_SIMPLE_EVENT_POLL_RET_STOP;
 }
 
+static void handle_event(struct mon_ctx *ctx, int event_type,
+			 unsigned int line_offset,
+			 const struct timespec *timestamp)
+{
+	if (!ctx->silent) {
+		if (ctx->fmt)
+			event_print_custom(line_offset, timestamp,
+					   event_type, ctx);
+		else
+			event_print_human_readable(line_offset,
+						   timestamp, event_type);
+	}
+
+	ctx->events_done++;
+}
+
 static int event_callback(int event_type, unsigned int line_offset,
 			  const struct timespec *timestamp, void *data)
 {
 	struct mon_ctx *ctx = data;
 
-	if (event_type == GPIOD_SIMPLE_EVENT_CB_TIMEOUT)
+	switch (event_type) {
+	case GPIOD_SIMPLE_EVENT_CB_RISING_EDGE:
+		if (ctx->watch_rising)
+			handle_event(ctx, event_type, line_offset, timestamp);
+		break;
+	case GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE:
+		if (ctx->watch_falling)
+			handle_event(ctx, event_type, line_offset, timestamp);
+		break;
+	default:
 		return GPIOD_SIMPLE_EVENT_CB_RET_OK;
-
-	if (!ctx->silent) {
-		if ((event_type == GPIOD_SIMPLE_EVENT_CB_RISING_EDGE
-		    && ctx->watch_rising)
-		    || (event_type == GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE
-		    && ctx->watch_falling)) {
-			if (ctx->fmt)
-				event_print_custom(line_offset, timestamp,
-						   event_type, ctx);
-			else
-				event_print_human_readable(line_offset,
-							   timestamp,
-							   event_type);
-		}
 	}
-	ctx->events_done++;
 
 	if (ctx->events_wanted && ctx->events_done >= ctx->events_wanted)
 		return GPIOD_SIMPLE_EVENT_CB_RET_STOP;
