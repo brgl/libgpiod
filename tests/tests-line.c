@@ -61,7 +61,7 @@ static void line_request_already_requested(void)
 
 	status = gpiod_line_request_input(line, TEST_CONSUMER);
 	TEST_ASSERT_NOTEQ(status, 0);
-	TEST_ASSERT_EQ(errno, EBUSY);
+	TEST_ASSERT_ERRNO_IS(EBUSY);
 }
 TEST_DEFINE(line_request_already_requested,
 	    "gpiod_line_request() - already requested",
@@ -246,7 +246,7 @@ static void line_request_bulk_different_chips(void)
 
 	status = gpiod_line_request_bulk(&bulk, &req, NULL);
 	TEST_ASSERT_NOTEQ(status, 0);
-	TEST_ASSERT_EQ(errno, EINVAL);
+	TEST_ASSERT_ERRNO_IS(EINVAL);
 }
 TEST_DEFINE(line_request_bulk_different_chips,
 	    "gpiod_line_request_bulk() - different chips",

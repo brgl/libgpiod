@@ -32,7 +32,7 @@ static void chip_open_nonexistent(void)
 
 	chip = gpiod_chip_open("/dev/nonexistent_gpiochip");
 	TEST_ASSERT_NULL(chip);
-	TEST_ASSERT_EQ(errno, ENOENT);
+	TEST_ASSERT_ERRNO_IS(ENOENT);
 }
 TEST_DEFINE(chip_open_nonexistent,
 	    "gpiod_chip_open() - nonexistent chip",
@@ -44,7 +44,7 @@ static void chip_open_notty(void)
 
 	chip = gpiod_chip_open("/dev/null");
 	TEST_ASSERT_NULL(chip);
-	TEST_ASSERT_EQ(errno, ENOTTY);
+	TEST_ASSERT_ERRNO_IS(ENOTTY);
 }
 TEST_DEFINE(chip_open_notty,
 	    "gpiod_chip_open() - notty",
