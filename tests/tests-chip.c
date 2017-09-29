@@ -194,3 +194,36 @@ static void chip_num_lines(void)
 TEST_DEFINE(chip_num_lines,
 	    "gpiod_chip_num_lines()",
 	    0, { 1, 4, 8, 16, 32 });
+
+static void chip_find_line_good(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line *line;
+
+	chip = gpiod_chip_open(test_chip_path(1));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_find_line(chip, "gpio-mockup-B-4");
+	TEST_ASSERT_NOT_NULL(line);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 4);
+	TEST_ASSERT_STR_EQ(gpiod_line_name(line), "gpio-mockup-B-4");
+}
+TEST_DEFINE(chip_find_line_good,
+	    "gpiod_chip_find_line() - good",
+	    TEST_FLAG_NAMED_LINES, { 8, 8, 8 });
+
+static void chip_find_line_not_found(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line *line;
+
+	chip = gpiod_chip_open(test_chip_path(1));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_find_line(chip, "nonexistent");
+	TEST_ASSERT_NULL(line);
+	TEST_ASSERT_ERRNO_IS(ENOENT);
+}
+TEST_DEFINE(chip_find_line_not_found,
+	    "gpiod_chip_find_line() - not found",
+	    TEST_FLAG_NAMED_LINES, { 8, 8, 8 });
