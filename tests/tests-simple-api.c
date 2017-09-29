@@ -194,3 +194,49 @@ static void simple_event_loop_multiple(void)
 TEST_DEFINE(simple_event_loop_multiple,
 	    "gpiod_simple_event_loop_multiple() - single event",
 	    0, { 8 });
+
+static void simple_find_line_good(void)
+{
+	unsigned int offset;
+	char chip[32];
+	int rv;
+
+	rv = gpiod_simple_find_line("gpio-mockup-C-14", chip,
+				    sizeof(chip), &offset);
+	TEST_ASSERT_EQ(rv, 1);
+	TEST_ASSERT_EQ(offset, 14);
+	TEST_ASSERT_STR_EQ(chip, test_chip_name(2));
+}
+TEST_DEFINE(simple_find_line_good,
+	    "gpiod_simple_find_line() - good",
+	    TEST_FLAG_NAMED_LINES, { 8, 16, 16, 8 });
+
+static void simple_find_line_truncated(void)
+{
+	unsigned int offset;
+	char chip[6];
+	int rv;
+
+	rv = gpiod_simple_find_line("gpio-mockup-C-14", chip,
+				    sizeof(chip), &offset);
+	TEST_ASSERT_EQ(rv, 1);
+	TEST_ASSERT_EQ(offset, 14);
+	TEST_ASSERT_STR_EQ(chip, "gpioc");
+}
+TEST_DEFINE(simple_find_line_truncated,
+	    "gpiod_simple_find_line() - chip name truncated",
+	    TEST_FLAG_NAMED_LINES, { 8, 16, 16, 8 });
+
+static void simple_find_line_not_found(void)
+{
+	unsigned int offset;
+	char chip[32];
+	int rv;
+
+	rv = gpiod_simple_find_line("nonexistent", chip,
+				    sizeof(chip), &offset);
+	TEST_ASSERT_EQ(rv, 0);
+}
+TEST_DEFINE(simple_find_line_not_found,
+	    "gpiod_simple_find_line() - not found",
+	    TEST_FLAG_NAMED_LINES, { 8, 16, 16, 8 });

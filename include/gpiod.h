@@ -242,6 +242,22 @@ int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
 				     void *data) GPIOD_API;
 
 /**
+ * @brief Determine the chip name and line offset of a line with given name.
+ * @param name The name of the GPIO line to lookup.
+ * @param chipname Buffer in which the name of the GPIO chip will be stored.
+ * @param chipname_size Size of the chip name buffer.
+ * @param offset Pointer to an integer in which the line offset will be stored.
+ * @return -1 on error, 0 if the line with given name doesn't exist and 1 if
+ *         the line was found. In the first two cases the contents of chipname
+ *         and offset remain unchanged.
+ *
+ * The chip name is truncated if the buffer can't hold its entire size.
+ */
+int gpiod_simple_find_line(const char *name, char *chipname,
+			   size_t chipname_size,
+			   unsigned int *offset) GPIOD_API;
+
+/**
  * @}
  *
  * @defgroup __chips__ GPIO chip operations

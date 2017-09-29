@@ -12,6 +12,7 @@
 
 #include <gpiod.h>
 
+#include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <poll.h>
@@ -267,4 +268,26 @@ out:
 	gpiod_chip_close(chip);
 
 	return ret;
+}
+
+int gpiod_simple_find_line(const char *name, char *chipname,
+			   size_t chipname_size, unsigned int *offset)
+{
+	struct gpiod_chip *chip;
+	struct gpiod_line *line;
+
+	line = gpiod_line_find(name);
+	if (!line) {
+		if (errno == ENOENT)
+			return 0;
+		else
+			return -1;
+	}
+
+	chip = gpiod_line_get_chip(line);
+	snprintf(chipname, chipname_size, "%s", gpiod_chip_name(chip));
+	*offset = gpiod_line_offset(line);
+	gpiod_chip_close(chip);
+
+	return 1;
 }
