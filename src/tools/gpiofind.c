@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 	if (argc != 1)
 		die("exactly one GPIO line name must be specified");
 
-	line = gpiod_line_find_by_name(argv[0]);
+	line = gpiod_line_find(argv[0]);
 	if (!line)
 		return EXIT_FAILURE;
 

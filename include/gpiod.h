@@ -888,7 +888,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
  * If this routine succeeds, the user must manually close the GPIO chip owning
  * this line to avoid memory leaks.
  */
-struct gpiod_line * gpiod_line_find_by_name(const char *name) GPIOD_API;
+struct gpiod_line * gpiod_line_find(const char *name) GPIOD_API;
 
 /**
  * @brief Close a GPIO chip owning this line and release all resources.

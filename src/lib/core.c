@@ -921,7 +921,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 	return 0;
 }
 
-struct gpiod_line * gpiod_line_find_by_name(const char *name)
+struct gpiod_line * gpiod_line_find(const char *name)
 {
 	struct gpiod_chip_iter *chip_iter;
 	struct gpiod_line_iter line_iter;

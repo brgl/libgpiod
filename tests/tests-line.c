@@ -282,7 +282,7 @@ static void line_find_by_name_good(void)
 {
 	TEST_CLEANUP(test_line_close_chip) struct gpiod_line *line = NULL;
 
-	line = gpiod_line_find_by_name("gpio-mockup-C-12");
+	line = gpiod_line_find("gpio-mockup-C-12");
 	TEST_ASSERT_NOT_NULL(line);
 
 	TEST_ASSERT_EQ(gpiod_line_offset(line), 12);
