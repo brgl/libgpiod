@@ -1137,11 +1137,11 @@ gpiod_chip_iter_failed_chip(struct gpiod_chip_iter *iter) GPIOD_API;
  * @brief Possible states of a line iterator.
  */
 enum {
-	GPIOD_LINE_ITER_INIT = 0,
+	GPIOD_LINE_ITER_STATE_INIT = 0,
 	/**< Line iterator is initiated or iterating over lines. */
-	GPIOD_LINE_ITER_DONE,
+	GPIOD_LINE_ITER_STATE_DONE,
 	/**< Line iterator is done with all lines on this chip. */
-	GPIOD_LINE_ITER_ERR,
+	GPIOD_LINE_ITER_STATE_ERR,
 	/**< There was an error retrieving info for a line. */
 };
 
@@ -1164,7 +1164,8 @@ struct gpiod_line_iter {
  * @brief Static initializer for line iterators.
  * @param chip The gpiochip object whose lines we want to iterate over.
  */
-#define GPIOD_LINE_ITER_INITIALIZER(chip) { 0, (chip), GPIOD_LINE_ITER_INIT }
+#define GPIOD_LINE_ITER_INITIALIZER(chip)				\
+	{ 0, (chip), GPIOD_LINE_ITER_STATE_INIT }
 
 /**
  * @brief Initialize a GPIO line iterator.
@@ -1176,7 +1177,7 @@ static inline void gpiod_line_iter_init(struct gpiod_line_iter *iter,
 {
 	iter->offset = 0;
 	iter->chip = chip;
-	iter->state = GPIOD_LINE_ITER_INIT;
+	iter->state = GPIOD_LINE_ITER_STATE_INIT;
 }
 
 /**
@@ -1195,7 +1196,7 @@ gpiod_line_iter_next(struct gpiod_line_iter *iter) GPIOD_API;
  */
 static inline bool gpiod_line_iter_done(const struct gpiod_line_iter *iter)
 {
-	return iter->state == GPIOD_LINE_ITER_DONE;
+	return iter->state == GPIOD_LINE_ITER_STATE_DONE;
 }
 
 /**
@@ -1207,7 +1208,7 @@ static inline bool gpiod_line_iter_done(const struct gpiod_line_iter *iter)
  */
 static inline bool gpiod_line_iter_err(const struct gpiod_line_iter *iter)
 {
-	return iter->state == GPIOD_LINE_ITER_ERR;
+	return iter->state == GPIOD_LINE_ITER_STATE_ERR;
 }
 
 /**

@@ -127,14 +127,14 @@ struct gpiod_line * gpiod_line_iter_next(struct gpiod_line_iter *iter)
 	struct gpiod_line *line;
 
 	if (iter->offset >= gpiod_chip_num_lines(iter->chip)) {
-		iter->state = GPIOD_LINE_ITER_DONE;
+		iter->state = GPIOD_LINE_ITER_STATE_DONE;
 		return NULL;
 	}
 
-	iter->state = GPIOD_LINE_ITER_INIT;
+	iter->state = GPIOD_LINE_ITER_STATE_INIT;
 	line = gpiod_chip_get_line(iter->chip, iter->offset++);
 	if (!line)
-		iter->state = GPIOD_LINE_ITER_ERR;
+		iter->state = GPIOD_LINE_ITER_STATE_ERR;
 
 	return line;
 }
