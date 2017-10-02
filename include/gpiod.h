@@ -366,57 +366,10 @@ gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
  * @{
  *
  * Functions and data structures dealing with GPIO lines.
+ *
+ * @defgroup __line_bulk__ Operating on multiple lines
+ * @{
  */
-
-/**
- * @brief Available types of requests.
- */
-enum {
-	GPIOD_LINE_REQUEST_DIRECTION_AS_IS,
-	/**< Request the line(s), but don't change current direction. */
-	GPIOD_LINE_REQUEST_DIRECTION_INPUT,
-	/**< Request the line(s) for reading the GPIO line state. */
-	GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
-	/**< Request the line(s) for setting the GPIO line state. */
-	GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE,
-	/**< Monitor both types of events. */
-	GPIOD_LINE_REQUEST_EVENT_RISING_EDGE,
-	/**< Only watch rising edge events. */
-	GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES,
-	/**< Only watch falling edge events. */
-};
-
-/**
- * @brief Miscellaneous GPIO flags.
- */
-enum {
-	GPIOD_LINE_REQUEST_OPEN_DRAIN	= GPIOD_BIT(0),
-	/**< The line is an open-drain port. */
-	GPIOD_LINE_REQUEST_OPEN_SOURCE	= GPIOD_BIT(1),
-	/**< The line is an open-source port. */
-	GPIOD_LINE_REQUEST_ACTIVE_LOW	= GPIOD_BIT(2),
-	/**< The active state of the line is low (high is the default). */
-};
-
-/**
- * @brief Possible direction settings.
- */
-enum {
-	GPIOD_LINE_DIRECTION_INPUT,
-	/**< Direction is input - we're reading the state of a GPIO line. */
-	GPIOD_LINE_DIRECTION_OUTPUT,
-	/**< Direction is output - we're driving the GPIO line. */
-};
-
-/**
- * @brief Possible active state settings.
- */
-enum {
-	GPIOD_LINE_ACTIVE_STATE_HIGH,
-	/**< The active state of a GPIO is active-high. */
-	GPIOD_LINE_ACTIVE_STATE_LOW,
-	/**< The active state of a GPIO is active-low. */
-};
 
 /**
  * @brief Maximum number of GPIO lines that can be requested at once.
@@ -477,6 +430,33 @@ gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk, unsigned int offset)
 {
 	return bulk->lines[offset];
 }
+
+/**
+ * @}
+ *
+ * @defgroup __line_info__ Line info
+ * @{
+ */
+
+/**
+ * @brief Possible direction settings.
+ */
+enum {
+	GPIOD_LINE_DIRECTION_INPUT,
+	/**< Direction is input - we're reading the state of a GPIO line. */
+	GPIOD_LINE_DIRECTION_OUTPUT,
+	/**< Direction is output - we're driving the GPIO line. */
+};
+
+/**
+ * @brief Possible active state settings.
+ */
+enum {
+	GPIOD_LINE_ACTIVE_STATE_HIGH,
+	/**< The active state of a GPIO is active-high. */
+	GPIOD_LINE_ACTIVE_STATE_LOW,
+	/**< The active state of a GPIO is active-low. */
+};
 
 /**
  * @brief Read the GPIO line offset.
@@ -568,6 +548,43 @@ int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
  * explicitly.
  */
 bool gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @}
+ *
+ * @defgroup __line_request__ Line requests
+ * @{
+ */
+
+/**
+ * @brief Available types of requests.
+ */
+enum {
+	GPIOD_LINE_REQUEST_DIRECTION_AS_IS,
+	/**< Request the line(s), but don't change current direction. */
+	GPIOD_LINE_REQUEST_DIRECTION_INPUT,
+	/**< Request the line(s) for reading the GPIO line state. */
+	GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
+	/**< Request the line(s) for setting the GPIO line state. */
+	GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE,
+	/**< Monitor both types of events. */
+	GPIOD_LINE_REQUEST_EVENT_RISING_EDGE,
+	/**< Only watch rising edge events. */
+	GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES,
+	/**< Only watch falling edge events. */
+};
+
+/**
+ * @brief Miscellaneous GPIO request flags.
+ */
+enum {
+	GPIOD_LINE_REQUEST_OPEN_DRAIN	= GPIOD_BIT(0),
+	/**< The line is an open-drain port. */
+	GPIOD_LINE_REQUEST_OPEN_SOURCE	= GPIOD_BIT(1),
+	/**< The line is an open-source port. */
+	GPIOD_LINE_REQUEST_ACTIVE_LOW	= GPIOD_BIT(2),
+	/**< The active state of the line is low (high is the default). */
+};
 
 /**
  * @brief Structure holding configuration of a line request.
@@ -852,6 +869,13 @@ bool gpiod_line_is_requested(struct gpiod_line *line) GPIOD_API;
 bool gpiod_line_is_free(struct gpiod_line *line) GPIOD_API;
 
 /**
+ * @}
+ *
+ * @defgroup __line_value__ Reading & setting line values
+ * @{
+ */
+
+/**
  * @brief Read current value of a single GPIO line.
  * @param line GPIO line object.
  * @return 0 or 1 if the operation succeeds. On error this routine returns -1
@@ -896,46 +920,11 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
 			      int *values) GPIOD_API;
 
 /**
- * @brief Get a GPIO line handle by GPIO chip description and offset.
- * @param device String describing the gpiochip.
- * @param offset The offset of the GPIO line.
- * @return GPIO line handle or NULL if an error occurred.
+ * @}
  *
- * This routine provides a shorter alternative to calling
- * ::gpiod_chip_open_lookup and ::gpiod_chip_get_line.
- *
- * If this function succeeds, the caller is responsible for closing the
- * associated GPIO chip.
+ * @defgroup __line_event__ Line events handling
+ * @{
  */
-struct gpiod_line *
-gpiod_line_get(const char *device, unsigned int offset) GPIOD_API;
-
-/**
- * @brief Find a GPIO line by its name.
- * @param name Name of the GPIO line.
- * @return Returns the GPIO line handle if the line exists in the system or
- *         NULL if it couldn't be located or an error occurred.
- *
- * If this routine succeeds, the user must manually close the GPIO chip owning
- * this line to avoid memory leaks. If the line could not be found, this
- * functions sets errno to ENOENT.
- */
-struct gpiod_line * gpiod_line_find(const char *name) GPIOD_API;
-
-/**
- * @brief Close a GPIO chip owning this line and release all resources.
- * @param line GPIO line object
- *
- * After this function returns, the line must no longer be used.
- */
-void gpiod_line_close_chip(struct gpiod_line *line) GPIOD_API;
-
-/**
- * @brief Get the handle to the GPIO chip controlling this line.
- * @param line The GPIO line object.
- * @return Pointer to the GPIO chip handle controlling this line.
- */
-struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Event types.
@@ -1012,6 +1001,57 @@ int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
 int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event) GPIOD_API;
 
 /**
+ * @}
+ *
+ * @defgroup __line_misc__ Misc line functions
+ * @{
+ */
+
+/**
+ * @brief Get a GPIO line handle by GPIO chip description and offset.
+ * @param device String describing the gpiochip.
+ * @param offset The offset of the GPIO line.
+ * @return GPIO line handle or NULL if an error occurred.
+ *
+ * This routine provides a shorter alternative to calling
+ * ::gpiod_chip_open_lookup and ::gpiod_chip_get_line.
+ *
+ * If this function succeeds, the caller is responsible for closing the
+ * associated GPIO chip.
+ */
+struct gpiod_line *
+gpiod_line_get(const char *device, unsigned int offset) GPIOD_API;
+
+/**
+ * @brief Find a GPIO line by its name.
+ * @param name Name of the GPIO line.
+ * @return Returns the GPIO line handle if the line exists in the system or
+ *         NULL if it couldn't be located or an error occurred.
+ *
+ * If this routine succeeds, the user must manually close the GPIO chip owning
+ * this line to avoid memory leaks. If the line could not be found, this
+ * functions sets errno to ENOENT.
+ */
+struct gpiod_line * gpiod_line_find(const char *name) GPIOD_API;
+
+/**
+ * @brief Close a GPIO chip owning this line and release all resources.
+ * @param line GPIO line object
+ *
+ * After this function returns, the line must no longer be used.
+ */
+void gpiod_line_close_chip(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Get the handle to the GPIO chip controlling this line.
+ * @param line The GPIO line object.
+ * @return Pointer to the GPIO chip handle controlling this line.
+ */
+struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @}
+ *
  * @}
  *
  * @defgroup __iterators__ Iterators for GPIO chips and lines
