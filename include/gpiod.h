@@ -45,16 +45,16 @@ struct gpiod_chip_iter;
 #define GPIOD_API		__attribute__((visibility("default")))
 
 /**
+ * @brief Marks a function argument or variable as potentially unused.
+ */
+#define GPIOD_UNUSED		__attribute__((unused))
+
+/**
  * @brief Shift 1 by given offset.
  * @param nr Bit position.
  * @return 1 shifted by nr.
  */
 #define GPIOD_BIT(nr)		(1UL << (nr))
-
-/**
- * @brief Marks a function argument or variable as potentially unused.
- */
-#define GPIOD_UNUSED		__attribute__((unused))
 
 /**
  * @}
