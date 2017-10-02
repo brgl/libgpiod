@@ -37,7 +37,7 @@ static void event_rising_edge_good(void)
 	rv = gpiod_line_event_read(line, &ev);
 	TEST_ASSERT_RET_OK(rv);
 
-	TEST_ASSERT_EQ(ev.event_type, GPIOD_EVENT_RISING_EDGE);
+	TEST_ASSERT_EQ(ev.event_type, GPIOD_LINE_EVENT_RISING_EDGE);
 }
 TEST_DEFINE(event_rising_edge_good,
 	    "events - receive single rising edge event",
@@ -68,7 +68,7 @@ static void event_falling_edge_good(void)
 	rv = gpiod_line_event_read(line, &ev);
 	TEST_ASSERT_RET_OK(rv);
 
-	TEST_ASSERT_EQ(ev.event_type, GPIOD_EVENT_FALLING_EDGE);
+	TEST_ASSERT_EQ(ev.event_type, GPIOD_LINE_EVENT_FALLING_EDGE);
 }
 TEST_DEFINE(event_falling_edge_good,
 	    "events - receive single falling edge event",
@@ -114,7 +114,7 @@ static void event_rising_edge_active_low(void)
 	TEST_ASSERT_NOT_NULL(line);
 
 	rv = gpiod_line_request_rising_edge_events_flags(line, TEST_CONSUMER,
-						GPIOD_REQUEST_ACTIVE_LOW);
+						GPIOD_LINE_REQUEST_ACTIVE_LOW);
 	TEST_ASSERT_RET_OK(rv);
 
 	test_set_event(0, 7, TEST_EVENT_RISING, 100);
@@ -125,7 +125,7 @@ static void event_rising_edge_active_low(void)
 	rv = gpiod_line_event_read(line, &ev);
 	TEST_ASSERT_RET_OK(rv);
 
-	TEST_ASSERT_EQ(ev.event_type, GPIOD_EVENT_RISING_EDGE);
+	TEST_ASSERT_EQ(ev.event_type, GPIOD_LINE_EVENT_RISING_EDGE);
 }
 TEST_DEFINE(event_rising_edge_active_low,
 	    "events - single rising edge event with low active state",
@@ -159,7 +159,7 @@ static void event_get_value(void)
 	rv = gpiod_line_event_read(line, &ev);
 	TEST_ASSERT_RET_OK(rv);
 
-	TEST_ASSERT_EQ(ev.event_type, GPIOD_EVENT_RISING_EDGE);
+	TEST_ASSERT_EQ(ev.event_type, GPIOD_LINE_EVENT_RISING_EDGE);
 
 	rv = gpiod_line_get_value(line);
 	TEST_ASSERT_EQ(rv, 1);

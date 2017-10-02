@@ -372,17 +372,17 @@ gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
  * @brief Available types of requests.
  */
 enum {
-	GPIOD_REQUEST_DIRECTION_AS_IS,
+	GPIOD_LINE_REQUEST_DIRECTION_AS_IS,
 	/**< Request the line(s), but don't change current direction. */
-	GPIOD_REQUEST_DIRECTION_INPUT,
+	GPIOD_LINE_REQUEST_DIRECTION_INPUT,
 	/**< Request the line(s) for reading the GPIO line state. */
-	GPIOD_REQUEST_DIRECTION_OUTPUT,
+	GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
 	/**< Request the line(s) for setting the GPIO line state. */
-	GPIOD_REQUEST_EVENT_FALLING_EDGE,
+	GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE,
 	/**< Monitor both types of events. */
-	GPIOD_REQUEST_EVENT_RISING_EDGE,
+	GPIOD_LINE_REQUEST_EVENT_RISING_EDGE,
 	/**< Only watch rising edge events. */
-	GPIOD_REQUEST_EVENT_BOTH_EDGES,
+	GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES,
 	/**< Only watch falling edge events. */
 };
 
@@ -390,11 +390,11 @@ enum {
  * @brief Miscellaneous GPIO flags.
  */
 enum {
-	GPIOD_REQUEST_OPEN_DRAIN	= GPIOD_BIT(0),
+	GPIOD_LINE_REQUEST_OPEN_DRAIN	= GPIOD_BIT(0),
 	/**< The line is an open-drain port. */
-	GPIOD_REQUEST_OPEN_SOURCE	= GPIOD_BIT(1),
+	GPIOD_LINE_REQUEST_OPEN_SOURCE	= GPIOD_BIT(1),
 	/**< The line is an open-source port. */
-	GPIOD_REQUEST_ACTIVE_LOW	= GPIOD_BIT(2),
+	GPIOD_LINE_REQUEST_ACTIVE_LOW	= GPIOD_BIT(2),
 	/**< The active state of the line is low (high is the default). */
 };
 
@@ -402,9 +402,9 @@ enum {
  * @brief Possible direction settings.
  */
 enum {
-	GPIOD_DIRECTION_INPUT,
+	GPIOD_LINE_DIRECTION_INPUT,
 	/**< Direction is input - we're reading the state of a GPIO line. */
-	GPIOD_DIRECTION_OUTPUT,
+	GPIOD_LINE_DIRECTION_OUTPUT,
 	/**< Direction is output - we're driving the GPIO line. */
 };
 
@@ -412,9 +412,9 @@ enum {
  * @brief Possible active state settings.
  */
 enum {
-	GPIOD_ACTIVE_STATE_HIGH,
+	GPIOD_LINE_ACTIVE_STATE_HIGH,
 	/**< The active state of a GPIO is active-high. */
-	GPIOD_ACTIVE_STATE_LOW,
+	GPIOD_LINE_ACTIVE_STATE_LOW,
 	/**< The active state of a GPIO is active-low. */
 };
 
@@ -941,9 +941,9 @@ struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
  * @brief Event types.
  */
 enum {
-	GPIOD_EVENT_RISING_EDGE,
+	GPIOD_LINE_EVENT_RISING_EDGE,
 	/**< Rising edge event. */
-	GPIOD_EVENT_FALLING_EDGE,
+	GPIOD_LINE_EVENT_FALLING_EDGE,
 	/**< Falling edge event. */
 };
 

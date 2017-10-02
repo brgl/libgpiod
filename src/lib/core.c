@@ -330,15 +330,16 @@ const char * gpiod_line_consumer(struct gpiod_line *line)
 
 int gpiod_line_direction(struct gpiod_line *line)
 {
-	return line->info.flags & GPIOLINE_FLAG_IS_OUT ? GPIOD_DIRECTION_OUTPUT
-						       : GPIOD_DIRECTION_INPUT;
+	return line->info.flags & GPIOLINE_FLAG_IS_OUT
+						? GPIOD_LINE_DIRECTION_OUTPUT
+						: GPIOD_LINE_DIRECTION_INPUT;
 }
 
 int gpiod_line_active_state(struct gpiod_line *line)
 {
 	return line->info.flags & GPIOLINE_FLAG_ACTIVE_LOW
-					? GPIOD_ACTIVE_STATE_LOW
-					: GPIOD_ACTIVE_STATE_HIGH;
+					? GPIOD_LINE_ACTIVE_STATE_LOW
+					: GPIOD_LINE_ACTIVE_STATE_HIGH;
 }
 
 bool gpiod_line_is_used(struct gpiod_line *line)
@@ -452,23 +453,23 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 
 	req = &handle->request;
 
-	if (config->flags & GPIOD_REQUEST_OPEN_DRAIN)
+	if (config->flags & GPIOD_LINE_REQUEST_OPEN_DRAIN)
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
-	if (config->flags & GPIOD_REQUEST_OPEN_SOURCE)
+	if (config->flags & GPIOD_LINE_REQUEST_OPEN_SOURCE)
 		req->flags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
-	if (config->flags & GPIOD_REQUEST_ACTIVE_LOW)
+	if (config->flags & GPIOD_LINE_REQUEST_ACTIVE_LOW)
 		req->flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
-	if (config->request_type == GPIOD_REQUEST_DIRECTION_INPUT)
+	if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_INPUT)
 		req->flags |= GPIOHANDLE_REQUEST_INPUT;
-	else if (config->request_type == GPIOD_REQUEST_DIRECTION_OUTPUT)
+	else if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT)
 		req->flags |= GPIOHANDLE_REQUEST_OUTPUT;
 
 	req->lines = bulk->num_lines;
 
 	for (i = 0; i < bulk->num_lines; i++) {
 		req->lineoffsets[i] = gpiod_line_offset(bulk->lines[i]);
-		if (config->request_type == GPIOD_REQUEST_DIRECTION_OUTPUT)
+		if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT)
 			req->default_values[i] = !!default_vals[i];
 	}
 
@@ -510,18 +511,18 @@ static int line_request_event_single(struct gpiod_line *line,
 	req->lineoffset = gpiod_line_offset(line);
 	req->handleflags |= GPIOHANDLE_REQUEST_INPUT;
 
-	if (config->flags & GPIOD_REQUEST_OPEN_DRAIN)
+	if (config->flags & GPIOD_LINE_REQUEST_OPEN_DRAIN)
 		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
-	if (config->flags & GPIOD_REQUEST_OPEN_SOURCE)
+	if (config->flags & GPIOD_LINE_REQUEST_OPEN_SOURCE)
 		req->handleflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
-	if (config->flags & GPIOD_REQUEST_ACTIVE_LOW)
+	if (config->flags & GPIOD_LINE_REQUEST_ACTIVE_LOW)
 		req->handleflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
-	if (config->request_type == GPIOD_REQUEST_EVENT_RISING_EDGE)
+	if (config->request_type == GPIOD_LINE_REQUEST_EVENT_RISING_EDGE)
 		req->eventflags |= GPIOEVENT_REQUEST_RISING_EDGE;
-	else if (config->request_type == GPIOD_REQUEST_EVENT_FALLING_EDGE)
+	else if (config->request_type == GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE)
 		req->eventflags |= GPIOEVENT_REQUEST_FALLING_EDGE;
-	else if (config->request_type == GPIOD_REQUEST_EVENT_BOTH_EDGES)
+	else if (config->request_type == GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES)
 		req->eventflags |= GPIOEVENT_REQUEST_BOTH_EDGES;
 
 	rv = ioctl(line->chip->fd, GPIO_GET_LINEEVENT_IOCTL, req);
@@ -568,7 +569,7 @@ int gpiod_line_request_input(struct gpiod_line *line, const char *consumer)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
+		.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT,
 	};
 
 	return gpiod_line_request(line, &config, 0);
@@ -579,7 +580,7 @@ int gpiod_line_request_output(struct gpiod_line *line,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
+		.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
 	};
 
 	return gpiod_line_request(line, &config, default_val);
@@ -590,7 +591,7 @@ int gpiod_line_request_input_flags(struct gpiod_line *line,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
+		.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT,
 		.flags = flags,
 	};
 
@@ -603,7 +604,7 @@ int gpiod_line_request_output_flags(struct gpiod_line *line,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
+		.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
 		.flags = flags,
 	};
 
@@ -626,21 +627,21 @@ int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
 					  const char *consumer)
 {
 	return line_event_request_type(line, consumer, 0,
-				       GPIOD_REQUEST_EVENT_RISING_EDGE);
+				       GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
 }
 
 int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
 					   const char *consumer)
 {
 	return line_event_request_type(line, consumer, 0,
-				       GPIOD_REQUEST_EVENT_FALLING_EDGE);
+				       GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
 }
 
 int gpiod_line_request_both_edges_events(struct gpiod_line *line,
 					 const char *consumer)
 {
 	return line_event_request_type(line, consumer, 0,
-				       GPIOD_REQUEST_EVENT_BOTH_EDGES);
+				       GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
 
 int gpiod_line_request_rising_edge_events_flags(struct gpiod_line *line,
@@ -648,7 +649,7 @@ int gpiod_line_request_rising_edge_events_flags(struct gpiod_line *line,
 						int flags)
 {
 	return line_event_request_type(line, consumer, flags,
-				       GPIOD_REQUEST_EVENT_RISING_EDGE);
+				       GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
 }
 
 int gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
@@ -656,28 +657,28 @@ int gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
 						 int flags)
 {
 	return line_event_request_type(line, consumer, flags,
-				       GPIOD_REQUEST_EVENT_FALLING_EDGE);
+				       GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
 }
 
 int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
 					       const char *consumer, int flags)
 {
 	return line_event_request_type(line, consumer, flags,
-				       GPIOD_REQUEST_EVENT_BOTH_EDGES);
+				       GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
 
 static bool line_request_is_direction(int request)
 {
-	return request == GPIOD_REQUEST_DIRECTION_AS_IS
-	       || request == GPIOD_REQUEST_DIRECTION_INPUT
-	       || request == GPIOD_REQUEST_DIRECTION_OUTPUT;
+	return request == GPIOD_LINE_REQUEST_DIRECTION_AS_IS
+	       || request == GPIOD_LINE_REQUEST_DIRECTION_INPUT
+	       || request == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT;
 }
 
 static bool line_request_is_events(int request)
 {
-	return request == GPIOD_REQUEST_EVENT_FALLING_EDGE
-	       || request == GPIOD_REQUEST_EVENT_RISING_EDGE
-	       || request == GPIOD_REQUEST_EVENT_BOTH_EDGES;
+	return request == GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE
+	       || request == GPIOD_LINE_REQUEST_EVENT_RISING_EDGE
+	       || request == GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES;
 }
 
 int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
@@ -702,7 +703,7 @@ int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
+		.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT,
 	};
 
 	return gpiod_line_request_bulk(bulk, &config, 0);
@@ -714,7 +715,7 @@ int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
+		.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
 	};
 
 	return gpiod_line_request_bulk(bulk, &config, default_vals);
@@ -737,21 +738,21 @@ int gpiod_line_request_bulk_rising_edge_events(struct gpiod_line_bulk *bulk,
 					       const char *consumer)
 {
 	return line_event_request_type_bulk(bulk, consumer, 0,
-					    GPIOD_REQUEST_EVENT_RISING_EDGE);
+					GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
 }
 
 int gpiod_line_request_bulk_falling_edge_events(struct gpiod_line_bulk *bulk,
 						const char *consumer)
 {
 	return line_event_request_type_bulk(bulk, consumer, 0,
-					    GPIOD_REQUEST_EVENT_FALLING_EDGE);
+					GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
 }
 
 int gpiod_line_request_bulk_both_edges_events(struct gpiod_line_bulk *bulk,
 					      const char *consumer)
 {
 	return line_event_request_type_bulk(bulk, consumer, 0,
-					    GPIOD_REQUEST_EVENT_BOTH_EDGES);
+					GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
 
 int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
@@ -759,7 +760,7 @@ int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.request_type = GPIOD_REQUEST_DIRECTION_INPUT,
+		.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT,
 		.flags = flags,
 	};
 
@@ -772,7 +773,7 @@ int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
-		.request_type = GPIOD_REQUEST_DIRECTION_OUTPUT,
+		.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
 		.flags = flags,
 	};
 
@@ -784,7 +785,7 @@ int gpiod_line_request_bulk_rising_edge_events_flags(
 					const char *consumer, int flags)
 {
 	return line_event_request_type_bulk(bulk, consumer, flags,
-					    GPIOD_REQUEST_EVENT_RISING_EDGE);
+					GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
 }
 
 int gpiod_line_request_bulk_falling_edge_events_flags(
@@ -792,7 +793,7 @@ int gpiod_line_request_bulk_falling_edge_events_flags(
 					const char *consumer, int flags)
 {
 	return line_event_request_type_bulk(bulk, consumer, flags,
-					    GPIOD_REQUEST_EVENT_FALLING_EDGE);
+					GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
 }
 
 int gpiod_line_request_bulk_both_edges_events_flags(
@@ -800,7 +801,7 @@ int gpiod_line_request_bulk_both_edges_events_flags(
 					const char *consumer, int flags)
 {
 	return line_event_request_type_bulk(bulk, consumer, flags,
-					    GPIOD_REQUEST_EVENT_BOTH_EDGES);
+					GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
 
 void gpiod_line_release(struct gpiod_line *line)
@@ -1052,8 +1053,8 @@ int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
 	}
 
 	event->event_type = evdata.id == GPIOEVENT_EVENT_RISING_EDGE
-						? GPIOD_EVENT_RISING_EDGE
-						: GPIOD_EVENT_FALLING_EDGE;
+						? GPIOD_LINE_EVENT_RISING_EDGE
+						: GPIOD_LINE_EVENT_FALLING_EDGE;
 
 	event->ts.tv_sec = evdata.timestamp / 1000000000ULL;
 	event->ts.tv_nsec = evdata.timestamp % 1000000000ULL;

@@ -61,7 +61,7 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0;
+	flags = active_low ? GPIOD_LINE_REQUEST_ACTIVE_LOW : 0;
 
 	status = gpiod_line_request_bulk_input_flags(&bulk, consumer, flags);
 	if (status < 0) {
@@ -119,7 +119,7 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0;
+	flags = active_low ? GPIOD_LINE_REQUEST_ACTIVE_LOW : 0;
 
 	status = gpiod_line_request_bulk_output_flags(&bulk, consumer,
 						      flags, values);
@@ -220,7 +220,7 @@ int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	flags = active_low ? GPIOD_REQUEST_ACTIVE_LOW : 0;
+	flags = active_low ? GPIOD_LINE_REQUEST_ACTIVE_LOW : 0;
 
 	ret = gpiod_line_request_bulk_both_edges_events_flags(&bulk,
 							      consumer, flags);
@@ -250,9 +250,10 @@ int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
 			if (ret < 0)
 				goto out;
 
-			evtype = event.event_type == GPIOD_EVENT_RISING_EDGE
-					? GPIOD_SIMPLE_EVENT_CB_RISING_EDGE
-					: GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE;
+			if (event.event_type == GPIOD_LINE_EVENT_RISING_EDGE)
+				evtype = GPIOD_SIMPLE_EVENT_CB_RISING_EDGE;
+			else
+				evtype = GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE;
 
 			line_offset = offsets[event_offset];
 		}

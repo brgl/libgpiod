@@ -241,8 +241,8 @@ static void line_request_bulk_different_chips(void)
 	gpiod_line_bulk_add(&bulk, lineB1);
 
 	req.consumer = TEST_CONSUMER;
-	req.request_type = GPIOD_REQUEST_DIRECTION_INPUT;
-	req.flags = GPIOD_ACTIVE_STATE_HIGH;
+	req.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
+	req.flags = GPIOD_LINE_ACTIVE_STATE_HIGH;
 
 	status = gpiod_line_request_bulk(&bulk, &req, NULL);
 	TEST_ASSERT_NOTEQ(status, 0);
@@ -342,14 +342,14 @@ static void line_direction(void)
 	status = gpiod_line_request_output(line, TEST_CONSUMER, 0);
 	TEST_ASSERT_RET_OK(status);
 
-	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_OUTPUT);
+	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_LINE_DIRECTION_OUTPUT);
 
 	gpiod_line_release(line);
 
 	status = gpiod_line_request_input(line, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(status);
 
-	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_INPUT);
+	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_LINE_DIRECTION_INPUT);
 }
 TEST_DEFINE(line_direction,
 	    "gpiod_line_direction() - set & get",
@@ -370,15 +370,16 @@ static void line_active_state(void)
 	status = gpiod_line_request_input(line, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(status);
 
-	TEST_ASSERT_EQ(gpiod_line_active_state(line), GPIOD_ACTIVE_STATE_HIGH);
+	TEST_ASSERT_EQ(gpiod_line_active_state(line),
+		       GPIOD_LINE_ACTIVE_STATE_HIGH);
 
 	gpiod_line_release(line);
 
 	status = gpiod_line_request_input_flags(line, TEST_CONSUMER,
-						GPIOD_REQUEST_ACTIVE_LOW);
+						GPIOD_LINE_REQUEST_ACTIVE_LOW);
 	TEST_ASSERT_RET_OK(status);
 
-	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_DIRECTION_INPUT);
+	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_LINE_DIRECTION_INPUT);
 }
 TEST_DEFINE(line_active_state,
 	    "gpiod_line_active_state() - set & get",
@@ -401,9 +402,9 @@ static void line_misc_flags(void)
 	TEST_ASSERT_FALSE(gpiod_line_is_open_drain(line));
 	TEST_ASSERT_FALSE(gpiod_line_is_open_source(line));
 
-	config.request_type = GPIOD_REQUEST_DIRECTION_INPUT;
+	config.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
 	config.consumer = TEST_CONSUMER;
-	config.flags = GPIOD_REQUEST_OPEN_DRAIN;
+	config.flags = GPIOD_LINE_REQUEST_OPEN_DRAIN;
 
 	status = gpiod_line_request(line, &config, 0);
 	TEST_ASSERT_RET_OK(status);
@@ -414,7 +415,7 @@ static void line_misc_flags(void)
 
 	gpiod_line_release(line);
 
-	config.flags = GPIOD_REQUEST_OPEN_SOURCE;
+	config.flags = GPIOD_LINE_REQUEST_OPEN_SOURCE;
 
 	status = gpiod_line_request(line, &config, 0);
 	TEST_ASSERT_RET_OK(status);
@@ -440,7 +441,7 @@ static void line_null_consumer(void)
 	line = gpiod_chip_get_line(chip, 2);
 	TEST_ASSERT_NOT_NULL(line);
 
-	config.request_type = GPIOD_REQUEST_DIRECTION_INPUT;
+	config.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
 	config.consumer = NULL;
 	config.flags = 0;
 
@@ -454,7 +455,7 @@ static void line_null_consumer(void)
 	 * Internally we use different structures for event requests, so we
 	 * need to test that explicitly too.
 	 */
-	config.request_type = GPIOD_REQUEST_EVENT_BOTH_EDGES;
+	config.request_type = GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES;
 
 	rv = gpiod_line_request(line, &config, 0);
 	TEST_ASSERT_RET_OK(rv);
@@ -477,7 +478,7 @@ static void line_empty_consumer(void)
 	line = gpiod_chip_get_line(chip, 2);
 	TEST_ASSERT_NOT_NULL(line);
 
-	config.request_type = GPIOD_REQUEST_DIRECTION_INPUT;
+	config.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
 	config.consumer = "";
 	config.flags = 0;
 
@@ -491,7 +492,7 @@ static void line_empty_consumer(void)
 	 * Internally we use different structures for event requests, so we
 	 * need to test that explicitly too.
 	 */
-	config.request_type = GPIOD_REQUEST_EVENT_BOTH_EDGES;
+	config.request_type = GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES;
 
 	rv = gpiod_line_request(line, &config, 0);
 	TEST_ASSERT_RET_OK(rv);

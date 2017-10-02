@@ -124,12 +124,12 @@ static void list_lines(struct gpiod_chip *chip)
 			 : prinfo(&of, 12, "unused");
 		printf(" ");
 
-		prinfo(&of, 8, "%s ", direction == GPIOD_DIRECTION_INPUT
-						? "input" : "output");
+		prinfo(&of, 8, "%s ", direction == GPIOD_LINE_DIRECTION_INPUT
+							? "input" : "output");
 		prinfo(&of, 13, "%s ",
-		       active_state == GPIOD_ACTIVE_STATE_LOW
-						? "active-low"
-						: "active-high");
+		       active_state == GPIOD_LINE_ACTIVE_STATE_LOW
+							? "active-low"
+							: "active-high");
 
 		flag_printed = false;
 		for (i = 0; i < ARRAY_SIZE(flags); i++) {
