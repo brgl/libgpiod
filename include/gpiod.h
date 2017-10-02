@@ -432,6 +432,17 @@ gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk, unsigned int offset)
 }
 
 /**
+ * @brief Retrieve the number of GPIO lines held by this line bulk object.
+ * @param bulk Line bulk object.
+ * @return Number of lines held by this line bulk.
+ */
+static inline unsigned int
+gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
+{
+	return bulk->num_lines;
+}
+
+/**
  * @}
  *
  * @defgroup __line_info__ Line info
