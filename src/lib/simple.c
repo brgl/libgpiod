@@ -40,7 +40,7 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 	int status, flags;
 	unsigned int i;
 
-	if (num_lines > GPIOD_REQUEST_MAX_LINES) {
+	if (num_lines > GPIOD_LINE_BULK_MAX_LINES) {
 		errno = EINVAL;
 		return -1;
 	}
@@ -98,7 +98,7 @@ int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 	int status, flags;
 	unsigned int i;
 
-	if (num_lines > GPIOD_REQUEST_MAX_LINES) {
+	if (num_lines > GPIOD_LINE_BULK_MAX_LINES) {
 		errno = EINVAL;
 		return -1;
 	}
@@ -141,7 +141,7 @@ static int basic_event_poll(unsigned int num_lines, const int *fds,
 			    const struct timespec *timeout,
 			    void *data GPIOD_UNUSED)
 {
-	struct pollfd poll_fds[GPIOD_REQUEST_MAX_LINES];
+	struct pollfd poll_fds[GPIOD_LINE_BULK_MAX_LINES];
 	unsigned int i;
 	int status;
 
@@ -189,14 +189,14 @@ int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
 				     void *data)
 {
 	unsigned int i, event_offset, line_offset;
-	int fds[GPIOD_REQUEST_MAX_LINES];
+	int fds[GPIOD_LINE_BULK_MAX_LINES];
 	struct gpiod_line_event event;
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	int ret, flags, evtype;
 
-	if (num_lines > GPIOD_REQUEST_MAX_LINES) {
+	if (num_lines > GPIOD_LINE_BULK_MAX_LINES) {
 		errno = EINVAL;
 		return -1;
 	}

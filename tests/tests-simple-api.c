@@ -91,12 +91,12 @@ TEST_DEFINE(simple_set_get_value_multiple,
 
 static void simple_get_value_multiple_max_lines(void)
 {
-	unsigned int offsets[GPIOD_REQUEST_MAX_LINES + 1];
-	int values[GPIOD_REQUEST_MAX_LINES + 1], ret;
+	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES + 1];
+	int values[GPIOD_LINE_BULK_MAX_LINES + 1], ret;
 
 	ret = gpiod_simple_get_value_multiple(TEST_CONSUMER, test_chip_name(0),
 					      offsets, values,
-					      GPIOD_REQUEST_MAX_LINES + 1,
+					      GPIOD_LINE_BULK_MAX_LINES + 1,
 					      false);
 	TEST_ASSERT_NOTEQ(ret, 0);
 	TEST_ASSERT_ERRNO_IS(EINVAL);
@@ -107,12 +107,12 @@ TEST_DEFINE(simple_get_value_multiple_max_lines,
 
 static void simple_set_value_multiple_max_lines(void)
 {
-	unsigned int offsets[GPIOD_REQUEST_MAX_LINES + 1];
-	int values[GPIOD_REQUEST_MAX_LINES + 1], ret;
+	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES + 1];
+	int values[GPIOD_LINE_BULK_MAX_LINES + 1], ret;
 
 	ret = gpiod_simple_set_value_multiple(TEST_CONSUMER, test_chip_name(0),
 					      offsets, values,
-					      GPIOD_REQUEST_MAX_LINES + 1,
+					      GPIOD_LINE_BULK_MAX_LINES + 1,
 					      false, NULL, NULL);
 	TEST_ASSERT_NOTEQ(ret, 0);
 	TEST_ASSERT_ERRNO_IS(EINVAL);

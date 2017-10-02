@@ -994,7 +994,7 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       const struct timespec *timeout,
 			       struct gpiod_line **line)
 {
-	struct pollfd fds[GPIOD_REQUEST_MAX_LINES];
+	struct pollfd fds[GPIOD_LINE_BULK_MAX_LINES];
 	struct gpiod_line *linetmp;
 	unsigned int i;
 	int status;

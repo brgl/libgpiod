@@ -421,7 +421,7 @@ enum {
 /**
  * @brief Maximum number of GPIO lines that can be requested at once.
  */
-#define GPIOD_REQUEST_MAX_LINES		64
+#define GPIOD_LINE_BULK_MAX_LINES		64
 
 /**
  * @brief Helper structure for storing a set of GPIO line objects.
@@ -431,7 +431,7 @@ enum {
  * the result is undefined.
  */
 struct gpiod_line_bulk {
-	struct gpiod_line *lines[GPIOD_REQUEST_MAX_LINES];
+	struct gpiod_line *lines[GPIOD_LINE_BULK_MAX_LINES];
 	/**< Buffer for line pointers. */
 	unsigned int num_lines;
 	/**< Number of lines currently held in this structure. */

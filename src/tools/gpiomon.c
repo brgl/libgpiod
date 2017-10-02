@@ -144,7 +144,7 @@ static int poll_callback(unsigned int num_lines, const int *fds,
 			 unsigned int *event_offset,
 			 const struct timespec *timeout, void *data)
 {
-	struct pollfd pfds[GPIOD_REQUEST_MAX_LINES + 1];
+	struct pollfd pfds[GPIOD_LINE_BULK_MAX_LINES + 1];
 	struct mon_ctx *ctx = data;
 	unsigned int i;
 	int ret, ts;
@@ -243,7 +243,7 @@ static int make_signalfd(void)
 
 int main(int argc, char **argv)
 {
-	unsigned int offsets[GPIOD_REQUEST_MAX_LINES];
+	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES];
 	struct timespec timeout = { 10, 0 };
 	unsigned int num_lines = 0, offset;
 	int optc, opti, ret, i;
