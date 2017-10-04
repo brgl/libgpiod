@@ -20,7 +20,7 @@ static const struct option longopts[] = {
 	{ "help",	no_argument,	NULL,	'h' },
 	{ "version",	no_argument,	NULL,	'v' },
 	{ "active-low",	no_argument,	NULL,	'l' },
-	{ 0 },
+	{ GETOPT_NULL_LONGOPT },
 };
 
 static const char *const shortopts = "+hvl";

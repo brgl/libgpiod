@@ -30,7 +30,7 @@ static const struct option longopts[] = {
 	{ "rising-edge",	no_argument,		NULL,	'r' },
 	{ "falling-edge",	no_argument,		NULL,	'f' },
 	{ "format",		required_argument,	NULL,	'F' },
-	{ 0 },
+	{ GETOPT_NULL_LONGOPT },
 };
 
 static const char *const shortopts = "+hvln:srfF:";

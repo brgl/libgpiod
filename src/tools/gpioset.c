@@ -30,7 +30,7 @@ static const struct option longopts[] = {
 	{ "sec",		required_argument,	NULL,	's' },
 	{ "usec",		required_argument,	NULL,	'u' },
 	{ "background",		no_argument,		NULL,	'b' },
-	{ 0 },
+	{ GETOPT_NULL_LONGOPT },
 };
 
 static const char *const shortopts = "+hvlm:s:u:b";
