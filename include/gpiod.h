@@ -443,6 +443,18 @@ gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
 }
 
 /**
+ * @brief Iterate over all line handles held by a line bulk object.
+ * @param bulk Line bulk object.
+ * @param line GPIO line handle. On each iteration, the subsequent line handle
+ *             is assigned to this pointer.
+ * @param lineptr Pointer to a GPIO line handle used to store the loop state.
+ */
+#define gpiod_line_bulk_foreach_line(bulk, line, lineptr)		\
+	for ((lineptr) = (bulk)->lines, (line) = *(lineptr);		\
+	     (lineptr) <= (bulk)->lines + ((bulk)->num_lines - 1);	\
+	     (lineptr)++, (line) = *(lineptr))
+
+/**
  * @}
  *
  * @defgroup __line_info__ Line info

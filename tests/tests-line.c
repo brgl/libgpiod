@@ -501,3 +501,40 @@ static void line_empty_consumer(void)
 TEST_DEFINE(line_empty_consumer,
 	    "line request - empty consumer string",
 	    0, { 8 });
+
+static void line_bulk_foreach(void)
+{
+	static const char *const line_names[] = { "gpio-mockup-A-0",
+						  "gpio-mockup-A-1",
+						  "gpio-mockup-A-2",
+						  "gpio-mockup-A-3" };
+
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line_bulk bulk = GPIOD_LINE_BULK_INITIALIZER;
+	struct gpiod_line *line, **lineptr;
+	int i;
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	for (i = 0; i < 4; i++) {
+		line = gpiod_chip_get_line(chip, i);
+		TEST_ASSERT_NOT_NULL(line);
+
+		gpiod_line_bulk_add(&bulk, line);
+	}
+
+	i = 0;
+	gpiod_line_bulk_foreach_line(&bulk, line, lineptr)
+		TEST_ASSERT_STR_EQ(gpiod_line_name(line), line_names[i++]);
+
+	i = 0;
+	gpiod_line_bulk_foreach_line(&bulk, line, lineptr) {
+		TEST_ASSERT_STR_EQ(gpiod_line_name(line), line_names[i++]);
+		if (i == 2)
+			break;
+	}
+}
+TEST_DEFINE(line_bulk_foreach,
+	    "line bulk - iterate over all lines",
+	    TEST_FLAG_NAMED_LINES, { 8 });
