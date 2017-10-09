@@ -206,23 +206,17 @@ int main(int argc, char **argv)
 				die("invalid mode: %s", optarg);
 			break;
 		case 's':
-			if (mode->id != MODE_TIME)
-				die("can't specify seconds in this mode");
 			cbdata.tv.tv_sec = strtoul(optarg, &end, 10);
 			if (*end != '\0')
 				die("invalid time value in seconds: %s", optarg);
 			break;
 		case 'u':
-			if (mode->id != MODE_TIME)
-				die("can't specify microseconds in this mode");
 			cbdata.tv.tv_usec = strtoul(optarg, &end, 10);
 			if (*end != '\0')
 				die("invalid time value in microseconds: %s",
 				    optarg);
 			break;
 		case 'b':
-			if (mode->id != MODE_SIGNAL && mode->id != MODE_TIME)
-				die("can't daemonize in this mode");
 			cbdata.daemonize = true;
 			break;
 		case '?':
@@ -234,6 +228,14 @@ int main(int argc, char **argv)
 
 	argc -= optind;
 	argv += optind;
+
+	if (mode->id != MODE_TIME && (cbdata.tv.tv_sec || cbdata.tv.tv_usec))
+		die("can't specify wait time in this mode");
+
+	if (mode->id != MODE_SIGNAL &&
+	    mode->id != MODE_TIME &&
+	    cbdata.daemonize)
+		die("can't daemonize in this mode");
 
 	if (argc < 1)
 		die("gpiochip must be specified");

@@ -307,7 +307,7 @@ static void gpioset_sec_usec_without_time(void)
 	TEST_ASSERT_NULL(test_tool_stdout());
 	TEST_ASSERT_NOT_NULL(test_tool_stderr());
 	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
-				 "can't specify seconds in this mode");
+				 "can't specify wait time in this mode");
 
 	test_tool_run("gpioset", "--mode=exit", "--usec=100",
 		      test_chip_name(0), "0=1", (char *)NULL);
@@ -318,7 +318,7 @@ static void gpioset_sec_usec_without_time(void)
 	TEST_ASSERT_NULL(test_tool_stdout());
 	TEST_ASSERT_NOT_NULL(test_tool_stderr());
 	TEST_ASSERT_STR_CONTAINS(test_tool_stderr(),
-				 "can't specify microseconds in this mode");
+				 "can't specify wait time in this mode");
 }
 TEST_DEFINE(gpioset_sec_usec_without_time,
 	    "tools: gpioset - using --sec/--usec with mode other than 'time'",
