@@ -168,6 +168,9 @@ typedef int (*gpiod_simple_event_handle_cb)(int, unsigned int,
 
 /**
  * @brief Return status values that the simple event poll callback can return.
+ *
+ * Positive value returned from the polling callback indicates the number of
+ * events that occurred on the set of monitored lines.
  */
 enum {
 	GPIOD_SIMPLE_EVENT_POLL_RET_STOP = -2,
