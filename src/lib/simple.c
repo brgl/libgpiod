@@ -78,21 +78,19 @@ int gpiod_simple_get_value_multiple(const char *device,
 	return status;
 }
 
-int gpiod_simple_set_value(const char *consumer, const char *device,
-			   unsigned int offset, int value, bool active_low,
+int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
+			   bool active_low, const char *consumer,
 			   gpiod_simple_set_value_cb cb, void *data)
 {
-	return gpiod_simple_set_value_multiple(consumer, device, &offset,
-					       &value, 1, active_low,
-					       cb, data);
+	return gpiod_simple_set_value_multiple(device, &offset, &value, 1,
+					       active_low, consumer, cb, data);
 }
 
-int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
+int gpiod_simple_set_value_multiple(const char *device,
 				    const unsigned int *offsets,
 				    const int *values, unsigned int num_lines,
-				    bool active_low,
-				    gpiod_simple_set_value_cb cb,
-				    void *data)
+				    bool active_low, const char *consumer,
+				    gpiod_simple_set_value_cb cb, void *data)
 {
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;

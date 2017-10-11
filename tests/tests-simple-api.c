@@ -22,8 +22,8 @@ static void simple_set_get_value(void)
 				     false, TEST_CONSUMER);
 	TEST_ASSERT_EQ(ret, 0);
 
-	ret = gpiod_simple_set_value(TEST_CONSUMER, test_chip_name(0),
-				     3, 1, false, NULL, NULL);
+	ret = gpiod_simple_set_value(test_chip_name(0), 3, 1,
+				     false, TEST_CONSUMER, NULL, NULL);
 	TEST_ASSERT_RET_OK(ret);
 
 	ret = gpiod_simple_get_value(test_chip_name(0), 3,
@@ -65,9 +65,9 @@ static void simple_set_get_value_multiple(void)
 	values[8] = 0;
 	values[9] = 0;
 
-	rv = gpiod_simple_set_value_multiple(TEST_CONSUMER, test_chip_name(0),
-					      offsets, values, 10, false,
-					      NULL, NULL);
+	rv = gpiod_simple_set_value_multiple(test_chip_name(0), offsets,
+					     values, 10, false, TEST_CONSUMER,
+					     NULL, NULL);
 	TEST_ASSERT_RET_OK(rv);
 
 	rv = gpiod_simple_get_value_multiple(test_chip_name(0), offsets,
@@ -110,10 +110,10 @@ static void simple_set_value_multiple_max_lines(void)
 	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES + 1];
 	int values[GPIOD_LINE_BULK_MAX_LINES + 1], ret;
 
-	ret = gpiod_simple_set_value_multiple(TEST_CONSUMER, test_chip_name(0),
-					      offsets, values,
+	ret = gpiod_simple_set_value_multiple(test_chip_name(0), offsets,
+					      values,
 					      GPIOD_LINE_BULK_MAX_LINES + 1,
-					      false, NULL, NULL);
+					      false, TEST_CONSUMER, NULL, NULL);
 	TEST_ASSERT_NOTEQ(ret, 0);
 	TEST_ASSERT_ERRNO_IS(EINVAL);
 }

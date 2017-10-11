@@ -99,38 +99,38 @@ typedef void (*gpiod_simple_set_value_cb)(void *);
 
 /**
  * @brief Set value of a single GPIO line.
- * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
  * @param offset GPIO line offset on the chip.
  * @param value New value.
  * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
  * @param cb Callback function that will be called right after the value is
  *        set. Users can use this, for example, to pause the execution after
  *        toggling a GPIO.
  * @param data User data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
-int gpiod_simple_set_value(const char *consumer, const char *device,
-			   unsigned int offset, int value, bool active_low,
+int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
+			   bool active_low, const char *consumer,
 			   gpiod_simple_set_value_cb cb, void *data) GPIOD_API;
 
 /**
  * @brief Set values of a set of a set of GPIO lines.
- * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
  * @param offsets An array of offsets of lines whose values should be set.
  * @param values An array of integers containing new values.
  * @param num_lines Number of lines, must be > 0.
  * @param active_low The active state of the lines - true if low.
+ * @param consumer Name of the consumer.
  * @param cb Callback function that will be called right after the values are
  *        set.
  * @param data User data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
-int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
+int gpiod_simple_set_value_multiple(const char *device,
 				    const unsigned int *offsets,
 				    const int *values, unsigned int num_lines,
-				    bool active_low,
+				    bool active_low, const char *consumer,
 				    gpiod_simple_set_value_cb cb,
 				    void *data) GPIOD_API;
 

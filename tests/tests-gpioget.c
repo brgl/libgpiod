@@ -34,8 +34,8 @@ static void gpioget_read_all_lines(void)
 
 	values[0] = values[1] = values[2] = values[3] = 1;
 
-	rv = gpiod_simple_set_value_multiple(TEST_CONSUMER, test_chip_name(1),
-					     offsets, values, 4, false,
+	rv = gpiod_simple_set_value_multiple(test_chip_name(1), offsets,
+					     values, 4, false, TEST_CONSUMER,
 					     NULL, NULL);
 	TEST_ASSERT_RET_OK(rv);
 
@@ -75,8 +75,8 @@ static void gpioget_read_all_lines_active_low(void)
 
 	values[0] = values[1] = values[2] = values[3] = 1;
 
-	rv = gpiod_simple_set_value_multiple(TEST_CONSUMER, test_chip_name(1),
-					     offsets, values, 4, false,
+	rv = gpiod_simple_set_value_multiple(test_chip_name(1), offsets,
+					     values, 4, false, TEST_CONSUMER,
 					     NULL, NULL);
 	TEST_ASSERT_RET_OK(rv);
 
@@ -115,8 +115,8 @@ static void gpioget_read_some_lines(void)
 
 	values[0] = values[1] = values[2] = 1;
 
-	rv = gpiod_simple_set_value_multiple(TEST_CONSUMER, test_chip_name(1),
-					     offsets, values, 3, false,
+	rv = gpiod_simple_set_value_multiple(test_chip_name(1), offsets,
+					     values, 3, false, TEST_CONSUMER,
 					     NULL, NULL);
 	TEST_ASSERT_RET_OK(rv);
 

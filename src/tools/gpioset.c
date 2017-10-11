@@ -264,9 +264,10 @@ int main(int argc, char **argv)
 			die("invalid offset: %s", argv[i + 1]);
 	}
 
-	status = gpiod_simple_set_value_multiple("gpioset", device, offsets,
-						 values, num_lines, active_low,
-						 mode->callback, &cbdata);
+	status = gpiod_simple_set_value_multiple(device, offsets, values,
+						 num_lines, active_low,
+						 "gpioset", mode->callback,
+						 &cbdata);
 	if (status < 0)
 		die_perror("error setting the GPIO line values");
 
