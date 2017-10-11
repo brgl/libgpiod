@@ -177,21 +177,21 @@ static int basic_event_poll(unsigned int num_lines,
 	return ret;
 }
 
-int gpiod_simple_event_loop(const char *consumer, const char *device,
-			    unsigned int offset, bool active_low,
+int gpiod_simple_event_loop(const char *device, unsigned int offset,
+			    bool active_low, const char *consumer,
 			    const struct timespec *timeout,
 			    gpiod_simple_event_poll_cb poll_cb,
-			    gpiod_simple_event_handle_cb event_cb,
-			    void *data)
+			    gpiod_simple_event_handle_cb event_cb, void *data)
 {
-	return gpiod_simple_event_loop_multiple(consumer, device, &offset, 1,
-						active_low, timeout, poll_cb,
+	return gpiod_simple_event_loop_multiple(device, &offset, 1, active_low,
+						consumer, timeout, poll_cb,
 						event_cb, data);
 }
 
-int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
+int gpiod_simple_event_loop_multiple(const char *device,
 				     const unsigned int *offsets,
 				     unsigned int num_lines, bool active_low,
+				     const char *consumer,
 				     const struct timespec *timeout,
 				     gpiod_simple_event_poll_cb poll_cb,
 				     gpiod_simple_event_handle_cb event_cb,

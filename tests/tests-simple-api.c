@@ -152,9 +152,9 @@ static void simple_event_loop(void)
 
 	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
 
-	status = gpiod_simple_event_loop(TEST_CONSUMER, test_chip_name(0), 3,
-					 false, &ts, NULL, simple_event_cb,
-					 &evdata);
+	status = gpiod_simple_event_loop(test_chip_name(0), 3, false,
+					 TEST_CONSUMER, &ts, NULL,
+					 simple_event_cb, &evdata);
 
 	TEST_ASSERT_RET_OK(status);
 	TEST_ASSERT(evdata.got_rising_edge);
@@ -180,10 +180,10 @@ static void simple_event_loop_multiple(void)
 
 	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
 
-	status = gpiod_simple_event_loop_multiple(TEST_CONSUMER,
-						  test_chip_name(0), offsets,
-						  4, false, &ts, NULL,
-						  simple_event_cb, &evdata);
+	status = gpiod_simple_event_loop_multiple(test_chip_name(0), offsets,
+						  4, false, TEST_CONSUMER, &ts,
+						  NULL, simple_event_cb,
+						  &evdata);
 
 	TEST_ASSERT_RET_OK(status);
 	TEST_ASSERT(evdata.got_rising_edge);
@@ -212,8 +212,9 @@ static void simple_event_loop_indicate_error(void)
 
 	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
 
-	rv = gpiod_simple_event_loop(TEST_CONSUMER, test_chip_name(0), 3,
-				     false, &ts, NULL, error_event_cb, NULL);
+	rv = gpiod_simple_event_loop(test_chip_name(0), 3, false,
+				     TEST_CONSUMER, &ts, NULL,
+				     error_event_cb, NULL);
 
 	TEST_ASSERT_EQ(rv, -1);
 	TEST_ASSERT_ERRNO_IS(ENOTBLK);
@@ -227,8 +228,9 @@ static void simple_event_loop_indicate_error_timeout(void)
 	struct timespec ts = { 0, 100000 };
 	int rv;
 
-	rv = gpiod_simple_event_loop(TEST_CONSUMER, test_chip_name(0), 3,
-				     false, &ts, NULL, error_event_cb, NULL);
+	rv = gpiod_simple_event_loop(test_chip_name(0), 3, false,
+				     TEST_CONSUMER, &ts, NULL,
+				     error_event_cb, NULL);
 
 	TEST_ASSERT_EQ(rv, -1);
 	TEST_ASSERT_ERRNO_IS(ENOTBLK);

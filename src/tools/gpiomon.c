@@ -317,8 +317,8 @@ int main(int argc, char **argv)
 
 	ctx.sigfd = make_signalfd();
 
-	ret = gpiod_simple_event_loop_multiple("gpiomon", argv[0], offsets,
-					       num_lines, active_low, &timeout,
+	ret = gpiod_simple_event_loop_multiple(argv[0], offsets, num_lines,
+					       active_low, "gpiomon", &timeout,
 					       poll_callback,
 					       event_callback, &ctx);
 	if (ret)

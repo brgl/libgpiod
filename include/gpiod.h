@@ -211,10 +211,10 @@ typedef int (*gpiod_simple_event_poll_cb)(unsigned int,
 
 /**
  * @brief Wait for events on a single GPIO line.
- * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
  * @param offset GPIO line offset to monitor.
  * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
  * @param timeout Maximum wait time for each iteration.
  * @param poll_cb Callback function to call when waiting for events.
  * @param event_cb Callback function to call on event occurrence.
@@ -224,8 +224,8 @@ typedef int (*gpiod_simple_event_poll_cb)(unsigned int,
  * The poll callback can be NULL in which case the routine will fall back to
  * a basic, ppoll() based callback.
  */
-int gpiod_simple_event_loop(const char *consumer, const char *device,
-			    unsigned int offset, bool active_low,
+int gpiod_simple_event_loop(const char *device, unsigned int offset,
+			    bool active_low, const char *consumer,
 			    const struct timespec *timeout,
 			    gpiod_simple_event_poll_cb poll_cb,
 			    gpiod_simple_event_handle_cb event_cb,
@@ -233,11 +233,11 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
 
 /**
  * @brief Wait for events on multiple GPIO lines.
- * @param consumer Name of the consumer.
  * @param device Name, path or number of the gpiochip.
  * @param offsets Array of GPIO line offsets to monitor.
  * @param num_lines Number of lines to monitor.
  * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
  * @param timeout Maximum wait time for each iteration.
  * @param poll_cb Callback function to call when waiting for events.
  * @param event_cb Callback function to call on event occurrence.
@@ -246,9 +246,10 @@ int gpiod_simple_event_loop(const char *consumer, const char *device,
  *
  * The callback functions work just like in the single line variant.
  */
-int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
+int gpiod_simple_event_loop_multiple(const char *device,
 				     const unsigned int *offsets,
 				     unsigned int num_lines, bool active_low,
+				     const char *consumer,
 				     const struct timespec *timeout,
 				     gpiod_simple_event_poll_cb poll_cb,
 				     gpiod_simple_event_handle_cb event_cb,
