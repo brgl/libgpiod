@@ -993,31 +993,41 @@ int gpiod_line_event_wait(struct gpiod_line *line,
 
 int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       const struct timespec *timeout,
-			       struct gpiod_line **line)
+			       struct gpiod_line_bulk *event_bulk)
 {
 	struct pollfd fds[GPIOD_LINE_BULK_MAX_LINES];
-	struct gpiod_line *linetmp, **lineptr;
-	unsigned int i;
-	int status;
+	struct gpiod_line *line, **lineptr;
+	unsigned int i, num_lines;
+	int rv;
 
 	memset(fds, 0, sizeof(fds));
+	num_lines = gpiod_line_bulk_num_lines(bulk);
 
 	i = 0;
-	gpiod_line_bulk_foreach_line(bulk, linetmp, lineptr) {
-		fds[i].fd = line_get_event_fd(linetmp);
+	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
+		fds[i].fd = line_get_event_fd(line);
 		fds[i].events = POLLIN | POLLPRI;
 		i++;
 	}
 
-	status = ppoll(fds, gpiod_line_bulk_num_lines(bulk), timeout, NULL);
-	if (status < 0)
+	rv = ppoll(fds, num_lines, timeout, NULL);
+	if (rv < 0)
 		return -1;
-	else if (status == 0)
+	else if (rv == 0)
 		return 0;
 
-	for (i = 0; !fds[i].revents; i++);
-	if (line)
-		*line = gpiod_line_bulk_get_line(bulk, i);
+	if (event_bulk) {
+		gpiod_line_bulk_init(event_bulk);
+
+		for (i = 0; i < num_lines; i++) {
+			if (fds[i].revents) {
+				line = gpiod_line_bulk_get_line(bulk, i);
+				gpiod_line_bulk_add(event_bulk, line);
+				if (!--rv)
+					break;
+			}
+		}
+	}
 
 	return 1;
 }

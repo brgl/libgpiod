@@ -167,3 +167,39 @@ static void event_get_value(void)
 TEST_DEFINE(event_get_value,
 	    "events - mixing events and gpiod_line_get_value()",
 	    0, { 8 });
+
+static void event_wait_multiple(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line_bulk bulk, event_bulk;
+	struct timespec ts = { 1, 0 };
+	struct gpiod_line *line;
+	int rv, i;
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	gpiod_line_bulk_init(&bulk);
+
+	for (i = 0; i < 8; i++) {
+		line = gpiod_chip_get_line(chip, i);
+		TEST_ASSERT_NOT_NULL(line);
+
+		gpiod_line_bulk_add(&bulk, line);
+	}
+
+	rv = gpiod_line_request_bulk_both_edges_events(&bulk, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
+
+	test_set_event(0, 4, TEST_EVENT_RISING, 100);
+
+	rv = gpiod_line_event_wait_bulk(&bulk, &ts, &event_bulk);
+	TEST_ASSERT_EQ(rv, 1);
+
+	TEST_ASSERT_EQ(gpiod_line_bulk_num_lines(&event_bulk), 1);
+	line = gpiod_line_bulk_get_line(&event_bulk, 0);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 4);
+}
+TEST_DEFINE(event_wait_multiple,
+	    "events - wait for events on multiple lines",
+	    0, { 8 });
