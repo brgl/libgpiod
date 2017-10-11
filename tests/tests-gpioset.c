@@ -39,8 +39,8 @@ static void gpioset_set_lines_and_exit(void)
 	offsets[6] = 6;
 	offsets[7] = 7;
 
-	rv = gpiod_simple_get_value_multiple(TEST_CONSUMER, test_chip_name(2),
-					     offsets, values, 8, false);
+	rv = gpiod_simple_get_value_multiple(test_chip_name(2), offsets,
+					     values, 8, false, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(values[0], 0);
@@ -80,8 +80,8 @@ static void gpioset_set_lines_and_exit_active_low(void)
 	offsets[6] = 6;
 	offsets[7] = 7;
 
-	rv = gpiod_simple_get_value_multiple(TEST_CONSUMER, test_chip_name(2),
-					     offsets, values, 8, false);
+	rv = gpiod_simple_get_value_multiple(test_chip_name(2), offsets,
+					     values, 8, false, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(values[0], 1);
@@ -121,8 +121,8 @@ static void gpioset_set_lines_and_exit_explicit_mode(void)
 	offsets[6] = 6;
 	offsets[7] = 7;
 
-	rv = gpiod_simple_get_value_multiple(TEST_CONSUMER, test_chip_name(2),
-					     offsets, values, 8, false);
+	rv = gpiod_simple_get_value_multiple(test_chip_name(2), offsets,
+					     values, 8, false, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(values[0], 0);
@@ -159,8 +159,8 @@ static void gpioset_set_some_lines_and_wait_for_enter(void)
 	offsets[3] = 6;
 	offsets[4] = 7;
 
-	rv = gpiod_simple_get_value_multiple(TEST_CONSUMER, test_chip_name(2),
-					     offsets, values, 5, false);
+	rv = gpiod_simple_get_value_multiple(test_chip_name(2), offsets,
+					     values, 5, false, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(values[0], 0);
@@ -198,10 +198,9 @@ static void gpioset_set_some_lines_and_wait_for_signal(void)
 		offsets[3] = 6;
 		offsets[4] = 7;
 
-		rv = gpiod_simple_get_value_multiple(TEST_CONSUMER,
-						     test_chip_name(2),
+		rv = gpiod_simple_get_value_multiple(test_chip_name(2),
 						     offsets, values,
-						     5, false);
+						     5, false, TEST_CONSUMER);
 		TEST_ASSERT_RET_OK(rv);
 
 		TEST_ASSERT_EQ(values[0], 0);
@@ -235,8 +234,8 @@ static void gpioset_set_some_lines_and_wait_time(void)
 	offsets[1] = 2;
 	offsets[2] = 5;
 
-	rv = gpiod_simple_get_value_multiple(TEST_CONSUMER, test_chip_name(0),
-					     offsets, values, 3, false);
+	rv = gpiod_simple_get_value_multiple(test_chip_name(0), offsets,
+					     values, 3, false, TEST_CONSUMER);
 	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(values[0], 1);

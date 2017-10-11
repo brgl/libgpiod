@@ -17,22 +17,23 @@
 #include <errno.h>
 #include <poll.h>
 
-int gpiod_simple_get_value(const char *consumer, const char *device,
-			   unsigned int offset, bool active_low)
+int gpiod_simple_get_value(const char *device, unsigned int offset,
+			   bool active_low, const char *consumer)
 {
 	int value, status;
 
-	status = gpiod_simple_get_value_multiple(consumer, device, &offset,
-						 &value, 1, active_low);
+	status = gpiod_simple_get_value_multiple(device, &offset, &value,
+						 1, active_low, consumer);
 	if (status < 0)
 		return status;
 
 	return value;
 }
 
-int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
+int gpiod_simple_get_value_multiple(const char *device,
 				    const unsigned int *offsets, int *values,
-				    unsigned int num_lines, bool active_low)
+				    unsigned int num_lines, bool active_low,
+				    const char *consumer)
 {
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;

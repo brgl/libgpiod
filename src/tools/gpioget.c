@@ -88,9 +88,9 @@ int main(int argc, char **argv)
 			die("invalid GPIO offset: %s", argv[i + 1]);
 	}
 
-	status = gpiod_simple_get_value_multiple("gpioset", device,
-						 offsets, values,
-						 num_lines, active_low);
+	status = gpiod_simple_get_value_multiple(device, offsets, values,
+						 num_lines, active_low,
+						 "gpioget");
 	if (status < 0)
 		die_perror("error reading GPIO values");
 
