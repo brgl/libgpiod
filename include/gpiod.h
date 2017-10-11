@@ -170,14 +170,22 @@ typedef int (*gpiod_simple_event_handle_cb)(int, unsigned int,
  * @brief Return status values that the simple event poll callback can return.
  */
 enum {
+	GPIOD_SIMPLE_EVENT_POLL_RET_STOP = -2,
+	/**< The event loop should stop processing events. */
 	GPIOD_SIMPLE_EVENT_POLL_RET_ERR = -1,
 	/**< Polling error occurred (the polling function should set errno). */
 	GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT = 0,
 	/**< Poll timed out. */
-	GPIOD_SIMPLE_EVENT_POLL_RET_EVENT = 1,
-	/**< Line event occurred. */
-	GPIOD_SIMPLE_EVENT_POLL_RET_STOP = 2,
-	/**< The event loop should stop processing events. */
+};
+
+/**
+ * @brief Helper structure for the simple event loop poll callback.
+ */
+struct gpiod_simple_event_poll_fd {
+	int fd;
+	/**< File descriptor number. */
+	bool event;
+	/**< Indicates whether an event occurred on this file descriptor. */
 };
 
 /**
@@ -185,17 +193,15 @@ enum {
  *
  * The poll callback function takes the following arguments: number of lines
  * (unsigned int), an array of file descriptors on which input events should
- * be monitored (const int *), pointer to an integer which the function should
- * set to the offset in the fd array corresponding with the descriptor on which
- * an event occurred (int *), poll timeout (const struct timespec *) and a
- * pointer to user data (void *).
+ * be monitored (struct gpiod_simple_event_poll_fd *), poll timeout
+ * (const struct timespec *) and a pointer to user data (void *).
  *
  * The callback should poll for input events on the set of descriptors and
  * return an appropriate value that can be interpreted by the event loop
  * routine.
  */
 typedef int (*gpiod_simple_event_poll_cb)(unsigned int,
-					  const int *, unsigned int *,
+					  struct gpiod_simple_event_poll_fd *,
 					  const struct timespec *, void *);
 
 /**

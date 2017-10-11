@@ -140,17 +140,17 @@ static void event_print_human_readable(unsigned int offset,
 	       evname, offset, ts->tv_sec, ts->tv_nsec);
 }
 
-static int poll_callback(unsigned int num_lines, const int *fds,
-			 unsigned int *event_offset,
+static int poll_callback(unsigned int num_lines,
+			 struct gpiod_simple_event_poll_fd *fds,
 			 const struct timespec *timeout, void *data)
 {
 	struct pollfd pfds[GPIOD_LINE_BULK_MAX_LINES + 1];
 	struct mon_ctx *ctx = data;
+	int cnt, ts, ret;
 	unsigned int i;
-	int ret, ts;
 
 	for (i = 0; i < num_lines; i++) {
-		pfds[i].fd = fds[i];
+		pfds[i].fd = fds[i].fd;
 		pfds[i].events = POLLIN | POLLPRI;
 	}
 
@@ -159,16 +159,18 @@ static int poll_callback(unsigned int num_lines, const int *fds,
 
 	ts = timeout->tv_sec * 1000 + timeout->tv_nsec / 1000000;
 
-	ret = poll(pfds, num_lines + 1, ts);
-	if (ret < 0)
+	cnt = poll(pfds, num_lines + 1, ts);
+	if (cnt < 0)
 		return GPIOD_SIMPLE_EVENT_POLL_RET_ERR;
-	else if (ret == 0)
+	else if (cnt == 0)
 		return GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT;
 
+	ret = cnt;
 	for (i = 0; i < num_lines; i++) {
 		if (pfds[i].revents) {
-			*event_offset = i;
-			return GPIOD_SIMPLE_EVENT_POLL_RET_EVENT;
+			fds[i].event = true;
+			if (!--cnt)
+				return ret;
 		}
 	}
 
