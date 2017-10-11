@@ -150,9 +150,11 @@ enum {
  * @brief Return status values that the simple event callback can return.
  */
 enum {
+	GPIOD_SIMPLE_EVENT_CB_RET_ERR = -1,
+	/**< Stop processing events and indicate an error. */
 	GPIOD_SIMPLE_EVENT_CB_RET_OK = 0,
 	/**< Continue processing events. */
-	GPIOD_SIMPLE_EVENT_CB_RET_STOP,
+	GPIOD_SIMPLE_EVENT_CB_RET_STOP = 1,
 	/**< Stop processing events. */
 };
 

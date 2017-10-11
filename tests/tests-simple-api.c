@@ -195,6 +195,48 @@ TEST_DEFINE(simple_event_loop_multiple,
 	    "gpiod_simple_event_loop_multiple() - single event",
 	    0, { 8 });
 
+static int error_event_cb(int evtype TEST_UNUSED,
+			  unsigned int offset TEST_UNUSED,
+			  const struct timespec *ts TEST_UNUSED,
+			  void *data TEST_UNUSED)
+{
+	errno = ENOTBLK;
+
+	return GPIOD_SIMPLE_EVENT_CB_RET_ERR;
+}
+
+static void simple_event_loop_indicate_error(void)
+{
+	struct timespec ts = { 1, 0 };
+	int rv;
+
+	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
+
+	rv = gpiod_simple_event_loop(TEST_CONSUMER, test_chip_name(0), 3,
+				     false, &ts, NULL, error_event_cb, NULL);
+
+	TEST_ASSERT_EQ(rv, -1);
+	TEST_ASSERT_ERRNO_IS(ENOTBLK);
+}
+TEST_DEFINE(simple_event_loop_indicate_error,
+	    "gpiod_simple_event_loop() - error in callback",
+	    0, { 8 });
+
+static void simple_event_loop_indicate_error_timeout(void)
+{
+	struct timespec ts = { 0, 100000 };
+	int rv;
+
+	rv = gpiod_simple_event_loop(TEST_CONSUMER, test_chip_name(0), 3,
+				     false, &ts, NULL, error_event_cb, NULL);
+
+	TEST_ASSERT_EQ(rv, -1);
+	TEST_ASSERT_ERRNO_IS(ENOTBLK);
+}
+TEST_DEFINE(simple_event_loop_indicate_error_timeout,
+	    "gpiod_simple_event_loop() - error in callback after timeout",
+	    0, { 8 });
+
 static void simple_find_line_good(void)
 {
 	unsigned int offset;

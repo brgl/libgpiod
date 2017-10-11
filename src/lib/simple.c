@@ -256,7 +256,10 @@ int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
 		} else if (cnt == GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT) {
 			rv = event_cb(GPIOD_SIMPLE_EVENT_CB_TIMEOUT,
 				      0, &event.ts, data);
-			if (rv == GPIOD_SIMPLE_EVENT_CB_RET_STOP) {
+			if (rv == GPIOD_SIMPLE_EVENT_CB_RET_ERR) {
+				ret = -1;
+				goto out;
+			} else if (rv == GPIOD_SIMPLE_EVENT_CB_RET_STOP) {
 				ret = 0;
 				goto out;
 			}
@@ -281,8 +284,12 @@ int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
 			else
 				evtype = GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE;
 
-			rv = event_cb(evtype, gpiod_line_offset(line), &event.ts, data);
-			if (rv == GPIOD_SIMPLE_EVENT_CB_RET_STOP) {
+			rv = event_cb(evtype, gpiod_line_offset(line),
+				      &event.ts, data);
+			if (rv == GPIOD_SIMPLE_EVENT_CB_RET_ERR) {
+				ret = -1;
+				goto out;
+			} else if (rv == GPIOD_SIMPLE_EVENT_CB_RET_STOP) {
 				ret = 0;
 				goto out;
 			}
