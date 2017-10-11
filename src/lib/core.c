@@ -139,7 +139,7 @@ struct gpiod_chip * gpiod_chip_open_by_label(const char *label)
 
 out:
 	gpiod_chip_iter_free(iter);
-	return  NULL;
+	return NULL;
 }
 
 struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
