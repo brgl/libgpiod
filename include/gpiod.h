@@ -95,7 +95,7 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 /**
  * @brief Simple set value callback signature.
  */
-typedef void (*gpiod_set_value_cb)(void *);
+typedef void (*gpiod_simple_set_value_cb)(void *);
 
 /**
  * @brief Set value of a single GPIO line.
@@ -112,7 +112,7 @@ typedef void (*gpiod_set_value_cb)(void *);
  */
 int gpiod_simple_set_value(const char *consumer, const char *device,
 			   unsigned int offset, int value, bool active_low,
-			   gpiod_set_value_cb cb, void *data) GPIOD_API;
+			   gpiod_simple_set_value_cb cb, void *data) GPIOD_API;
 
 /**
  * @brief Set values of a set of a set of GPIO lines.
@@ -130,7 +130,8 @@ int gpiod_simple_set_value(const char *consumer, const char *device,
 int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 				    const unsigned int *offsets,
 				    const int *values, unsigned int num_lines,
-				    bool active_low, gpiod_set_value_cb cb,
+				    bool active_low,
+				    gpiod_simple_set_value_cb cb,
 				    void *data) GPIOD_API;
 
 /**
@@ -162,8 +163,8 @@ enum {
  * GPIO line offset (unsigned int), event timestamp (const struct timespec *)
  * and a pointer to user data (void *).
  */
-typedef int (*gpiod_event_handle_cb)(int, unsigned int,
-				     const struct timespec *, void *);
+typedef int (*gpiod_simple_event_handle_cb)(int, unsigned int,
+					    const struct timespec *, void *);
 
 /**
  * @brief Return status values that the simple event poll callback can return.
@@ -193,8 +194,9 @@ enum {
  * return an appropriate value that can be interpreted by the event loop
  * routine.
  */
-typedef int (*gpiod_event_poll_cb)(unsigned int, const int *, unsigned int *,
-				   const struct timespec *, void *);
+typedef int (*gpiod_simple_event_poll_cb)(unsigned int,
+					  const int *, unsigned int *,
+					  const struct timespec *, void *);
 
 /**
  * @brief Wait for events on a single GPIO line.
@@ -214,8 +216,8 @@ typedef int (*gpiod_event_poll_cb)(unsigned int, const int *, unsigned int *,
 int gpiod_simple_event_loop(const char *consumer, const char *device,
 			    unsigned int offset, bool active_low,
 			    const struct timespec *timeout,
-			    gpiod_event_poll_cb poll_cb,
-			    gpiod_event_handle_cb event_cb,
+			    gpiod_simple_event_poll_cb poll_cb,
+			    gpiod_simple_event_handle_cb event_cb,
 			    void *data) GPIOD_API;
 
 /**
@@ -237,8 +239,8 @@ int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
 				     const unsigned int *offsets,
 				     unsigned int num_lines, bool active_low,
 				     const struct timespec *timeout,
-				     gpiod_event_poll_cb poll_cb,
-				     gpiod_event_handle_cb event_cb,
+				     gpiod_simple_event_poll_cb poll_cb,
+				     gpiod_simple_event_handle_cb event_cb,
 				     void *data) GPIOD_API;
 
 /**

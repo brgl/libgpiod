@@ -79,7 +79,7 @@ int gpiod_simple_get_value_multiple(const char *consumer, const char *device,
 
 int gpiod_simple_set_value(const char *consumer, const char *device,
 			   unsigned int offset, int value, bool active_low,
-			   gpiod_set_value_cb cb, void *data)
+			   gpiod_simple_set_value_cb cb, void *data)
 {
 	return gpiod_simple_set_value_multiple(consumer, device, &offset,
 					       &value, 1, active_low,
@@ -89,7 +89,8 @@ int gpiod_simple_set_value(const char *consumer, const char *device,
 int gpiod_simple_set_value_multiple(const char *consumer, const char *device,
 				    const unsigned int *offsets,
 				    const int *values, unsigned int num_lines,
-				    bool active_low, gpiod_set_value_cb cb,
+				    bool active_low,
+				    gpiod_simple_set_value_cb cb,
 				    void *data)
 {
 	struct gpiod_line_bulk bulk;
@@ -171,8 +172,8 @@ static int basic_event_poll(unsigned int num_lines, const int *fds,
 int gpiod_simple_event_loop(const char *consumer, const char *device,
 			    unsigned int offset, bool active_low,
 			    const struct timespec *timeout,
-			    gpiod_event_poll_cb poll_cb,
-			    gpiod_event_handle_cb event_cb,
+			    gpiod_simple_event_poll_cb poll_cb,
+			    gpiod_simple_event_handle_cb event_cb,
 			    void *data)
 {
 	return gpiod_simple_event_loop_multiple(consumer, device, &offset, 1,
@@ -184,8 +185,8 @@ int gpiod_simple_event_loop_multiple(const char *consumer, const char *device,
 				     const unsigned int *offsets,
 				     unsigned int num_lines, bool active_low,
 				     const struct timespec *timeout,
-				     gpiod_event_poll_cb poll_cb,
-				     gpiod_event_handle_cb event_cb,
+				     gpiod_simple_event_poll_cb poll_cb,
+				     gpiod_simple_event_handle_cb event_cb,
 				     void *data)
 {
 	unsigned int i, event_offset, line_offset;

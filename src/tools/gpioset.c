@@ -137,7 +137,7 @@ enum {
 struct mode_mapping {
 	int id;
 	const char *name;
-	gpiod_set_value_cb callback;
+	gpiod_simple_set_value_cb callback;
 };
 
 static const struct mode_mapping modes[] = {
