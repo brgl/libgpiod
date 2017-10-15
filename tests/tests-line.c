@@ -402,7 +402,7 @@ static void line_misc_flags(void)
 	TEST_ASSERT_FALSE(gpiod_line_is_open_drain(line));
 	TEST_ASSERT_FALSE(gpiod_line_is_open_source(line));
 
-	config.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
+	config.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT;
 	config.consumer = TEST_CONSUMER;
 	config.flags = GPIOD_LINE_REQUEST_OPEN_DRAIN;
 
