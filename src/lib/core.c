@@ -441,6 +441,13 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 	unsigned int i;
 	int rv, fd;
 
+	if ((config->request_type != GPIOD_LINE_REQUEST_DIRECTION_OUTPUT) &&
+	    (config->flags & (GPIOD_LINE_REQUEST_OPEN_DRAIN |
+			      GPIOD_LINE_REQUEST_OPEN_SOURCE))) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	handle = malloc(sizeof(*handle));
 	if (!handle)
 		return -1;

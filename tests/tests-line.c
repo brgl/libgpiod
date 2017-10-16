@@ -428,6 +428,32 @@ TEST_DEFINE(line_misc_flags,
 	    "gpiod_line - misc flags",
 	    0, { 8 });
 
+static void line_open_source_open_drain_input_invalid(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line *line;
+	int rv;
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_get_line(chip, 2);
+	TEST_ASSERT_NOT_NULL(line);
+
+	rv = gpiod_line_request_input_flags(line, TEST_CONSUMER,
+					    GPIOD_LINE_REQUEST_OPEN_DRAIN);
+	TEST_ASSERT_EQ(rv, -1);
+	TEST_ASSERT_ERRNO_IS(EINVAL);
+
+	rv = gpiod_line_request_input_flags(line, TEST_CONSUMER,
+					    GPIOD_LINE_REQUEST_OPEN_SOURCE);
+	TEST_ASSERT_EQ(rv, -1);
+	TEST_ASSERT_ERRNO_IS(EINVAL);
+}
+TEST_DEFINE(line_open_source_open_drain_input_invalid,
+	    "gpiod_line - open-source & open-drain for input mode (invalid)",
+	    0, { 8 });
+
 static void line_null_consumer(void)
 {
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
