@@ -904,6 +904,8 @@ static void prepare_test(struct _test_chip_descr *descr)
 
 static void run_test(struct _test_case *test)
 {
+	errno = 0;
+
 	print_header("TEST", CYELLOW);
 	pr_raw("'%s': ", test->name);
 
