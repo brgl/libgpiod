@@ -988,7 +988,12 @@ int gpiod_line_event_read(struct gpiod_line *line,
 
 int gpiod_line_event_get_fd(struct gpiod_line *line)
 {
-	return line_get_state(line) == LINE_REQUESTED_EVENTS ? line->fd : -1;
+	if (line_get_state(line) != LINE_REQUESTED_EVENTS) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return line->fd;
 }
 
 int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)

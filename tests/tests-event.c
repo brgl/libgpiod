@@ -12,6 +12,8 @@
 
 #include "gpiod-test.h"
 
+#include <errno.h>
+
 static void event_rising_edge_good(void)
 {
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
@@ -202,4 +204,27 @@ static void event_wait_multiple(void)
 }
 TEST_DEFINE(event_wait_multiple,
 	    "events - wait for events on multiple lines",
+	    0, { 8 });
+
+static void event_get_fd_when_values_requested(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line *line;
+	int rv, fd;
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_get_line(chip, 3);
+	TEST_ASSERT_NOT_NULL(line);
+
+	rv = gpiod_line_request_input(line, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
+
+	fd = gpiod_line_event_get_fd(line);
+	TEST_ASSERT_EQ(fd, -1);
+	TEST_ASSERT_ERRNO_IS(EINVAL);
+}
+TEST_DEFINE(event_get_fd_when_values_requested,
+	    "events - gpiod_line_event_get_fd(): line requested for values",
 	    0, { 8 });
