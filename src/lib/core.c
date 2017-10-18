@@ -260,11 +260,6 @@ static void line_set_state(struct gpiod_line *line, int state)
 	line->state = state;
 }
 
-void line_set_offset(struct gpiod_line *line, unsigned int offset)
-{
-	line->info.line_offset = offset;
-}
-
 struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
 {
 	return line->chip;
