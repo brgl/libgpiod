@@ -8,15 +8,15 @@
  * as published by the Free Software Foundation.
  */
 
+/* Low-level, core library code. */
+
 #include <gpiod.h>
 
-#include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <poll.h>
 #include <errno.h>
-#include <ctype.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -43,13 +43,6 @@ struct gpiod_chip {
 	struct gpiod_line **lines;
 };
 
-static bool isuint(const char *str)
-{
-	for (; *str && isdigit(*str); str++);
-
-	return *str == '\0';
-}
-
 struct gpiod_chip * gpiod_chip_open(const char *path)
 {
 	struct gpiod_chip *chip;
@@ -73,81 +66,6 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 		close(chip->fd);
 		free(chip);
 		return NULL;
-	}
-
-	return chip;
-}
-
-struct gpiod_chip * gpiod_chip_open_by_name(const char *name)
-{
-	struct gpiod_chip *chip;
-	char *path;
-	int status;
-
-	status = asprintf(&path, "/dev/%s", name);
-	if (status < 0)
-		return NULL;
-
-	chip = gpiod_chip_open(path);
-	free(path);
-
-	return chip;
-}
-
-struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num)
-{
-	struct gpiod_chip *chip;
-	char *path;
-	int status;
-
-	status = asprintf(&path, "/dev/gpiochip%u", num);
-	if (!status)
-		return NULL;
-
-	chip = gpiod_chip_open(path);
-	free(path);
-
-	return chip;
-}
-
-struct gpiod_chip * gpiod_chip_open_by_label(const char *label)
-{
-	struct gpiod_chip_iter *iter;
-	struct gpiod_chip *chip;
-
-	iter = gpiod_chip_iter_new();
-	if (!iter)
-		return NULL;
-
-	gpiod_foreach_chip(iter, chip) {
-		if (gpiod_chip_iter_err(iter))
-			goto out;
-
-		if (strcmp(label, gpiod_chip_label(chip)) == 0) {
-			gpiod_chip_iter_free_noclose(iter);
-			return chip;
-		}
-	}
-
-out:
-	gpiod_chip_iter_free(iter);
-	return NULL;
-}
-
-struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
-{
-	struct gpiod_chip *chip;
-
-	if (isuint(descr)) {
-		chip = gpiod_chip_open_by_number(strtoul(descr, NULL, 10));
-	} else {
-		chip = gpiod_chip_open_by_label(descr);
-		if (!chip) {
-			if (strncmp(descr, "/dev/", 5))
-				chip = gpiod_chip_open_by_name(descr);
-			else
-				chip = gpiod_chip_open(descr);
-		}
 	}
 
 	return chip;
@@ -228,26 +146,6 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 		return NULL;
 
 	return line;
-}
-
-struct gpiod_line *
-gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
-{
-	struct gpiod_line_iter iter;
-	struct gpiod_line *line;
-
-	gpiod_line_iter_init(&iter, chip);
-	gpiod_foreach_line(&iter, line) {
-		if (gpiod_line_iter_err(&iter))
-			return NULL;
-
-		if (strcmp(gpiod_line_name(line), name) == 0)
-			return line;
-	}
-
-	errno = ENOENT;
-
-	return NULL;
 }
 
 static void line_maybe_update(struct gpiod_line *line)
@@ -501,108 +399,6 @@ int gpiod_line_request(struct gpiod_line *line,
 	return gpiod_line_request_bulk(&bulk, config, &default_val);
 }
 
-int gpiod_line_request_input(struct gpiod_line *line, const char *consumer)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT,
-	};
-
-	return gpiod_line_request(line, &config, 0);
-}
-
-int gpiod_line_request_output(struct gpiod_line *line,
-			      const char *consumer, int default_val)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
-	};
-
-	return gpiod_line_request(line, &config, default_val);
-}
-
-int gpiod_line_request_input_flags(struct gpiod_line *line,
-				   const char *consumer, int flags)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT,
-		.flags = flags,
-	};
-
-	return gpiod_line_request(line, &config, 0);
-}
-
-int gpiod_line_request_output_flags(struct gpiod_line *line,
-				    const char *consumer, int flags,
-				    int default_val)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
-		.flags = flags,
-	};
-
-	return gpiod_line_request(line, &config, default_val);
-}
-
-static int line_event_request_type(struct gpiod_line *line,
-				   const char *consumer, int flags, int type)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.request_type = type,
-		.flags = flags,
-	};
-
-	return gpiod_line_request(line, &config, 0);
-}
-
-int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
-					  const char *consumer)
-{
-	return line_event_request_type(line, consumer, 0,
-				       GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
-}
-
-int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
-					   const char *consumer)
-{
-	return line_event_request_type(line, consumer, 0,
-				       GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
-}
-
-int gpiod_line_request_both_edges_events(struct gpiod_line *line,
-					 const char *consumer)
-{
-	return line_event_request_type(line, consumer, 0,
-				       GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
-}
-
-int gpiod_line_request_rising_edge_events_flags(struct gpiod_line *line,
-						const char *consumer,
-						int flags)
-{
-	return line_event_request_type(line, consumer, flags,
-				       GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
-}
-
-int gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
-						 const char *consumer,
-						 int flags)
-{
-	return line_event_request_type(line, consumer, flags,
-				       GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
-}
-
-int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
-					       const char *consumer, int flags)
-{
-	return line_event_request_type(line, consumer, flags,
-				       GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
-}
-
 static bool line_request_is_direction(int request)
 {
 	return request == GPIOD_LINE_REQUEST_DIRECTION_AS_IS
@@ -632,112 +428,6 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 		errno = EINVAL;
 		return -1;
 	}
-}
-
-int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
-				  const char *consumer)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT,
-	};
-
-	return gpiod_line_request_bulk(bulk, &config, 0);
-}
-
-int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
-				   const char *consumer,
-				   const int *default_vals)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
-	};
-
-	return gpiod_line_request_bulk(bulk, &config, default_vals);
-}
-
-static int line_event_request_type_bulk(struct gpiod_line_bulk *bulk,
-					const char *consumer,
-					int flags, int type)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.request_type = type,
-		.flags = flags,
-	};
-
-	return gpiod_line_request_bulk(bulk, &config, 0);
-}
-
-int gpiod_line_request_bulk_rising_edge_events(struct gpiod_line_bulk *bulk,
-					       const char *consumer)
-{
-	return line_event_request_type_bulk(bulk, consumer, 0,
-					GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
-}
-
-int gpiod_line_request_bulk_falling_edge_events(struct gpiod_line_bulk *bulk,
-						const char *consumer)
-{
-	return line_event_request_type_bulk(bulk, consumer, 0,
-					GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
-}
-
-int gpiod_line_request_bulk_both_edges_events(struct gpiod_line_bulk *bulk,
-					      const char *consumer)
-{
-	return line_event_request_type_bulk(bulk, consumer, 0,
-					GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
-}
-
-int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
-					const char *consumer, int flags)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT,
-		.flags = flags,
-	};
-
-	return gpiod_line_request_bulk(bulk, &config, 0);
-}
-
-int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
-					 const char *consumer, int flags,
-					 const int *default_vals)
-{
-	struct gpiod_line_request_config config = {
-		.consumer = consumer,
-		.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
-		.flags = flags,
-	};
-
-	return gpiod_line_request_bulk(bulk, &config, default_vals);
-}
-
-int gpiod_line_request_bulk_rising_edge_events_flags(
-					struct gpiod_line_bulk *bulk,
-					const char *consumer, int flags)
-{
-	return line_event_request_type_bulk(bulk, consumer, flags,
-					GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
-}
-
-int gpiod_line_request_bulk_falling_edge_events_flags(
-					struct gpiod_line_bulk *bulk,
-					const char *consumer, int flags)
-{
-	return line_event_request_type_bulk(bulk, consumer, flags,
-					GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
-}
-
-int gpiod_line_request_bulk_both_edges_events_flags(
-					struct gpiod_line_bulk *bulk,
-					const char *consumer, int flags)
-{
-	return line_event_request_type_bulk(bulk, consumer, flags,
-					GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
 
 void gpiod_line_release(struct gpiod_line *line)
@@ -849,63 +539,6 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 		return -1;
 
 	return 0;
-}
-
-struct gpiod_line * gpiod_line_get(const char *device, unsigned int offset)
-{
-	struct gpiod_chip *chip;
-	struct gpiod_line *line;
-
-	chip = gpiod_chip_open_lookup(device);
-	if (!chip)
-		return NULL;
-
-	line = gpiod_chip_get_line(chip, offset);
-	if (!line) {
-		gpiod_chip_close(chip);
-		return NULL;
-	}
-
-	return line;
-}
-
-struct gpiod_line * gpiod_line_find(const char *name)
-{
-	struct gpiod_chip_iter *iter;
-	struct gpiod_chip *chip;
-	struct gpiod_line *line;
-
-	iter = gpiod_chip_iter_new();
-	if (!iter)
-		return NULL;
-
-	gpiod_foreach_chip(iter, chip) {
-		if (gpiod_chip_iter_err(iter))
-			goto out;
-
-		line = gpiod_chip_find_line(chip, name);
-		if (line) {
-			gpiod_chip_iter_free_noclose(iter);
-			return line;
-		}
-
-		if (errno != ENOENT)
-			goto out;
-	}
-
-	errno = ENOENT;
-
-out:
-	gpiod_chip_iter_free(iter);
-
-	return NULL;
-}
-
-void gpiod_line_close_chip(struct gpiod_line *line)
-{
-	struct gpiod_chip *chip = gpiod_line_get_chip(line);
-
-	gpiod_chip_close(chip);
 }
 
 int gpiod_line_event_wait(struct gpiod_line *line,
