@@ -250,33 +250,13 @@ gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
 	return NULL;
 }
 
-static int line_get_state(struct gpiod_line *line)
-{
-	return line->state;
-}
-
-static void line_set_state(struct gpiod_line *line, int state)
-{
-	line->state = state;
-}
-
-static void line_set_updated(struct gpiod_line *line)
-{
-	line->up_to_date = true;
-}
-
-static void line_set_needs_update(struct gpiod_line *line)
-{
-	line->up_to_date = false;
-}
-
 static void line_maybe_update(struct gpiod_line *line)
 {
 	int status;
 
 	status = gpiod_line_update(line);
 	if (status < 0)
-		line_set_needs_update(line);
+		line->up_to_date = false;
 }
 
 struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
@@ -345,7 +325,7 @@ int gpiod_line_update(struct gpiod_line *line)
 	if (rv < 0)
 		return -1;
 
-	line_set_updated(line);
+	line->up_to_date = true;
 
 	return 0;
 }
@@ -437,7 +417,7 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 		return -1;
 
 	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
-		line_set_state(line, LINE_REQUESTED_VALUES);
+		line->state = LINE_REQUESTED_VALUES;
 		line->fd = req.fd;
 		line_maybe_update(line);
 	}
@@ -478,7 +458,7 @@ static int line_request_event_single(struct gpiod_line *line,
 	if (rv < 0)
 		return -1;
 
-	line_set_state(line, LINE_REQUESTED_EVENTS);
+	line->state = LINE_REQUESTED_EVENTS;
 	line->fd = req.fd;
 
 	return 0;
@@ -775,22 +755,22 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 	struct gpiod_line *line, **lineptr;
 
 	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
-		if (line_get_state(line) != LINE_FREE) {
+		if (line->state != LINE_FREE) {
 			close(line->fd);
-			line_set_state(line, LINE_FREE);
+			line->state = LINE_FREE;
 		}
 	}
 }
 
 bool gpiod_line_is_requested(struct gpiod_line *line)
 {
-	return (line_get_state(line) == LINE_REQUESTED_VALUES
-		|| line_get_state(line) == LINE_REQUESTED_EVENTS);
+	return (line->state == LINE_REQUESTED_VALUES ||
+		line->state == LINE_REQUESTED_EVENTS);
 }
 
 bool gpiod_line_is_free(struct gpiod_line *line)
 {
-	return line_get_state(line) == LINE_FREE;
+	return line->state == LINE_FREE;
 }
 
 int gpiod_line_get_value(struct gpiod_line *line)
@@ -988,7 +968,7 @@ int gpiod_line_event_read(struct gpiod_line *line,
 
 int gpiod_line_event_get_fd(struct gpiod_line *line)
 {
-	if (line_get_state(line) != LINE_REQUESTED_EVENTS) {
+	if (line->state != LINE_REQUESTED_EVENTS) {
 		errno = EINVAL;
 		return -1;
 	}
