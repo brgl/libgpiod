@@ -39,7 +39,7 @@ struct gpiod_line {
 
 struct gpiod_chip {
 	int fd;
-	struct gpiochip_info cinfo;
+	struct gpiochip_info info;
 	struct gpiod_line **lines;
 };
 
@@ -61,7 +61,7 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 	memset(chip, 0, sizeof(*chip));
 	chip->fd = fd;
 
-	status = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &chip->cinfo);
+	status = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &chip->info);
 	if (status < 0) {
 		close(chip->fd);
 		free(chip);
@@ -77,7 +77,7 @@ void gpiod_chip_close(struct gpiod_chip *chip)
 	unsigned int i;
 
 	if (chip->lines) {
-		for (i = 0; i < chip->cinfo.lines; i++) {
+		for (i = 0; i < chip->info.lines; i++) {
 			line = chip->lines[i];
 			if (line) {
 				gpiod_line_release(line);
@@ -94,17 +94,17 @@ void gpiod_chip_close(struct gpiod_chip *chip)
 
 const char * gpiod_chip_name(struct gpiod_chip *chip)
 {
-	return chip->cinfo.name[0] == '\0' ? NULL : chip->cinfo.name;
+	return chip->info.name[0] == '\0' ? NULL : chip->info.name;
 }
 
 const char * gpiod_chip_label(struct gpiod_chip *chip)
 {
-	return chip->cinfo.label[0] == '\0' ? NULL : chip->cinfo.label;
+	return chip->info.label[0] == '\0' ? NULL : chip->info.label;
 }
 
 unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip)
 {
-	return (unsigned int)chip->cinfo.lines;
+	return (unsigned int)chip->info.lines;
 }
 
 struct gpiod_line *
@@ -113,13 +113,13 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 	struct gpiod_line *line;
 	int status;
 
-	if (offset >= chip->cinfo.lines) {
+	if (offset >= chip->info.lines) {
 		errno = EINVAL;
 		return NULL;
 	}
 
 	if (!chip->lines) {
-		chip->lines = calloc(chip->cinfo.lines,
+		chip->lines = calloc(chip->info.lines,
 				     sizeof(struct gpiod_line *));
 		if (!chip->lines)
 			return NULL;
