@@ -401,16 +401,16 @@ int gpiod_line_request(struct gpiod_line *line,
 
 static bool line_request_is_direction(int request)
 {
-	return request == GPIOD_LINE_REQUEST_DIRECTION_AS_IS
-	       || request == GPIOD_LINE_REQUEST_DIRECTION_INPUT
-	       || request == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT;
+	return request == GPIOD_LINE_REQUEST_DIRECTION_AS_IS ||
+	       request == GPIOD_LINE_REQUEST_DIRECTION_INPUT ||
+	       request == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT;
 }
 
 static bool line_request_is_events(int request)
 {
-	return request == GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE
-	       || request == GPIOD_LINE_REQUEST_EVENT_RISING_EDGE
-	       || request == GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES;
+	return request == GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE ||
+	       request == GPIOD_LINE_REQUEST_EVENT_RISING_EDGE ||
+	       request == GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES;
 }
 
 int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
