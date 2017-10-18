@@ -260,6 +260,25 @@ static void line_set_state(struct gpiod_line *line, int state)
 	line->state = state;
 }
 
+static void line_set_updated(struct gpiod_line *line)
+{
+	line->up_to_date = true;
+}
+
+static void line_set_needs_update(struct gpiod_line *line)
+{
+	line->up_to_date = false;
+}
+
+static void line_maybe_update(struct gpiod_line *line)
+{
+	int status;
+
+	status = gpiod_line_update(line);
+	if (status < 0)
+		line_set_needs_update(line);
+}
+
 struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
 {
 	return line->chip;
@@ -309,37 +328,6 @@ bool gpiod_line_is_open_source(struct gpiod_line *line)
 	return line->info.flags & GPIOLINE_FLAG_OPEN_SOURCE;
 }
 
-static void line_set_updated(struct gpiod_line *line)
-{
-	line->up_to_date = true;
-}
-
-static void line_set_needs_update(struct gpiod_line *line)
-{
-	line->up_to_date = false;
-}
-
-static void line_maybe_update(struct gpiod_line *line)
-{
-	int status;
-
-	status = gpiod_line_update(line);
-	if (status < 0)
-		line_set_needs_update(line);
-}
-
-static bool line_bulk_is_requested(struct gpiod_line_bulk *bulk)
-{
-	struct gpiod_line *line, **lineptr;
-
-	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
-		if (!gpiod_line_is_requested(line))
-			return false;
-	}
-
-	return true;
-}
-
 bool gpiod_line_needs_update(struct gpiod_line *line)
 {
 	return !line->up_to_date;
@@ -360,6 +348,18 @@ int gpiod_line_update(struct gpiod_line *line)
 	line_set_updated(line);
 
 	return 0;
+}
+
+static bool line_bulk_is_requested(struct gpiod_line_bulk *bulk)
+{
+	struct gpiod_line *line, **lineptr;
+
+	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
+		if (!gpiod_line_is_requested(line))
+			return false;
+	}
+
+	return true;
 }
 
 static bool verify_line_bulk(struct gpiod_line_bulk *bulk)
