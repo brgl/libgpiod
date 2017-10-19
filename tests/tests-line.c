@@ -122,6 +122,8 @@ static void line_request_bulk_output(void)
 {
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipA = NULL;
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipB = NULL;
+	struct gpiod_line_bulk bulkB = GPIOD_LINE_BULK_INITIALIZER;
+	struct gpiod_line_bulk bulkA;
 	struct gpiod_line *lineA0;
 	struct gpiod_line *lineA1;
 	struct gpiod_line *lineA2;
@@ -130,10 +132,8 @@ static void line_request_bulk_output(void)
 	struct gpiod_line *lineB1;
 	struct gpiod_line *lineB2;
 	struct gpiod_line *lineB3;
-	struct gpiod_line_bulk bulkA;
-	struct gpiod_line_bulk bulkB = GPIOD_LINE_BULK_INITIALIZER;
-	int status;
 	int valA[4], valB[4];
+	int status;
 
 	chipA = gpiod_chip_open(test_chip_path(0));
 	chipB = gpiod_chip_open(test_chip_path(1));
@@ -212,11 +212,11 @@ static void line_request_bulk_different_chips(void)
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipA = NULL;
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipB = NULL;
 	struct gpiod_line_request_config req;
+	struct gpiod_line_bulk bulk;
 	struct gpiod_line *lineA0;
 	struct gpiod_line *lineA1;
 	struct gpiod_line *lineB0;
 	struct gpiod_line *lineB1;
-	struct gpiod_line_bulk bulk;
 	int status;
 
 	chipA = gpiod_chip_open(test_chip_path(0));
