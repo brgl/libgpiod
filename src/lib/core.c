@@ -30,11 +30,21 @@ enum {
 };
 
 struct gpiod_line {
+	unsigned int offset;
 	int state;
 	bool up_to_date;
+	int direction;
+	int active_state;
+	bool used;
+	bool open_source;
+	bool open_drain;
 	struct gpiod_chip *chip;
-	struct gpioline_info info;
 	int fd;
+
+	char *name;
+	char *consumer;
+	char namebuf[32];
+	char consumerbuf[32];
 };
 
 struct gpiod_chip {
@@ -160,7 +170,7 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 		memset(line, 0, sizeof(*line));
 		line->fd = -1;
 
-		line->info.line_offset = offset;
+		line->offset = offset;
 		line->chip = chip;
 
 		chip->lines[offset] = line;
@@ -191,46 +201,42 @@ struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
 
 unsigned int gpiod_line_offset(struct gpiod_line *line)
 {
-	return (unsigned int)line->info.line_offset;
+	return line->offset;
 }
 
 const char * gpiod_line_name(struct gpiod_line *line)
 {
-	return line->info.name[0] == '\0' ? NULL : line->info.name;
+	return line->name;
 }
 
 const char * gpiod_line_consumer(struct gpiod_line *line)
 {
-	return line->info.consumer[0] == '\0' ? NULL : line->info.consumer;
+	return line->consumer;
 }
 
 int gpiod_line_direction(struct gpiod_line *line)
 {
-	return line->info.flags & GPIOLINE_FLAG_IS_OUT
-						? GPIOD_LINE_DIRECTION_OUTPUT
-						: GPIOD_LINE_DIRECTION_INPUT;
+	return line->direction;
 }
 
 int gpiod_line_active_state(struct gpiod_line *line)
 {
-	return line->info.flags & GPIOLINE_FLAG_ACTIVE_LOW
-					? GPIOD_LINE_ACTIVE_STATE_LOW
-					: GPIOD_LINE_ACTIVE_STATE_HIGH;
+	return line->active_state;
 }
 
 bool gpiod_line_is_used(struct gpiod_line *line)
 {
-	return line->info.flags & GPIOLINE_FLAG_KERNEL;
+	return line->used;
 }
 
 bool gpiod_line_is_open_drain(struct gpiod_line *line)
 {
-	return line->info.flags & GPIOLINE_FLAG_OPEN_DRAIN;
+	return line->open_drain;
 }
 
 bool gpiod_line_is_open_source(struct gpiod_line *line)
 {
-	return line->info.flags & GPIOLINE_FLAG_OPEN_SOURCE;
+	return line->open_source;
 }
 
 bool gpiod_line_needs_update(struct gpiod_line *line)
@@ -240,16 +246,40 @@ bool gpiod_line_needs_update(struct gpiod_line *line)
 
 int gpiod_line_update(struct gpiod_line *line)
 {
+	struct gpioline_info info;
 	int rv;
 
-	memset(line->info.name, 0, sizeof(line->info.name));
-	memset(line->info.consumer, 0, sizeof(line->info.consumer));
-	line->info.flags = 0;
+	memset(&info, 0, sizeof(info));
+	info.line_offset = line->offset;
 
-	rv = ioctl(line->chip->fd, GPIO_GET_LINEINFO_IOCTL, &line->info);
+	rv = ioctl(line->chip->fd, GPIO_GET_LINEINFO_IOCTL, &info);
 	if (rv < 0)
 		return -1;
 
+	if (info.name[0] != '\0') {
+		strncpy(line->namebuf, info.name, sizeof(line->namebuf));
+		line->name = line->namebuf;
+	} else {
+		line->name = NULL;
+	}
+
+	if (info.consumer[0] != '\0') {
+		strncpy(line->consumerbuf,
+			info.consumer, sizeof(line->consumerbuf));
+		line->consumer = line->consumerbuf;
+	} else {
+		line->consumer = NULL;
+	}
+
+	line->direction = info.flags & GPIOLINE_FLAG_IS_OUT
+						? GPIOD_LINE_DIRECTION_OUTPUT
+						: GPIOD_LINE_DIRECTION_INPUT;
+	line->active_state = info.flags & GPIOLINE_FLAG_ACTIVE_LOW
+						? GPIOD_LINE_ACTIVE_STATE_LOW
+						: GPIOD_LINE_ACTIVE_STATE_HIGH;
+	line->used = info.flags & GPIOLINE_FLAG_KERNEL;
+	line->open_drain = info.flags & GPIOLINE_FLAG_OPEN_DRAIN;
+	line->open_source = info.flags & GPIOLINE_FLAG_OPEN_SOURCE;
 	line->up_to_date = true;
 
 	return 0;
