@@ -415,6 +415,7 @@ static int line_request_event_single(struct gpiod_line *line,
 
 	line->state = LINE_REQUESTED_EVENTS;
 	line->fd = req.fd;
+	line_maybe_update(line);
 
 	return 0;
 }
