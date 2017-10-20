@@ -327,6 +327,18 @@ TEST_DEFINE(line_find_not_found,
 	    "gpiod_line_find() - not found",
 	    TEST_FLAG_NAMED_LINES, { 16, 16, 32, 16 });
 
+static void line_find_unnamed_lines(void)
+{
+	TEST_CLEANUP(test_line_close_chip) struct gpiod_line *line = NULL;
+
+	line = gpiod_line_find("gpio-mockup-C-12");
+	TEST_ASSERT_NULL(line);
+	TEST_ASSERT_ERRNO_IS(ENOENT);
+}
+TEST_DEFINE(line_find_unnamed_lines,
+	    "gpiod_line_find() - unnamed lines",
+	    0, { 16, 16, 32, 16 });
+
 static void line_direction(void)
 {
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;

@@ -107,13 +107,15 @@ gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
 {
 	struct gpiod_line_iter iter;
 	struct gpiod_line *line;
+	const char *tmp;
 
 	gpiod_line_iter_init(&iter, chip);
 	gpiod_foreach_line(&iter, line) {
 		if (gpiod_line_iter_err(&iter))
 			return NULL;
 
-		if (strcmp(gpiod_line_name(line), name) == 0)
+		tmp = gpiod_line_name(line);
+		if (tmp && strcmp(tmp, name) == 0)
 			return line;
 	}
 
