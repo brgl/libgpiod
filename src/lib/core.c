@@ -31,29 +31,45 @@ enum {
 
 struct gpiod_line {
 	unsigned int offset;
-	int state;
-	bool up_to_date;
 	int direction;
 	int active_state;
 	bool used;
 	bool open_source;
 	bool open_drain;
+
+	int state;
+	bool up_to_date;
+
 	struct gpiod_chip *chip;
 	int fd;
 
 	char *name;
 	char *consumer;
-	char namebuf[32];
-	char consumerbuf[32];
+	char name_buf[32];
+	char consumer_buf[32];
 };
 
 struct gpiod_chip {
-	int fd;
 	struct gpiod_line **lines;
 	unsigned int num_lines;
+
+	int fd;
+
 	char *name;
 	char *label;
+	char name_buf[32];
+	char label_buf[32];
 };
+
+static void strcpy_info(char *dst, const char *src, size_t sz, char **ptr)
+{
+	if (src[0] != '\0') {
+		strncpy(dst, src, sz);
+		*ptr = dst;
+	} else {
+		*ptr = NULL;
+	}
+}
 
 struct gpiod_chip * gpiod_chip_open(const char *path)
 {
@@ -79,22 +95,13 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 
 	chip->num_lines = info.lines;
 
-	if (info.name[0] != '\0') {
-		chip->name = strdup(info.name);
-		if (!chip->name)
-			goto err_free_chip;
-	}
-
-	if (info.label[0] != '\0') {
-		chip->label = strdup(info.label);
-		if (!chip->label)
-			goto err_free_name;
-	}
+	strcpy_info(chip->name_buf, info.name,
+		    sizeof(chip->name_buf), &chip->name);
+	strcpy_info(chip->label_buf, info.label,
+		    sizeof(chip->label_buf), &chip->label);
 
 	return chip;
 
-err_free_name:
-	free(chip->name);
 err_free_chip:
 	free(chip);
 err_close_fd:
@@ -119,11 +126,6 @@ void gpiod_chip_close(struct gpiod_chip *chip)
 
 		free(chip->lines);
 	}
-
-	if (chip->name)
-		free(chip->name);
-	if(chip->label)
-		free(chip->label);
 
 	close(chip->fd);
 	free(chip);
@@ -256,20 +258,10 @@ int gpiod_line_update(struct gpiod_line *line)
 	if (rv < 0)
 		return -1;
 
-	if (info.name[0] != '\0') {
-		strncpy(line->namebuf, info.name, sizeof(line->namebuf));
-		line->name = line->namebuf;
-	} else {
-		line->name = NULL;
-	}
-
-	if (info.consumer[0] != '\0') {
-		strncpy(line->consumerbuf,
-			info.consumer, sizeof(line->consumerbuf));
-		line->consumer = line->consumerbuf;
-	} else {
-		line->consumer = NULL;
-	}
+	strcpy_info(line->name_buf, info.name,
+		    sizeof(line->name_buf), &line->name);
+	strcpy_info(line->consumer_buf, info.consumer,
+		    sizeof(line->consumer_buf), &line->consumer);
 
 	line->direction = info.flags & GPIOLINE_FLAG_IS_OUT
 						? GPIOD_LINE_DIRECTION_OUTPUT
@@ -277,9 +269,11 @@ int gpiod_line_update(struct gpiod_line *line)
 	line->active_state = info.flags & GPIOLINE_FLAG_ACTIVE_LOW
 						? GPIOD_LINE_ACTIVE_STATE_LOW
 						: GPIOD_LINE_ACTIVE_STATE_HIGH;
+
 	line->used = info.flags & GPIOLINE_FLAG_KERNEL;
 	line->open_drain = info.flags & GPIOLINE_FLAG_OPEN_DRAIN;
 	line->open_source = info.flags & GPIOLINE_FLAG_OPEN_SOURCE;
+
 	line->up_to_date = true;
 
 	return 0;
