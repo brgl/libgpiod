@@ -293,15 +293,14 @@ static bool line_bulk_is_requested(struct gpiod_line_bulk *bulk)
 
 static bool verify_line_bulk(struct gpiod_line_bulk *bulk)
 {
-	struct gpiod_line *line, **lineptr;
+	struct gpiod_line *line;
 	struct gpiod_chip *chip;
-	int i;
+	unsigned int off;
 
 	chip = gpiod_line_get_chip(gpiod_line_bulk_get_line(bulk, 0));
 
-	i = 0;
-	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
-		if (i++ > 0 && chip != gpiod_line_get_chip(line)) {
+	gpiod_line_bulk_foreach_line_off(bulk, line, off) {
+		if (off > 0 && chip != gpiod_line_get_chip(line)) {
 			errno = EINVAL;
 			return false;
 		}
@@ -417,23 +416,20 @@ static int line_request_event_single(struct gpiod_line *line,
 static int line_request_events(struct gpiod_line_bulk *bulk,
 			       const struct gpiod_line_request_config *config)
 {
-	struct gpiod_line *line, **lineptr;
-	unsigned int i, j;
+	struct gpiod_line *line;
+	unsigned int off, i;
 	int rv;
 
-	i = 0;
-	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
+	gpiod_line_bulk_foreach_line_off(bulk, line, off) {
 		rv = line_request_event_single(line, config);
 		if (rv) {
-			for (j = i - 1; i > 0; i--) {
-				line = gpiod_line_bulk_get_line(bulk, j);
+			for (i = off - 1; off > 0; off--) {
+				line = gpiod_line_bulk_get_line(bulk, i);
 				gpiod_line_release(line);
 			}
 
 			return -1;
 		}
-
-		i++;
 	}
 
 	return 0;
@@ -609,18 +605,16 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       struct gpiod_line_bulk *event_bulk)
 {
 	struct pollfd fds[GPIOD_LINE_BULK_MAX_LINES];
-	struct gpiod_line *line, **lineptr;
-	unsigned int i, num_lines;
+	unsigned int off, num_lines;
+	struct gpiod_line *line;
 	int rv;
 
 	memset(fds, 0, sizeof(fds));
 	num_lines = gpiod_line_bulk_num_lines(bulk);
 
-	i = 0;
-	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
-		fds[i].fd = line->fd;
-		fds[i].events = POLLIN | POLLPRI;
-		i++;
+	gpiod_line_bulk_foreach_line_off(bulk, line, off) {
+		fds[off].fd = line->fd;
+		fds[off].events = POLLIN | POLLPRI;
 	}
 
 	rv = ppoll(fds, num_lines, timeout, NULL);
@@ -632,9 +626,9 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	if (event_bulk) {
 		gpiod_line_bulk_init(event_bulk);
 
-		for (i = 0; i < num_lines; i++) {
-			if (fds[i].revents) {
-				line = gpiod_line_bulk_get_line(bulk, i);
+		for (off = 0; off < num_lines; off++) {
+			if (fds[off].revents) {
+				line = gpiod_line_bulk_get_line(bulk, off);
 				gpiod_line_bulk_add(event_bulk, line);
 				if (!--rv)
 					break;
