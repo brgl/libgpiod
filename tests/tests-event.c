@@ -228,3 +228,33 @@ static void event_get_fd_when_values_requested(void)
 TEST_DEFINE(event_get_fd_when_values_requested,
 	    "events - gpiod_line_event_get_fd(): line requested for values",
 	    0, { 8 });
+
+static void event_request_bulk_fail(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line_bulk bulk = GPIOD_LINE_BULK_INITIALIZER;
+	struct gpiod_line *line;
+	int rv, i;
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_get_line(chip, 5);
+	TEST_ASSERT_NOT_NULL(line);
+
+	rv = gpiod_line_request_input(line, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
+
+	for (i = 0; i < 8; i++) {
+		line = gpiod_chip_get_line(chip, i);
+		TEST_ASSERT_NOT_NULL(line);
+		gpiod_line_bulk_add(&bulk, line);
+	}
+
+	rv = gpiod_line_request_bulk_both_edges_events(&bulk, TEST_CONSUMER);
+	TEST_ASSERT_EQ(rv, -1);
+	TEST_ASSERT_ERRNO_IS(EBUSY);
+}
+TEST_DEFINE(event_request_bulk_fail,
+	    "events - failed bulk request (test reversed release)",
+	    0, { 8 });
