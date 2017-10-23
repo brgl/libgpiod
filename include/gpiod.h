@@ -469,6 +469,23 @@ gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
 	     (lineptr)++, (line) = *(lineptr))
 
 /**
+ * @brief Iterate over all line handles held by a line bulk object.
+ * @param bulk Line bulk object.
+ * @param line GPIO line handle. On each iteration, the subsequent line handle
+ *             is assigned to this pointer.
+ * @param offset An integer variable used to store the loop state.
+ *
+ * This is a variant of ::gpiod_line_bulk_foreach_line which uses an integer
+ * variable (either signed or unsigned) to store the loop state. This offset
+ * variable is guaranteed to correspond with the offset of the current line in
+ * the bulk->lines array.
+ */
+#define gpiod_line_bulk_foreach_line_off(bulk, line, offset)		\
+	for ((offset) = 0, (line) = (bulk)->lines[0];			\
+	     (offset) < (bulk)->num_lines;				\
+	     (offset)++, (line) = (bulk)->lines[(offset)])
+
+/**
  * @}
  *
  * @defgroup __line_info__ Line info
