@@ -417,14 +417,14 @@ static int line_request_events(struct gpiod_line_bulk *bulk,
 			       const struct gpiod_line_request_config *config)
 {
 	struct gpiod_line *line;
-	unsigned int off, i;
-	int rv;
+	unsigned int off;
+	int rv, rev;
 
 	gpiod_line_bulk_foreach_line_off(bulk, line, off) {
 		rv = line_request_event_single(line, config);
 		if (rv) {
-			for (i = off - 1; off > 0; off--) {
-				line = gpiod_line_bulk_get_line(bulk, i);
+			for (rev = off - 1; rev >= 0; rev--) {
+				line = gpiod_line_bulk_get_line(bulk, rev);
 				gpiod_line_release(line);
 			}
 
