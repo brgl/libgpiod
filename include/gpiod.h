@@ -82,8 +82,8 @@ struct gpiod_chip_iter;
 
 /**
  * @brief Read current value from a single GPIO line.
- * @param device Name, path or number of the gpiochip.
- * @param offset GPIO line offset on the chip.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param offset Offset of the GPIO line.
  * @param active_low The active state of this line - true if low.
  * @param consumer Name of the consumer.
  * @return 0 or 1 (GPIO value) if the operation succeeds, -1 on error.
@@ -93,9 +93,9 @@ int gpiod_simple_get_value(const char *device, unsigned int offset,
 
 /**
  * @brief Read current values from a set of GPIO lines.
- * @param device Name, path or number of the gpiochip.
- * @param offsets An array of offsets of lines whose values should be read.
- * @param values A buffer in which the values will be stored.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param offsets Array of offsets of lines whose values should be read.
+ * @param values Buffer in which the values will be stored.
  * @param num_lines Number of lines, must be > 0.
  * @param active_low The active state of the lines - true if low.
  * @param consumer Name of the consumer.
@@ -113,9 +113,9 @@ typedef void (*gpiod_simple_set_value_cb)(void *);
 
 /**
  * @brief Set value of a single GPIO line.
- * @param device Name, path or number of the gpiochip.
- * @param offset GPIO line offset on the chip.
- * @param value New value.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param offset The offset of the GPIO line.
+ * @param value New value (0 or 1).
  * @param active_low The active state of this line - true if low.
  * @param consumer Name of the consumer.
  * @param cb Callback function that will be called right after the value is
@@ -130,14 +130,14 @@ int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
 
 /**
  * @brief Set values of a set of a set of GPIO lines.
- * @param device Name, path or number of the gpiochip.
- * @param offsets An array of offsets of lines whose values should be set.
- * @param values An array of integers containing new values.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param offsets Array of offsets of lines whose values should be set.
+ * @param values Array of integers containing new values.
  * @param num_lines Number of lines, must be > 0.
  * @param active_low The active state of the lines - true if low.
  * @param consumer Name of the consumer.
  * @param cb Callback function that will be called right after the values are
- *        set.
+ *        set. Works the same as in ::gpiod_simple_set_value.
  * @param data User data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
@@ -178,6 +178,10 @@ enum {
  * The callback function takes the following arguments: event type (int),
  * GPIO line offset (unsigned int), event timestamp (const struct timespec *)
  * and a pointer to user data (void *).
+ *
+ * This callback is called by the simple event loop functions for each GPIO
+ * event. If the callback returns ::GPIOD_SIMPLE_EVENT_CB_RET_ERR, it should
+ * also set errno.
  */
 typedef int (*gpiod_simple_event_handle_cb)(int, unsigned int,
 					    const struct timespec *, void *);
@@ -225,18 +229,18 @@ typedef int (*gpiod_simple_event_poll_cb)(unsigned int,
 
 /**
  * @brief Wait for events on a single GPIO line.
- * @param device Name, path or number of the gpiochip.
+ * @param device Name, path, number or label of the gpiochip.
  * @param offset GPIO line offset to monitor.
  * @param active_low The active state of this line - true if low.
  * @param consumer Name of the consumer.
  * @param timeout Maximum wait time for each iteration.
  * @param poll_cb Callback function to call when waiting for events.
- * @param event_cb Callback function to call on event occurrence.
+ * @param event_cb Callback function to call for each line event.
  * @param data User data passed to the callback.
- * @return 0 no errors were encountered, -1 if an error occurred.
- *
- * The poll callback can be NULL in which case the routine will fall back to
- * a basic, ppoll() based callback.
+ * @return 0 if no errors were encountered, -1 if an error occurred.
+ * @note The way the simple event loop works is described in detail in
+ *       ::gpiod_simple_event_loop_multiple - this is just a wrapper aound
+ *       this routine which calls it for a single GPIO line.
  */
 int gpiod_simple_event_loop(const char *device, unsigned int offset,
 			    bool active_low, const char *consumer,
@@ -247,7 +251,7 @@ int gpiod_simple_event_loop(const char *device, unsigned int offset,
 
 /**
  * @brief Wait for events on multiple GPIO lines.
- * @param device Name, path or number of the gpiochip.
+ * @param device Name, path, number or label of the gpiochip.
  * @param offsets Array of GPIO line offsets to monitor.
  * @param num_lines Number of lines to monitor.
  * @param active_low The active state of this line - true if low.
@@ -257,8 +261,20 @@ int gpiod_simple_event_loop(const char *device, unsigned int offset,
  * @param event_cb Callback function to call on event occurrence.
  * @param data User data passed to the callback.
  * @return 0 no errors were encountered, -1 if an error occurred.
+ * @note The poll callback can be NULL in which case the routine will fall
+ *       back to a basic, ppoll() based callback.
  *
- * The callback functions work just like in the single line variant.
+ * Internally this routine opens the GPIO chip, requests the set of lines for
+ * both-edges events and calls the polling callback in a loop. The role of the
+ * polling callback is to detect input events on a set of file descriptors and
+ * notify the caller about the fds ready for reading.
+ *
+ * The simple event loop then reads each queued event from marked descriptors
+ * and calls the event callback. Both callbacks can stop the loop at any
+ * point.
+ *
+ * The poll_cb argument can be NULL in which case the function falls back to
+ * a default, ppoll() based callback.
  */
 int gpiod_simple_event_loop_multiple(const char *device,
 				     const unsigned int *offsets,
@@ -278,8 +294,7 @@ int gpiod_simple_event_loop_multiple(const char *device,
  * @return -1 on error, 0 if the line with given name doesn't exist and 1 if
  *         the line was found. In the first two cases the contents of chipname
  *         and offset remain unchanged.
- *
- * The chip name is truncated if the buffer can't hold its entire size.
+ * @note The chip name is truncated if the buffer can't hold its entire size.
  */
 int gpiod_simple_find_line(const char *name, char *chipname,
 			   size_t chipname_size,
