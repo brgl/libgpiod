@@ -257,7 +257,7 @@ static MALLOC char * xstrdup(const char *str)
 	return ret;
 }
 
-static MALLOC TEST_PRINTF(2, 3) char * xappend(char *str, const char *fmt, ...)
+static TEST_PRINTF(2, 3) char * xappend(char *str, const char *fmt, ...)
 {
 	char *new, *ret;
 	va_list va;
