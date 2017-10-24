@@ -499,7 +499,8 @@ gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
 	     (lineptr)++, (line) = *(lineptr))
 
 /**
- * @brief Iterate over all line handles held by a line bulk object.
+ * @brief Iterate over all line handles held by a line bulk object (integer
+ *        counter variant).
  * @param bulk Line bulk object.
  * @param line GPIO line handle. On each iteration, the subsequent line handle
  *             is assigned to this pointer.
