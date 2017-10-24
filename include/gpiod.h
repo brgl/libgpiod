@@ -22,10 +22,24 @@ extern "C" {
 /**
  * @mainpage libgpiod public API
  *
- * This is the documentation of the public API exported by libgpiod.
+ * This is the complete documentation of the public API made available to
+ * users of libgpiod.
  *
- * <p>These functions and data structures allow to use all the functionalities
- * exposed by the linux GPIO character device interface.
+ * <p>The public header is logically split into two high-level parts: the
+ * simple API and the low-level API. The former allows users to easily
+ * interact with the GPIOs in the system without dealing with the low-level
+ * data structures and resource control. The latter gives the user much more
+ * fine-grained control over the GPIO interface.
+ *
+ * <p>The low-level API is further logically split into several parts such
+ * as: GPIO chip & line operators, iterators, GPIO events handling etc.
+ *
+ * <p>General note on error handling: all routines exported by libgpiod  set
+ * errno to one of the error values defined in errno.h upon failure. The way
+ * of notifying the caller that an error occurred varies between functions,
+ * but in general a function that returns an int, returns -1 on error, while
+ * a function returning a pointer bails out on error condition by returning
+ * a NULL pointer.
  */
 
 struct gpiod_chip;
