@@ -339,6 +339,8 @@ struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num) GPIOD_API;
  * @param label Label of the gpiochip to open.
  * @return GPIO chip handle or NULL if the chip with given label was not found
  *         or an error occured.
+ * @note If the chip cannot be found but no other error occurred, errno is set
+ *       to ENOENT.
  */
 struct gpiod_chip * gpiod_chip_open_by_label(const char *label) GPIOD_API;
 
@@ -347,9 +349,9 @@ struct gpiod_chip * gpiod_chip_open_by_label(const char *label) GPIOD_API;
  * @param descr String describing the gpiochip.
  * @return GPIO chip handle or NULL if an error occurred.
  *
- * This routine tries to figure out whether the user passed it the path to
- * the GPIO chip, its name, label or number as a string. Then it tries to
- * open it using one of the other gpiod_chip_open** routines.
+ * This routine tries to figure out whether the user passed it the path to the
+ * GPIO chip, its name, label or number as a string. Then it tries to open it
+ * using one of the gpiod_chip_open** variants.
  */
 struct gpiod_chip * gpiod_chip_open_lookup(const char *descr) GPIOD_API;
 
@@ -395,9 +397,8 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
  * @param name The name of the GPIO line.
  * @return Pointer to the GPIO line handle or NULL if the line could not be
  *         found or an error occurred.
- *
- * In case a line with given name is not associated with given chip, the
- * functions sets errno to ENOENT.
+ * @note In case a line with given name is not associated with given chip, the
+ *       function sets errno to ENOENT.
  */
 struct gpiod_line *
 gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
