@@ -43,10 +43,8 @@ struct gpiod_line {
 	struct gpiod_chip *chip;
 	int fd;
 
-	char *name;
-	char *consumer;
-	char name_buf[32];
-	char consumer_buf[32];
+	char name[32];
+	char consumer[32];
 };
 
 struct gpiod_chip {
@@ -55,21 +53,9 @@ struct gpiod_chip {
 
 	int fd;
 
-	char *name;
-	char *label;
-	char name_buf[32];
-	char label_buf[32];
+	char name[32];
+	char label[32];
 };
-
-static void strcpy_info(char *dst, const char *src, size_t sz, char **ptr)
-{
-	if (src[0] != '\0') {
-		strncpy(dst, src, sz);
-		*ptr = dst;
-	} else {
-		*ptr = NULL;
-	}
-}
 
 struct gpiod_chip * gpiod_chip_open(const char *path)
 {
@@ -87,18 +73,29 @@ struct gpiod_chip * gpiod_chip_open(const char *path)
 
 	memset(chip, 0, sizeof(*chip));
 	memset(&info, 0, sizeof(info));
-	chip->fd = fd;
 
 	status = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &info);
 	if (status < 0)
 		goto err_free_chip;
 
+	chip->fd = fd;
 	chip->num_lines = info.lines;
 
-	strcpy_info(chip->name_buf, info.name,
-		    sizeof(chip->name_buf), &chip->name);
-	strcpy_info(chip->label_buf, info.label,
-		    sizeof(chip->label_buf), &chip->label);
+	/*
+	 * GPIO device must have a name - don't bother checking this field. In
+	 * the worst case (would have to be a weird kernel bug) it'll be empty.
+	 */
+	strncpy(chip->name, info.name, sizeof(chip->name));
+
+	/*
+	 * The kernel sets the label of a GPIO device to "unknown" if it
+	 * hasn't been defined in DT, board file etc. On the off-chance that
+	 * we got an empty string, do the same.
+	 */
+	if (info.label[0] == '\0')
+		strncpy(chip->label, "unknown", sizeof(chip->label));
+	else
+		strncpy(chip->label, info.label, sizeof(chip->label));
 
 	return chip;
 
@@ -208,12 +205,12 @@ unsigned int gpiod_line_offset(struct gpiod_line *line)
 
 const char * gpiod_line_name(struct gpiod_line *line)
 {
-	return line->name;
+	return line->name[0] == '\0' ? NULL : line->name;
 }
 
 const char * gpiod_line_consumer(struct gpiod_line *line)
 {
-	return line->consumer;
+	return line->consumer[0] == '\0' ? NULL : line->consumer;
 }
 
 int gpiod_line_direction(struct gpiod_line *line)
@@ -258,11 +255,6 @@ int gpiod_line_update(struct gpiod_line *line)
 	if (rv < 0)
 		return -1;
 
-	strcpy_info(line->name_buf, info.name,
-		    sizeof(line->name_buf), &line->name);
-	strcpy_info(line->consumer_buf, info.consumer,
-		    sizeof(line->consumer_buf), &line->consumer);
-
 	line->direction = info.flags & GPIOLINE_FLAG_IS_OUT
 						? GPIOD_LINE_DIRECTION_OUTPUT
 						: GPIOD_LINE_DIRECTION_INPUT;
@@ -273,6 +265,9 @@ int gpiod_line_update(struct gpiod_line *line)
 	line->used = info.flags & GPIOLINE_FLAG_KERNEL;
 	line->open_drain = info.flags & GPIOLINE_FLAG_OPEN_DRAIN;
 	line->open_source = info.flags & GPIOLINE_FLAG_OPEN_SOURCE;
+
+	strncpy(line->name, info.name, sizeof(line->name));
+	strncpy(line->consumer, info.consumer, sizeof(line->consumer));
 
 	line->up_to_date = true;
 
