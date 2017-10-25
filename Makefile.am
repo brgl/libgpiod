@@ -9,7 +9,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = include src
+SUBDIRS = include src bindings
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgpiod.pc
@@ -23,7 +23,9 @@ endif
 if HAS_DOXYGEN
 
 doc:
-	@(cat Doxyfile; echo PROJECT_NUMBER = $(VERSION_STR)) | doxygen -
+	@(cat Doxyfile; \
+		echo PROJECT_NUMBER = $(VERSION_STR); \
+		echo INPUT += bindings/cxx/gpiod.hpp) | doxygen -
 .PHONY: doc
 
 EXTRA_DIST = Doxyfile

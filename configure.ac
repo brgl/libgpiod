@@ -33,6 +33,7 @@ AC_SUBST(AR_FLAGS, [cr])
 
 AM_PROG_AR
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
@@ -113,6 +114,27 @@ then
 	PKG_CHECK_MODULES([UDEV], [libudev >= 215])
 fi
 
+AC_ARG_ENABLE([bindings-cxx],
+	[AC_HELP_STRING([--enable-bindings-cxx],
+		[enable C++ bindings [default=no]])],
+	[
+		if test "x$enableval" = xyes
+		then
+			with_bindings_cxx=true
+		else
+			with_bindings_cxx=false
+		fi
+	],
+	[with_bindings_cxx=false])
+AM_CONDITIONAL([WITH_BINDINGS_CXX], [test "x$with_bindings_cxx" = xtrue])
+
+if test "x$with_bindings_cxx" = xtrue
+then
+	AC_LIBTOOL_CXX
+	# This needs autoconf-archive
+	AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
+fi
+
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
 AM_CONDITIONAL([HAS_DOXYGEN], [test "x$has_doxygen" = xtrue])
 if test "x$has_doxygen" = xfalse
@@ -126,6 +148,9 @@ AC_CONFIG_FILES([libgpiod.pc
 		 src/Makefile
 		 src/lib/Makefile
 		 src/tools/Makefile
-		 tests/Makefile])
+		 tests/Makefile
+		 bindings/Makefile
+		 bindings/cxx/Makefile
+		 bindings/cxx/examples/Makefile])
 
 AC_OUTPUT

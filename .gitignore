@@ -1,5 +1,6 @@
 !.gitignore
 libgpiod.la
+libgpiodcxx.la
 libtools-common.la
 gpiodetect
 gpioinfo
@@ -7,6 +8,13 @@ gpioget
 gpioset
 gpiomon
 gpiofind
+gpio_cxx_tests
+gpiodetectcxx
+gpiofindcxx
+gpiogetcxx
+gpioinfocxx
+gpiomoncxx
+gpiosetcxx
 *.o
 *.lo
 doc
