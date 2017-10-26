@@ -14,7 +14,7 @@ libtools_common_la_SOURCES = \
 	tools-common.c \
 	tools-common.h
 
-LDADD = libtools-common.la ../lib/libgpiod.la
+LDADD = libtools-common.la $(top_builddir)/src/lib/libgpiod.la
 
 bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpiofind
 
