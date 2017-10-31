@@ -1,3 +1,17 @@
+libgpiod v0.3.2
+===============
+
+Bug fixes:
+- correctly handle signal interrupts when polling in gpiod_simple_event_loop()
+- fix the linking order when building with static libraries
+- pass the correct consumer string to gpiod_simple_get_value_multiple() in
+  gpioget
+- fix a line test case: don't use open-drain or open-source flags for input
+  mode
+- fix the flags passed to ar in order to supress a build warning
+- set the last error code in gpiod_chip_open_by_label() to ENOENT if a chip
+  can't be found
+
 libgpiod v0.3.1
 ===============
 
