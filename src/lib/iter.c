@@ -22,15 +22,25 @@ enum {
 };
 
 struct gpiod_chip_iter {
-	DIR *dir;
-	struct gpiod_chip *current;
+	struct dirent **dirs;
+	unsigned int num_dirs;
+
+	unsigned int offset;
 	int state;
+	struct gpiod_chip *current;
+
 	char *failed_chip;
 };
+
+static int dir_filter(const struct dirent *dir)
+{
+	return !strncmp(dir->d_name, "gpiochip", 8);
+}
 
 struct gpiod_chip_iter * gpiod_chip_iter_new(void)
 {
 	struct gpiod_chip_iter *new;
+	int rv;
 
 	new = malloc(sizeof(*new));
 	if (!new)
@@ -38,10 +48,14 @@ struct gpiod_chip_iter * gpiod_chip_iter_new(void)
 
 	memset(new, 0, sizeof(*new));
 
-	new->dir = opendir("/dev");
-	if (!new->dir)
+	rv = scandir("/dev", &new->dirs, dir_filter, alphasort);
+	if (rv < 0) {
+		free(new);
 		return NULL;
+	}
 
+	new->num_dirs = rv;
+	new->offset = 0;
 	new->state = CHIP_ITER_INIT;
 
 	return new;
@@ -57,9 +71,15 @@ void gpiod_chip_iter_free(struct gpiod_chip_iter *iter)
 
 void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter)
 {
-	closedir(iter->dir);
+	unsigned int i;
+
 	if (iter->failed_chip)
 		free(iter->failed_chip);
+
+	for (i = 0; i < iter->num_dirs; i++)
+		free(iter->dirs[i]);
+
+	free(iter->dirs);
 	free(iter);
 }
 
@@ -76,34 +96,30 @@ struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 struct gpiod_chip * gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter)
 {
 	struct gpiod_chip *chip;
-	struct dirent *dentry;
-	int status;
+	const char *dev;
 
-	for (dentry = readdir(iter->dir);
-	     dentry;
-	     dentry = readdir(iter->dir)) {
-		status = strncmp(dentry->d_name, "gpiochip", 8);
-		if (status == 0) {
-			iter->state = CHIP_ITER_INIT;
-			if (iter->failed_chip) {
-				free(iter->failed_chip);
-				iter->failed_chip = NULL;
-			}
-
-			chip = gpiod_chip_open_by_name(dentry->d_name);
-			if (!chip) {
-				iter->state = CHIP_ITER_ERR;
-				iter->failed_chip = strdup(dentry->d_name);
-				/* No point in an error check here. */
-			}
-
-			iter->current = chip;
-			return iter->current;
-		}
+	if (iter->offset >= iter->num_dirs) {
+		iter->state = CHIP_ITER_DONE;
+		return NULL;
 	}
 
-	iter->state = CHIP_ITER_DONE;
-	return NULL;
+	iter->state = CHIP_ITER_INIT;
+	if (iter->failed_chip) {
+		free(iter->failed_chip);
+		iter->failed_chip = NULL;
+	}
+
+	dev = iter->dirs[iter->offset++]->d_name;
+
+	chip = gpiod_chip_open_by_name(dev);
+	if (!chip) {
+		iter->state = CHIP_ITER_ERR;
+		iter->failed_chip = strdup(dev);
+		/* No point in an error check here. */
+	}
+
+	iter->current = chip;
+	return iter->current;
 }
 
 bool gpiod_chip_iter_done(struct gpiod_chip_iter *iter)
