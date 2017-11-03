@@ -1059,6 +1059,7 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
  * @param line GPIO line object.
  * @param event Buffer to which the event data will be copied.
  * @return 0 if the event was read correctly, -1 on error.
+ * @note This function will block if no event was queued for this line.
  */
 int gpiod_line_event_read(struct gpiod_line *line,
 			  struct gpiod_line_event *event) GPIOD_API;
@@ -1066,7 +1067,9 @@ int gpiod_line_event_read(struct gpiod_line *line,
 /**
  * @brief Get the event file descriptor.
  * @param line GPIO line object.
- * @return Number of the event file descriptor or -1 on error.
+ * @return Number of the event file descriptor or -1 if the user tries to
+ *         retrieve the descriptor from a line that wasn't configured for
+ *         event monitoring.
  *
  * Users may want to poll the event file descriptor on their own. This routine
  * allows to access it.
@@ -1076,7 +1079,7 @@ int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
 /**
  * @brief Read the last GPIO event directly from a file descriptor.
  * @param fd File descriptor.
- * @param event Buffer to which the event data will be copied.
+ * @param event Buffer in which the event data will be stored.
  * @return 0 if the event was read correctly, -1 on error.
  *
  * Users who directly poll the file descriptor for incoming events can also
@@ -1149,6 +1152,9 @@ struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
 /**
  * @brief Create a new gpiochip iterator.
  * @return Pointer to a new chip iterator object or NULL if an error occurred.
+ *
+ * Internally this routine scand the /dev/ directory for GPIO chip device
+ * files and stores their list in the iterator structure.
  */
 struct gpiod_chip_iter * gpiod_chip_iter_new(void) GPIOD_API;
 
@@ -1176,10 +1182,8 @@ void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
  * @return Pointer to an open gpiochip handle or NULL if the next chip can't
  *         be accessed.
  *
- * Internally this routine scans the /dev/ directory, storing current state
- * in the chip iterator structure, and tries to open the next /dev/gpiochipX
- * device file. If an error occurs or no more chips are present, the function
- * returns NULL.
+ * Internally this routine tries to open the next /dev/gpiochipX device file.
+ * If an error occurs or no more chips are present, the function returns NULL.
  */
 struct gpiod_chip *
 gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
@@ -1190,11 +1194,8 @@ gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
  * @return Pointer to an open gpiochip handle or NULL if the next chip can't
  *         be accessed.
  *
- * Internally this routine scans the /dev/ directory, storing current state
- * in the chip iterator structure, and tries to open the next /dev/gpiochipX
- * device file. If an error occurs or no more chips are present, the function
- * returns NULL.
- * Note: The user is responsible for closing the chips after use.
+ * This function works just like ::gpiod_chip_iter_next but doesn't close the
+ * most recently opened chip handle.
  */
 struct gpiod_chip *
 gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
@@ -1207,7 +1208,7 @@ gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
  *
  * The user must not close the GPIO chip manually - instead the previous chip
  * handle is closed automatically on the next iteration. The last chip to be
- * opened is closed internally by gpiod_chip_iter_free().
+ * opened is closed internally by ::gpiod_chip_iter_free.
  */
 #define gpiod_foreach_chip(iter, chip)					\
 	for ((chip) = gpiod_chip_iter_next(iter);			\
@@ -1220,9 +1221,9 @@ gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
  * @param chip Pointer to a GPIO chip handle. On each iteration the newly
  *             opened chip handle is assigned to this argument.
  *
- * The user must close the GPIO chip manually after use, until then, the chip
- * remains open. Free the iterator by calling gpiod_chip_iter_free_noclose to
- * avoid closing the last chip automatically.
+ * The user must close all the GPIO chips manually after use, until then, the
+ * chips remain open. Free the iterator by calling
+ * ::gpiod_chip_iter_free_noclose to avoid closing the last chip automatically.
  */
 #define gpiod_foreach_chip_noclose(iter, chip)				\
 	for ((chip) = gpiod_chip_iter_next_noclose(iter);		\
@@ -1248,12 +1249,11 @@ bool gpiod_chip_iter_err(struct gpiod_chip_iter *iter) GPIOD_API;
 /**
  * @brief Get the name of the gpiochip that we failed to access.
  * @param iter The gpiochip iterator object.
- * @return If gpiod_chip_iter_iserr() returned true, this function returns a
+ * @return If ::gpiod_chip_iter_iserr returned true, this function returns a
  *         pointer to the name of the gpiochip that we failed to access.
  *         If there was no error this function returns NULL.
- *
- * NOTE: this function will return NULL if the internal memory allocation
- * fails.
+ * @note This function will return NULL if the internal memory
+ *       allocation fails.
  */
 const char *
 gpiod_chip_iter_failed_chip(struct gpiod_chip_iter *iter) GPIOD_API;
