@@ -1153,8 +1153,9 @@ struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
  * @brief Create a new gpiochip iterator.
  * @return Pointer to a new chip iterator object or NULL if an error occurred.
  *
- * Internally this routine scand the /dev/ directory for GPIO chip device
- * files and stores their list in the iterator structure.
+ * Internally this routine scans the /dev/ directory for GPIO chip device
+ * files, opens them and stores their the handles until ::gpiod_chip_iter_free
+ * or ::gpiod_chip_iter_free_noclose is called.
  */
 struct gpiod_chip_iter * gpiod_chip_iter_new(void) GPIOD_API;
 
@@ -1181,9 +1182,7 @@ void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
  * @param iter The gpiochip iterator object.
  * @return Pointer to an open gpiochip handle or NULL if the next chip can't
  *         be accessed.
- *
- * Internally this routine tries to open the next /dev/gpiochipX device file.
- * If an error occurs or no more chips are present, the function returns NULL.
+ * @note The previous chip handle will be closed using ::gpiod_chip_iter_free.
  */
 struct gpiod_chip *
 gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
@@ -1212,11 +1211,11 @@ gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
  */
 #define gpiod_foreach_chip(iter, chip)					\
 	for ((chip) = gpiod_chip_iter_next(iter);			\
-	     !gpiod_chip_iter_done(iter);				\
+	     (chip);							\
 	     (chip) = gpiod_chip_iter_next(iter))
 
 /**
- * @brief Iterate over all gpiochip present in the system without closing them.
+ * @brief Iterate over all chips present in the system without closing them.
  * @param iter An initialized GPIO chip iterator.
  * @param chip Pointer to a GPIO chip handle. On each iteration the newly
  *             opened chip handle is assigned to this argument.
@@ -1227,36 +1226,8 @@ gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
  */
 #define gpiod_foreach_chip_noclose(iter, chip)				\
 	for ((chip) = gpiod_chip_iter_next_noclose(iter);		\
-	     !gpiod_chip_iter_done(iter);				\
+	     (chip);							\
 	     (chip) = gpiod_chip_iter_next_noclose(iter))
-
-/**
- * @brief Check if we're done iterating over gpiochips on this iterator.
- * @param iter The gpiochip iterator object.
- * @return True if we've iterated over all chips, false otherwise.
- */
-bool gpiod_chip_iter_done(struct gpiod_chip_iter *iter) GPIOD_API;
-
-/**
- * @brief Check if we've encountered an error condition while opening a
- *        gpiochip.
- * @param iter The gpiochip iterator object.
- * @return True if there was an error opening a gpiochip device file,
- *         false otherwise.
- */
-bool gpiod_chip_iter_err(struct gpiod_chip_iter *iter) GPIOD_API;
-
-/**
- * @brief Get the name of the gpiochip that we failed to access.
- * @param iter The gpiochip iterator object.
- * @return If ::gpiod_chip_iter_iserr returned true, this function returns a
- *         pointer to the name of the gpiochip that we failed to access.
- *         If there was no error this function returns NULL.
- * @note This function will return NULL if the internal memory
- *       allocation fails.
- */
-const char *
-gpiod_chip_iter_failed_chip(struct gpiod_chip_iter *iter) GPIOD_API;
 
 /**
  * @brief Possible states of a line iterator.

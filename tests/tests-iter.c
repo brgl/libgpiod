@@ -24,8 +24,6 @@ static void chip_iter(void)
 	TEST_ASSERT_NOT_NULL(iter);
 
 	gpiod_foreach_chip(iter, chip) {
-		TEST_ASSERT(!gpiod_chip_iter_err(iter));
-
 		if (strcmp(gpiod_chip_label(chip), "gpio-mockup-A") == 0)
 			A = true;
 		else if (strcmp(gpiod_chip_label(chip), "gpio-mockup-B") == 0)
@@ -58,8 +56,6 @@ static void chip_iter_noclose(void)
 	TEST_ASSERT_NOT_NULL(iter);
 
 	gpiod_foreach_chip_noclose(iter, chip) {
-		TEST_ASSERT(!gpiod_chip_iter_err(iter));
-
 		if (strcmp(gpiod_chip_label(chip), "gpio-mockup-A") == 0) {
 			A = true;
 			chipA = chip;
@@ -100,8 +96,6 @@ static void chip_iter_break(void)
 	TEST_ASSERT_NOT_NULL(iter);
 
 	gpiod_foreach_chip(iter, chip) {
-		TEST_ASSERT(!gpiod_chip_iter_err(iter));
-
 		if ((strcmp(gpiod_chip_label(chip), "gpio-mockup-A") == 0) ||
 		    (strcmp(gpiod_chip_label(chip), "gpio-mockup-B") == 0) ||
 		    (strcmp(gpiod_chip_label(chip), "gpio-mockup-C") == 0))

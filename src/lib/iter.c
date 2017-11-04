@@ -15,21 +15,10 @@
 #include <string.h>
 #include <dirent.h>
 
-enum {
-	CHIP_ITER_INIT = 0,
-	CHIP_ITER_DONE,
-	CHIP_ITER_ERR,
-};
-
 struct gpiod_chip_iter {
-	struct dirent **dirs;
-	unsigned int num_dirs;
-
+	struct gpiod_chip **chips;
+	unsigned int num_chips;
 	unsigned int offset;
-	int state;
-	struct gpiod_chip *current;
-
-	char *failed_chip;
 };
 
 static int dir_filter(const struct dirent *dir)
@@ -37,35 +26,70 @@ static int dir_filter(const struct dirent *dir)
 	return !strncmp(dir->d_name, "gpiochip", 8);
 }
 
+static void free_dirs(struct dirent ***dirs, unsigned int num_dirs)
+{
+	unsigned int i;
+
+	for (i = 0; i < num_dirs; i++)
+		free((*dirs)[i]);
+	free(*dirs);
+}
+
 struct gpiod_chip_iter * gpiod_chip_iter_new(void)
 {
-	struct gpiod_chip_iter *new;
-	int rv;
+	struct gpiod_chip_iter *iter;
+	struct dirent **dirs;
+	int i, num_chips;
 
-	new = malloc(sizeof(*new));
-	if (!new)
+	num_chips = scandir("/dev", &dirs, dir_filter, alphasort);
+	if (num_chips < 0)
 		return NULL;
 
-	memset(new, 0, sizeof(*new));
+	iter = malloc(sizeof(*iter));
+	if (!iter)
+		goto err_free_dirs;
 
-	rv = scandir("/dev", &new->dirs, dir_filter, alphasort);
-	if (rv < 0) {
-		free(new);
-		return NULL;
+	iter->num_chips = num_chips;
+	iter->offset = 0;
+
+	if (num_chips == 0)
+		return iter;
+
+	iter->chips = calloc(num_chips, sizeof(*iter->chips));
+	if (!iter->chips)
+		goto err_free_iter;
+
+	for (i = 0; i < num_chips; i++) {
+		iter->chips[i] = gpiod_chip_open_by_name(dirs[i]->d_name);
+		if (!iter->chips[i])
+			goto err_close_chips;
 	}
 
-	new->num_dirs = rv;
-	new->offset = 0;
-	new->state = CHIP_ITER_INIT;
+	free_dirs(&dirs, num_chips);
 
-	return new;
+	return iter;
+
+err_close_chips:
+	for (i = 0; i < num_chips; i++) {
+		if (iter->chips[i])
+			gpiod_chip_close(iter->chips[i]);
+	}
+
+	free(iter->chips);
+
+err_free_iter:
+	free(iter);
+
+err_free_dirs:
+	free_dirs(&dirs, num_chips);
+
+	return NULL;
 }
 
 void gpiod_chip_iter_free(struct gpiod_chip_iter *iter)
 {
-	if (iter->current)
-		gpiod_chip_close(iter->current);
-
+	if (iter->offset > 0 && iter->offset < iter->num_chips)
+		gpiod_chip_close(iter->chips[iter->offset - 1]);
 	gpiod_chip_iter_free_noclose(iter);
 }
 
@@ -73,21 +97,20 @@ void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter)
 {
 	unsigned int i;
 
-	if (iter->failed_chip)
-		free(iter->failed_chip);
+	for (i = iter->offset; i < iter->num_chips; i++) {
+		if (iter->chips[i])
+			gpiod_chip_close(iter->chips[i]);
+	}
 
-	for (i = 0; i < iter->num_dirs; i++)
-		free(iter->dirs[i]);
-
-	free(iter->dirs);
+	free(iter->chips);
 	free(iter);
 }
 
 struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 {
-	if (iter->current) {
-		gpiod_chip_close(iter->current);
-		iter->current = NULL;
+	if (iter->offset > 0) {
+		gpiod_chip_close(iter->chips[iter->offset - 1]);
+		iter->chips[iter->offset - 1] = NULL;
 	}
 
 	return gpiod_chip_iter_next_noclose(iter);
@@ -95,47 +118,8 @@ struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 
 struct gpiod_chip * gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter)
 {
-	struct gpiod_chip *chip;
-	const char *dev;
-
-	if (iter->offset >= iter->num_dirs) {
-		iter->state = CHIP_ITER_DONE;
-		return NULL;
-	}
-
-	iter->state = CHIP_ITER_INIT;
-	if (iter->failed_chip) {
-		free(iter->failed_chip);
-		iter->failed_chip = NULL;
-	}
-
-	dev = iter->dirs[iter->offset++]->d_name;
-
-	chip = gpiod_chip_open_by_name(dev);
-	if (!chip) {
-		iter->state = CHIP_ITER_ERR;
-		iter->failed_chip = strdup(dev);
-		/* No point in an error check here. */
-	}
-
-	iter->current = chip;
-	return iter->current;
-}
-
-bool gpiod_chip_iter_done(struct gpiod_chip_iter *iter)
-{
-	return iter->state == CHIP_ITER_DONE;
-}
-
-bool gpiod_chip_iter_err(struct gpiod_chip_iter *iter)
-{
-	return iter->state == CHIP_ITER_ERR;
-}
-
-const char *
-gpiod_chip_iter_failed_chip(struct gpiod_chip_iter *iter)
-{
-	return iter->failed_chip;
+	return iter->offset < (iter->num_chips)
+					? iter->chips[iter->offset++] : NULL;
 }
 
 struct gpiod_line * gpiod_line_iter_next(struct gpiod_line_iter *iter)

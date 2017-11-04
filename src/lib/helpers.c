@@ -70,9 +70,6 @@ struct gpiod_chip * gpiod_chip_open_by_label(const char *label)
 		return NULL;
 
 	gpiod_foreach_chip(iter, chip) {
-		if (gpiod_chip_iter_err(iter))
-			goto out;
-
 		if (strcmp(label, gpiod_chip_label(chip)) == 0) {
 			gpiod_chip_iter_free_noclose(iter);
 			return chip;
@@ -80,8 +77,6 @@ struct gpiod_chip * gpiod_chip_open_by_label(const char *label)
 	}
 
 	errno = ENOENT;
-
-out:
 	gpiod_chip_iter_free(iter);
 
 	return NULL;
@@ -365,9 +360,6 @@ struct gpiod_line * gpiod_line_find(const char *name)
 		return NULL;
 
 	gpiod_foreach_chip(iter, chip) {
-		if (gpiod_chip_iter_err(iter))
-			goto out;
-
 		line = gpiod_chip_find_line(chip, name);
 		if (line) {
 			gpiod_chip_iter_free_noclose(iter);
