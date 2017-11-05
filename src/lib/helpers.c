@@ -104,21 +104,24 @@ struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
 struct gpiod_line *
 gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
 {
-	struct gpiod_line_iter iter;
+	struct gpiod_line_iter *iter;
 	struct gpiod_line *line;
 	const char *tmp;
 
-	gpiod_line_iter_init(&iter, chip);
-	gpiod_foreach_line(&iter, line) {
-		if (gpiod_line_iter_err(&iter))
-			return NULL;
+	iter = gpiod_line_iter_new(chip);
+	if (!iter)
+		return NULL;
 
+	gpiod_foreach_line(iter, line) {
 		tmp = gpiod_line_name(line);
-		if (tmp && strcmp(tmp, name) == 0)
+		if (tmp && strcmp(tmp, name) == 0) {
+			gpiod_line_iter_free(iter);
 			return line;
+		}
 	}
 
 	errno = ENOENT;
+	gpiod_line_iter_free(iter);
 
 	return NULL;
 }

@@ -116,18 +116,18 @@ TEST_DEFINE(chip_iter_break,
 
 static void line_iter(void)
 {
+	TEST_CLEANUP(test_free_line_iter) struct gpiod_line_iter *iter = NULL;
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
-	struct gpiod_line_iter iter;
 	struct gpiod_line *line;
 	unsigned int i = 0;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
 
-	gpiod_line_iter_init(&iter, chip);
+	iter = gpiod_line_iter_new(chip);
+	TEST_ASSERT_NOT_NULL(iter);
 
-	gpiod_foreach_line(&iter, line) {
-		TEST_ASSERT(!gpiod_line_iter_err(&iter));
+	gpiod_foreach_line(iter, line) {
 		TEST_ASSERT_EQ(i, gpiod_line_offset(line));
 		i++;
 	}
@@ -136,29 +136,4 @@ static void line_iter(void)
 }
 TEST_DEFINE(line_iter,
 	    "gpiod_line_iter - simple loop, check offsets",
-	    0, { 8 });
-
-static void line_iter_static_initializer(void)
-{
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
-	struct gpiod_line *line;
-	unsigned int i = 0;
-
-	chip = gpiod_chip_open(test_chip_path(0));
-	TEST_ASSERT_NOT_NULL(chip);
-
-	{
-		struct gpiod_line_iter iter = GPIOD_LINE_ITER_INITIALIZER(chip);
-
-		gpiod_foreach_line(&iter, line) {
-			TEST_ASSERT(!gpiod_line_iter_err(&iter));
-			TEST_ASSERT_EQ(i, gpiod_line_offset(line));
-			i++;
-		}
-	}
-
-	TEST_ASSERT_EQ(8, i);
-}
-TEST_DEFINE(line_iter_static_initializer,
-	    "gpiod_line_iter - simple loop, static initializer",
 	    0, { 8 });

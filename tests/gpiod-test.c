@@ -1043,6 +1043,12 @@ void test_free_chip_iter(struct gpiod_chip_iter **iter)
 		gpiod_chip_iter_free(*iter);
 }
 
+void test_free_line_iter(struct gpiod_line_iter **iter)
+{
+	if (*iter)
+		gpiod_line_iter_free(*iter);
+}
+
 void test_free_chip_iter_noclose(struct gpiod_chip_iter **iter)
 {
 	if (*iter)

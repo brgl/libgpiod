@@ -21,6 +21,12 @@ struct gpiod_chip_iter {
 	unsigned int offset;
 };
 
+struct gpiod_line_iter {
+	struct gpiod_line **lines;
+	unsigned int num_lines;
+	unsigned int offset;
+};
+
 static int dir_filter(const struct dirent *dir)
 {
 	return !strncmp(dir->d_name, "gpiochip", 8);
@@ -122,19 +128,44 @@ struct gpiod_chip * gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter)
 					? iter->chips[iter->offset++] : NULL;
 }
 
-struct gpiod_line * gpiod_line_iter_next(struct gpiod_line_iter *iter)
+struct gpiod_line_iter * gpiod_line_iter_new(struct gpiod_chip *chip)
 {
-	struct gpiod_line *line;
+	struct gpiod_line_iter *iter;
+	unsigned int i;
 
-	if (iter->offset >= gpiod_chip_num_lines(iter->chip)) {
-		iter->state = GPIOD_LINE_ITER_STATE_DONE;
+	iter = malloc(sizeof(*iter));
+	if (!iter)
+		return NULL;
+
+	iter->num_lines = gpiod_chip_num_lines(chip);
+	iter->offset = 0;
+
+	iter->lines = calloc(iter->num_lines, sizeof(*iter->lines));
+	if (!iter->lines) {
+		free(iter);
 		return NULL;
 	}
 
-	iter->state = GPIOD_LINE_ITER_STATE_INIT;
-	line = gpiod_chip_get_line(iter->chip, iter->offset++);
-	if (!line)
-		iter->state = GPIOD_LINE_ITER_STATE_ERR;
+	for (i = 0; i < iter->num_lines; i++) {
+		iter->lines[i] = gpiod_chip_get_line(chip, i);
+		if (!iter->lines[i]) {
+			free(iter->lines);
+			free(iter);
+			return NULL;
+		}
+	}
 
-	return line;
+	return iter;
+}
+
+void gpiod_line_iter_free(struct gpiod_line_iter *iter)
+{
+	free(iter->lines);
+	free(iter);
+}
+
+struct gpiod_line * gpiod_line_iter_next(struct gpiod_line_iter *iter)
+{
+	return iter->offset < (iter->num_lines)
+					? iter->lines[iter->offset++] : NULL;
 }
