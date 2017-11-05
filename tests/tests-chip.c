@@ -78,13 +78,11 @@ static void chip_open_lookup(void)
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip_by_name = NULL;
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip_by_path = NULL;
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip_by_num = NULL;
-	TEST_CLEANUP(test_free_str) char *chip_num = NULL;
-
-	TEST_ASSERT(asprintf(&chip_num, "%u", test_chip_num(1)) > 0);
 
 	chip_by_name = gpiod_chip_open_lookup(test_chip_name(1));
 	chip_by_path = gpiod_chip_open_lookup(test_chip_path(1));
-	chip_by_num = gpiod_chip_open_lookup(chip_num);
+	chip_by_num = gpiod_chip_open_lookup(
+				test_build_str("%u", test_chip_num(1)));
 	chip_by_label = gpiod_chip_open_lookup("gpio-mockup-B");
 
 	TEST_ASSERT_NOT_NULL(chip_by_name);
