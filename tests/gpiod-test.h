@@ -133,6 +133,12 @@ void test_free_chip_iter_noclose(struct gpiod_chip_iter **iter);
 
 bool test_regex_match(const char *str, const char *pattern);
 
+/*
+ * Return a custom string built according to printf() formatting rules. The
+ * returned string is valid until the next call to this routine.
+ */
+const char *test_build_str(const char *fmt, ...) TEST_PRINTF(1, 2);
+
 #define TEST_ASSERT(statement)						\
 	do {								\
 		if (!(statement)) {					\

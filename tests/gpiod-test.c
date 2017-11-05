@@ -74,6 +74,7 @@ struct test_context {
 	size_t num_chips;
 	bool test_failed;
 	char *failed_msg;
+	char *custom_str;
 	struct event_thread event;
 	struct gpiotool_proc tool_proc;
 	bool running;
@@ -976,6 +977,9 @@ static void teardown_test(void)
 
 	free(globals.test_ctx.chips);
 
+	if (globals.test_ctx.custom_str)
+		free(globals.test_ctx.custom_str);
+
 	if (mockup_loaded()) {
 		status = kmod_module_remove_module(globals.module, 0);
 		if (status)
@@ -1151,4 +1155,24 @@ bool test_regex_match(const char *str, const char *pattern)
 	regfree(&regex);
 
 	return ret;
+}
+
+const char *test_build_str(const char *fmt, ...)
+{
+	va_list va;
+	char *str;
+	int rv;
+
+	if (globals.test_ctx.custom_str)
+		free(globals.test_ctx.custom_str);
+
+	va_start(va, fmt);
+	rv = vasprintf(&str, fmt, va);
+	va_end(va);
+	if (rv < 0)
+		die_perr("error creating custom string");
+
+	globals.test_ctx.custom_str = str;
+
+	return str;
 }
