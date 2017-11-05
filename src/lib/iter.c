@@ -58,8 +58,10 @@ struct gpiod_chip_iter * gpiod_chip_iter_new(void)
 	iter->num_chips = num_chips;
 	iter->offset = 0;
 
-	if (num_chips == 0)
+	if (num_chips == 0) {
+		iter->chips = NULL;
 		return iter;
+	}
 
 	iter->chips = calloc(num_chips, sizeof(*iter->chips));
 	if (!iter->chips)
@@ -108,7 +110,9 @@ void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter)
 			gpiod_chip_close(iter->chips[i]);
 	}
 
-	free(iter->chips);
+	if (iter->chips)
+		free(iter->chips);
+
 	free(iter);
 }
 
