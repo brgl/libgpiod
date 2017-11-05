@@ -1180,8 +1180,8 @@ void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
 /**
  * @brief Get the next gpiochip handle.
  * @param iter The gpiochip iterator object.
- * @return Pointer to an open gpiochip handle or NULL if the next chip can't
- *         be accessed.
+ * @return Pointer to the next open gpiochip handle or NULL if no more chips
+ *         are present in the system.
  * @note The previous chip handle will be closed using ::gpiod_chip_iter_free.
  */
 struct gpiod_chip *
@@ -1190,11 +1190,10 @@ gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
 /**
  * @brief Get the next gpiochip handle without closing the previous one.
  * @param iter The gpiochip iterator object.
- * @return Pointer to an open gpiochip handle or NULL if the next chip can't
- *         be accessed.
- *
- * This function works just like ::gpiod_chip_iter_next but doesn't close the
- * most recently opened chip handle.
+ * @return Pointer to the next open gpiochip handle or NULL if no more chips
+ *         are present in the system.
+ * @note This function works just like ::gpiod_chip_iter_next but doesn't
+ *       close the most recently opened chip handle.
  */
 struct gpiod_chip *
 gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
