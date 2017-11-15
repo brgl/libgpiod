@@ -343,6 +343,12 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 		return -1;
 	}
 
+	if ((config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN) &&
+	    (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE)) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	memset(&req, 0, sizeof(req));
 
 	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN)
