@@ -223,7 +223,7 @@ static void event_get_fd_when_values_requested(void)
 
 	fd = gpiod_line_event_get_fd(line);
 	TEST_ASSERT_EQ(fd, -1);
-	TEST_ASSERT_ERRNO_IS(EINVAL);
+	TEST_ASSERT_ERRNO_IS(EPERM);
 }
 TEST_DEFINE(event_get_fd_when_values_requested,
 	    "events - gpiod_line_event_get_fd(): line requested for values",

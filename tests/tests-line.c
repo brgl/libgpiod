@@ -278,6 +278,61 @@ TEST_DEFINE(line_set_value,
 	    "gpiod_line_set_value() - good",
 	    0, { 8 });
 
+static void line_get_value_different_chips(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipA = NULL;
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chipB = NULL;
+	struct gpiod_line *lineA1, *lineA2, *lineB1, *lineB2;
+	struct gpiod_line_bulk bulkA, bulkB, bulk;
+	int rv, vals[4];
+
+	chipA = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chipA);
+
+	chipB = gpiod_chip_open(test_chip_path(1));
+	TEST_ASSERT_NOT_NULL(chipB);
+
+	lineA1 = gpiod_chip_get_line(chipA, 3);
+	lineA2 = gpiod_chip_get_line(chipA, 4);
+	lineB1 = gpiod_chip_get_line(chipB, 5);
+	lineB2 = gpiod_chip_get_line(chipB, 6);
+	TEST_ASSERT_NOT_NULL(lineA1);
+	TEST_ASSERT_NOT_NULL(lineA2);
+	TEST_ASSERT_NOT_NULL(lineB1);
+	TEST_ASSERT_NOT_NULL(lineB2);
+
+	gpiod_line_bulk_init(&bulkA);
+	gpiod_line_bulk_init(&bulkB);
+	gpiod_line_bulk_init(&bulk);
+
+	gpiod_line_bulk_add(&bulk, lineA1);
+	gpiod_line_bulk_add(&bulk, lineA2);
+	gpiod_line_bulk_add(&bulk, lineB1);
+	gpiod_line_bulk_add(&bulk, lineB2);
+
+	gpiod_line_bulk_add(&bulkA, lineA1);
+	gpiod_line_bulk_add(&bulkA, lineA2);
+	gpiod_line_bulk_add(&bulkB, lineB1);
+	gpiod_line_bulk_add(&bulkB, lineB2);
+	gpiod_line_bulk_add(&bulk, lineA1);
+	gpiod_line_bulk_add(&bulk, lineA2);
+	gpiod_line_bulk_add(&bulk, lineB1);
+	gpiod_line_bulk_add(&bulk, lineB2);
+
+	rv = gpiod_line_request_bulk_input(&bulkA, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
+
+	rv = gpiod_line_request_bulk_input(&bulkB, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
+
+	rv = gpiod_line_get_value_bulk(&bulk, vals);
+	TEST_ASSERT_EQ(rv, -1);
+	TEST_ASSERT_ERRNO_IS(EINVAL);
+}
+TEST_DEFINE(line_get_value_different_chips,
+	    "gpiod_line_get_value_bulk() - different chips",
+	    0, { 8, 8 });
+
 static void line_get_good(void)
 {
 	TEST_CLEANUP(test_line_close_chip) struct gpiod_line *line = NULL;
