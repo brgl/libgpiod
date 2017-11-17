@@ -435,7 +435,7 @@ static void line_active_state(void)
 	gpiod_line_release(line);
 
 	status = gpiod_line_request_input_flags(line, TEST_CONSUMER,
-						GPIOD_LINE_REQUEST_ACTIVE_LOW);
+					GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
 	TEST_ASSERT_RET_OK(status);
 
 	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_LINE_DIRECTION_INPUT);
@@ -463,7 +463,7 @@ static void line_misc_flags(void)
 
 	config.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT;
 	config.consumer = TEST_CONSUMER;
-	config.flags = GPIOD_LINE_REQUEST_OPEN_DRAIN;
+	config.flags = GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN;
 
 	status = gpiod_line_request(line, &config, 0);
 	TEST_ASSERT_RET_OK(status);
@@ -474,7 +474,7 @@ static void line_misc_flags(void)
 
 	gpiod_line_release(line);
 
-	config.flags = GPIOD_LINE_REQUEST_OPEN_SOURCE;
+	config.flags = GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE;
 
 	status = gpiod_line_request(line, &config, 0);
 	TEST_ASSERT_RET_OK(status);
@@ -500,12 +500,12 @@ static void line_open_source_open_drain_input_invalid(void)
 	TEST_ASSERT_NOT_NULL(line);
 
 	rv = gpiod_line_request_input_flags(line, TEST_CONSUMER,
-					    GPIOD_LINE_REQUEST_OPEN_DRAIN);
+					GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN);
 	TEST_ASSERT_EQ(rv, -1);
 	TEST_ASSERT_ERRNO_IS(EINVAL);
 
 	rv = gpiod_line_request_input_flags(line, TEST_CONSUMER,
-					    GPIOD_LINE_REQUEST_OPEN_SOURCE);
+					GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE);
 	TEST_ASSERT_EQ(rv, -1);
 	TEST_ASSERT_ERRNO_IS(EINVAL);
 }

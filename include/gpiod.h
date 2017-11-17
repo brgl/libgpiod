@@ -664,11 +664,11 @@ enum {
  * @brief Miscellaneous GPIO request flags.
  */
 enum {
-	GPIOD_LINE_REQUEST_OPEN_DRAIN	= GPIOD_BIT(0),
+	GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN	= GPIOD_BIT(0),
 	/**< The line is an open-drain port. */
-	GPIOD_LINE_REQUEST_OPEN_SOURCE	= GPIOD_BIT(1),
+	GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE	= GPIOD_BIT(1),
 	/**< The line is an open-source port. */
-	GPIOD_LINE_REQUEST_ACTIVE_LOW	= GPIOD_BIT(2),
+	GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW	= GPIOD_BIT(2),
 	/**< The active state of the line is low (high is the default). */
 };
 

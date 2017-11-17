@@ -62,7 +62,7 @@ int gpiod_simple_get_value_multiple(const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	flags = active_low ? GPIOD_LINE_REQUEST_ACTIVE_LOW : 0;
+	flags = active_low ? GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW : 0;
 
 	status = gpiod_line_request_bulk_input_flags(&bulk, consumer, flags);
 	if (status < 0) {
@@ -119,7 +119,7 @@ int gpiod_simple_set_value_multiple(const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	flags = active_low ? GPIOD_LINE_REQUEST_ACTIVE_LOW : 0;
+	flags = active_low ? GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW : 0;
 
 	status = gpiod_line_request_bulk_output_flags(&bulk, consumer,
 						      flags, values);
@@ -229,7 +229,7 @@ int gpiod_simple_event_loop_multiple(const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	flags = active_low ? GPIOD_LINE_REQUEST_ACTIVE_LOW : 0;
+	flags = active_low ? GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW : 0;
 
 	rv = gpiod_line_request_bulk_both_edges_events_flags(&bulk,
 							      consumer, flags);

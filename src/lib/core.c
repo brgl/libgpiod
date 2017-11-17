@@ -337,19 +337,19 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 	int rv, fd;
 
 	if ((config->request_type != GPIOD_LINE_REQUEST_DIRECTION_OUTPUT) &&
-	    (config->flags & (GPIOD_LINE_REQUEST_OPEN_DRAIN |
-			      GPIOD_LINE_REQUEST_OPEN_SOURCE))) {
+	    (config->flags & (GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN |
+			      GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE))) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	memset(&req, 0, sizeof(req));
 
-	if (config->flags & GPIOD_LINE_REQUEST_OPEN_DRAIN)
+	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN)
 		req.flags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
-	if (config->flags & GPIOD_LINE_REQUEST_OPEN_SOURCE)
+	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE)
 		req.flags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
-	if (config->flags & GPIOD_LINE_REQUEST_ACTIVE_LOW)
+	if (config->flags & GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW)
 		req.flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
 	if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_INPUT)
@@ -401,11 +401,11 @@ static int line_request_event_single(struct gpiod_line *line,
 	req.lineoffset = gpiod_line_offset(line);
 	req.handleflags |= GPIOHANDLE_REQUEST_INPUT;
 
-	if (config->flags & GPIOD_LINE_REQUEST_OPEN_DRAIN)
+	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN)
 		req.handleflags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
-	if (config->flags & GPIOD_LINE_REQUEST_OPEN_SOURCE)
+	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE)
 		req.handleflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
-	if (config->flags & GPIOD_LINE_REQUEST_ACTIVE_LOW)
+	if (config->flags & GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW)
 		req.handleflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
 	if (config->request_type == GPIOD_LINE_REQUEST_EVENT_RISING_EDGE)

@@ -116,7 +116,7 @@ static void event_rising_edge_active_low(void)
 	TEST_ASSERT_NOT_NULL(line);
 
 	rv = gpiod_line_request_rising_edge_events_flags(line, TEST_CONSUMER,
-						GPIOD_LINE_REQUEST_ACTIVE_LOW);
+					GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
 	TEST_ASSERT_RET_OK(rv);
 
 	test_set_event(0, 7, TEST_EVENT_RISING, 100);
