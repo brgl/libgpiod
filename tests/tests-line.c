@@ -36,9 +36,6 @@ static void line_request_output(void)
 
 	TEST_ASSERT_EQ(gpiod_line_get_value(line_0), 0);
 	TEST_ASSERT_EQ(gpiod_line_get_value(line_1), 1);
-
-	gpiod_line_release(line_0);
-	gpiod_line_release(line_1);
 }
 TEST_DEFINE(line_request_output,
 	    "gpiod_line_request_output() - good",
@@ -199,9 +196,6 @@ static void line_request_bulk_output(void)
 	TEST_ASSERT_EQ(valB[1], 1);
 	TEST_ASSERT_EQ(valB[2], 0);
 	TEST_ASSERT_EQ(valB[3], 1);
-
-	gpiod_line_release_bulk(&bulkA);
-	gpiod_line_release_bulk(&bulkB);
 }
 TEST_DEFINE(line_request_bulk_output,
 	    "gpiod_line_request_bulk_output() - good",
@@ -271,8 +265,6 @@ static void line_set_value(void)
 	TEST_ASSERT_EQ(gpiod_line_get_value(line), 1);
 	TEST_ASSERT_RET_OK(gpiod_line_set_value(line, 0));
 	TEST_ASSERT_EQ(gpiod_line_get_value(line), 0);
-
-	gpiod_line_release(line);
 }
 TEST_DEFINE(line_set_value,
 	    "gpiod_line_set_value() - good",
