@@ -492,10 +492,10 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 		return line_request_values(bulk, config, default_vals);
 	} else if (line_request_is_events(config->request_type)) {
 		return line_request_events(bulk, config);
-	} else {
-		errno = EINVAL;
-		return -1;
 	}
+
+	errno = EINVAL;
+	return -1;
 }
 
 void gpiod_line_release(struct gpiod_line *line)
