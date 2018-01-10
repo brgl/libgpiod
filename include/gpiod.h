@@ -131,9 +131,9 @@ int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
 			   gpiod_simple_set_value_cb cb, void *data) GPIOD_API;
 
 /**
- * @brief Set values of a set of a set of GPIO lines.
+ * @brief Set values of multiple GPIO lines.
  * @param device Name, path, number or label of the gpiochip.
- * @param offsets Array of offsets of lines whose values should be set.
+ * @param offsets Array of offsets of lines the values of which should be set.
  * @param values Array of integers containing new values.
  * @param num_lines Number of lines, must be > 0.
  * @param active_low The active state of the lines - true if low.
@@ -1201,7 +1201,7 @@ struct gpiod_chip *
 gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
 
 /**
- * @brief Iterate over all gpiochip present in the system.
+ * @brief Iterate over all GPIO chips present in the system.
  * @param iter An initialized GPIO chip iterator.
  * @param chip Pointer to a GPIO chip handle. On each iteration the newly
  *             opened chip handle is assigned to this argument.
@@ -1232,7 +1232,8 @@ gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
 
 /**
  * @brief Create a new line iterator.
- * @param chip Active gpiochip handle over whose lines we want to iterate.
+ * @param chip Active gpiochip handle over the lines of which we want
+ *             to iterate.
  * @return New line iterator or NULL if an error occurred.
  */
 struct gpiod_line_iter *
@@ -1247,7 +1248,7 @@ void gpiod_line_iter_free(struct gpiod_line_iter *iter) GPIOD_API;
 /**
  * @brief Get the next GPIO line handle.
  * @param iter The GPIO line iterator object.
- * @return Pointer to the next GPIO line handle or NULL there are no more
+ * @return Pointer to the next GPIO line handle or NULL if there are no more
  *         lines left.
  */
 struct gpiod_line *
