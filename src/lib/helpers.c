@@ -24,12 +24,13 @@
 
 static bool isuint(const char *str)
 {
-	for (; *str && isdigit(*str); str++);
+	for (; *str && isdigit(*str); str++)
+		;
 
 	return *str == '\0';
 }
 
-struct gpiod_chip * gpiod_chip_open_by_name(const char *name)
+struct gpiod_chip *gpiod_chip_open_by_name(const char *name)
 {
 	struct gpiod_chip *chip;
 	char *path;
@@ -45,7 +46,7 @@ struct gpiod_chip * gpiod_chip_open_by_name(const char *name)
 	return chip;
 }
 
-struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num)
+struct gpiod_chip *gpiod_chip_open_by_number(unsigned int num)
 {
 	struct gpiod_chip *chip;
 	char *path;
@@ -61,7 +62,7 @@ struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num)
 	return chip;
 }
 
-struct gpiod_chip * gpiod_chip_open_by_label(const char *label)
+struct gpiod_chip *gpiod_chip_open_by_label(const char *label)
 {
 	struct gpiod_chip_iter *iter;
 	struct gpiod_chip *chip;
@@ -83,7 +84,7 @@ struct gpiod_chip * gpiod_chip_open_by_label(const char *label)
 	return NULL;
 }
 
-struct gpiod_chip * gpiod_chip_open_lookup(const char *descr)
+struct gpiod_chip *gpiod_chip_open_lookup(const char *descr)
 {
 	struct gpiod_chip *chip;
 
@@ -335,7 +336,7 @@ int gpiod_line_request_bulk_both_edges_events_flags(
 					GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
 
-struct gpiod_line * gpiod_line_get(const char *device, unsigned int offset)
+struct gpiod_line *gpiod_line_get(const char *device, unsigned int offset)
 {
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
@@ -353,7 +354,7 @@ struct gpiod_line * gpiod_line_get(const char *device, unsigned int offset)
 	return line;
 }
 
-struct gpiod_line * gpiod_line_find(const char *name)
+struct gpiod_line *gpiod_line_find(const char *name)
 {
 	struct gpiod_chip_iter *iter;
 	struct gpiod_chip *chip;

@@ -58,7 +58,7 @@ struct gpiod_chip {
 	char label[32];
 };
 
-struct gpiod_chip * gpiod_chip_open(const char *path)
+struct gpiod_chip *gpiod_chip_open(const char *path)
 {
 	struct gpiochip_info info;
 	struct gpiod_chip *chip;
@@ -129,12 +129,12 @@ void gpiod_chip_close(struct gpiod_chip *chip)
 	free(chip);
 }
 
-const char * gpiod_chip_name(struct gpiod_chip *chip)
+const char *gpiod_chip_name(struct gpiod_chip *chip)
 {
 	return chip->name;
 }
 
-const char * gpiod_chip_label(struct gpiod_chip *chip)
+const char *gpiod_chip_label(struct gpiod_chip *chip)
 {
 	return chip->label;
 }
@@ -194,7 +194,7 @@ static void line_maybe_update(struct gpiod_line *line)
 		line->up_to_date = false;
 }
 
-struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line)
+struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line)
 {
 	return line->chip;
 }
@@ -204,12 +204,12 @@ unsigned int gpiod_line_offset(struct gpiod_line *line)
 	return line->offset;
 }
 
-const char * gpiod_line_name(struct gpiod_line *line)
+const char *gpiod_line_name(struct gpiod_line *line)
 {
 	return line->name[0] == '\0' ? NULL : line->name;
 }
 
-const char * gpiod_line_consumer(struct gpiod_line *line)
+const char *gpiod_line_consumer(struct gpiod_line *line)
 {
 	return line->consumer[0] == '\0' ? NULL : line->consumer;
 }
@@ -488,11 +488,10 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 	if (!line_bulk_same_chip(bulk) || !line_bulk_all_free(bulk))
 		return -1;
 
-	if (line_request_is_direction(config->request_type)) {
+	if (line_request_is_direction(config->request_type))
 		return line_request_values(bulk, config, default_vals);
-	} else if (line_request_is_events(config->request_type)) {
+	else if (line_request_is_events(config->request_type))
 		return line_request_events(bulk, config);
-	}
 
 	errno = EINVAL;
 	return -1;

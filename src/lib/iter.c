@@ -42,7 +42,7 @@ static void free_dirs(struct dirent ***dirs, unsigned int num_dirs)
 	free(*dirs);
 }
 
-struct gpiod_chip_iter * gpiod_chip_iter_new(void)
+struct gpiod_chip_iter *gpiod_chip_iter_new(void)
 {
 	struct gpiod_chip_iter *iter;
 	struct dirent **dirs;
@@ -117,7 +117,7 @@ void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter)
 	free(iter);
 }
 
-struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
+struct gpiod_chip *gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 {
 	if (iter->offset > 0) {
 		gpiod_chip_close(iter->chips[iter->offset - 1]);
@@ -127,13 +127,13 @@ struct gpiod_chip * gpiod_chip_iter_next(struct gpiod_chip_iter *iter)
 	return gpiod_chip_iter_next_noclose(iter);
 }
 
-struct gpiod_chip * gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter)
+struct gpiod_chip *gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter)
 {
 	return iter->offset < (iter->num_chips)
 					? iter->chips[iter->offset++] : NULL;
 }
 
-struct gpiod_line_iter * gpiod_line_iter_new(struct gpiod_chip *chip)
+struct gpiod_line_iter *gpiod_line_iter_new(struct gpiod_chip *chip)
 {
 	struct gpiod_line_iter *iter;
 	unsigned int i;
@@ -169,7 +169,7 @@ void gpiod_line_iter_free(struct gpiod_line_iter *iter)
 	free(iter);
 }
 
-struct gpiod_line * gpiod_line_iter_next(struct gpiod_line_iter *iter)
+struct gpiod_line *gpiod_line_iter_next(struct gpiod_line_iter *iter)
 {
 	return iter->offset < (iter->num_lines)
 					? iter->lines[iter->offset++] : NULL;

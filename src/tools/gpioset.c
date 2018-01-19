@@ -164,7 +164,7 @@ static const struct mode_mapping modes[] = {
 	},
 };
 
-static const struct mode_mapping * parse_mode(const char *mode)
+static const struct mode_mapping *parse_mode(const char *mode)
 {
 	unsigned int i;
 

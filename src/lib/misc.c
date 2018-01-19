@@ -13,7 +13,7 @@
 
 #include <gpiod.h>
 
-const char * gpiod_version_string(void)
+const char *gpiod_version_string(void)
 {
 	return GPIOD_VERSION_STR;
 }

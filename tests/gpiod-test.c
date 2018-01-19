@@ -100,7 +100,7 @@ enum {
 	CYELLOW,
 };
 
-static const char *term_colors[] = {
+static const char *const term_colors[] = {
 	"\033[0m",
 	"\033[32m",
 	"\033[31m",
@@ -214,7 +214,7 @@ static TEST_PRINTF(1, 2) NORETURN void die_perr(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-static MALLOC void * xmalloc(size_t size)
+static MALLOC void *xmalloc(size_t size)
 {
 	void *ptr;
 
@@ -225,7 +225,7 @@ static MALLOC void * xmalloc(size_t size)
 	return ptr;
 }
 
-static MALLOC void * xzalloc(size_t size)
+static MALLOC void *xzalloc(size_t size)
 {
 	void *ptr;
 
@@ -235,7 +235,7 @@ static MALLOC void * xzalloc(size_t size)
 	return ptr;
 }
 
-static MALLOC void * xcalloc(size_t nmemb, size_t size)
+static MALLOC void *xcalloc(size_t nmemb, size_t size)
 {
 	void *ptr;
 
@@ -246,7 +246,7 @@ static MALLOC void * xcalloc(size_t nmemb, size_t size)
 	return ptr;
 }
 
-static MALLOC char * xstrdup(const char *str)
+static MALLOC char *xstrdup(const char *str)
 {
 	char *ret;
 
@@ -257,7 +257,7 @@ static MALLOC char * xstrdup(const char *str)
 	return ret;
 }
 
-static TEST_PRINTF(2, 3) char * xappend(char *str, const char *fmt, ...)
+static TEST_PRINTF(2, 3) char *xappend(char *str, const char *fmt, ...)
 {
 	char *new, *ret;
 	va_list va;
@@ -356,7 +356,7 @@ static void event_unlock(void)
 	pthread_mutex_unlock(&globals.test_ctx.event.lock);
 }
 
-static void * event_worker(void *data TEST_UNUSED)
+static void *event_worker(void *data TEST_UNUSED)
 {
 	struct event_thread *ev = &globals.test_ctx.event;
 	struct timeval tv_now, tv_add, tv_res;
@@ -451,7 +451,7 @@ static void gpiotool_proc_dup_fds(int in_fd, int out_fd, int err_fd)
 	}
 }
 
-static char * gpiotool_proc_get_path(const char *tool)
+static char *gpiotool_proc_get_path(const char *tool)
 {
 	char *path, *progpath, *progdir;
 
@@ -471,7 +471,8 @@ static NORETURN void gpiotool_proc_exec(const char *path, va_list va)
 	va_list va2;
 
 	va_copy(va2, va);
-	for (num_args = 2; va_arg(va2, char *) != NULL; num_args++);
+	for (num_args = 2; va_arg(va2, char *) != NULL; num_args++)
+		;
 	va_end(va2);
 
 	argv = xcalloc(num_args, sizeof(char *));
@@ -663,14 +664,14 @@ void test_tool_wait(void)
 	proc->running = false;
 }
 
-const char * test_tool_stdout(void)
+const char *test_tool_stdout(void)
 {
 	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
 
 	return proc->stdout;
 }
 
-const char * test_tool_stderr(void)
+const char *test_tool_stderr(void)
 {
 	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
 
@@ -1056,14 +1057,14 @@ void test_free_chip_iter_noclose(struct gpiod_chip_iter **iter)
 		gpiod_chip_iter_free_noclose(*iter);
 }
 
-const char * test_chip_path(unsigned int index)
+const char *test_chip_path(unsigned int index)
 {
 	check_chip_index(index);
 
 	return globals.test_ctx.chips[index]->path;
 }
 
-const char * test_chip_name(unsigned int index)
+const char *test_chip_name(unsigned int index)
 {
 	check_chip_index(index);
 

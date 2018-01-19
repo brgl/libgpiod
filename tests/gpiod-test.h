@@ -93,8 +93,8 @@ enum {
  * or number by index corresponding with the order in which the mockup chips
  * were requested in the TEST_DEFINE() macro.
  */
-const char * test_chip_path(unsigned int index);
-const char * test_chip_name(unsigned int index);
+const char *test_chip_path(unsigned int index);
+const char *test_chip_name(unsigned int index);
 unsigned int test_chip_num(unsigned int index);
 
 enum {
@@ -108,8 +108,8 @@ void test_set_event(unsigned int chip_index, unsigned int line_offset,
 
 void test_tool_run(char *tool, ...);
 void test_tool_wait(void);
-const char * test_tool_stdout(void);
-const char * test_tool_stderr(void);
+const char *test_tool_stdout(void);
+const char *test_tool_stderr(void);
 bool test_tool_exited(void);
 int test_tool_exit_status(void);
 void test_tool_signal(int signum);

@@ -18,9 +18,11 @@
 #include <getopt.h>
 #include <errno.h>
 
+typedef bool (*is_set_func)(struct gpiod_line *);
+
 struct flag {
 	const char *name;
-	bool (*is_set)(struct gpiod_line *);
+	is_set_func is_set;
 };
 
 static const struct flag flags[] = {

@@ -316,7 +316,7 @@ int gpiod_simple_find_line(const char *name, char *chipname,
  * @param path Path to the gpiochip device file.
  * @return GPIO chip handle or NULL if an error occurred.
  */
-struct gpiod_chip * gpiod_chip_open(const char *path) GPIOD_API;
+struct gpiod_chip *gpiod_chip_open(const char *path) GPIOD_API;
 
 /**
  * @brief Open a gpiochip by name.
@@ -325,7 +325,7 @@ struct gpiod_chip * gpiod_chip_open(const char *path) GPIOD_API;
  *
  * This routine appends name to '/dev/' to create the path.
  */
-struct gpiod_chip * gpiod_chip_open_by_name(const char *name) GPIOD_API;
+struct gpiod_chip *gpiod_chip_open_by_name(const char *name) GPIOD_API;
 
 /**
  * @brief Open a gpiochip by number.
@@ -334,7 +334,7 @@ struct gpiod_chip * gpiod_chip_open_by_name(const char *name) GPIOD_API;
  *
  * This routine appends num to '/dev/gpiochip' to create the path.
  */
-struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num) GPIOD_API;
+struct gpiod_chip *gpiod_chip_open_by_number(unsigned int num) GPIOD_API;
 
 /**
  * @brief Open a gpiochip by label.
@@ -344,7 +344,7 @@ struct gpiod_chip * gpiod_chip_open_by_number(unsigned int num) GPIOD_API;
  * @note If the chip cannot be found but no other error occurred, errno is set
  *       to ENOENT.
  */
-struct gpiod_chip * gpiod_chip_open_by_label(const char *label) GPIOD_API;
+struct gpiod_chip *gpiod_chip_open_by_label(const char *label) GPIOD_API;
 
 /**
  * @brief Open a gpiochip based on the best guess what the path is.
@@ -355,7 +355,7 @@ struct gpiod_chip * gpiod_chip_open_by_label(const char *label) GPIOD_API;
  * GPIO chip, its name, label or number as a string. Then it tries to open it
  * using one of the gpiod_chip_open** variants.
  */
-struct gpiod_chip * gpiod_chip_open_lookup(const char *descr) GPIOD_API;
+struct gpiod_chip *gpiod_chip_open_lookup(const char *descr) GPIOD_API;
 
 /**
  * @brief Close a GPIO chip handle and release all allocated resources.
@@ -368,14 +368,14 @@ void gpiod_chip_close(struct gpiod_chip *chip) GPIOD_API;
  * @param chip The GPIO chip object.
  * @return Pointer to a human-readable string containing the chip name.
  */
-const char * gpiod_chip_name(struct gpiod_chip *chip) GPIOD_API;
+const char *gpiod_chip_name(struct gpiod_chip *chip) GPIOD_API;
 
 /**
  * @brief Get the GPIO chip label as represented in the kernel.
  * @param chip The GPIO chip object.
  * @return Pointer to a human-readable string containing the chip label.
  */
-const char * gpiod_chip_label(struct gpiod_chip *chip) GPIOD_API;
+const char *gpiod_chip_label(struct gpiod_chip *chip) GPIOD_API;
 
 /**
  * @brief Get the number of GPIO lines exposed by this chip.
@@ -559,7 +559,7 @@ unsigned int gpiod_line_offset(struct gpiod_line *line) GPIOD_API;
  *         routine returns a pointer to a null-terminated string or NULL if
  *         the line is unnamed.
  */
-const char * gpiod_line_name(struct gpiod_line *line) GPIOD_API;
+const char *gpiod_line_name(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Read the GPIO line consumer name.
@@ -568,7 +568,7 @@ const char * gpiod_line_name(struct gpiod_line *line) GPIOD_API;
  *         kernel. This routine returns a pointer to a null-terminated string
  *         or NULL if the line is not used.
  */
-const char * gpiod_line_consumer(struct gpiod_line *line) GPIOD_API;
+const char *gpiod_line_consumer(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Read the GPIO line direction setting.
@@ -1122,7 +1122,7 @@ gpiod_line_get(const char *device, unsigned int offset) GPIOD_API;
  * this line to avoid memory leaks. If the line could not be found, this
  * functions sets errno to ENOENT.
  */
-struct gpiod_line * gpiod_line_find(const char *name) GPIOD_API;
+struct gpiod_line *gpiod_line_find(const char *name) GPIOD_API;
 
 /**
  * @brief Close a GPIO chip owning this line and release all resources.
@@ -1137,7 +1137,7 @@ void gpiod_line_close_chip(struct gpiod_line *line) GPIOD_API;
  * @param line The GPIO line object.
  * @return Pointer to the GPIO chip handle controlling this line.
  */
-struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
+struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @}
@@ -1159,7 +1159,7 @@ struct gpiod_chip * gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
  * files, opens them and stores their the handles until ::gpiod_chip_iter_free
  * or ::gpiod_chip_iter_free_noclose is called.
  */
-struct gpiod_chip_iter * gpiod_chip_iter_new(void) GPIOD_API;
+struct gpiod_chip_iter *gpiod_chip_iter_new(void) GPIOD_API;
 
 /**
  * @brief Release all resources allocated for the gpiochip iterator and close
@@ -1278,7 +1278,7 @@ gpiod_line_iter_next(struct gpiod_line_iter *iter) GPIOD_API;
  * @brief Get the version of the library as a human-readable string.
  * @return Human-readable string containing the library version.
  */
-const char * gpiod_version_string(void) GPIOD_API;
+const char *gpiod_version_string(void) GPIOD_API;
 
 /**
  * @}
