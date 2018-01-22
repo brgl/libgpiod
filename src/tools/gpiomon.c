@@ -249,9 +249,9 @@ int main(int argc, char **argv)
 	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES];
 	struct timespec timeout = { 10, 0 };
 	unsigned int num_lines = 0, offset;
+	bool active_low = false;
 	int optc, opti, ret, i;
 	struct mon_ctx ctx;
-	bool active_low;
 	char *end;
 
 	memset(&ctx, 0, sizeof(ctx));
