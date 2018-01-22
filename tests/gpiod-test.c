@@ -1033,12 +1033,6 @@ void test_line_close_chip(struct gpiod_line **line)
 		gpiod_line_close_chip(*line);
 }
 
-void test_free_str(char **str)
-{
-	if (*str)
-		free(*str);
-}
-
 void test_free_chip_iter(struct gpiod_chip_iter **iter)
 {
 	if (*iter)
