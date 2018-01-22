@@ -120,7 +120,8 @@ then
 	AC_MSG_NOTICE([doxygen not found - documentation cannot be generated])
 fi
 
-AC_CONFIG_FILES([Makefile
+AC_CONFIG_FILES([libgpiod.pc
+		 Makefile
 		 include/Makefile
 		 src/Makefile
 		 src/lib/Makefile

@@ -11,6 +11,9 @@ ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
 SUBDIRS = include src
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libgpiod.pc
+
 if WITH_TESTS
 
 SUBDIRS += tests
