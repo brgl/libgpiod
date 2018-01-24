@@ -18,23 +18,23 @@
 #include <errno.h>
 #include <poll.h>
 
-int gpiod_simple_get_value(const char *device, unsigned int offset,
-			   bool active_low, const char *consumer)
+int gpiod_ctxless_get_value(const char *device, unsigned int offset,
+			    bool active_low, const char *consumer)
 {
 	int value, status;
 
-	status = gpiod_simple_get_value_multiple(device, &offset, &value,
-						 1, active_low, consumer);
+	status = gpiod_ctxless_get_value_multiple(device, &offset, &value,
+						  1, active_low, consumer);
 	if (status < 0)
 		return status;
 
 	return value;
 }
 
-int gpiod_simple_get_value_multiple(const char *device,
-				    const unsigned int *offsets, int *values,
-				    unsigned int num_lines, bool active_low,
-				    const char *consumer)
+int gpiod_ctxless_get_value_multiple(const char *device,
+				     const unsigned int *offsets, int *values,
+				     unsigned int num_lines, bool active_low,
+				     const char *consumer)
 {
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
@@ -79,19 +79,19 @@ int gpiod_simple_get_value_multiple(const char *device,
 	return status;
 }
 
-int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
-			   bool active_low, const char *consumer,
-			   gpiod_simple_set_value_cb cb, void *data)
+int gpiod_ctxless_set_value(const char *device, unsigned int offset, int value,
+			    bool active_low, const char *consumer,
+			    gpiod_ctxless_set_value_cb cb, void *data)
 {
-	return gpiod_simple_set_value_multiple(device, &offset, &value, 1,
-					       active_low, consumer, cb, data);
+	return gpiod_ctxless_set_value_multiple(device, &offset, &value, 1,
+						active_low, consumer, cb, data);
 }
 
-int gpiod_simple_set_value_multiple(const char *device,
-				    const unsigned int *offsets,
-				    const int *values, unsigned int num_lines,
-				    bool active_low, const char *consumer,
-				    gpiod_simple_set_value_cb cb, void *data)
+int gpiod_ctxless_set_value_multiple(const char *device,
+				     const unsigned int *offsets,
+				     const int *values, unsigned int num_lines,
+				     bool active_low, const char *consumer,
+				     gpiod_ctxless_set_value_cb cb, void *data)
 {
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
@@ -138,7 +138,7 @@ int gpiod_simple_set_value_multiple(const char *device,
 }
 
 static int basic_event_poll(unsigned int num_lines,
-			    struct gpiod_simple_event_poll_fd *fds,
+			    struct gpiod_ctxless_event_poll_fd *fds,
 			    const struct timespec *timeout,
 			    void *data GPIOD_UNUSED)
 {
@@ -147,7 +147,7 @@ static int basic_event_poll(unsigned int num_lines,
 	int rv, ret;
 
 	if (num_lines > GPIOD_LINE_BULK_MAX_LINES)
-		return GPIOD_SIMPLE_EVENT_POLL_RET_ERR;
+		return GPIOD_CTXLESS_EVENT_POLL_RET_ERR;
 
 	memset(poll_fds, 0, sizeof(poll_fds));
 
@@ -159,11 +159,11 @@ static int basic_event_poll(unsigned int num_lines,
 	rv = ppoll(poll_fds, num_lines, timeout, NULL);
 	if (rv < 0) {
 		if (errno == EINTR)
-			return GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT;
+			return GPIOD_CTXLESS_EVENT_POLL_RET_TIMEOUT;
 		else
-			return GPIOD_SIMPLE_EVENT_POLL_RET_ERR;
+			return GPIOD_CTXLESS_EVENT_POLL_RET_ERR;
 	} else if (rv == 0) {
-		return GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT;
+		return GPIOD_CTXLESS_EVENT_POLL_RET_TIMEOUT;
 	}
 
 	ret = rv;
@@ -178,27 +178,28 @@ static int basic_event_poll(unsigned int num_lines,
 	return ret;
 }
 
-int gpiod_simple_event_loop(const char *device, unsigned int offset,
-			    bool active_low, const char *consumer,
-			    const struct timespec *timeout,
-			    gpiod_simple_event_poll_cb poll_cb,
-			    gpiod_simple_event_handle_cb event_cb, void *data)
+int gpiod_ctxless_event_loop(const char *device, unsigned int offset,
+			     bool active_low, const char *consumer,
+			     const struct timespec *timeout,
+			     gpiod_ctxless_event_poll_cb poll_cb,
+			     gpiod_ctxless_event_handle_cb event_cb,
+			     void *data)
 {
-	return gpiod_simple_event_loop_multiple(device, &offset, 1, active_low,
-						consumer, timeout, poll_cb,
-						event_cb, data);
+	return gpiod_ctxless_event_loop_multiple(device, &offset, 1,
+						 active_low, consumer, timeout,
+						 poll_cb, event_cb, data);
 }
 
-int gpiod_simple_event_loop_multiple(const char *device,
-				     const unsigned int *offsets,
-				     unsigned int num_lines, bool active_low,
-				     const char *consumer,
-				     const struct timespec *timeout,
-				     gpiod_simple_event_poll_cb poll_cb,
-				     gpiod_simple_event_handle_cb event_cb,
-				     void *data)
+int gpiod_ctxless_event_loop_multiple(const char *device,
+				      const unsigned int *offsets,
+				      unsigned int num_lines, bool active_low,
+				      const char *consumer,
+				      const struct timespec *timeout,
+				      gpiod_ctxless_event_poll_cb poll_cb,
+				      gpiod_ctxless_event_handle_cb event_cb,
+				      void *data)
 {
-	struct gpiod_simple_event_poll_fd fds[GPIOD_LINE_BULK_MAX_LINES];
+	struct gpiod_ctxless_event_poll_fd fds[GPIOD_LINE_BULK_MAX_LINES];
 	int rv, ret, flags, evtype, cnt;
 	struct gpiod_line_event event;
 	struct gpiod_line_bulk bulk;
@@ -250,20 +251,20 @@ int gpiod_simple_event_loop_multiple(const char *device,
 			fds[i].event = false;
 
 		cnt = poll_cb(num_lines, fds, timeout, data);
-		if (cnt == GPIOD_SIMPLE_EVENT_POLL_RET_ERR) {
+		if (cnt == GPIOD_CTXLESS_EVENT_POLL_RET_ERR) {
 			ret = -1;
 			goto out;
-		} else if (cnt == GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT) {
-			rv = event_cb(GPIOD_SIMPLE_EVENT_CB_TIMEOUT,
+		} else if (cnt == GPIOD_CTXLESS_EVENT_POLL_RET_TIMEOUT) {
+			rv = event_cb(GPIOD_CTXLESS_EVENT_CB_TIMEOUT,
 				      0, &event.ts, data);
-			if (rv == GPIOD_SIMPLE_EVENT_CB_RET_ERR) {
+			if (rv == GPIOD_CTXLESS_EVENT_CB_RET_ERR) {
 				ret = -1;
 				goto out;
-			} else if (rv == GPIOD_SIMPLE_EVENT_CB_RET_STOP) {
+			} else if (rv == GPIOD_CTXLESS_EVENT_CB_RET_STOP) {
 				ret = 0;
 				goto out;
 			}
-		} else if (cnt == GPIOD_SIMPLE_EVENT_POLL_RET_STOP) {
+		} else if (cnt == GPIOD_CTXLESS_EVENT_POLL_RET_STOP) {
 			ret = 0;
 			goto out;
 		}
@@ -280,16 +281,16 @@ int gpiod_simple_event_loop_multiple(const char *device,
 			}
 
 			if (event.event_type == GPIOD_LINE_EVENT_RISING_EDGE)
-				evtype = GPIOD_SIMPLE_EVENT_CB_RISING_EDGE;
+				evtype = GPIOD_CTXLESS_EVENT_CB_RISING_EDGE;
 			else
-				evtype = GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE;
+				evtype = GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE;
 
 			rv = event_cb(evtype, gpiod_line_offset(line),
 				      &event.ts, data);
-			if (rv == GPIOD_SIMPLE_EVENT_CB_RET_ERR) {
+			if (rv == GPIOD_CTXLESS_EVENT_CB_RET_ERR) {
 				ret = -1;
 				goto out;
-			} else if (rv == GPIOD_SIMPLE_EVENT_CB_RET_STOP) {
+			} else if (rv == GPIOD_CTXLESS_EVENT_CB_RET_STOP) {
 				ret = 0;
 				goto out;
 			}
@@ -305,8 +306,8 @@ out:
 	return ret;
 }
 
-int gpiod_simple_find_line(const char *name, char *chipname,
-			   size_t chipname_size, unsigned int *offset)
+int gpiod_ctxless_find_line(const char *name, char *chipname,
+			    size_t chipname_size, unsigned int *offset)
 {
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;

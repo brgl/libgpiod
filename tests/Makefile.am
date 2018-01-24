@@ -17,11 +17,11 @@ check_PROGRAMS = gpiod-test
 gpiod_test_SOURCES =	gpiod-test.c \
 			gpiod-test.h \
 			tests-chip.c \
+			tests-ctxless.c \
 			tests-event.c \
 			tests-iter.c \
 			tests-line.c \
-			tests-misc.c \
-			tests-simple-api.c
+			tests-misc.c
 
 if WITH_TOOLS
 

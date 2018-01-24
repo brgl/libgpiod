@@ -90,8 +90,8 @@ struct gpiod_line_iter;
  * @param consumer Name of the consumer.
  * @return 0 or 1 (GPIO value) if the operation succeeds, -1 on error.
  */
-int gpiod_simple_get_value(const char *device, unsigned int offset,
-			   bool active_low, const char *consumer) GPIOD_API;
+int gpiod_ctxless_get_value(const char *device, unsigned int offset,
+			    bool active_low, const char *consumer) GPIOD_API;
 
 /**
  * @brief Read current values from a set of GPIO lines.
@@ -103,15 +103,15 @@ int gpiod_simple_get_value(const char *device, unsigned int offset,
  * @param consumer Name of the consumer.
  * @return 0 if the operation succeeds, -1 on error.
  */
-int gpiod_simple_get_value_multiple(const char *device,
-				    const unsigned int *offsets, int *values,
-				    unsigned int num_lines, bool active_low,
-				    const char *consumer) GPIOD_API;
+int gpiod_ctxless_get_value_multiple(const char *device,
+				     const unsigned int *offsets, int *values,
+				     unsigned int num_lines, bool active_low,
+				     const char *consumer) GPIOD_API;
 
 /**
  * @brief Simple set value callback signature.
  */
-typedef void (*gpiod_simple_set_value_cb)(void *);
+typedef void (*gpiod_ctxless_set_value_cb)(void *);
 
 /**
  * @brief Set value of a single GPIO line.
@@ -126,9 +126,10 @@ typedef void (*gpiod_simple_set_value_cb)(void *);
  * @param data User data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
-int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
-			   bool active_low, const char *consumer,
-			   gpiod_simple_set_value_cb cb, void *data) GPIOD_API;
+int gpiod_ctxless_set_value(const char *device, unsigned int offset, int value,
+			    bool active_low, const char *consumer,
+			    gpiod_ctxless_set_value_cb cb,
+			    void *data) GPIOD_API;
 
 /**
  * @brief Set values of multiple GPIO lines.
@@ -139,38 +140,38 @@ int gpiod_simple_set_value(const char *device, unsigned int offset, int value,
  * @param active_low The active state of the lines - true if low.
  * @param consumer Name of the consumer.
  * @param cb Callback function that will be called right after the values are
- *        set. Works the same as in ::gpiod_simple_set_value.
+ *        set. Works the same as in ::gpiod_ctxless_set_value.
  * @param data User data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
-int gpiod_simple_set_value_multiple(const char *device,
-				    const unsigned int *offsets,
-				    const int *values, unsigned int num_lines,
-				    bool active_low, const char *consumer,
-				    gpiod_simple_set_value_cb cb,
-				    void *data) GPIOD_API;
+int gpiod_ctxless_set_value_multiple(const char *device,
+				     const unsigned int *offsets,
+				     const int *values, unsigned int num_lines,
+				     bool active_low, const char *consumer,
+				     gpiod_ctxless_set_value_cb cb,
+				     void *data) GPIOD_API;
 
 /**
- * @brief Event types that can be passed to the simple event callback.
+ * @brief Event types that can be passed to the ctxless event callback.
  */
 enum {
-	GPIOD_SIMPLE_EVENT_CB_TIMEOUT,
+	GPIOD_CTXLESS_EVENT_CB_TIMEOUT,
 	/**< Waiting for events timed out. */
-	GPIOD_SIMPLE_EVENT_CB_RISING_EDGE,
+	GPIOD_CTXLESS_EVENT_CB_RISING_EDGE,
 	/**< Rising edge event occured. */
-	GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE,
+	GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE,
 	/**< Falling edge event occured. */
 };
 
 /**
- * @brief Return status values that the simple event callback can return.
+ * @brief Return status values that the ctxless event callback can return.
  */
 enum {
-	GPIOD_SIMPLE_EVENT_CB_RET_ERR = -1,
+	GPIOD_CTXLESS_EVENT_CB_RET_ERR = -1,
 	/**< Stop processing events and indicate an error. */
-	GPIOD_SIMPLE_EVENT_CB_RET_OK = 0,
+	GPIOD_CTXLESS_EVENT_CB_RET_OK = 0,
 	/**< Continue processing events. */
-	GPIOD_SIMPLE_EVENT_CB_RET_STOP = 1,
+	GPIOD_CTXLESS_EVENT_CB_RET_STOP = 1,
 	/**< Stop processing events. */
 };
 
@@ -181,32 +182,32 @@ enum {
  * GPIO line offset (unsigned int), event timestamp (const struct timespec *)
  * and a pointer to user data (void *).
  *
- * This callback is called by the simple event loop functions for each GPIO
- * event. If the callback returns ::GPIOD_SIMPLE_EVENT_CB_RET_ERR, it should
+ * This callback is called by the ctxless event loop functions for each GPIO
+ * event. If the callback returns ::GPIOD_CTXLESS_EVENT_CB_RET_ERR, it should
  * also set errno.
  */
-typedef int (*gpiod_simple_event_handle_cb)(int, unsigned int,
-					    const struct timespec *, void *);
+typedef int (*gpiod_ctxless_event_handle_cb)(int, unsigned int,
+					     const struct timespec *, void *);
 
 /**
- * @brief Return status values that the simple event poll callback can return.
+ * @brief Return status values that the ctxless event poll callback can return.
  *
  * Positive value returned from the polling callback indicates the number of
  * events that occurred on the set of monitored lines.
  */
 enum {
-	GPIOD_SIMPLE_EVENT_POLL_RET_STOP = -2,
+	GPIOD_CTXLESS_EVENT_POLL_RET_STOP = -2,
 	/**< The event loop should stop processing events. */
-	GPIOD_SIMPLE_EVENT_POLL_RET_ERR = -1,
+	GPIOD_CTXLESS_EVENT_POLL_RET_ERR = -1,
 	/**< Polling error occurred (the polling function should set errno). */
-	GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT = 0,
+	GPIOD_CTXLESS_EVENT_POLL_RET_TIMEOUT = 0,
 	/**< Poll timed out. */
 };
 
 /**
- * @brief Helper structure for the simple event loop poll callback.
+ * @brief Helper structure for the ctxless event loop poll callback.
  */
-struct gpiod_simple_event_poll_fd {
+struct gpiod_ctxless_event_poll_fd {
 	int fd;
 	/**< File descriptor number. */
 	bool event;
@@ -218,16 +219,16 @@ struct gpiod_simple_event_poll_fd {
  *
  * The poll callback function takes the following arguments: number of lines
  * (unsigned int), an array of file descriptors on which input events should
- * be monitored (struct gpiod_simple_event_poll_fd *), poll timeout
+ * be monitored (struct gpiod_ctxless_event_poll_fd *), poll timeout
  * (const struct timespec *) and a pointer to user data (void *).
  *
  * The callback should poll for input events on the set of descriptors and
  * return an appropriate value that can be interpreted by the event loop
  * routine.
  */
-typedef int (*gpiod_simple_event_poll_cb)(unsigned int,
-					  struct gpiod_simple_event_poll_fd *,
-					  const struct timespec *, void *);
+typedef int (*gpiod_ctxless_event_poll_cb)(unsigned int,
+				struct gpiod_ctxless_event_poll_fd *,
+				const struct timespec *, void *);
 
 /**
  * @brief Wait for events on a single GPIO line.
@@ -240,16 +241,16 @@ typedef int (*gpiod_simple_event_poll_cb)(unsigned int,
  * @param event_cb Callback function to call for each line event.
  * @param data User data passed to the callback.
  * @return 0 if no errors were encountered, -1 if an error occurred.
- * @note The way the simple event loop works is described in detail in
- *       ::gpiod_simple_event_loop_multiple - this is just a wrapper aound
+ * @note The way the ctxless event loop works is described in detail in
+ *       ::gpiod_ctxless_event_loop_multiple - this is just a wrapper aound
  *       this routine which calls it for a single GPIO line.
  */
-int gpiod_simple_event_loop(const char *device, unsigned int offset,
-			    bool active_low, const char *consumer,
-			    const struct timespec *timeout,
-			    gpiod_simple_event_poll_cb poll_cb,
-			    gpiod_simple_event_handle_cb event_cb,
-			    void *data) GPIOD_API;
+int gpiod_ctxless_event_loop(const char *device, unsigned int offset,
+			     bool active_low, const char *consumer,
+			     const struct timespec *timeout,
+			     gpiod_ctxless_event_poll_cb poll_cb,
+			     gpiod_ctxless_event_handle_cb event_cb,
+			     void *data) GPIOD_API;
 
 /**
  * @brief Wait for events on multiple GPIO lines.
@@ -271,21 +272,21 @@ int gpiod_simple_event_loop(const char *device, unsigned int offset,
  * polling callback is to detect input events on a set of file descriptors and
  * notify the caller about the fds ready for reading.
  *
- * The simple event loop then reads each queued event from marked descriptors
+ * The ctxless event loop then reads each queued event from marked descriptors
  * and calls the event callback. Both callbacks can stop the loop at any
  * point.
  *
  * The poll_cb argument can be NULL in which case the function falls back to
  * a default, ppoll() based callback.
  */
-int gpiod_simple_event_loop_multiple(const char *device,
-				     const unsigned int *offsets,
-				     unsigned int num_lines, bool active_low,
-				     const char *consumer,
-				     const struct timespec *timeout,
-				     gpiod_simple_event_poll_cb poll_cb,
-				     gpiod_simple_event_handle_cb event_cb,
-				     void *data) GPIOD_API;
+int gpiod_ctxless_event_loop_multiple(const char *device,
+				      const unsigned int *offsets,
+				      unsigned int num_lines, bool active_low,
+				      const char *consumer,
+				      const struct timespec *timeout,
+				      gpiod_ctxless_event_poll_cb poll_cb,
+				      gpiod_ctxless_event_handle_cb event_cb,
+				      void *data) GPIOD_API;
 
 /**
  * @brief Determine the chip name and line offset of a line with given name.
@@ -298,9 +299,9 @@ int gpiod_simple_event_loop_multiple(const char *device,
  *         and offset remain unchanged.
  * @note The chip name is truncated if the buffer can't hold its entire size.
  */
-int gpiod_simple_find_line(const char *name, char *chipname,
-			   size_t chipname_size,
-			   unsigned int *offset) GPIOD_API;
+int gpiod_ctxless_find_line(const char *name, char *chipname,
+			    size_t chipname_size,
+			    unsigned int *offset) GPIOD_API;
 
 /**
  * @}

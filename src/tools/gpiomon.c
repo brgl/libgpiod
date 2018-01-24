@@ -96,7 +96,7 @@ static void event_print_custom(unsigned int offset,
 			printf("%u", offset);
 			break;
 		case 'e':
-			if (event_type == GPIOD_SIMPLE_EVENT_CB_RISING_EDGE)
+			if (event_type == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE)
 				fputc('1', stdout);
 			else
 				fputc('0', stdout);
@@ -132,7 +132,7 @@ static void event_print_human_readable(unsigned int offset,
 {
 	char *evname;
 
-	if (event_type == GPIOD_SIMPLE_EVENT_CB_RISING_EDGE)
+	if (event_type == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE)
 		evname = " RISING EDGE";
 	else
 		evname = "FALLING EDGE";
@@ -142,7 +142,7 @@ static void event_print_human_readable(unsigned int offset,
 }
 
 static int poll_callback(unsigned int num_lines,
-			 struct gpiod_simple_event_poll_fd *fds,
+			 struct gpiod_ctxless_event_poll_fd *fds,
 			 const struct timespec *timeout, void *data)
 {
 	struct pollfd pfds[GPIOD_LINE_BULK_MAX_LINES + 1];
@@ -162,9 +162,9 @@ static int poll_callback(unsigned int num_lines,
 
 	cnt = poll(pfds, num_lines + 1, ts);
 	if (cnt < 0)
-		return GPIOD_SIMPLE_EVENT_POLL_RET_ERR;
+		return GPIOD_CTXLESS_EVENT_POLL_RET_ERR;
 	else if (cnt == 0)
-		return GPIOD_SIMPLE_EVENT_POLL_RET_TIMEOUT;
+		return GPIOD_CTXLESS_EVENT_POLL_RET_TIMEOUT;
 
 	ret = cnt;
 	for (i = 0; i < num_lines; i++) {
@@ -181,7 +181,7 @@ static int poll_callback(unsigned int num_lines,
 	 */
 	close(ctx->sigfd);
 
-	return GPIOD_SIMPLE_EVENT_POLL_RET_STOP;
+	return GPIOD_CTXLESS_EVENT_POLL_RET_STOP;
 }
 
 static void handle_event(struct mon_ctx *ctx, int event_type,
@@ -206,22 +206,22 @@ static int event_callback(int event_type, unsigned int line_offset,
 	struct mon_ctx *ctx = data;
 
 	switch (event_type) {
-	case GPIOD_SIMPLE_EVENT_CB_RISING_EDGE:
+	case GPIOD_CTXLESS_EVENT_CB_RISING_EDGE:
 		if (ctx->watch_rising)
 			handle_event(ctx, event_type, line_offset, timestamp);
 		break;
-	case GPIOD_SIMPLE_EVENT_CB_FALLING_EDGE:
+	case GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE:
 		if (ctx->watch_falling)
 			handle_event(ctx, event_type, line_offset, timestamp);
 		break;
 	default:
-		return GPIOD_SIMPLE_EVENT_CB_RET_OK;
+		return GPIOD_CTXLESS_EVENT_CB_RET_OK;
 	}
 
 	if (ctx->events_wanted && ctx->events_done >= ctx->events_wanted)
-		return GPIOD_SIMPLE_EVENT_CB_RET_STOP;
+		return GPIOD_CTXLESS_EVENT_CB_RET_STOP;
 
-	return GPIOD_SIMPLE_EVENT_CB_RET_OK;
+	return GPIOD_CTXLESS_EVENT_CB_RET_OK;
 }
 
 static int make_signalfd(void)
@@ -318,10 +318,10 @@ int main(int argc, char **argv)
 
 	ctx.sigfd = make_signalfd();
 
-	ret = gpiod_simple_event_loop_multiple(argv[0], offsets, num_lines,
-					       active_low, "gpiomon", &timeout,
-					       poll_callback,
-					       event_callback, &ctx);
+	ret = gpiod_ctxless_event_loop_multiple(argv[0], offsets, num_lines,
+						active_low, "gpiomon",
+						&timeout, poll_callback,
+						event_callback, &ctx);
 	if (ret)
 		die_perror("error waiting for events");
 

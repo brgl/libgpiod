@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 	if (argc != 1)
 		die("exactly one GPIO line name must be specified");
 
-	rv = gpiod_simple_find_line(argv[0], chip, sizeof(chip), &offset);
+	rv = gpiod_ctxless_find_line(argv[0], chip, sizeof(chip), &offset);
 	if (rv < 0)
 		die_perror("error performing the line lookup");
 	else if (rv == 0)
