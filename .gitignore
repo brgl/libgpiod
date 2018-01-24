@@ -10,6 +10,7 @@ gpiofind
 *.o
 *.lo
 doc
+libgpiod.pc
 
 # autotools stuff
 .deps/
