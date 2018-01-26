@@ -120,10 +120,10 @@ typedef void (*gpiod_ctxless_set_value_cb)(void *);
  * @param value New value (0 or 1).
  * @param active_low The active state of this line - true if low.
  * @param consumer Name of the consumer.
- * @param cb Callback function that will be called right after the value is
- *        set. Users can use this, for example, to pause the execution after
- *        toggling a GPIO.
- * @param data User data that will be passed to the callback function.
+ * @param cb Optional callback function that will be called right after setting
+ *        the value. Users can use this, for example, to pause the execution
+ *        after toggling a GPIO.
+ * @param data Optional user data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
 int gpiod_ctxless_set_value(const char *device, unsigned int offset, int value,
@@ -139,9 +139,9 @@ int gpiod_ctxless_set_value(const char *device, unsigned int offset, int value,
  * @param num_lines Number of lines, must be > 0.
  * @param active_low The active state of the lines - true if low.
  * @param consumer Name of the consumer.
- * @param cb Callback function that will be called right after the values are
- *        set. Works the same as in ::gpiod_ctxless_set_value.
- * @param data User data that will be passed to the callback function.
+ * @param cb Optional callback function that will be called right after setting
+ *        all values. Works the same as in ::gpiod_ctxless_set_value.
+ * @param data Optional user data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
 int gpiod_ctxless_set_value_multiple(const char *device,
