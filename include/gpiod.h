@@ -121,8 +121,8 @@ typedef void (*gpiod_ctxless_set_value_cb)(void *);
  * @param active_low The active state of this line - true if low.
  * @param consumer Name of the consumer.
  * @param cb Optional callback function that will be called right after setting
- *        the value. Users can use this, for example, to pause the execution
- *        after toggling a GPIO.
+ *           the value. Users can use this, for example, to pause the execution
+ *           after toggling a GPIO.
  * @param data Optional user data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
@@ -140,7 +140,7 @@ int gpiod_ctxless_set_value(const char *device, unsigned int offset, int value,
  * @param active_low The active state of the lines - true if low.
  * @param consumer Name of the consumer.
  * @param cb Optional callback function that will be called right after setting
- *        all values. Works the same as in ::gpiod_ctxless_set_value.
+ *           all values. Works the same as in ::gpiod_ctxless_set_value.
  * @param data Optional user data that will be passed to the callback function.
  * @return 0 if the operation succeeds, -1 on error.
  */
@@ -692,7 +692,7 @@ struct gpiod_line_request_config {
  * @param line GPIO line object.
  * @param config Request options.
  * @param default_val Default line value - only relevant if we're setting
- *        the direction to output.
+ *                    the direction to output.
  * @return 0 if the line was properly reserved. In case of an error this
  *         routine returns -1 and sets the last error number.
  *
@@ -809,7 +809,7 @@ int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
  * @param bulk Set of GPIO lines to reserve.
  * @param config Request options.
  * @param default_vals Default line values - only relevant if we're setting
- *        the direction to output.
+ *                     the direction to output.
  * @return 0 if the all lines were properly requested. In case of an error
  *         this routine returns -1 and sets the last error number.
  *
@@ -1050,7 +1050,7 @@ int gpiod_line_event_wait(struct gpiod_line *line,
  * @param bulk Set of GPIO lines to monitor.
  * @param timeout Wait time limit.
  * @param event_bulk Bulk object in which to store the line handles on which
- *        events occurred. Can be NULL.
+ *                   events occurred. Can be NULL.
  * @return 0 if wait timed out, -1 if an error occurred, 1 if at least one
  *         event occurred.
  */
