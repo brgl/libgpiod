@@ -260,7 +260,8 @@ int gpiod_ctxless_event_loop(const char *device, unsigned int offset,
  * @param active_low The active state of this line - true if low.
  * @param consumer Name of the consumer.
  * @param timeout Maximum wait time for each iteration.
- * @param poll_cb Callback function to call when waiting for events.
+ * @param poll_cb Callback function to call when waiting for events. Can
+ *                be NULL.
  * @param event_cb Callback function to call on event occurrence.
  * @param data User data passed to the callback.
  * @return 0 no errors were encountered, -1 if an error occurred.
