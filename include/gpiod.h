@@ -691,7 +691,7 @@ struct gpiod_line_request_config {
  * @brief Reserve a single line.
  * @param line GPIO line object.
  * @param config Request options.
- * @param default_val Default line value - only relevant if we're setting
+ * @param default_val Initial line value - only relevant if we're setting
  *                    the direction to output.
  * @return 0 if the line was properly reserved. In case of an error this
  *         routine returns -1 and sets the last error number.
@@ -716,7 +716,7 @@ int gpiod_line_request_input(struct gpiod_line *line,
  * @brief Reserve a single line, set the direction to output.
  * @param line GPIO line object.
  * @param consumer Name of the consumer.
- * @param default_val Default line value.
+ * @param default_val Initial line value.
  * @return 0 if the line was properly reserved, -1 on failure.
  */
 int gpiod_line_request_output(struct gpiod_line *line,
@@ -764,7 +764,7 @@ int gpiod_line_request_input_flags(struct gpiod_line *line,
  * @param line GPIO line object.
  * @param consumer Name of the consumer.
  * @param flags Additional request flags.
- * @param default_val Default line value.
+ * @param default_val Initial line value.
  * @return 0 if the line was properly reserved, -1 on failure.
  */
 int gpiod_line_request_output_flags(struct gpiod_line *line,
@@ -808,7 +808,7 @@ int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
  * @brief Reserve a set of GPIO lines.
  * @param bulk Set of GPIO lines to reserve.
  * @param config Request options.
- * @param default_vals Default line values - only relevant if we're setting
+ * @param default_vals Initial line values - only relevant if we're setting
  *                     the direction to output.
  * @return 0 if the all lines were properly requested. In case of an error
  *         this routine returns -1 and sets the last error number.
@@ -834,7 +834,7 @@ int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
  * @brief Reserve a set of GPIO lines, set the direction to output.
  * @param bulk Set of GPIO lines to reserve.
  * @param consumer Name of the consumer.
- * @param default_vals Default line values.
+ * @param default_vals Initial line values.
  * @return 0 if the lines were properly reserved, -1 on failure.
  */
 int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
@@ -884,7 +884,7 @@ int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
  * @param bulk Set of GPIO lines to reserve.
  * @param consumer Name of the consumer.
  * @param flags Additional request flags.
- * @param default_vals Default line values.
+ * @param default_vals Initial line values.
  * @return 0 if the lines were properly reserved, -1 on failure.
  */
 int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
