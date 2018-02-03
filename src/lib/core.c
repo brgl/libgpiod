@@ -581,7 +581,7 @@ int gpiod_line_set_value(struct gpiod_line *line, int value)
 	return gpiod_line_set_value_bulk(&bulk, &value);
 }
 
-int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, int *values)
+int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 {
 	struct gpiohandle_data data;
 	struct gpiod_line *line;

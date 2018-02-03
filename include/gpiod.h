@@ -1006,7 +1006,7 @@ int gpiod_line_set_value(struct gpiod_line *line, int value) GPIOD_API;
  * undefined.
  */
 int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
-			      int *values) GPIOD_API;
+			      const int *values) GPIOD_API;
 
 /**
  * @}
