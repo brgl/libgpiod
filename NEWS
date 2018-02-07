@@ -1,5 +1,26 @@
-libgpiod v0.3.2
-===============
+libgpiod v1.0
+=============
+
+NOTE: This is a major release - it breaks the API compatibility with
+      the 0.x.y series.
+
+New features:
+- remove custom error handling in favor of errnos
+- merge the two separate interfaces for event requests and regular line
+  requests
+- redesign the simple API
+- change the prefix of the high-level API from 'simple' to 'ctxless' (for
+  contextless) which better reflects its purpose
+- redesign the iterator API
+- make use of prefixes more consistent
+- rename symbols all over the place
+- various minor tweaks
+- add support for pkg-config
+
+Improvements:
+- add a bunch of helpers for line requests
+- split the library code into multiple source files by functionality
+- re-enable a test case previously broken by a bug in the kernel
 
 Bug fixes:
 - correctly handle signal interrupts when polling in gpiod_simple_event_loop()
@@ -11,19 +32,9 @@ Bug fixes:
 - fix the flags passed to ar in order to supress a build warning
 - set the last error code in gpiod_chip_open_by_label() to ENOENT if a chip
   can't be found
-
-libgpiod v0.3.1
-===============
-
-Bug fixes:
 - fix checking the kernel version in the test suite
-
-Improvements:
-- re-enable a test case previously broken by a bug in the kernel
-
-This is the first version hosted at kernel.org. README.md has been renamed to
-README as the .md file was not being packaged automatically by autotools,
-which went unnoticed due to not using 'make dist' until now.
+- fix various coding style issues
+- initialize the active low variable in gpiomon
 
 libgpiod v0.3
 =============
@@ -41,11 +52,6 @@ Improvements:
 
 Bug fixes:
 - use correct UAPI flags when requesting line events
-
-libgpiod v0.2.1
-===============
-
-Bug fixes:
 - capitalize 'GPIO' in error messages in gpioset, gpioget & gpiomon
 - tweak the error message on invalid arguments in gpiofind
 - don't ignore superfluous arguments and fix the displayed name for falling
@@ -73,27 +79,10 @@ Improvements:
 Bug fixes:
 - fix the return value of gpiod_simple_event_loop()
 - don't try to process docs if doxygen is not installed
-
-libgpiod v0.1.3
-===============
-
-Bug fixes:
-- this time the bug making it impossible to request both types of line events
-  was really fixed
 - pass the O_CLOEXEC flag to open() when opening the GPIO chip device file
-
-libgpiod v0.1.2
-===============
-
-Bug fixes:
 - include <poll.h> instead of <sys/poll.h> in gpioset
 - fix a formatting issue in gpioinfo for chips with >100 GPIO lines
 - fix a bug when requesting both-edges event notifications
-
-libgpiod v0.1.1
-===============
-
-Bug fixes:
 - fix short options in gpiomon (short opt for --silent was missing)
 - correct the kernel headers requirements in README
 - include <time.h> for struct timespec
