@@ -26,4 +26,6 @@ doc:
 	@(cat Doxyfile; echo PROJECT_NUMBER = $(VERSION_STR)) | doxygen -
 .PHONY: doc
 
+EXTRA_DIST = Doxyfile
+
 endif
