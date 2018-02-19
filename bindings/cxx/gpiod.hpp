@@ -346,6 +346,11 @@ public:
 	GPIOD_API void request(const line_request& config, int default_val = 0) const;
 
 	/**
+	 * @brief Release the line if it was previously requested.
+	 */
+	GPIOD_API void release(void) const;
+
+	/**
 	 * @brief Check if this user has ownership of this line.
 	 * @return True if the user has ownership of this line, false otherwise.
 	 */
@@ -591,6 +596,11 @@ public:
 	 */
 	GPIOD_API void request(const line_request& config,
 			       const std::vector<int> default_vals = std::vector<int>()) const;
+
+	/**
+	 * @brief Release all lines held by this object.
+	 */
+	GPIOD_API void release(void) const;
 
 	/**
 	 * @brief Read values from all lines held by this object.

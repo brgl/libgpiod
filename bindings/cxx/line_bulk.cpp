@@ -129,6 +129,17 @@ void line_bulk::request(const line_request& config, const std::vector<int> defau
 					  "error requesting GPIO lines");
 }
 
+void line_bulk::release(void) const
+{
+	this->throw_if_empty();
+
+	::gpiod_line_bulk bulk;
+
+	this->to_line_bulk(::std::addressof(bulk));
+
+	::gpiod_line_release_bulk(::std::addressof(bulk));
+}
+
 ::std::vector<int> line_bulk::get_values(void) const
 {
 	this->throw_if_empty();

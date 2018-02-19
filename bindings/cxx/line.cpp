@@ -102,6 +102,15 @@ void line::request(const line_request& config, int default_val) const
 	bulk.request(config, { default_val });
 }
 
+void line::release(void) const
+{
+	this->throw_if_null();
+
+	line_bulk bulk({ *this });
+
+	bulk.release();
+}
+
 bool line::is_requested(void) const
 {
 	this->throw_if_null();
