@@ -368,7 +368,9 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 
 	gpiod_line_bulk_foreach_line_off(bulk, line, i) {
 		req.lineoffsets[i] = gpiod_line_offset(line);
-		if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT)
+		if (config->request_type ==
+				GPIOD_LINE_REQUEST_DIRECTION_OUTPUT &&
+		    default_vals)
 			req.default_values[i] = !!default_vals[i];
 	}
 

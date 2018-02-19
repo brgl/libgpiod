@@ -247,6 +247,44 @@ TEST_DEFINE(line_request_bulk_different_chips,
 	    "gpiod_line_request_bulk() - different chips",
 	    0, { 8, 8 });
 
+static void line_request_null_default_vals_for_output(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line_bulk bulk = GPIOD_LINE_BULK_INITIALIZER;
+	struct gpiod_line *line;
+	int rv, vals[3];
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_get_line(chip, 0);
+	gpiod_line_bulk_add(&bulk, line);
+	line = gpiod_chip_get_line(chip, 1);
+	gpiod_line_bulk_add(&bulk, line);
+	line = gpiod_chip_get_line(chip, 2);
+	gpiod_line_bulk_add(&bulk, line);
+
+	rv = gpiod_line_request_bulk_output(&bulk, TEST_CONSUMER, NULL);
+	TEST_ASSERT_RET_OK(rv);
+
+	gpiod_line_release_bulk(&bulk);
+
+	rv = gpiod_line_request_bulk_input(&bulk, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
+
+	memset(vals, 0, sizeof(vals));
+
+	rv = gpiod_line_get_value_bulk(&bulk, vals);
+	TEST_ASSERT_RET_OK(rv);
+
+	TEST_ASSERT_EQ(vals[0], 0);
+	TEST_ASSERT_EQ(vals[1], 0);
+	TEST_ASSERT_EQ(vals[2], 0);
+}
+TEST_DEFINE(line_request_null_default_vals_for_output,
+	    "gpiod_line_request_bulk() - null default vals for output",
+	    0, { 8 });
+
 static void line_set_value(void)
 {
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
