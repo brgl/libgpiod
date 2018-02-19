@@ -147,6 +147,42 @@ void single_line_test(void)
 }
 TEST_CASE(single_line_test);
 
+void multiple_lines_test(void)
+{
+	::gpiod::chip chip("gpiochip0");
+
+	::std::cout << "Getting multiple lines by offsets" << ::std::endl;
+
+	::gpiod::line_bulk lines = chip.get_lines({ 0, 2, 3, 4, 6 });
+
+	::std::cout << "Requesting them for output" << ::std::endl;
+
+	::gpiod::line_request config;
+	config.consumer = "gpiod_cxx_tests";
+	config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
+
+	lines.request(config, { 0, 0, 0, 0, 0 });
+
+	::std::cout << "Setting values" << ::std::endl;
+
+	lines.set_values({ 0, 1, 1, 0, 1});
+
+	::std::cout << "Requesting the lines for input" << ::std::endl;
+
+	config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
+	lines.release();
+	lines.request(config);
+
+	::std::cout << "Reading the values" << ::std::endl;
+
+	auto vals = lines.get_values();
+
+	for (auto& it: vals)
+		::std::cout << it << " ";
+	::std::cout << ::std::endl;
+}
+TEST_CASE(multiple_lines_test);
+
 } /* namespace */
 
 int main(int, char **)
