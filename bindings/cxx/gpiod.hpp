@@ -590,7 +590,7 @@ public:
 	 *                     output direction requests.
 	 */
 	GPIOD_API void request(const line_request& config,
-			       std::vector<int> default_vals = std::vector<int>()) const;
+			       const std::vector<int> default_vals = std::vector<int>()) const;
 
 	/**
 	 * @brief Read values from all lines held by this object.

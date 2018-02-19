@@ -97,7 +97,7 @@ void line_bulk::clear(void)
 	this->_m_bulk.clear();
 }
 
-void line_bulk::request(const line_request& config, std::vector<int> default_vals) const
+void line_bulk::request(const line_request& config, const std::vector<int> default_vals) const
 {
 	this->throw_if_empty();
 
