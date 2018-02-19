@@ -151,6 +151,31 @@ then
 	AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
 fi
 
+AC_ARG_ENABLE([bindings-python],
+	[AC_HELP_STRING([--enable-bindings-python],
+		[enable python3 bindings [default=no]])],
+	[
+		if test "x$enableval" = xyes
+		then
+			with_bindings_python=true
+		else
+			with_bindings_python=false
+		fi
+	],
+	[with_bindings_python=false])
+AM_CONDITIONAL([WITH_BINDINGS_PYTHON], [test "x$with_bindings_python" = xtrue])
+
+if test "x$with_bindings_python" = xtrue
+then
+	AX_PYTHON_DEVEL([>= '3.0.0'])
+	AM_PATH_PYTHON([3.0])
+	AC_CHECK_PROG([has_python3], [python3], [true], [false])
+	if test "X$has_python3" = xfalse
+	then
+		AC_MSG_ERROR([python3 not found - needed for python bindings], [1])
+	fi
+fi
+
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
 AM_CONDITIONAL([HAS_DOXYGEN], [test "x$has_doxygen" = xtrue])
 if test "x$has_doxygen" = xfalse
@@ -168,6 +193,8 @@ AC_CONFIG_FILES([libgpiod.pc
 		 bindings/cxx/libgpiodcxx.pc
 		 bindings/Makefile
 		 bindings/cxx/Makefile
-		 bindings/cxx/examples/Makefile])
+		 bindings/cxx/examples/Makefile
+		 bindings/python/Makefile
+		 bindings/python/examples/Makefile])
 
 AC_OUTPUT

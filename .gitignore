@@ -17,6 +17,7 @@ gpiomoncxx
 gpiosetcxx
 *.o
 *.lo
+*.la
 doc
 libgpiod.pc
 libgpiodcxx.pc

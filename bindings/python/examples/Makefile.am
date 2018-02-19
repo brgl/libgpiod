@@ -6,16 +6,10 @@
 # Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
 #
 
-SUBDIRS = .
-
-if WITH_BINDINGS_CXX
-
-SUBDIRS += cxx
-
-endif
-
-if WITH_BINDINGS_PYTHON
-
-SUBDIRS += python
-
-endif
+EXTRA_DIST =	gpiod_tests.py \
+		gpiodetect.py \
+		gpiofind.py \
+		gpioget.py \
+		gpioinfo.py \
+		gpiomon.py \
+		gpioset.py
