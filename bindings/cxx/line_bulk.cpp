@@ -104,9 +104,6 @@ void line_bulk::request(const line_request& config, const std::vector<int> defau
 	if (!default_vals.empty() && this->size() != default_vals.size())
 		throw ::std::invalid_argument("the number of default values must correspond with the number of lines");
 
-	if (config.request_type == line_request::DIRECTION_OUTPUT && default_vals.empty())
-		throw ::std::invalid_argument("default values are required for output mode");
-
 	::gpiod_line_request_config conf;
 	::gpiod_line_bulk bulk;
 	int rv;
@@ -123,7 +120,8 @@ void line_bulk::request(const line_request& config, const std::vector<int> defau
 	}
 
 	rv = ::gpiod_line_request_bulk(::std::addressof(bulk),
-				       ::std::addressof(conf), default_vals.data());
+				       ::std::addressof(conf),
+				       default_vals.empty() ? NULL : default_vals.data());
 	if (rv)
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "error requesting GPIO lines");

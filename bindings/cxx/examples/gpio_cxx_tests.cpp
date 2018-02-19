@@ -161,7 +161,7 @@ void multiple_lines_test(void)
 	config.consumer = "gpiod_cxx_tests";
 	config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
 
-	lines.request(config, { 0, 0, 0, 0, 0 });
+	lines.request(config);
 
 	::std::cout << "Setting values" << ::std::endl;
 
