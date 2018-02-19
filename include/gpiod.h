@@ -155,7 +155,7 @@ int gpiod_ctxless_set_value_multiple(const char *device,
  * @brief Event types that can be passed to the ctxless event callback.
  */
 enum {
-	GPIOD_CTXLESS_EVENT_CB_TIMEOUT,
+	GPIOD_CTXLESS_EVENT_CB_TIMEOUT = 1,
 	/**< Waiting for events timed out. */
 	GPIOD_CTXLESS_EVENT_CB_RISING_EDGE,
 	/**< Rising edge event occured. */
@@ -531,7 +531,7 @@ gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
  * @brief Possible direction settings.
  */
 enum {
-	GPIOD_LINE_DIRECTION_INPUT,
+	GPIOD_LINE_DIRECTION_INPUT = 1,
 	/**< Direction is input - we're reading the state of a GPIO line. */
 	GPIOD_LINE_DIRECTION_OUTPUT,
 	/**< Direction is output - we're driving the GPIO line. */
@@ -541,7 +541,7 @@ enum {
  * @brief Possible active state settings.
  */
 enum {
-	GPIOD_LINE_ACTIVE_STATE_HIGH,
+	GPIOD_LINE_ACTIVE_STATE_HIGH = 1,
 	/**< The active state of a GPIO is active-high. */
 	GPIOD_LINE_ACTIVE_STATE_LOW,
 	/**< The active state of a GPIO is active-low. */
@@ -649,7 +649,7 @@ bool gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API;
  * @brief Available types of requests.
  */
 enum {
-	GPIOD_LINE_REQUEST_DIRECTION_AS_IS,
+	GPIOD_LINE_REQUEST_DIRECTION_AS_IS = 1,
 	/**< Request the line(s), but don't change current direction. */
 	GPIOD_LINE_REQUEST_DIRECTION_INPUT,
 	/**< Request the line(s) for reading the GPIO line state. */
@@ -1019,7 +1019,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
  * @brief Event types.
  */
 enum {
-	GPIOD_LINE_EVENT_RISING_EDGE,
+	GPIOD_LINE_EVENT_RISING_EDGE = 1,
 	/**< Rising edge event. */
 	GPIOD_LINE_EVENT_FALLING_EDGE,
 	/**< Falling edge event. */
