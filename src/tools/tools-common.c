@@ -21,14 +21,12 @@
 #include <libgen.h>
 #include <errno.h>
 
-#define NORETURN		__attribute__((noreturn))
-
 const char * get_progname(void)
 {
 	return program_invocation_name;
 }
 
-void NORETURN PRINTF(1, 2) die(const char *fmt, ...)
+void die(const char *fmt, ...)
 {
 	va_list va;
 
@@ -41,7 +39,7 @@ void NORETURN PRINTF(1, 2) die(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-void NORETURN PRINTF(1, 2) die_perror(const char *fmt, ...)
+void die_perror(const char *fmt, ...)
 {
 	va_list va;
 

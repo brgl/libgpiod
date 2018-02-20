@@ -19,14 +19,15 @@
  * common code.
  */
 
+#define NORETURN		__attribute__((noreturn))
 #define PRINTF(fmt, arg)	__attribute__((format(printf, fmt, arg)))
 #define ARRAY_SIZE(x)		(sizeof(x) / sizeof(*(x)))
 
 #define GETOPT_NULL_LONGOPT	NULL, 0, NULL, 0
 
 const char * get_progname(void);
-void die(const char *fmt, ...);
-void die_perror(const char *fmt, ...);
+void die(const char *fmt, ...) NORETURN PRINTF(1, 2);
+void die_perror(const char *fmt, ...) NORETURN PRINTF(1, 2);
 void print_version(void);
 
 #endif /* __GPIOD_TOOLS_COMMON_H__ */
