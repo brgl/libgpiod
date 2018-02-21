@@ -19,6 +19,7 @@ gpiosetcxx
 *.lo
 doc
 libgpiod.pc
+libgpiodcxx.pc
 
 # autotools stuff
 .deps/

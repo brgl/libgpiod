@@ -149,6 +149,7 @@ AC_CONFIG_FILES([libgpiod.pc
 		 src/lib/Makefile
 		 src/tools/Makefile
 		 tests/Makefile
+		 bindings/cxx/libgpiodcxx.pc
 		 bindings/Makefile
 		 bindings/cxx/Makefile
 		 bindings/cxx/examples/Makefile])

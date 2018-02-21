@@ -16,4 +16,7 @@ libgpiodcxx_la_LDFLAGS += -lgpiod -L$(top_builddir)/src/lib
 
 include_HEADERS = gpiod.hpp
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libgpiodcxx.pc
+
 SUBDIRS = . examples
