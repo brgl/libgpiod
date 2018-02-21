@@ -25,8 +25,8 @@ namespace gpiod {
 class line;
 class line_bulk;
 class line_event;
-class line_iterator;
-class chip_iterator;
+class line_iter;
+class chip_iter;
 
 /**
  * @defgroup __gpiod_cxx__ C++ bindings
@@ -199,8 +199,8 @@ private:
 
 	::std::shared_ptr<::gpiod_chip> _m_chip;
 
-	friend chip_iterator;
-	friend line_iterator;
+	friend chip_iter;
+	friend line_iter;
 };
 
 /**
@@ -461,7 +461,7 @@ private:
 
 	friend chip;
 	friend line_bulk;
-	friend line_iterator;
+	friend line_iter;
 };
 
 /**
@@ -749,75 +749,75 @@ private:
 };
 
 /**
- * @brief Create a new chip_iterator.
+ * @brief Create a new chip_iter.
  * @return New chip iterator object pointing to the first GPIO chip on the system.
  * @note This function is needed as we already use the default constructor of
- *       gpiod::chip_iterator as the return value of gpiod::end.
+ *       gpiod::chip_iter as the return value of gpiod::end.
  */
-GPIOD_API chip_iterator make_chip_iterator(void);
+GPIOD_API chip_iter make_chip_iter(void);
 
 /**
  * @brief Support for range-based loops for chip iterators.
  * @param iter A chip iterator.
  * @return Iterator unchanged.
  */
-GPIOD_API chip_iterator begin(chip_iterator iter) noexcept;
+GPIOD_API chip_iter begin(chip_iter iter) noexcept;
 
 /**
  * @brief Support for range-based loops for chip iterators.
  * @param iter A chip iterator.
  * @return New end iterator.
  */
-GPIOD_API chip_iterator end(const chip_iterator& iter) noexcept;
+GPIOD_API chip_iter end(const chip_iter& iter) noexcept;
 
 /**
  * @brief Allows to iterate over all GPIO chips present on the system.
  */
-class chip_iterator
+class chip_iter
 {
 public:
 
 	/**
 	 * @brief Default constructor. Creates the end iterator.
 	 */
-	GPIOD_API chip_iterator(void) = default;
+	GPIOD_API chip_iter(void) = default;
 
 	/**
 	 * @brief Copy constructor.
-	 * @param other Other chip_iterator.
+	 * @param other Other chip_iter.
 	 */
-	GPIOD_API chip_iterator(const chip_iterator& other) = default;
+	GPIOD_API chip_iter(const chip_iter& other) = default;
 
 	/**
 	 * @brief Move constructor.
-	 * @param other Other chip_iterator.
+	 * @param other Other chip_iter.
 	 */
-	GPIOD_API chip_iterator(chip_iterator&& other) = default;
+	GPIOD_API chip_iter(chip_iter&& other) = default;
 
 	/**
 	 * @brief Assignment operator.
-	 * @param other Other chip_iterator.
+	 * @param other Other chip_iter.
 	 * @return Reference to this iterator.
 	 */
-	GPIOD_API chip_iterator& operator=(const chip_iterator& other) = default;
+	GPIOD_API chip_iter& operator=(const chip_iter& other) = default;
 
 	/**
 	 * @brief Move assignment operator.
-	 * @param other Other chip_iterator.
+	 * @param other Other chip_iter.
 	 * @return Reference to this iterator.
 	 */
-	GPIOD_API chip_iterator& operator=(chip_iterator&& other) = default;
+	GPIOD_API chip_iter& operator=(chip_iter&& other) = default;
 
 	/**
 	 * @brief Destructor.
 	 */
-	GPIOD_API ~chip_iterator(void) = default;
+	GPIOD_API ~chip_iter(void) = default;
 
 	/**
 	 * @brief Advance the iterator by one element.
 	 * @return Reference to this iterator.
 	 */
-	GPIOD_API chip_iterator& operator++(void);
+	GPIOD_API chip_iter& operator++(void);
 
 	/**
 	 * @brief Dereference current element.
@@ -834,27 +834,27 @@ public:
 	/**
 	 * @brief Check if this operator points to the same element.
 	 * @param rhs Right-hand side of the equation.
-	 * @return True if this iterator points to the same chip_iterator,
+	 * @return True if this iterator points to the same chip_iter,
 	 *         false otherwise.
 	 */
-	GPIOD_API bool operator==(const chip_iterator& rhs) const noexcept;
+	GPIOD_API bool operator==(const chip_iter& rhs) const noexcept;
 
 	/**
 	 * @brief Check if this operator doesn't point to the same element.
 	 * @param rhs Right-hand side of the equation.
-	 * @return True if this iterator doesn't point to the same chip_iterator,
+	 * @return True if this iterator doesn't point to the same chip_iter,
 	 *         false otherwise.
 	 */
-	GPIOD_API bool operator!=(const chip_iterator& rhs) const noexcept;
+	GPIOD_API bool operator!=(const chip_iter& rhs) const noexcept;
 
 private:
 
-	chip_iterator(::gpiod_chip_iter* iter);
+	chip_iter(::gpiod_chip_iter* iter);
 
 	::std::shared_ptr<::gpiod_chip_iter> _m_iter;
 	chip _m_current;
 
-	friend chip_iterator make_chip_iterator(void);
+	friend chip_iter make_chip_iter(void);
 };
 
 /**
@@ -862,69 +862,69 @@ private:
  * @param iter A line iterator.
  * @return Iterator unchanged.
  */
-GPIOD_API line_iterator begin(line_iterator iter) noexcept;
+GPIOD_API line_iter begin(line_iter iter) noexcept;
 
 /**
  * @brief Support for range-based loops for line iterators.
  * @param iter A line iterator.
  * @return New end iterator.
  */
-GPIOD_API line_iterator end(const line_iterator& iter) noexcept;
+GPIOD_API line_iter end(const line_iter& iter) noexcept;
 
 /**
  * @brief Allows to iterate over all lines owned by a GPIO chip.
  */
-class line_iterator
+class line_iter
 {
 public:
 
 	/**
 	 * @brief Default constructor. Creates the end iterator.
 	 */
-	GPIOD_API line_iterator(void) = default;
+	GPIOD_API line_iter(void) = default;
 
 	/**
 	 * @brief Constructor. Creates the begin iterator.
 	 * @param owner Chip owning the GPIO lines over which we want to iterate.
 	 */
-	GPIOD_API line_iterator(const chip& owner);
+	GPIOD_API line_iter(const chip& owner);
 
 	/**
 	 * @brief Copy constructor.
 	 * @param other Other line iterator.
 	 */
-	GPIOD_API line_iterator(const line_iterator& other) = default;
+	GPIOD_API line_iter(const line_iter& other) = default;
 
 	/**
 	 * @brief Move constructor.
 	 * @param other Other line iterator.
 	 */
-	GPIOD_API line_iterator(line_iterator&& other) = default;
+	GPIOD_API line_iter(line_iter&& other) = default;
 
 	/**
 	 * @brief Assignment operator.
 	 * @param other Other line iterator.
-	 * @return Reference to this line_iterator.
+	 * @return Reference to this line_iter.
 	 */
-	GPIOD_API line_iterator& operator=(const line_iterator& other) = default;
+	GPIOD_API line_iter& operator=(const line_iter& other) = default;
 
 	/**
 	 * @brief Move assignment operator.
 	 * @param other Other line iterator.
-	 * @return Reference to this line_iterator.
+	 * @return Reference to this line_iter.
 	 */
-	GPIOD_API line_iterator& operator=(line_iterator&& other) = default;
+	GPIOD_API line_iter& operator=(line_iter&& other) = default;
 
 	/**
 	 * @brief Destructor.
 	 */
-	GPIOD_API ~line_iterator(void) = default;
+	GPIOD_API ~line_iter(void) = default;
 
 	/**
 	 * @brief Advance the iterator by one element.
 	 * @return Reference to this iterator.
 	 */
-	GPIOD_API line_iterator& operator++(void);
+	GPIOD_API line_iter& operator++(void);
 
 	/**
 	 * @brief Dereference current element.
@@ -941,18 +941,18 @@ public:
 	/**
 	 * @brief Check if this operator points to the same element.
 	 * @param rhs Right-hand side of the equation.
-	 * @return True if this iterator points to the same line_iterator,
+	 * @return True if this iterator points to the same line_iter,
 	 *         false otherwise.
 	 */
-	GPIOD_API bool operator==(const line_iterator& rhs) const noexcept;
+	GPIOD_API bool operator==(const line_iter& rhs) const noexcept;
 
 	/**
 	 * @brief Check if this operator doesn't point to the same element.
 	 * @param rhs Right-hand side of the equation.
-	 * @return True if this iterator doesn't point to the same line_iterator,
+	 * @return True if this iterator doesn't point to the same line_iter,
 	 *         false otherwise.
 	 */
-	GPIOD_API bool operator!=(const line_iterator& rhs) const noexcept;
+	GPIOD_API bool operator!=(const line_iter& rhs) const noexcept;
 
 private:
 

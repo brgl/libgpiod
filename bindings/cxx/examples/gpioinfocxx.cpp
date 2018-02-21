@@ -23,10 +23,10 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	for (auto& cit: ::gpiod::make_chip_iterator()) {
+	for (auto& cit: ::gpiod::make_chip_iter()) {
 		::std::cout << cit.name() << " - " << cit.num_lines() << " lines:" << ::std::endl;
 
-		for (auto& lit: ::gpiod::line_iterator(cit)) {
+		for (auto& lit: ::gpiod::line_iter(cit)) {
 			::std::cout << "\tline ";
 			::std::cout.width(3);
 			::std::cout << lit.offset() << ": ";

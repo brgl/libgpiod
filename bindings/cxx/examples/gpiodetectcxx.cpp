@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	for (auto& it: ::gpiod::make_chip_iterator()) {
+	for (auto& it: ::gpiod::make_chip_iter()) {
 	        ::std::cout << it.name() << " ["
 			  << it.label() << "] ("
 			  << it.num_lines() << " lines)" << ::std::endl;

@@ -27,7 +27,7 @@ void line_iter_deleter(::gpiod_line_iter* iter)
 	::gpiod_line_iter_free(iter);
 }
 
-::gpiod_line_iter* make_line_iterator(::gpiod_chip* chip)
+::gpiod_line_iter* make_line_iter(::gpiod_chip* chip)
 {
 	::gpiod_line_iter* iter;
 
@@ -41,34 +41,34 @@ void line_iter_deleter(::gpiod_line_iter* iter)
 
 } /* namespace */
 
-chip_iterator make_chip_iterator(void)
+chip_iter make_chip_iter(void)
 {
 	::gpiod_chip_iter* iter = ::gpiod_chip_iter_new();
 	if (!iter)
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "error creating GPIO chip iterator");
 
-	return ::std::move(chip_iterator(iter));
+	return ::std::move(chip_iter(iter));
 }
 
-bool chip_iterator::operator==(const chip_iterator& rhs) const noexcept
+bool chip_iter::operator==(const chip_iter& rhs) const noexcept
 {
 	return this->_m_current == rhs._m_current;
 }
 
-bool chip_iterator::operator!=(const chip_iterator& rhs) const noexcept
+bool chip_iter::operator!=(const chip_iter& rhs) const noexcept
 {
 	return this->_m_current != rhs._m_current;
 }
 
-chip_iterator::chip_iterator(::gpiod_chip_iter *iter)
+chip_iter::chip_iter(::gpiod_chip_iter *iter)
 	: _m_iter(iter, chip_iter_deleter),
 	  _m_current(chip(::gpiod_chip_iter_next_noclose(this->_m_iter.get())))
 {
 
 }
 
-chip_iterator& chip_iterator::operator++(void)
+chip_iter& chip_iter::operator++(void)
 {
 	::gpiod_chip* next = ::gpiod_chip_iter_next_noclose(this->_m_iter.get());
 
@@ -77,44 +77,44 @@ chip_iterator& chip_iterator::operator++(void)
 	return *this;
 }
 
-const chip& chip_iterator::operator*(void) const
+const chip& chip_iter::operator*(void) const
 {
 	return this->_m_current;
 }
 
-const chip* chip_iterator::operator->(void) const
+const chip* chip_iter::operator->(void) const
 {
 	return ::std::addressof(this->_m_current);
 }
 
-chip_iterator begin(chip_iterator iter) noexcept
+chip_iter begin(chip_iter iter) noexcept
 {
 	return iter;
 }
 
-chip_iterator end(const chip_iterator&) noexcept
+chip_iter end(const chip_iter&) noexcept
 {
-	return ::std::move(chip_iterator());
+	return ::std::move(chip_iter());
 }
 
-line_iterator begin(line_iterator iter) noexcept
+line_iter begin(line_iter iter) noexcept
 {
 	return iter;
 }
 
-line_iterator end(const line_iterator&) noexcept
+line_iter end(const line_iter&) noexcept
 {
-	return ::std::move(line_iterator());
+	return ::std::move(line_iter());
 }
 
-line_iterator::line_iterator(const chip& owner)
-	: _m_iter(make_line_iterator(owner._m_chip.get()), line_iter_deleter),
+line_iter::line_iter(const chip& owner)
+	: _m_iter(make_line_iter(owner._m_chip.get()), line_iter_deleter),
 	  _m_current(line(::gpiod_line_iter_next(this->_m_iter.get()), owner))
 {
 
 }
 
-line_iterator& line_iterator::operator++(void)
+line_iter& line_iter::operator++(void)
 {
 	::gpiod_line* next = ::gpiod_line_iter_next(this->_m_iter.get());
 
@@ -123,22 +123,22 @@ line_iterator& line_iterator::operator++(void)
 	return *this;
 }
 
-const line& line_iterator::operator*(void) const
+const line& line_iter::operator*(void) const
 {
 	return this->_m_current;
 }
 
-const line* line_iterator::operator->(void) const
+const line* line_iter::operator->(void) const
 {
 	return ::std::addressof(this->_m_current);
 }
 
-bool line_iterator::operator==(const line_iterator& rhs) const noexcept
+bool line_iter::operator==(const line_iter& rhs) const noexcept
 {
 	return this->_m_current._m_line == rhs._m_current._m_line;
 }
 
-bool line_iterator::operator!=(const line_iterator& rhs) const noexcept
+bool line_iter::operator!=(const line_iter& rhs) const noexcept
 {
 	return this->_m_current._m_line != rhs._m_current._m_line;
 }

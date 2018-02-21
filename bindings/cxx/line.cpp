@@ -235,7 +235,7 @@ line find_line(const ::std::string& name)
 {
 	line ret;
 
-	for (auto& it: make_chip_iterator()) {
+	for (auto& it: make_chip_iter()) {
 		ret = it.find_line(name);
 		if (ret)
 			break;
