@@ -40,7 +40,7 @@ TEST_DEFINE(gpioinfo_dump_all_chips,
 
 static void gpioinfo_dump_all_chips_one_exported(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line *line;
 	int rv;
 

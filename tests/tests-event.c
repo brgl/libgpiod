@@ -17,7 +17,7 @@
 
 static void event_rising_edge_good(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line_event ev;
 	struct gpiod_line *line;
@@ -48,7 +48,7 @@ TEST_DEFINE(event_rising_edge_good,
 
 static void event_falling_edge_good(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line_event ev;
 	struct gpiod_line *line;
@@ -79,7 +79,7 @@ TEST_DEFINE(event_falling_edge_good,
 
 static void event_rising_edge_ignore_falling(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct timespec ts = { 0, 300 };
 	struct gpiod_line *line;
 	int rv;
@@ -104,7 +104,7 @@ TEST_DEFINE(event_rising_edge_ignore_falling,
 
 static void event_rising_edge_active_low(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line_event ev;
 	struct gpiod_line *line;
@@ -136,7 +136,7 @@ TEST_DEFINE(event_rising_edge_active_low,
 
 static void event_get_value(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line_event ev;
 	struct gpiod_line *line;
@@ -173,7 +173,7 @@ TEST_DEFINE(event_get_value,
 
 static void event_get_value_active_low(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line_event ev;
 	struct gpiod_line *line;
@@ -211,7 +211,7 @@ TEST_DEFINE(event_get_value_active_low,
 
 static void event_wait_multiple(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line_bulk bulk, event_bulk;
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line *line;
@@ -247,7 +247,7 @@ TEST_DEFINE(event_wait_multiple,
 
 static void event_get_fd_when_values_requested(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line *line;
 	int rv, fd;
 
@@ -270,7 +270,7 @@ TEST_DEFINE(event_get_fd_when_values_requested,
 
 static void event_request_bulk_fail(void)
 {
-	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line_bulk bulk = GPIOD_LINE_BULK_INITIALIZER;
 	struct gpiod_line *line;
 	int rv, i;

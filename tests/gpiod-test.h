@@ -132,6 +132,8 @@ void test_free_chip_iter(struct gpiod_chip_iter **iter);
 void test_free_chip_iter_noclose(struct gpiod_chip_iter **iter);
 void test_free_line_iter(struct gpiod_line_iter **iter);
 
+#define TEST_CLEANUP_CHIP TEST_CLEANUP(test_close_chip)
+
 bool test_regex_match(const char *str, const char *pattern);
 
 /*
