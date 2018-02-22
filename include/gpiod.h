@@ -47,6 +47,7 @@ struct gpiod_chip;
 struct gpiod_line;
 struct gpiod_chip_iter;
 struct gpiod_line_iter;
+struct gpiod_line_bulk;
 
 /**
  * @defgroup __common__ Common helper macros
@@ -394,6 +395,27 @@ unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip) GPIOD_API;
  */
 struct gpiod_line *
 gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
+
+/**
+ * @brief Retrieve a set of lines and store them in a line bulk object.
+ * @param chip The GPIO chip object.
+ * @param offsets Array of offsets of lines to retrieve.
+ * @param num_offsets Number of lines to retrieve.
+ * @param bulk Line bulk object in which to store the line handles.
+ * @return 0 on success, -1 on error.
+ */
+int gpiod_chip_get_lines(struct gpiod_chip *chip,
+			 unsigned int *offsets, unsigned int num_offsets,
+			 struct gpiod_line_bulk *bulk) GPIOD_API;
+
+/**
+ * @brief Retrieve all lines exposed by a chip and store them in a bulk object.
+ * @param chip The GPIO chip object.
+ * @param bulk Line bulk object in which to store the line handles.
+ * @return 0 on success, -1 on error.
+ */
+int gpiod_chip_get_all_lines(struct gpiod_chip *chip,
+			     struct gpiod_line_bulk *bulk) GPIOD_API;
 
 /**
  * @brief Find a GPIO line by name among lines associated with given GPIO chip.

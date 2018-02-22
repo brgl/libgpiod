@@ -195,6 +195,66 @@ TEST_DEFINE(chip_num_lines,
 	    "gpiod_chip_num_lines()",
 	    0, { 1, 4, 8, 16, 32 });
 
+static void chip_get_lines(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line_bulk bulk;
+	unsigned int offsets[4];
+	struct gpiod_line *line;
+	int rv;
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	offsets[0] = 1;
+	offsets[1] = 3;
+	offsets[2] = 4;
+	offsets[3] = 7;
+
+	rv = gpiod_chip_get_lines(chip, offsets, 4, &bulk);
+	TEST_ASSERT_RET_OK(rv);
+
+	TEST_ASSERT_EQ(gpiod_line_bulk_num_lines(&bulk), 4);
+	line = gpiod_line_bulk_get_line(&bulk, 0);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 1);
+	line = gpiod_line_bulk_get_line(&bulk, 1);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 3);
+	line = gpiod_line_bulk_get_line(&bulk, 2);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 4);
+	line = gpiod_line_bulk_get_line(&bulk, 3);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 7);
+}
+TEST_DEFINE(chip_get_lines,
+	    "gpiod_chip_get_lines()",
+	    0, { 16 });
+
+static void chip_get_all_lines(void)
+{
+	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;
+	struct gpiod_line_bulk bulk;
+	struct gpiod_line *line;
+	int rv;
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	rv = gpiod_chip_get_all_lines(chip, &bulk);
+	TEST_ASSERT_RET_OK(rv);
+
+	TEST_ASSERT_EQ(gpiod_line_bulk_num_lines(&bulk), 4);
+	line = gpiod_line_bulk_get_line(&bulk, 0);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 0);
+	line = gpiod_line_bulk_get_line(&bulk, 1);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 1);
+	line = gpiod_line_bulk_get_line(&bulk, 2);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 2);
+	line = gpiod_line_bulk_get_line(&bulk, 3);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 3);
+}
+TEST_DEFINE(chip_get_all_lines,
+	    "gpiod_chip_get_all_lines()",
+	    0, { 4 });
+
 static void chip_find_line_good(void)
 {
 	TEST_CLEANUP(test_close_chip) struct gpiod_chip *chip = NULL;

@@ -103,6 +103,45 @@ struct gpiod_chip *gpiod_chip_open_lookup(const char *descr)
 	return chip;
 }
 
+int gpiod_chip_get_lines(struct gpiod_chip *chip, unsigned int *offsets,
+			 unsigned int num_offsets, struct gpiod_line_bulk *bulk)
+{
+	struct gpiod_line *line;
+	unsigned int i;
+
+	gpiod_line_bulk_init(bulk);
+
+	for (i = 0; i < num_offsets; i++) {
+		line = gpiod_chip_get_line(chip, offsets[i]);
+		if (!line)
+			return -1;
+
+		gpiod_line_bulk_add(bulk, line);
+	}
+
+	return 0;
+}
+
+int gpiod_chip_get_all_lines(struct gpiod_chip *chip,
+			     struct gpiod_line_bulk *bulk)
+{
+	struct gpiod_line_iter *iter;
+	struct gpiod_line *line;
+
+	gpiod_line_bulk_init(bulk);
+
+	iter = gpiod_line_iter_new(chip);
+	if (!iter)
+		return -1;
+
+	gpiod_foreach_line(iter, line)
+		gpiod_line_bulk_add(bulk, line);
+
+	gpiod_line_iter_free(iter);
+
+	return 0;
+}
+
 struct gpiod_line *
 gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
 {
