@@ -183,6 +183,19 @@ void multiple_lines_test(void)
 }
 TEST_CASE(multiple_lines_test);
 
+void get_all_lines(void)
+{
+	::gpiod::chip chip("gpiochip0");
+
+	::std::cout << "Getting all lines from a chip" << ::std::endl;
+
+	auto lines = chip.get_all_lines();
+
+	for (auto& it: lines)
+		::std::cout << "Offset: " << it.offset() << ::std::endl;
+}
+TEST_CASE(get_all_lines);
+
 } /* namespace */
 
 int main(int, char **)

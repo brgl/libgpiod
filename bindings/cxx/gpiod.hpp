@@ -142,6 +142,12 @@ public:
 	GPIOD_API line_bulk get_lines(const ::std::vector<unsigned int>& offsets) const;
 
 	/**
+	 * @brief Get all lines exposed by this chip.
+	 * @return All lines exposed by this chip held by a line_bulk object.
+	 */
+	GPIOD_API line_bulk get_all_lines(void) const;
+
+	/**
 	 * @brief Get a set of lines exposed by this chip by their names.
 	 * @param names Vector of line names.
 	 * @return Set of lines held by a line_bulk object.
