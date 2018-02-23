@@ -190,7 +190,7 @@ enum {
 };
 
 /**
- * @brief Simple event callack signature.
+ * @brief Simple event callback signature.
  *
  * The callback function takes the following arguments: event type (int),
  * GPIO line offset (unsigned int), event timestamp (const struct timespec *)
@@ -686,14 +686,14 @@ const char *gpiod_line_consumer(struct gpiod_line *line) GPIOD_API;
 /**
  * @brief Read the GPIO line direction setting.
  * @param line GPIO line object.
- * @return Returns GPIOD_DIRECTION_INPUT or GPIOD_DIRECTION_OUTPUT.
+ * @return Returns GPIOD_LINE_DIRECTION_INPUT or GPIOD_LINE_DIRECTION_OUTPUT.
  */
 int gpiod_line_direction(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Read the GPIO line active state setting.
  * @param line GPIO line object.
- * @return Returns GPIOD_ACTIVE_STATE_HIGH or GPIOD_ACTIVE_STATE_LOW.
+ * @return Returns GPIOD_LINE_ACTIVE_STATE_HIGH or GPIOD_LINE_ACTIVE_STATE_LOW.
  */
 int gpiod_line_active_state(struct gpiod_line *line) GPIOD_API;
 
