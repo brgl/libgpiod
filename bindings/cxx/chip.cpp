@@ -95,18 +95,14 @@ void chip::reset(void) noexcept
 {
 	this->throw_if_noref();
 
-	const char* name = ::gpiod_chip_name(this->_m_chip.get());
-
-	return ::std::move(name ? ::std::string(name) : ::std::string());
+	return ::std::move(::std::string(::gpiod_chip_name(this->_m_chip.get())));
 }
 
 ::std::string chip::label(void) const
 {
 	this->throw_if_noref();
 
-	const char* label = ::gpiod_chip_label(this->_m_chip.get());
-
-	return ::std::move(label ? ::std::string(label) : ::std::string());
+	return ::std::move(::std::string(::gpiod_chip_label(this->_m_chip.get())));
 }
 
 unsigned int chip::num_lines(void) const
