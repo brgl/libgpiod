@@ -55,10 +55,10 @@ line_bulk::line_bulk(const ::std::vector<line>& lines)
 	this->_m_bulk.reserve(lines.size());
 
 	for (auto& it: lines)
-		this->add(it);
+		this->append(it);
 }
 
-void line_bulk::add(const line& new_line)
+void line_bulk::append(const line& new_line)
 {
 	if (!new_line)
 		throw ::std::logic_error("line_bulk cannot hold empty line objects");
@@ -199,7 +199,7 @@ line_bulk line_bulk::event_wait(const ::std::chrono::nanoseconds& timeout) const
 					  "error polling for events");
 	} else if (rv > 0) {
 		for (unsigned int i = 0; i < event_bulk.num_lines; i++)
-			ret.add(line(event_bulk.lines[i], this->_m_bulk[i].get_chip()));
+			ret.append(line(event_bulk.lines[i], this->_m_bulk[i].get_chip()));
 	}
 
 	return ::std::move(ret);

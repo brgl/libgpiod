@@ -144,7 +144,7 @@ line_bulk chip::get_lines(const ::std::vector<unsigned int>& offsets) const
 	line_bulk lines;
 
 	for (auto& it: offsets)
-		lines.add(this->get_line(it));
+		lines.append(this->get_line(it));
 
 	return ::std::move(lines);
 }
@@ -154,7 +154,7 @@ line_bulk chip::get_all_lines(void) const
 	line_bulk lines;
 
 	for (unsigned int i = 0; i < this->num_lines(); i++)
-		lines.add(this->get_line(i));
+		lines.append(this->get_line(i));
 
 	return ::std::move(lines);
 }
@@ -164,7 +164,7 @@ line_bulk chip::find_lines(const ::std::vector<::std::string>& names) const
 	line_bulk lines;
 
 	for (auto& it: names)
-		lines.add(this->find_line(it));
+		lines.append(this->find_line(it));
 
 	return ::std::move(lines);
 }

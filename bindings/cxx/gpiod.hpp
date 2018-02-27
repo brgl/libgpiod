@@ -560,7 +560,7 @@ public:
 	 * @note The new line must be owned by the same chip as all the other
 	 *       lines already held by this line_bulk object.
 	 */
-	GPIOD_API void add(const line& new_line);
+	GPIOD_API void append(const line& new_line);
 
 	/**
 	 * @brief Get the line at given offset.
