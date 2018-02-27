@@ -8,7 +8,7 @@ gpioget
 gpioset
 gpiomon
 gpiofind
-gpio_cxx_tests
+gpiod_cxx_tests
 gpiodetectcxx
 gpiofindcxx
 gpiogetcxx

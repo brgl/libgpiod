@@ -11,7 +11,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/bindings/cxx/ -I$(top_srcdir)/include
 AM_CPPFLAGS += -Wall -Wextra -g -std=gnu++11
 AM_LDFLAGS = -lgpiodcxx -L$(top_builddir)/bindings/cxx/
 
-check_PROGRAMS =	gpio_cxx_tests \
+check_PROGRAMS =	gpiod_cxx_tests \
 			gpiodetectcxx \
 			gpiofindcxx \
 			gpiogetcxx \
@@ -19,7 +19,7 @@ check_PROGRAMS =	gpio_cxx_tests \
 			gpiomoncxx \
 			gpiosetcxx
 
-gpio_cxx_tests_SOURCES = gpio_cxx_tests.cpp
+gpiod_cxx_tests_SOURCES = gpiod_cxx_tests.cpp
 
 gpiodetectcxx_SOURCES = gpiodetectcxx.cpp
 
