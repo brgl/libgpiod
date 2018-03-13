@@ -16,6 +16,23 @@ AC_DEFINE_UNQUOTED([GPIOD_VERSION_STR],
 			[Full library version string.])
 AC_SUBST(VERSION_STR, [$PACKAGE_VERSION$EXTRA_VERSION])
 
+# From the libtool manual:
+#
+# (...)
+# 3. If the library source code has changed at all since the last update, then
+#    increment revision (‘c:r:a’ becomes ‘c:r+1:a’).
+# 4. If any interfaces have been added, removed, or changed since the last
+#    update, increment current, and set revision to 0.
+# 5. If any interfaces have been added since the last public release, then
+#    increment age.
+# 6. If any interfaces have been removed or changed since the last public
+#    release, then set age to 0.
+#
+# Define the libtool version as (C.R.A):
+AC_SUBST(ABI_VERSION, [2.0.0])
+# Have a separate ABI version for C++ bindings:
+AC_SUBST(ABI_CXX_VERSION, [0.0.0])
+
 AC_CONFIG_AUX_DIR([autostuff])
 AC_CONFIG_MACRO_DIRS([m4])
 AM_INIT_AUTOMAKE([foreign subdir-objects])

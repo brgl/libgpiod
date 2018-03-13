@@ -10,7 +10,7 @@ lib_LTLIBRARIES = libgpiodcxx.la
 libgpiodcxx_la_SOURCES = chip.cpp iter.cpp line.cpp line_bulk.cpp
 libgpiodcxx_la_CPPFLAGS = -Wall -Wextra -g -std=gnu++11
 libgpiodcxx_la_CPPFLAGS += -fvisibility=hidden -I$(top_srcdir)/include/
-libgpiodcxx_la_LDFLAGS = -version-number $(subst .,:,$(PACKAGE_VERSION))
+libgpiodcxx_la_LDFLAGS = -version-info $(subst .,:,$(ABI_CXX_VERSION))
 libgpiodcxx_la_LDFLAGS += -lgpiod -L$(top_builddir)/src/lib
 
 include_HEADERS = gpiod.hpp
