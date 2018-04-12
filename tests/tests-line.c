@@ -570,6 +570,45 @@ TEST_DEFINE(line_open_source_open_drain_simultaneously,
 	    "gpiod_line - open-source & open-drain flags simultaneously",
 	    0, { 8 });
 
+/* Verify that the reference counting of the line fd handle works correctly. */
+static void line_release_one_use_another(void)
+{
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
+	struct gpiod_line_bulk bulk;
+	struct gpiod_line *line1;
+	struct gpiod_line *line2;
+	int rv, vals[2];
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	line1 = gpiod_chip_get_line(chip, 2);
+	TEST_ASSERT_NOT_NULL(line1);
+	line2 = gpiod_chip_get_line(chip, 3);
+	TEST_ASSERT_NOT_NULL(line2);
+
+	gpiod_line_bulk_init(&bulk);
+	gpiod_line_bulk_add(&bulk, line1);
+	gpiod_line_bulk_add(&bulk, line2);
+
+	vals[0] = vals[1] = 1;
+
+	rv = gpiod_line_request_bulk_output(&bulk, TEST_CONSUMER, vals);
+	TEST_ASSERT_RET_OK(rv);
+
+	gpiod_line_release(line1);
+
+	rv = gpiod_line_get_value(line1);
+	TEST_ASSERT_EQ(rv, -1);
+	TEST_ASSERT_ERRNO_IS(EPERM);
+
+	rv = gpiod_line_get_value(line2);
+	TEST_ASSERT_EQ(rv, 1);
+}
+TEST_DEFINE(line_release_one_use_another,
+	    "gpiod_line - request two, release one, use the other one",
+	    0, { 8 });
+
 static void line_null_consumer(void)
 {
 	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;

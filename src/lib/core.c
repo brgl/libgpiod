@@ -26,6 +26,11 @@ enum {
 	LINE_REQUESTED_EVENTS,
 };
 
+struct line_fd_handle {
+	int fd;
+	int refcount;
+};
+
 struct gpiod_line {
 	unsigned int offset;
 	int direction;
@@ -38,7 +43,7 @@ struct gpiod_line {
 	bool up_to_date;
 
 	struct gpiod_chip *chip;
-	int fd;
+	struct line_fd_handle *fd_handle;
 
 	char name[32];
 	char consumer[32];
@@ -164,7 +169,7 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 			return NULL;
 
 		memset(line, 0, sizeof(*line));
-		line->fd = -1;
+		line->fd_handle = NULL;
 
 		line->offset = offset;
 		line->chip = chip;
@@ -179,6 +184,49 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 		return NULL;
 
 	return line;
+}
+
+static struct line_fd_handle *line_make_fd_handle(int fd)
+{
+	struct line_fd_handle *handle;
+
+	handle = malloc(sizeof(*handle));
+	if (!handle)
+		return NULL;
+
+	handle->fd = fd;
+	handle->refcount = 0;
+
+	return handle;
+}
+
+static void line_fd_incref(struct gpiod_line *line)
+{
+	line->fd_handle->refcount++;
+}
+
+static void line_fd_decref(struct gpiod_line *line)
+{
+	struct line_fd_handle *handle = line->fd_handle;
+
+	handle->refcount--;
+
+	if (handle->refcount == 0) {
+		close(handle->fd);
+		free(handle);
+		line->fd_handle = NULL;
+	}
+}
+
+static void line_set_fd(struct gpiod_line *line, struct line_fd_handle *handle)
+{
+	line->fd_handle = handle;
+	line_fd_incref(line);
+}
+
+static int line_get_fd(struct gpiod_line *line)
+{
+	return line->fd_handle->fd;
 }
 
 static void line_maybe_update(struct gpiod_line *line)
@@ -329,6 +377,7 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 			       const int *default_vals)
 {
 	struct gpiod_line *line, **lineptr;
+	struct line_fd_handle *line_fd;
 	struct gpiohandle_request req;
 	unsigned int i;
 	int rv, fd;
@@ -381,9 +430,13 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 	if (rv < 0)
 		return -1;
 
+	line_fd = line_make_fd_handle(req.fd);
+	if (!line_fd)
+		return -1;
+
 	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
 		line->state = LINE_REQUESTED_VALUES;
-		line->fd = req.fd;
+		line_set_fd(line, line_fd);
 		line_maybe_update(line);
 	}
 
@@ -393,6 +446,7 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 static int line_request_event_single(struct gpiod_line *line,
 			const struct gpiod_line_request_config *config)
 {
+	struct line_fd_handle *line_fd;
 	struct gpioevent_request req;
 	int rv;
 
@@ -423,8 +477,12 @@ static int line_request_event_single(struct gpiod_line *line,
 	if (rv < 0)
 		return -1;
 
+	line_fd = line_make_fd_handle(req.fd);
+	if (!line_fd)
+		return -1;
+
 	line->state = LINE_REQUESTED_EVENTS;
-	line->fd = req.fd;
+	line_set_fd(line, line_fd);
 	line_maybe_update(line);
 
 	return 0;
@@ -510,7 +568,7 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 
 	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
 		if (line->state != LINE_FREE) {
-			close(line->fd);
+			line_fd_decref(line);
 			line->state = LINE_FREE;
 		}
 	}
@@ -556,7 +614,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 
 	memset(&data, 0, sizeof(data));
 
-	fd = first->fd;
+	fd = line_get_fd(first);
 
 	status = ioctl(fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
@@ -583,7 +641,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 	struct gpiohandle_data data;
 	struct gpiod_line *line;
 	unsigned int i;
-	int status;
+	int status, fd;
 
 	if (!line_bulk_same_chip(bulk) || !line_bulk_all_requested(bulk))
 		return -1;
@@ -594,7 +652,9 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 		data.values[i] = (uint8_t)!!values[i];
 
 	line = gpiod_line_bulk_get_line(bulk, 0);
-	status = ioctl(line->fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+	fd = line_get_fd(line);
+
+	status = ioctl(fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 	if (status < 0)
 		return -1;
 
@@ -628,7 +688,7 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	num_lines = gpiod_line_bulk_num_lines(bulk);
 
 	gpiod_line_bulk_foreach_line_off(bulk, line, off) {
-		fds[off].fd = line->fd;
+		fds[off].fd = line_get_fd(line);
 		fds[off].events = POLLIN | POLLPRI;
 	}
 
@@ -657,12 +717,16 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 int gpiod_line_event_read(struct gpiod_line *line,
 			  struct gpiod_line_event *event)
 {
+	int fd;
+
 	if (line->state != LINE_REQUESTED_EVENTS) {
 		errno = EPERM;
 		return -1;
 	}
 
-	return gpiod_line_event_read_fd(line->fd, event);
+	fd = line_get_fd(line);
+
+	return gpiod_line_event_read_fd(fd, event);
 }
 
 int gpiod_line_event_get_fd(struct gpiod_line *line)
@@ -672,7 +736,7 @@ int gpiod_line_event_get_fd(struct gpiod_line *line)
 		return -1;
 	}
 
-	return line->fd;
+	return line_get_fd(line);
 }
 
 int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
