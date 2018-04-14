@@ -9,6 +9,7 @@
 
 #include "gpiod-test.h"
 
+#include <unistd.h>
 #include <errno.h>
 
 static void event_rising_edge_good(void)
@@ -292,4 +293,43 @@ static void event_request_bulk_fail(void)
 }
 TEST_DEFINE(event_request_bulk_fail,
 	    "events - failed bulk request (test reversed release)",
+	    0, { 8 });
+
+static void event_invalid_fd(void)
+{
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
+	struct gpiod_line_bulk bulk = GPIOD_LINE_BULK_INITIALIZER;
+	struct gpiod_line_bulk ev_bulk;
+	struct timespec ts = { 1, 0 };
+	struct gpiod_line *line;
+	int rv, fd;
+
+	chip = gpiod_chip_open(test_chip_path(0));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	line = gpiod_chip_get_line(chip, 5);
+	TEST_ASSERT_NOT_NULL(line);
+
+	rv = gpiod_line_request_both_edges_events(line, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
+
+	fd = gpiod_line_event_get_fd(line);
+	close(fd);
+
+	rv = gpiod_line_event_wait(line, &ts);
+	TEST_ASSERT_EQ(rv, -1);
+	TEST_ASSERT_ERRNO_IS(EINVAL);
+
+	/*
+	 * The single line variant calls gpiod_line_event_wait_bulk() with the
+	 * event_bulk argument set to NULL, so test this use case explicitly
+	 * as well.
+	 */
+	gpiod_line_bulk_add(&bulk, line);
+	rv = gpiod_line_event_wait_bulk(&bulk, &ts, &ev_bulk);
+	TEST_ASSERT_EQ(rv, -1);
+	TEST_ASSERT_ERRNO_IS(EINVAL);
+}
+TEST_DEFINE(event_invalid_fd,
+	    "events - gpiod_line_event_wait() error on closed fd",
 	    0, { 8 });

@@ -698,16 +698,23 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	else if (rv == 0)
 		return 0;
 
-	if (event_bulk) {
+	if (event_bulk)
 		gpiod_line_bulk_init(event_bulk);
 
-		for (off = 0; off < num_lines; off++) {
-			if (fds[off].revents) {
+	for (off = 0; off < num_lines; off++) {
+		if (fds[off].revents) {
+			if (fds[off].revents & POLLNVAL) {
+				errno = EINVAL;
+				return -1;
+			}
+
+			if (event_bulk) {
 				line = gpiod_line_bulk_get_line(bulk, off);
 				gpiod_line_bulk_add(event_bulk, line);
-				if (!--rv)
-					break;
 			}
+
+			if (!--rv)
+				break;
 		}
 	}
 
