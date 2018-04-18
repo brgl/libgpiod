@@ -38,6 +38,8 @@ AC_CONFIG_MACRO_DIRS([m4])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+m4_pattern_forbid([^AX_],
+	[Unexpanded AX_ macro found. Please install GNU autoconf-archive.])
 
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADER([config.h])
