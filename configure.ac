@@ -41,6 +41,11 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 m4_pattern_forbid([^AX_],
 	[Unexpanded AX_ macro found. Please install GNU autoconf-archive.])
 
+AC_ARG_VAR([PYTHON_CPPFLAGS],
+	[Compiler flags to find Python headers [default: auto-detect]])
+AC_ARG_VAR([PYTHON_LIBS],
+	[Libraries to link into Python extensions [default: auto-detect]])
+
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADER([config.h])
 
@@ -169,13 +174,12 @@ AM_CONDITIONAL([WITH_BINDINGS_PYTHON], [test "x$with_bindings_python" = xtrue])
 
 if test "x$with_bindings_python" = xtrue
 then
-	AX_PYTHON_DEVEL([>= '3.0.0'])
-	AM_PATH_PYTHON([3.0])
-	AC_CHECK_PROG([has_python3], [python3], [true], [false])
-	if test "X$has_python3" = xfalse
-	then
-		AC_MSG_ERROR([python3 not found - needed for python bindings], [1])
-	fi
+	AM_PATH_PYTHON([3.0], [],
+		[AC_MSG_ERROR([python3 not found - needed for python bindings])])
+	AS_IF([test -z "$PYTHON_CPPFLAGS"],
+		[AC_SUBST(PYTHON_CPPFLAGS, [`$PYTHON-config --includes`])])
+	AS_IF([test -z "$PYTHON_LIBS"],
+		[AC_SUBST(PYTHON_LIBS, [`$PYTHON-config --libs`])])
 fi
 
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
