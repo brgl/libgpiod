@@ -44,6 +44,9 @@ To build the project (including command-line utilities) run:
 The autogen script will execute ./configure and pass all the command-line
 arguments to it.
 
+If building from release tarballs, the configure script is already provided and
+there's no need to invoke autogen.sh.
+
 TOOLS
 -----
 
