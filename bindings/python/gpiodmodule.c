@@ -447,7 +447,9 @@ static gpiod_LineEventObject *gpiod_Line_event_read(gpiod_LineObject *self)
 
 	ret->source = NULL;
 
+	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_event_read(self->line, &ret->event);
+	Py_END_ALLOW_THREADS;
 	if (rv) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		Py_DECREF(ret);
@@ -843,7 +845,9 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 		}
 	}
 
+	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_request_bulk(&bulk, &conf, default_vals);
+	Py_END_ALLOW_THREADS;
 	if (rv) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
@@ -865,7 +869,9 @@ static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self)
 	gpiod_LineBulkObjToCLineBulk(self, &bulk);
 
 	memset(vals, 0, sizeof(vals));
+	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_get_value_bulk(&bulk, vals);
+	Py_END_ALLOW_THREADS;
 	if (rv) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
@@ -937,7 +943,9 @@ static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 		vals[i] = (int)val;
 	}
 
+	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_set_value_bulk(&bulk, vals);
+	Py_END_ALLOW_THREADS;
 	if (rv) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
@@ -987,7 +995,9 @@ static PyObject *gpiod_LineBulk_event_wait(gpiod_LineBulkObject *self,
 
 	gpiod_LineBulkObjToCLineBulk(self, &bulk);
 
+	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_event_wait_bulk(&bulk, &ts, &ev_bulk);
+	Py_END_ALLOW_THREADS;
 	if (rv < 0) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
@@ -1146,12 +1156,14 @@ enum {
 static int gpiod_Chip_init(gpiod_ChipObject *self, PyObject *args)
 {
 	int rv, how = gpiod_OPEN_LOOKUP;
+	PyThreadState *thread;
 	char *descr;
 
 	rv = PyArg_ParseTuple(args, "s|i", &descr, &how);
 	if (!rv)
 		return -1;
 
+	thread = PyEval_SaveThread();
 	switch (how) {
 	case gpiod_OPEN_LOOKUP:
 		self->chip = gpiod_chip_open_lookup(descr);
@@ -1169,9 +1181,11 @@ static int gpiod_Chip_init(gpiod_ChipObject *self, PyObject *args)
 		self->chip = gpiod_chip_open_by_number(atoi(descr));
 		break;
 	default:
+		PyEval_RestoreThread(thread);
 		PyErr_BadArgument();
 		return -1;
 	}
+	PyEval_RestoreThread(thread);
 	if (!self->chip) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		return -1;
@@ -1248,7 +1262,9 @@ gpiod_Chip_get_line(gpiod_ChipObject *self, PyObject *args)
 	if (!rv)
 		return NULL;
 
+	Py_BEGIN_ALLOW_THREADS;
 	line = gpiod_chip_get_line(self->chip, offset);
+	Py_END_ALLOW_THREADS;
 	if (!line) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
@@ -1271,7 +1287,9 @@ gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args)
 	if (!rv)
 		return NULL;
 
+	Py_BEGIN_ALLOW_THREADS;
 	line = gpiod_chip_find_line(self->chip, name);
+	Py_END_ALLOW_THREADS;
 	if (!line) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
@@ -1444,7 +1462,9 @@ static gpiod_ChipObject *gpiod_ChipIter_next(gpiod_ChipIterObject *self)
 	gpiod_ChipObject *chip_obj;
 	struct gpiod_chip *chip;
 
+	Py_BEGIN_ALLOW_THREADS;
 	chip = gpiod_chip_iter_next_noclose(self->iter);
+	Py_END_ALLOW_THREADS;
 	if (!chip)
 		return NULL; /* Last element. */
 
@@ -1485,7 +1505,9 @@ static int gpiod_LineIter_init(gpiod_LineIterObject *self, PyObject *args)
 	if (!rv)
 		return -1;
 
+	Py_BEGIN_ALLOW_THREADS;
 	self->iter = gpiod_line_iter_new(chip_obj->chip);
+	Py_END_ALLOW_THREADS;
 	if (!self->iter) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		return -1;
@@ -1546,7 +1568,9 @@ static gpiod_LineObject *gpiod_Module_find_line(PyObject *self GPIOD_UNUSED,
 	if (!rv)
 		return NULL;
 
+	Py_BEGIN_ALLOW_THREADS;
 	line = gpiod_line_find(name);
+	Py_END_ALLOW_THREADS;
 	if (!line) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
