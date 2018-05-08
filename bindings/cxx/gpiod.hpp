@@ -228,11 +228,11 @@ struct line_request
 		/**< Listen for all types of events. */
 	};
 
-	static const ::std::bitset<32> FLAG_ACTIVE_LOW;
+	GPIOD_API static const ::std::bitset<32> FLAG_ACTIVE_LOW;
 	/**< Set the active state to 'low' (high is the default). */
-	static const ::std::bitset<32> FLAG_OPEN_SOURCE;
+	GPIOD_API static const ::std::bitset<32> FLAG_OPEN_SOURCE;
 	/**< The line is an open-source port. */
-	static const ::std::bitset<32> FLAG_OPEN_DRAIN;
+	GPIOD_API static const ::std::bitset<32> FLAG_OPEN_DRAIN;
 	/**< The line is an open-drain port. */
 
 	::std::string consumer;
