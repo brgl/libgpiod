@@ -440,6 +440,26 @@ void line_event_poll_fd(void)
 }
 TEST_CASE(line_event_poll_fd);
 
+void chip_iterator(void)
+{
+	::std::cerr << "iterating over all GPIO chips in the system:" << ::std::endl;
+
+	for (auto& it: ::gpiod::make_chip_iter())
+		::std::cerr << it.name() << ::std::endl;
+}
+TEST_CASE(chip_iterator);
+
+void line_iterator(void)
+{
+	::std::cerr << "iterating over all lines exposed by a GPIO chip:" << ::std::endl;
+
+	::gpiod::chip chip("gpiochip0");
+
+	for (auto& it: ::gpiod::line_iter(chip))
+		::std::cerr << it.offset() << ": " << it.name() << ::std::endl;
+}
+TEST_CASE(line_iterator);
+
 } /* namespace */
 
 int main(int, char **)
