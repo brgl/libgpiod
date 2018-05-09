@@ -12,6 +12,10 @@
 
 namespace gpiod {
 
+const ::std::bitset<32> line_request::FLAG_ACTIVE_LOW("001");
+const ::std::bitset<32> line_request::FLAG_OPEN_SOURCE("010");
+const ::std::bitset<32> line_request::FLAG_OPEN_DRAIN("100");
+
 namespace {
 
 const ::std::map<int, int> reqtype_mapping = {
@@ -38,10 +42,6 @@ const ::std::map<::std::bitset<32>, int, bitset_cmp> reqflag_mapping = {
 };
 
 } /* namespace */
-
-const ::std::bitset<32> line_request::FLAG_ACTIVE_LOW("001");
-const ::std::bitset<32> line_request::FLAG_OPEN_SOURCE("010");
-const ::std::bitset<32> line_request::FLAG_OPEN_DRAIN("100");
 
 const unsigned int line_bulk::MAX_LINES = GPIOD_LINE_BULK_MAX_LINES;
 
