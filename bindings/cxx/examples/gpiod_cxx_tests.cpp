@@ -5,7 +5,12 @@
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
  */
 
-/* Misc tests/examples of the C++ API. */
+/*
+ * Misc tests/examples of the C++ API.
+ *
+ * These tests assume that at least one dummy gpiochip is present in the
+ * system and that it's detected as gpiochip0.
+ */
 
 #include <gpiod.hpp>
 
