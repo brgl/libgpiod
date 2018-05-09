@@ -7,7 +7,11 @@
 # Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
 #
 
-'''Misc tests of libgpiod python bindings.'''
+'''Misc tests of libgpiod python bindings.
+
+These tests assume that at least one dummy gpiochip is present in the
+system and that it's detected as gpiochip0.
+'''
 
 import gpiod
 import sys
@@ -19,16 +23,43 @@ def add_test(name, func):
 
     test_cases.append((name, func))
 
-def chip_open():
-    chip = gpiod.Chip('gpiochip0')
+def fire_line_event(chip, offset, rising):
+    path = '/sys/kernel/debug/gpio-mockup-event/{}/{}'.format(chip, offset)
+    with open(path, 'w') as fd:
+        fd.write('{}'.format(1 if rising else 0))
+
+def print_event(event):
+    print('type: {}'.format('rising' if event.type == gpiod.LineEvent.RISING_EDGE else 'falling'))
+    print('timestamp: {}.{}'.format(event.sec, event.nsec))
+    print('source line offset: {}'.format(event.source.offset()))
+
+def chip_open_default_lookup():
+    by_name = gpiod.Chip('gpiochip0')
+    by_path = gpiod.Chip('/dev/gpiochip0')
+    by_label = gpiod.Chip('gpio-mockup-A')
+    by_number = gpiod.Chip('0')
+
+add_test('Open a GPIO chip using different lookup modes', chip_open_default_lookup)
+
+def chip_open_different_modes():
     chip = gpiod.Chip('/dev/gpiochip0', gpiod.Chip.OPEN_BY_PATH)
     chip = gpiod.Chip('gpiochip0', gpiod.Chip.OPEN_BY_NAME)
     chip = gpiod.Chip('gpio-mockup-A', gpiod.Chip.OPEN_BY_LABEL)
     chip = gpiod.Chip('0', gpiod.Chip.OPEN_BY_NUMBER)
-    chip = gpiod.Chip('gpio-mockup-A', gpiod.Chip.OPEN_LOOKUP)
     print('All good')
 
-add_test('Open a GPIO chip using different modes', chip_open)
+add_test('Open a GPIO chip using different modes', chip_open_different_modes)
+
+def chip_open_nonexistent():
+    try:
+        chip = gpiod.Chip('/nonexistent_gpiochip')
+    except OSError as ex:
+        print('Exception raised as expected: {}'.format(ex))
+        return
+
+    assert False, 'OSError expected'
+
+add_test('Try to open a nonexistent GPIO chip', chip_open_nonexistent)
 
 def chip_open_no_args():
     try:
@@ -139,7 +170,39 @@ def set_value_single_line():
 
 add_test('Set value - single line', set_value_single_line)
 
+def line_event_single_line():
+    chip = gpiod.Chip('gpiochip0')
+    line = chip.get_line(1)
+    print('requesting line for events')
+    line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+    print('generating a line event')
+    fire_line_event('gpiochip0', 1, True)
+    assert line.event_wait(sec=1), 'Expected a line event to occur'
+    event = line.event_read()
+    print('event received')
+    print_event(event)
+
+add_test('Monitor a single line for events', line_event_single_line)
+
+def line_event_multiple_lines():
+    chip = gpiod.Chip('gpiochip0')
+    lines = chip.get_lines((1, 2, 3, 4, 5))
+    print('requesting lines for events')
+    lines.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+    print('generating two line events')
+    fire_line_event('gpiochip0', 1, True)
+    fire_line_event('gpiochip0', 2, True)
+    events = lines.event_wait(sec=1)
+    assert events is not None and len(events) == 2, 'Expected to receive two line events'
+    print('events received:')
+    for line in events:
+        event = line.event_read()
+        print_event(event)
+
+add_test('Monitor multiple lines for events', line_event_multiple_lines)
+
 for name, func in test_cases:
     print('==============================================')
     print('{}:'.format(name))
+    print()
     func()
