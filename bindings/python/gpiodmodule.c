@@ -1291,6 +1291,11 @@ gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args)
 	line = gpiod_chip_find_line(self->chip, name);
 	Py_END_ALLOW_THREADS;
 	if (!line) {
+		if (errno == ENOENT) {
+			Py_INCREF(Py_None);
+			return (gpiod_LineObject *)Py_None;
+		}
+
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
 	}
@@ -1573,6 +1578,11 @@ static gpiod_LineObject *gpiod_Module_find_line(PyObject *self GPIOD_UNUSED,
 	line = gpiod_line_find(name);
 	Py_END_ALLOW_THREADS;
 	if (!line) {
+		if (errno == ENOENT) {
+			Py_INCREF(Py_None);
+			return (gpiod_LineObject *)Py_None;
+		}
+
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
 	}
