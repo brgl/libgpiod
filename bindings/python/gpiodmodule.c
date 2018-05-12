@@ -1558,6 +1558,7 @@ PyDoc_STRVAR(gpiod_Module_find_line_doc,
 static gpiod_LineObject *gpiod_Module_find_line(PyObject *self GPIOD_UNUSED,
 						PyObject *args)
 {
+	gpiod_LineObject *line_obj;
 	gpiod_ChipObject *chip_obj;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
@@ -1586,7 +1587,20 @@ static gpiod_LineObject *gpiod_Module_find_line(PyObject *self GPIOD_UNUSED,
 
 	chip_obj->chip = chip;
 
-	return gpiod_MakeLineObject(chip_obj, line);
+	line_obj = gpiod_MakeLineObject(chip_obj, line);
+	if (!line_obj)
+		return NULL;
+
+	/*
+	 * PyObject_New() set the reference count for the chip object at 1 and
+	 * the call to gpiod_MakeLineObject() increased it to 2. However when
+	 * we return the object to the line object to the python interpreter,
+	 * there'll be only a single reference holder to the chip - the line
+	 * object itself. Decrease the chip reference here manually.
+	 */
+	Py_DECREF(line_obj->owner);
+
+	return line_obj;
 }
 
 static PyMethodDef gpiod_module_methods[] = {
