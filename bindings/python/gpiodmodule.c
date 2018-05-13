@@ -385,10 +385,13 @@ static PyObject *gpiod_Line_set_value(gpiod_LineObject *self, PyObject *args)
 		return NULL;
 
 	vals = Py_BuildValue("((O))", val);
-	if (!vals)
+	if (!vals) {
+		Py_DECREF(bulk_obj);
 		return NULL;
+	}
 
 	ret = gpiod_LineBulk_set_values(bulk_obj, vals);
+	Py_DECREF(bulk_obj);
 	Py_DECREF(vals);
 
 	return ret;
