@@ -283,3 +283,54 @@ static void chip_find_line_not_found(void)
 TEST_DEFINE(chip_find_line_not_found,
 	    "gpiod_chip_find_line() - not found",
 	    TEST_FLAG_NAMED_LINES, { 8, 8, 8 });
+
+static void chip_find_lines_good(void)
+{
+	static const char *names[] = { "gpio-mockup-B-3",
+				       "gpio-mockup-B-6",
+				       "gpio-mockup-B-7",
+				       NULL };
+
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
+	struct gpiod_line_bulk bulk;
+	struct gpiod_line *line;
+	int rv;
+
+	chip = gpiod_chip_open(test_chip_path(1));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	rv = gpiod_chip_find_lines(chip, names, &bulk);
+	TEST_ASSERT_RET_OK(rv);
+	TEST_ASSERT_EQ(gpiod_line_bulk_num_lines(&bulk), 3);
+	line = gpiod_line_bulk_get_line(&bulk, 0);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 3);
+	line = gpiod_line_bulk_get_line(&bulk, 1);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 6);
+	line = gpiod_line_bulk_get_line(&bulk, 2);
+	TEST_ASSERT_EQ(gpiod_line_offset(line), 7);
+}
+TEST_DEFINE(chip_find_lines_good,
+	    "gpiod_chip_find_lines() - good",
+	    TEST_FLAG_NAMED_LINES, { 8, 8, 8 });
+
+static void chip_find_lines_not_found(void)
+{
+	static const char *names[] = { "gpio-mockup-B-3",
+				       "nonexistent",
+				       "gpio-mockup-B-7",
+				       NULL };
+
+	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
+	struct gpiod_line_bulk bulk;
+	int rv;
+
+	chip = gpiod_chip_open(test_chip_path(1));
+	TEST_ASSERT_NOT_NULL(chip);
+
+	rv = gpiod_chip_find_lines(chip, names, &bulk);
+	TEST_ASSERT_EQ(rv, -1);
+	TEST_ASSERT_ERRNO_IS(ENOENT);
+}
+TEST_DEFINE(chip_find_lines_not_found,
+	    "gpiod_chip_find_lines() - not found",
+	    TEST_FLAG_NAMED_LINES, { 8, 8, 8 });
