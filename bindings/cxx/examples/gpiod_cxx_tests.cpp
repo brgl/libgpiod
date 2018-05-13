@@ -185,6 +185,18 @@ void chip_line_ops(void)
 }
 TEST_CASE(chip_line_ops);
 
+void chip_find_lines_nonexistent(void)
+{
+	::gpiod::chip chip("gpiochip0");
+
+	auto lines = chip.find_lines({ "gpio-mockup-A-1", "nonexistent", "gpio-mockup-A-4" });
+	if (lines)
+		throw ::std::logic_error("line_bulk object should be invalid");
+
+	::std::cerr << "line_bulk invalid as expected" << ::std::endl;
+}
+TEST_CASE(chip_find_lines_nonexistent);
+
 void line_info(void)
 {
 	::gpiod::chip chip("gpiochip0");

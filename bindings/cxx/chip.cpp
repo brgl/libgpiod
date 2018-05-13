@@ -158,9 +158,17 @@ line_bulk chip::get_all_lines(void) const
 line_bulk chip::find_lines(const ::std::vector<::std::string>& names) const
 {
 	line_bulk lines;
+	line line;
 
-	for (auto& it: names)
-		lines.append(this->find_line(it));
+	for (auto& it: names) {
+		line = this->find_line(it);
+		if (!line) {
+			lines.clear();
+			return ::std::move(lines);
+		}
+
+		lines.append(line);
+	}
 
 	return ::std::move(lines);
 }
