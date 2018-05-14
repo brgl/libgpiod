@@ -432,8 +432,11 @@ static PyObject *gpiod_Line_event_wait(gpiod_LineObject *self,
 	Py_DECREF(bulk_obj);
 	if (!events)
 		return NULL;
-	if (events == Py_False)
-		return Py_False;
+
+	if (events == Py_None) {
+		Py_DECREF(Py_None);
+		Py_RETURN_FALSE;
+	}
 
 	Py_DECREF(events);
 	Py_RETURN_TRUE;
@@ -1008,7 +1011,7 @@ static PyObject *gpiod_LineBulk_event_wait(gpiod_LineBulkObject *self,
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
 	} else if (rv == 0) {
-		Py_RETURN_FALSE;
+		Py_RETURN_NONE;
 	}
 
 	ret = PyList_New(gpiod_line_bulk_num_lines(&ev_bulk));
