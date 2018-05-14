@@ -422,17 +422,20 @@ static PyObject *gpiod_Line_event_wait(gpiod_LineObject *self,
 				       PyObject *args, PyObject *kwds)
 {
 	gpiod_LineBulkObject *bulk_obj;
-	PyObject *ret;
+	PyObject *events;
 
 	bulk_obj = gpiod_LineToLineBulk(self);
 	if (!bulk_obj)
 		return NULL;
 
-	ret = gpiod_LineBulk_event_wait(bulk_obj, args, kwds);
+	events = gpiod_LineBulk_event_wait(bulk_obj, args, kwds);
 	Py_DECREF(bulk_obj);
-	if (!ret || ret == Py_False)
-		return ret;
+	if (!events)
+		return NULL;
+	if (events == Py_False)
+		return Py_False;
 
+	Py_DECREF(events);
 	Py_RETURN_TRUE;
 }
 
