@@ -344,6 +344,17 @@ static PyObject *gpiod_Line_request(gpiod_LineObject *self,
 	return ret;
 }
 
+PyDoc_STRVAR(gpiod_Line_is_requested_doc,
+"Check if this user has ownership of this line.");
+
+static PyObject *gpiod_Line_is_requested(gpiod_LineObject *self)
+{
+	if (gpiod_line_is_requested(self->line))
+		Py_RETURN_TRUE;
+
+	Py_RETURN_FALSE;
+}
+
 PyDoc_STRVAR(gpiod_Line_get_value_doc,
 "Read the current value of this GPIO line.");
 
@@ -565,6 +576,12 @@ static PyMethodDef gpiod_Line_methods[] = {
 		.ml_meth = (PyCFunction)gpiod_Line_request,
 		.ml_flags = METH_VARARGS | METH_KEYWORDS,
 		.ml_doc = gpiod_Line_request_doc,
+	},
+	{
+		.ml_name = "is_requested",
+		.ml_meth = (PyCFunction)gpiod_Line_is_requested,
+		.ml_flags = METH_NOARGS,
+		.ml_doc = gpiod_Line_is_requested_doc,
 	},
 	{
 		.ml_name = "get_value",
