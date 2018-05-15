@@ -1312,6 +1312,32 @@ gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args)
 	return gpiod_MakeLineObject(self, line);
 }
 
+static gpiod_LineBulkObject *gpiod_ListToLineBulk(PyObject *lines)
+{
+	gpiod_LineBulkObject *bulk;
+	PyObject *arg;
+	int rv;
+
+	arg = PyTuple_Pack(1, lines);
+	if (!arg)
+		return NULL;
+
+	bulk = PyObject_New(gpiod_LineBulkObject, &gpiod_LineBulkType);
+	if (!bulk) {
+		Py_DECREF(arg);
+		return NULL;
+	}
+
+	rv = gpiod_LineBulkType.tp_init((PyObject *)bulk, arg, NULL);
+	Py_DECREF(arg);
+	if (rv < 0) {
+		Py_DECREF(bulk);
+		return NULL;
+	}
+
+	return bulk;
+}
+
 PyDoc_STRVAR(gpiod_Chip_get_lines_doc,
 "Get a set of GPIO lines by their offsets.");
 
@@ -1377,23 +1403,10 @@ gpiod_Chip_get_lines(gpiod_ChipObject *self, PyObject *args)
 		}
 	}
 
-	arg = PyTuple_Pack(1, lines);
+	bulk = gpiod_ListToLineBulk(lines);
 	Py_DECREF(lines);
-	if (!arg)
+	if (!bulk)
 		return NULL;
-
-	bulk = PyObject_New(gpiod_LineBulkObject, &gpiod_LineBulkType);
-	if (!bulk) {
-		Py_DECREF(arg);
-		return NULL;
-	}
-
-	rv = gpiod_LineBulkType.tp_init((PyObject *)bulk, arg, NULL);
-	Py_DECREF(arg);
-	if (rv < 0) {
-		Py_DECREF(bulk);
-		return NULL;
-	}
 
 	return bulk;
 }
@@ -1462,23 +1475,10 @@ gpiod_Chip_find_lines(gpiod_ChipObject *self, PyObject *args)
 		}
 	}
 
-	arg = PyTuple_Pack(1, lines);
+	bulk = gpiod_ListToLineBulk(lines);
 	Py_DECREF(lines);
-	if (!arg)
+	if (!bulk)
 		return NULL;
-
-	bulk = PyObject_New(gpiod_LineBulkObject, &gpiod_LineBulkType);
-	if (!bulk) {
-		Py_DECREF(arg);
-		return NULL;
-	}
-
-	rv = gpiod_LineBulkType.tp_init((PyObject *)bulk, arg, NULL);
-	Py_DECREF(arg);
-	if (rv < 0) {
-		Py_DECREF(bulk);
-		return NULL;
-	}
 
 	return bulk;
 }
