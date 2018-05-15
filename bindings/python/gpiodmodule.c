@@ -1417,10 +1417,10 @@ PyDoc_STRVAR(gpiod_Chip_find_lines_doc,
 static gpiod_LineBulkObject *
 gpiod_Chip_find_lines(gpiod_ChipObject *self, PyObject *args)
 {
-	Py_ssize_t num_names, i;
 	PyObject *names, *lines, *iter, *next, *arg;
-	gpiod_LineObject *line;
 	gpiod_LineBulkObject *bulk;
+	Py_ssize_t num_names, i;
+	gpiod_LineObject *line;
 	int rv;
 
 	rv = PyArg_ParseTuple(args, "O", &names);
