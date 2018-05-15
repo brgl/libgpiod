@@ -188,6 +188,26 @@ def line_bulk_to_list():
 
 add_test('Convert a LineBulk to a list', line_bulk_to_list)
 
+def line_flags():
+    chip = gpiod.Chip('gpiochip0')
+    line = chip.get_line(3)
+
+    print('line is used: {}'.format(line.is_used()))
+    print('line is requested: {}'.format(line.is_requested()))
+
+    print('requesting line')
+    line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_OUT,
+                 flags=(gpiod.LINE_REQ_FLAG_OPEN_DRAIN | gpiod.LINE_REQ_FLAG_ACTIVE_LOW))
+
+    print('line is used: {}'.format(line.is_used()))
+    print('line is open drain: {}'.format(line.is_open_drain()))
+    print('line is open source: {}'.format(line.is_open_source()))
+    print('line is requested: {}'.format(line.is_requested()))
+    print('line is active-low: {}'.format(
+            "True" if line.active_state() == gpiod.Line.ACTIVE_LOW else "False"))
+
+add_test('Check various line flags', line_flags)
+
 def get_value_single_line():
     chip = gpiod.Chip('gpio-mockup-A')
     line = chip.get_line(2)
