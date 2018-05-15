@@ -1398,6 +1398,91 @@ gpiod_Chip_get_lines(gpiod_ChipObject *self, PyObject *args)
 	return bulk;
 }
 
+PyDoc_STRVAR(gpiod_Chip_find_lines_doc,
+"Look up a set of lines by their names.");
+
+static gpiod_LineBulkObject *
+gpiod_Chip_find_lines(gpiod_ChipObject *self, PyObject *args)
+{
+	Py_ssize_t num_names, i;
+	PyObject *names, *lines, *iter, *next, *arg;
+	gpiod_LineObject *line;
+	gpiod_LineBulkObject *bulk;
+	int rv;
+
+	rv = PyArg_ParseTuple(args, "O", &names);
+	if (!rv)
+		return NULL;
+
+	num_names = PyObject_Size(names);
+	if (num_names < 1) {
+		PyErr_SetString(PyExc_TypeError,
+				"Argument must be a non-empty sequence of names");
+		return NULL;
+	}
+
+	lines = PyList_New(num_names);
+	if (!lines)
+		return NULL;
+
+	iter = PyObject_GetIter(names);
+	if (!iter) {
+		Py_DECREF(lines);
+		return NULL;
+	}
+
+	for (i = 0;;) {
+		next = PyIter_Next(iter);
+		if (!next) {
+			Py_DECREF(iter);
+			break;
+		}
+
+		arg = PyTuple_Pack(1, next);
+		if (!arg) {
+			Py_DECREF(iter);
+			Py_DECREF(lines);
+			return NULL;
+		}
+
+		line = gpiod_Chip_find_line(self, arg);
+		Py_DECREF(arg);
+		if (!line) {
+			Py_DECREF(iter);
+			Py_DECREF(lines);
+			return NULL;
+		}
+
+		rv = PyList_SetItem(lines, i++, (PyObject *)line);
+		if (rv < 0) {
+			Py_DECREF(line);
+			Py_DECREF(iter);
+			Py_DECREF(lines);
+			return NULL;
+		}
+	}
+
+	arg = PyTuple_Pack(1, lines);
+	Py_DECREF(lines);
+	if (!arg)
+		return NULL;
+
+	bulk = PyObject_New(gpiod_LineBulkObject, &gpiod_LineBulkType);
+	if (!bulk) {
+		Py_DECREF(arg);
+		return NULL;
+	}
+
+	rv = gpiod_LineBulkType.tp_init((PyObject *)bulk, arg, NULL);
+	Py_DECREF(arg);
+	if (rv < 0) {
+		Py_DECREF(bulk);
+		return NULL;
+	}
+
+	return bulk;
+}
+
 static PyMethodDef gpiod_Chip_methods[] = {
 	{
 		.ml_name = "name",
@@ -1434,6 +1519,12 @@ static PyMethodDef gpiod_Chip_methods[] = {
 		.ml_meth = (PyCFunction)gpiod_Chip_get_lines,
 		.ml_flags = METH_VARARGS,
 		.ml_doc = gpiod_Chip_get_lines_doc,
+	},
+	{
+		.ml_name = "find_lines",
+		.ml_meth = (PyCFunction)gpiod_Chip_find_lines,
+		.ml_flags = METH_VARARGS,
+		.ml_doc = gpiod_Chip_find_lines_doc,
 	},
 	{ }
 };
