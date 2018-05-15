@@ -1411,6 +1411,53 @@ gpiod_Chip_get_lines(gpiod_ChipObject *self, PyObject *args)
 	return bulk;
 }
 
+PyDoc_STRVAR(gpiod_Chip_get_all_lines_doc,
+"Get all lines exposed by this Chip.");
+
+static gpiod_LineBulkObject *
+gpiod_Chip_get_all_lines(gpiod_ChipObject *self)
+{
+	gpiod_LineBulkObject *bulk_obj;
+	struct gpiod_line_bulk bulk;
+	gpiod_LineObject *line_obj;
+	struct gpiod_line *line;
+	Py_ssize_t offset;
+	PyObject *list;
+	int rv;
+
+	rv = gpiod_chip_get_all_lines(self->chip, &bulk);
+	if (rv) {
+		PyErr_SetFromErrno(PyExc_OSError);
+		return NULL;
+	}
+
+	list = PyList_New(gpiod_line_bulk_num_lines(&bulk));
+	if (!list)
+		return NULL;
+
+	gpiod_line_bulk_foreach_line_off(&bulk, line, offset) {
+		line_obj = gpiod_MakeLineObject(self, line);
+		if (!line_obj) {
+			Py_DECREF(list);
+			return NULL;
+		}
+
+		rv = PyList_SetItem(list, offset, (PyObject *)line_obj);
+		if (rv < 0) {
+			Py_DECREF(line_obj);
+			Py_DECREF(list);
+			return NULL;
+		}
+	}
+
+	bulk_obj = gpiod_ListToLineBulk(list);
+	Py_DECREF(list);
+	if (!bulk_obj)
+		return NULL;
+
+	return bulk_obj;
+}
+
 PyDoc_STRVAR(gpiod_Chip_find_lines_doc,
 "Look up a set of lines by their names.");
 
@@ -1519,6 +1566,12 @@ static PyMethodDef gpiod_Chip_methods[] = {
 		.ml_meth = (PyCFunction)gpiod_Chip_get_lines,
 		.ml_flags = METH_VARARGS,
 		.ml_doc = gpiod_Chip_get_lines_doc,
+	},
+	{
+		.ml_name = "get_all_lines",
+		.ml_meth = (PyCFunction)gpiod_Chip_get_all_lines,
+		.ml_flags = METH_NOARGS,
+		.ml_doc = gpiod_Chip_get_all_lines_doc,
 	},
 	{
 		.ml_name = "find_lines",
