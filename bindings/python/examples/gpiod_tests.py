@@ -15,6 +15,7 @@ system and that it's detected as gpiochip0.
 
 import gpiod
 import sys
+import select
 
 test_cases = []
 
@@ -38,6 +39,7 @@ def chip_open_default_lookup():
     by_path = gpiod.Chip('/dev/gpiochip0')
     by_label = gpiod.Chip('gpio-mockup-A')
     by_number = gpiod.Chip('0')
+    print('All good')
 
 add_test('Open a GPIO chip using different lookup modes', chip_open_default_lookup)
 
@@ -86,6 +88,17 @@ def print_chip():
 
 add_test('Print chip object', print_chip)
 
+def create_chip_without_arguments():
+    try:
+        chip = gpiod.Chip()
+    except TypeError as ex:
+        print('Exception raised as expected: {}'.format(ex))
+        return
+
+    assert False, 'TypeError expected'
+
+add_test('Create chip object without arguments', create_chip_without_arguments)
+
 def create_line_object():
     try:
         line = gpiod.Line()
@@ -123,12 +136,33 @@ add_test('Create a line bulk object - should fail', create_empty_line_bulk)
 
 def get_lines():
     chip = gpiod.Chip('gpio-mockup-A')
+    print('getting four lines from chip')
     lines = chip.get_lines([2, 4, 5, 7])
     print('Retrieved lines:')
     for line in lines:
         print(line)
 
 add_test('Get lines from chip', get_lines)
+
+def get_all_lines():
+    chip = gpiod.Chip('gpio-mockup-A')
+    print('Retrieving all lines from chip')
+    lines = chip.get_all_lines()
+    print('Retrieved lines:')
+    for line in lines:
+        print(line)
+
+add_test('Get all lines from chip', get_all_lines)
+
+def find_lines():
+    chip = gpiod.Chip('gpiochip0')
+    print('looking up lines by names')
+    lines = chip.find_lines(['gpio-mockup-A-3', 'gpio-mockup-A-4', 'gpio-mockup-A-7'])
+    print('Retrieved lines:')
+    for line in lines:
+        print(line)
+
+add_test('Find multiple lines by name', find_lines)
 
 def create_line_bulk_from_lines():
     chip = gpiod.Chip('gpio-mockup-A')
@@ -200,6 +234,35 @@ def line_event_multiple_lines():
         print_event(event)
 
 add_test('Monitor multiple lines for events', line_event_multiple_lines)
+
+def line_event_poll_fd():
+    chip = gpiod.Chip('gpiochip0')
+    lines = chip.get_lines((1, 2, 3, 4, 5, 6))
+    print('requesting lines for events')
+    lines.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+
+    print('generating three line events')
+    fire_line_event('gpiochip0', 2, True)
+    fire_line_event('gpiochip0', 3, False)
+    fire_line_event('gpiochip0', 5, True)
+
+    print('retrieving the file descriptors')
+    inputs = []
+    fd_mapping = {}
+    for line in lines:
+        inputs.append(line.event_get_fd())
+        fd_mapping[line.event_get_fd()] = line
+
+    readable, writable, exceptional = select.select(inputs, [], inputs, 1.0)
+    assert len(readable) == 3, 'Expected to receive three line events'
+
+    print('events received:')
+    for fd in readable:
+        line = fd_mapping[fd]
+        event = line.event_read()
+        print_event(event)
+
+add_test('Monitor multiple lines using their file descriptors', line_event_poll_fd)
 
 for name, func in test_cases:
     print('==============================================')
