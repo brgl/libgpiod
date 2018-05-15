@@ -136,8 +136,10 @@ add_test('Create a line bulk object - should fail', create_empty_line_bulk)
 
 def get_lines():
     chip = gpiod.Chip('gpio-mockup-A')
+
     print('getting four lines from chip')
     lines = chip.get_lines([2, 4, 5, 7])
+
     print('Retrieved lines:')
     for line in lines:
         print(line)
@@ -146,8 +148,10 @@ add_test('Get lines from chip', get_lines)
 
 def get_all_lines():
     chip = gpiod.Chip('gpio-mockup-A')
+
     print('Retrieving all lines from chip')
     lines = chip.get_all_lines()
+
     print('Retrieved lines:')
     for line in lines:
         print(line)
@@ -156,8 +160,10 @@ add_test('Get all lines from chip', get_all_lines)
 
 def find_lines():
     chip = gpiod.Chip('gpiochip0')
+
     print('looking up lines by names')
     lines = chip.find_lines(['gpio-mockup-A-3', 'gpio-mockup-A-4', 'gpio-mockup-A-7'])
+
     print('Retrieved lines:')
     for line in lines:
         print(line)
@@ -194,6 +200,7 @@ def set_value_single_line():
     chip = gpiod.Chip('gpiochip0')
     line = chip.get_line(3)
     line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_IN)
+
     print('line value before: {}'.format(line.get_value()))
     line.release()
     line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_OUT)
@@ -207,13 +214,16 @@ add_test('Set value - single line', set_value_single_line)
 def line_event_single_line():
     chip = gpiod.Chip('gpiochip0')
     line = chip.get_line(1)
+
     print('requesting line for events')
     line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+
     print('generating a line event')
     fire_line_event('gpiochip0', 1, True)
     assert line.event_wait(sec=1), 'Expected a line event to occur'
-    event = line.event_read()
+
     print('event received')
+    event = line.event_read()
     print_event(event)
 
 add_test('Monitor a single line for events', line_event_single_line)
@@ -221,13 +231,17 @@ add_test('Monitor a single line for events', line_event_single_line)
 def line_event_multiple_lines():
     chip = gpiod.Chip('gpiochip0')
     lines = chip.get_lines((1, 2, 3, 4, 5))
+
     print('requesting lines for events')
     lines.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+
     print('generating two line events')
     fire_line_event('gpiochip0', 1, True)
     fire_line_event('gpiochip0', 2, True)
+
     events = lines.event_wait(sec=1)
     assert events is not None and len(events) == 2, 'Expected to receive two line events'
+
     print('events received:')
     for line in events:
         event = line.event_read()
