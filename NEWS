@@ -1,3 +1,24 @@
+libgpiod v1.1
+=============
+
+New features:
+- add object-oriented C++ bindings
+- add object-oriented Python3 bindings
+- add several new helpers to the C API
+
+Improvements:
+- start using separate versioning schemes for API and ABI
+- use SPDX license identifiers and remove LGPL boilerplate
+- check for unexpanded macros in configure.ac
+
+Bug fixes:
+- include Doxyfile in the release tarball
+- fix the implicit-fallthrough warnings
+- make tests work together with gpio-mockup post v4.16 linux kernel
+- use reference counting for line file descriptors
+- correctly handle POLLNVAL when polling for events
+- fix the copyright notice in tools
+
 libgpiod v1.0
 =============
 
