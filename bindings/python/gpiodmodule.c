@@ -1315,6 +1315,23 @@ static PyObject *gpiod_Chip_close(gpiod_ChipObject *self)
 	Py_RETURN_NONE;
 }
 
+PyDoc_STRVAR(gpiod_Chip_enter_doc,
+"Controlled execution enter callback.");
+
+static PyObject *gpiod_Chip_enter(gpiod_ChipObject *chip)
+{
+	Py_INCREF(chip);
+	return (PyObject *)chip;
+}
+
+PyDoc_STRVAR(gpiod_Chip_exit_doc,
+"Controlled execution exit callback.");
+
+static PyObject *gpiod_Chip_exit(gpiod_ChipObject *chip)
+{
+	return PyObject_CallMethod((PyObject *)chip, "close", "");
+}
+
 static bool gpiod_ChipIsClosed(gpiod_ChipObject *chip)
 {
 	if (!chip->chip) {
@@ -1663,6 +1680,18 @@ static PyMethodDef gpiod_Chip_methods[] = {
 		.ml_meth = (PyCFunction)gpiod_Chip_close,
 		.ml_flags = METH_NOARGS,
 		.ml_doc = gpiod_Chip_close_doc,
+	},
+	{
+		.ml_name = "__enter__",
+		.ml_meth = (PyCFunction)gpiod_Chip_enter,
+		.ml_flags = METH_NOARGS,
+		.ml_doc = gpiod_Chip_enter_doc,
+	},
+	{
+		.ml_name = "__exit__",
+		.ml_meth = (PyCFunction)gpiod_Chip_exit,
+		.ml_flags = METH_VARARGS,
+		.ml_doc = gpiod_Chip_exit_doc,
 	},
 	{
 		.ml_name = "name",

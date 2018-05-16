@@ -102,6 +102,14 @@ def chip_use_after_close():
 
 add_test('Use a GPIO chip after closing it', chip_use_after_close)
 
+def chip_with_statement():
+    with gpiod.Chip('gpiochip0') as chip:
+        print('Chip name in controlled execution: {}'.format(chip.name()))
+        line = chip.get_line(3)
+        print('Got line from chip in controlled execution: {}'.format(line.name()))
+
+add_test('Use a GPIO chip in controlled execution', chip_with_statement)
+
 def chip_info():
     chip = gpiod.Chip('gpiochip0')
     print('name: {}'.format(chip.name()))
