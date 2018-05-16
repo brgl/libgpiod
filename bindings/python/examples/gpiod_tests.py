@@ -298,6 +298,8 @@ def line_event_poll_fd():
 
 add_test('Monitor multiple lines using their file descriptors', line_event_poll_fd)
 
+print('API version is {}'.format(gpiod.version_string()))
+
 for name, func in test_cases:
     print('==============================================')
     print('{}:'.format(name))
