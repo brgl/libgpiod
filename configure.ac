@@ -31,7 +31,7 @@ AC_SUBST(VERSION_STR, [$PACKAGE_VERSION$EXTRA_VERSION])
 # Define the libtool version as (C.R.A):
 AC_SUBST(ABI_VERSION, [2.0.0])
 # Have a separate ABI version for C++ bindings:
-AC_SUBST(ABI_CXX_VERSION, [0.0.0])
+AC_SUBST(ABI_CXX_VERSION, [1.0.0])
 
 AC_CONFIG_AUX_DIR([autostuff])
 AC_CONFIG_MACRO_DIRS([m4])
