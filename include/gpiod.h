@@ -1308,7 +1308,7 @@ gpiod_line_iter_next(struct gpiod_line_iter *iter) GPIOD_API;
  */
 
 /**
- * @brief Get the version of the library as a human-readable string.
+ * @brief Get the API version of the library as a human-readable string.
  * @return Human-readable string containing the library version.
  */
 const char *gpiod_version_string(void) GPIOD_API;
