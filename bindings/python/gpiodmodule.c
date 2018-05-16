@@ -56,6 +56,7 @@ static PyObject *gpiod_LineBulk_release(gpiod_LineBulkObject *self);
 static gpiod_LineObject *gpiod_MakeLineObject(gpiod_ChipObject *owner,
 					      struct gpiod_line *line);
 static PyObject *gpiod_Line_repr(gpiod_LineObject *self);
+static bool gpiod_ChipIsClosed(gpiod_ChipObject *chip);
 
 enum {
 	gpiod_LINE_REQ_DIR_AS_IS = 1,
@@ -227,6 +228,9 @@ PyDoc_STRVAR(gpiod_Line_offset_doc,
 
 static PyObject *gpiod_Line_offset(gpiod_LineObject *self)
 {
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
 	return Py_BuildValue("I", gpiod_line_offset(self->line));
 }
 
@@ -235,8 +239,12 @@ PyDoc_STRVAR(gpiod_Line_name_doc,
 
 static PyObject *gpiod_Line_name(gpiod_LineObject *self)
 {
-	const char *name = gpiod_line_name(self->line);
+	const char *name;
 
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
+	name = gpiod_line_name(self->line);
 	if (name)
 		return PyUnicode_FromFormat("%s", name);
 
@@ -248,8 +256,12 @@ PyDoc_STRVAR(gpiod_Line_consumer_doc,
 
 static PyObject *gpiod_Line_consumer(gpiod_LineObject *self)
 {
-	const char *consumer = gpiod_line_consumer(self->line);
+	const char *consumer;
 
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
+	consumer = gpiod_line_consumer(self->line);
 	if (consumer)
 		return PyUnicode_FromFormat("%s", consumer);
 
@@ -263,6 +275,9 @@ static PyObject *gpiod_Line_direction(gpiod_LineObject *self)
 {
 	PyObject *ret;
 	int dir;
+
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
 
 	dir = gpiod_line_direction(self->line);
 
@@ -282,6 +297,9 @@ static PyObject *gpiod_Line_active_state(gpiod_LineObject *self)
 	PyObject *ret;
 	int active;
 
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
 	active = gpiod_line_active_state(self->line);
 
 	if (active == GPIOD_LINE_ACTIVE_STATE_HIGH)
@@ -297,6 +315,9 @@ PyDoc_STRVAR(gpiod_Line_is_used_doc,
 
 static PyObject *gpiod_Line_is_used(gpiod_LineObject *self)
 {
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
 	if (gpiod_line_is_used(self->line))
 		Py_RETURN_TRUE;
 
@@ -308,6 +329,9 @@ PyDoc_STRVAR(gpiod_Line_is_open_drain_doc,
 
 static PyObject *gpiod_Line_is_open_drain(gpiod_LineObject *self)
 {
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
 	if (gpiod_line_is_open_drain(self->line))
 		Py_RETURN_TRUE;
 
@@ -319,6 +343,9 @@ PyDoc_STRVAR(gpiod_Line_is_open_source_doc,
 
 static PyObject *gpiod_Line_is_open_source(gpiod_LineObject *self)
 {
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
 	if (gpiod_line_is_open_source(self->line))
 		Py_RETURN_TRUE;
 
@@ -349,6 +376,9 @@ PyDoc_STRVAR(gpiod_Line_is_requested_doc,
 
 static PyObject *gpiod_Line_is_requested(gpiod_LineObject *self)
 {
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
 	if (gpiod_line_is_requested(self->line))
 		Py_RETURN_TRUE;
 
@@ -461,6 +491,9 @@ static gpiod_LineEventObject *gpiod_Line_event_read(gpiod_LineObject *self)
 	gpiod_LineEventObject *ret;
 	int rv;
 
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
 	ret = PyObject_New(gpiod_LineEventObject, &gpiod_LineEventType);
 	if (!ret)
 		return NULL;
@@ -489,6 +522,9 @@ static PyObject *gpiod_Line_event_get_fd(gpiod_LineObject *self)
 {
 	int fd;
 
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
 	fd = gpiod_line_event_get_fd(self->line);
 	if (fd < 0) {
 		PyErr_SetFromErrno(PyExc_OSError);
@@ -502,6 +538,9 @@ static PyObject *gpiod_Line_repr(gpiod_LineObject *self)
 {
 	PyObject *chip_name, *ret;
 	const char *line_name;
+
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
 
 	chip_name = gpiod_Chip_name(self->owner);
 	if (!chip_name)
@@ -637,6 +676,13 @@ static PyTypeObject gpiod_LineType = {
 	.tp_repr = (reprfunc)gpiod_Line_repr,
 	.tp_methods = gpiod_Line_methods,
 };
+
+static bool gpiod_LineBulkOwnerIsClosed(gpiod_LineBulkObject *self)
+{
+	gpiod_LineObject *line = (gpiod_LineObject *)self->lines[0];
+
+	return gpiod_ChipIsClosed(line->owner);
+}
 
 static int gpiod_LineBulk_init(gpiod_LineBulkObject *self, PyObject *args)
 {
@@ -830,6 +876,9 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 	char *consumer = NULL;
 	Py_ssize_t i;
 
+	if (gpiod_LineBulkOwnerIsClosed(self))
+		return NULL;
+
 	rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|iiO", kwlist,
 					 &consumer, &type,
 					 &flags, &default_vals);
@@ -892,6 +941,9 @@ static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self)
 	PyObject *val_list, *val;
 	Py_ssize_t i;
 
+	if (gpiod_LineBulkOwnerIsClosed(self))
+		return NULL;
+
 	gpiod_LineBulkObjToCLineBulk(self, &bulk);
 
 	memset(vals, 0, sizeof(vals));
@@ -935,6 +987,9 @@ static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 	PyObject *val_list, *iter, *next;
 	struct gpiod_line_bulk bulk;
 	Py_ssize_t num_vals, i;
+
+	if (gpiod_LineBulkOwnerIsClosed(self))
+		return NULL;
 
 	gpiod_LineBulkObjToCLineBulk(self, &bulk);
 	memset(vals, 0, sizeof(vals));
@@ -987,6 +1042,9 @@ static PyObject *gpiod_LineBulk_release(gpiod_LineBulkObject *self)
 {
 	struct gpiod_line_bulk bulk;
 
+	if (gpiod_LineBulkOwnerIsClosed(self))
+		return NULL;
+
 	gpiod_LineBulkObjToCLineBulk(self, &bulk);
 	gpiod_line_release_bulk(&bulk);
 
@@ -1010,6 +1068,9 @@ static PyObject *gpiod_LineBulk_event_wait(gpiod_LineBulkObject *self,
 	PyObject *ret;
 	Py_ssize_t i;
 	int rv;
+
+	if (gpiod_LineBulkOwnerIsClosed(self))
+		return NULL;
 
 	rv = PyArg_ParseTupleAndKeywords(args, kwds,
 					 "|ll", kwlist, &sec, &nsec);
@@ -1060,6 +1121,9 @@ static PyObject *gpiod_LineBulk_repr(gpiod_LineBulkObject *self)
 	PyObject *list, *list_repr, *chip_name, *ret;
 	gpiod_LineObject *line;
 	gpiod_ChipObject *chip;
+
+	if (gpiod_LineBulkOwnerIsClosed(self))
+		return NULL;
 
 	list = gpiod_LineBulk_to_list(self);
 	if (!list)
@@ -1228,10 +1292,38 @@ static void gpiod_Chip_dealloc(gpiod_ChipObject *self)
 
 static PyObject *gpiod_Chip_repr(gpiod_ChipObject *self)
 {
+	if (gpiod_ChipIsClosed(self))
+		return NULL;
+
 	return PyUnicode_FromFormat("'%s /%s/ %u lines'",
 				    gpiod_chip_name(self->chip),
 				    gpiod_chip_label(self->chip),
 				    gpiod_chip_num_lines(self->chip));
+}
+
+PyDoc_STRVAR(gpiod_Chip_close_doc,
+"Close the associated gpiochip descriptor.");
+
+static PyObject *gpiod_Chip_close(gpiod_ChipObject *self)
+{
+	if (gpiod_ChipIsClosed(self))
+		return NULL;
+
+	gpiod_chip_close(self->chip);
+	self->chip = NULL;
+
+	Py_RETURN_NONE;
+}
+
+static bool gpiod_ChipIsClosed(gpiod_ChipObject *chip)
+{
+	if (!chip->chip) {
+		PyErr_SetString(PyExc_ValueError,
+				"I/O operation on closed file");
+		return true;
+	}
+
+	return false;
 }
 
 PyDoc_STRVAR(gpiod_Chip_name_doc,
@@ -1239,6 +1331,9 @@ PyDoc_STRVAR(gpiod_Chip_name_doc,
 
 static PyObject *gpiod_Chip_name(gpiod_ChipObject *self)
 {
+	if (gpiod_ChipIsClosed(self))
+		return NULL;
+
 	return PyUnicode_FromFormat("%s", gpiod_chip_name(self->chip));
 }
 
@@ -1247,6 +1342,9 @@ PyDoc_STRVAR(gpiod_Chip_label_doc,
 
 static PyObject *gpiod_Chip_label(gpiod_ChipObject *self)
 {
+	if (gpiod_ChipIsClosed(self))
+		return NULL;
+
 	return PyUnicode_FromFormat("%s", gpiod_chip_label(self->chip));
 }
 
@@ -1255,6 +1353,9 @@ PyDoc_STRVAR(gpiod_Chip_num_lines_doc,
 
 static PyObject *gpiod_Chip_num_lines(gpiod_ChipObject *self)
 {
+	if (gpiod_ChipIsClosed(self))
+		return NULL;
+
 	return Py_BuildValue("I", gpiod_chip_num_lines(self->chip));
 }
 
@@ -1284,6 +1385,9 @@ gpiod_Chip_get_line(gpiod_ChipObject *self, PyObject *args)
 	unsigned int offset;
 	int rv;
 
+	if (gpiod_ChipIsClosed(self))
+		return NULL;
+
 	rv = PyArg_ParseTuple(args, "I", &offset);
 	if (!rv)
 		return NULL;
@@ -1308,6 +1412,9 @@ gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args)
 	struct gpiod_line *line;
 	const char *name;
 	int rv;
+
+	if (gpiod_ChipIsClosed(self))
+		return NULL;
 
 	rv = PyArg_ParseTuple(args, "s", &name);
 	if (!rv)
@@ -1442,6 +1549,9 @@ gpiod_Chip_get_all_lines(gpiod_ChipObject *self)
 	PyObject *list;
 	int rv;
 
+	if (gpiod_ChipIsClosed(self))
+		return NULL;
+
 	rv = gpiod_chip_get_all_lines(self->chip, &bulk);
 	if (rv) {
 		PyErr_SetFromErrno(PyExc_OSError);
@@ -1548,6 +1658,12 @@ gpiod_Chip_find_lines(gpiod_ChipObject *self, PyObject *args)
 }
 
 static PyMethodDef gpiod_Chip_methods[] = {
+	{
+		.ml_name = "close",
+		.ml_meth = (PyCFunction)gpiod_Chip_close,
+		.ml_flags = METH_NOARGS,
+		.ml_doc = gpiod_Chip_close_doc,
+	},
 	{
 		.ml_name = "name",
 		.ml_meth = (PyCFunction)gpiod_Chip_name,
@@ -1678,6 +1794,9 @@ static int gpiod_LineIter_init(gpiod_LineIterObject *self, PyObject *args)
 	rv = PyArg_ParseTuple(args, "O!", &gpiod_ChipType,
 			      (PyObject *)&chip_obj);
 	if (!rv)
+		return -1;
+
+	if (gpiod_ChipIsClosed(chip_obj))
 		return -1;
 
 	Py_BEGIN_ALLOW_THREADS;

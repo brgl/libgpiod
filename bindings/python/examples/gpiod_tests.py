@@ -40,14 +40,22 @@ def chip_open_default_lookup():
     by_label = gpiod.Chip('gpio-mockup-A')
     by_number = gpiod.Chip('0')
     print('All good')
+    by_name.close()
+    by_path.close()
+    by_label.close()
+    by_number.close()
 
 add_test('Open a GPIO chip using different lookup modes', chip_open_default_lookup)
 
 def chip_open_different_modes():
     chip = gpiod.Chip('/dev/gpiochip0', gpiod.Chip.OPEN_BY_PATH)
+    chip.close()
     chip = gpiod.Chip('gpiochip0', gpiod.Chip.OPEN_BY_NAME)
+    chip.close()
     chip = gpiod.Chip('gpio-mockup-A', gpiod.Chip.OPEN_BY_LABEL)
+    chip.close()
     chip = gpiod.Chip('0', gpiod.Chip.OPEN_BY_NUMBER)
+    chip.close()
     print('All good')
 
 add_test('Open a GPIO chip using different modes', chip_open_different_modes)
@@ -74,17 +82,39 @@ def chip_open_no_args():
 
 add_test('Open a GPIO chip without arguments', chip_open_no_args)
 
+def chip_use_after_close():
+    chip = gpiod.Chip('gpiochip0')
+    line = chip.get_line(2)
+    chip.close()
+
+    try:
+        chip.name()
+    except ValueError as ex:
+        print('Error as expected: {}'.format(ex))
+
+    try:
+        line = chip.get_line(3)
+    except ValueError as ex:
+        print('Error as expected: {}'.format(ex))
+        return
+
+    assert False, 'ValueError expected'
+
+add_test('Use a GPIO chip after closing it', chip_use_after_close)
+
 def chip_info():
     chip = gpiod.Chip('gpiochip0')
     print('name: {}'.format(chip.name()))
     print('label: {}'.format(chip.label()))
     print('lines: {}'.format(chip.num_lines()))
+    chip.close()
 
 add_test('Print chip info', chip_info)
 
 def print_chip():
     chip = gpiod.Chip('/dev/gpiochip0')
     print(chip)
+    chip.close()
 
 add_test('Print chip object', print_chip)
 
@@ -114,12 +144,14 @@ def print_line():
     chip = gpiod.Chip('gpio-mockup-A')
     line = chip.get_line(3)
     print(line)
+    chip.close()
 
 add_test('Print line object', print_line)
 
 def find_line():
     line = gpiod.find_line('gpio-mockup-A-4')
     print('found line - offset: {}'.format(line.offset()))
+    line.owner().close()
 
 add_test('Find line globally', find_line)
 
@@ -144,6 +176,8 @@ def get_lines():
     for line in lines:
         print(line)
 
+    chip.close()
+
 add_test('Get lines from chip', get_lines)
 
 def get_all_lines():
@@ -155,6 +189,8 @@ def get_all_lines():
     print('Retrieved lines:')
     for line in lines:
         print(line)
+
+    chip.close()
 
 add_test('Get all lines from chip', get_all_lines)
 
@@ -168,6 +204,8 @@ def find_lines():
     for line in lines:
         print(line)
 
+    chip.close()
+
 add_test('Find multiple lines by name', find_lines)
 
 def create_line_bulk_from_lines():
@@ -178,6 +216,7 @@ def create_line_bulk_from_lines():
     lines = gpiod.LineBulk([line1, line2, line3])
     print('Created LineBulk:')
     print(lines)
+    chip.close()
 
 add_test('Create a LineBulk from a list of lines', create_line_bulk_from_lines)
 
@@ -185,6 +224,7 @@ def line_bulk_to_list():
     chip = gpiod.Chip('gpio-mockup-A')
     lines = chip.get_lines((1, 2, 3))
     print(lines.to_list())
+    chip.close()
 
 add_test('Convert a LineBulk to a list', line_bulk_to_list)
 
@@ -206,6 +246,8 @@ def line_flags():
     print('line is active-low: {}'.format(
             "True" if line.active_state() == gpiod.Line.ACTIVE_LOW else "False"))
 
+    chip.close()
+
 add_test('Check various line flags', line_flags)
 
 def get_value_single_line():
@@ -213,6 +255,7 @@ def get_value_single_line():
     line = chip.get_line(2)
     line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_IN)
     print('line value: {}'.format(line.get_value()))
+    chip.close()
 
 add_test('Get value - single line', get_value_single_line)
 
@@ -228,6 +271,8 @@ def set_value_single_line():
     line.release()
     line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_IN)
     print('line value after: {}'.format(line.get_value()))
+
+    chip.close()
 
 add_test('Set value - single line', set_value_single_line)
 
@@ -245,6 +290,8 @@ def line_event_single_line():
     print('event received')
     event = line.event_read()
     print_event(event)
+
+    chip.close()
 
 add_test('Monitor a single line for events', line_event_single_line)
 
@@ -266,6 +313,8 @@ def line_event_multiple_lines():
     for line in events:
         event = line.event_read()
         print_event(event)
+
+    chip.close()
 
 add_test('Monitor multiple lines for events', line_event_multiple_lines)
 
@@ -295,6 +344,8 @@ def line_event_poll_fd():
         line = fd_mapping[fd]
         event = line.event_read()
         print_event(event)
+
+    chip.close()
 
 add_test('Monitor multiple lines using their file descriptors', line_event_poll_fd)
 
