@@ -1562,7 +1562,7 @@ gpiod_Chip_get_all_lines(gpiod_ChipObject *self)
 	struct gpiod_line_bulk bulk;
 	gpiod_LineObject *line_obj;
 	struct gpiod_line *line;
-	Py_ssize_t offset;
+	unsigned int offset;
 	PyObject *list;
 	int rv;
 
