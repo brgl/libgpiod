@@ -43,19 +43,13 @@ typedef struct {
 	gpiod_ChipObject *owner;
 } gpiod_LineIterObject;
 
-static PyObject *gpiod_Chip_name(gpiod_ChipObject *self);
 static gpiod_LineBulkObject *gpiod_LineToLineBulk(gpiod_LineObject *line);
 static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 					PyObject *args, PyObject *kwds);
-static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self);
-static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
-					   PyObject *args);
 static PyObject *gpiod_LineBulk_event_wait(gpiod_LineBulkObject *self,
 					   PyObject *args, PyObject *kwds);
-static PyObject *gpiod_LineBulk_release(gpiod_LineBulkObject *self);
 static gpiod_LineObject *gpiod_MakeLineObject(gpiod_ChipObject *owner,
 					      struct gpiod_line *line);
-static PyObject *gpiod_Line_repr(gpiod_LineObject *self);
 static bool gpiod_ChipIsClosed(gpiod_ChipObject *chip);
 
 enum {
@@ -175,7 +169,8 @@ static PyObject *gpiod_LineEvent_repr(gpiod_LineEventObject *self)
 	else
 		edge = "FALLING EDGE";
 
-	line_repr = gpiod_Line_repr(self->source);
+	line_repr = PyObject_CallMethod((PyObject *)self->source,
+					"__repr__", "");
 
 	ret = PyUnicode_FromFormat("'%s (%ld.%ld) source(%S)'",
 				   edge, self->event.ts.tv_sec,
@@ -397,7 +392,7 @@ static PyObject *gpiod_Line_get_value(gpiod_LineObject *self)
 	if (!bulk_obj)
 		return NULL;
 
-	vals = gpiod_LineBulk_get_values(bulk_obj);
+	vals = PyObject_CallMethod((PyObject *)bulk_obj, "get_values", "");
 	Py_DECREF(bulk_obj);
 	if (!vals)
 		return NULL;
@@ -431,7 +426,8 @@ static PyObject *gpiod_Line_set_value(gpiod_LineObject *self, PyObject *args)
 		return NULL;
 	}
 
-	ret = gpiod_LineBulk_set_values(bulk_obj, vals);
+	ret = PyObject_CallMethod((PyObject *)bulk_obj,
+				  "set_values", "O", vals);
 	Py_DECREF(bulk_obj);
 	Py_DECREF(vals);
 
@@ -450,7 +446,7 @@ static PyObject *gpiod_Line_release(gpiod_LineObject *self)
 	if (!bulk_obj)
 		return NULL;
 
-	ret = gpiod_LineBulk_release(bulk_obj);
+	ret = PyObject_CallMethod((PyObject *)bulk_obj, "release", "");
 	Py_DECREF(bulk_obj);
 
 	return ret;
@@ -542,7 +538,7 @@ static PyObject *gpiod_Line_repr(gpiod_LineObject *self)
 	if (gpiod_ChipIsClosed(self->owner))
 		return NULL;
 
-	chip_name = gpiod_Chip_name(self->owner);
+	chip_name = PyObject_CallMethod((PyObject *)self->owner, "name", "");
 	if (!chip_name)
 		return NULL;
 
@@ -1120,7 +1116,6 @@ static PyObject *gpiod_LineBulk_repr(gpiod_LineBulkObject *self)
 {
 	PyObject *list, *list_repr, *chip_name, *ret;
 	gpiod_LineObject *line;
-	gpiod_ChipObject *chip;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
 		return NULL;
@@ -1135,8 +1130,7 @@ static PyObject *gpiod_LineBulk_repr(gpiod_LineBulkObject *self)
 		return NULL;
 
 	line = (gpiod_LineObject *)self->lines[0];
-	chip = line->owner;
-	chip_name = gpiod_Chip_name(chip);
+	chip_name = PyObject_CallMethod((PyObject *)line->owner, "name", "");
 	if (!chip_name) {
 		Py_DECREF(list_repr);
 		return NULL;
