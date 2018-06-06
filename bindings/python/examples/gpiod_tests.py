@@ -357,6 +357,21 @@ def line_event_poll_fd():
 
 add_test('Monitor multiple lines using their file descriptors', line_event_poll_fd)
 
+def line_event_repr():
+    with gpiod.Chip('gpiochip0') as chip:
+        line = chip.get_line(1)
+
+        print('requesting line for events')
+        line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+
+        print('generating a line event')
+        fire_line_event('gpiochip0', 1, True)
+        assert line.event_wait(sec=1), 'Expected a line event to occur'
+
+        print('event received: {}'.format(line.event_read()))
+
+add_test('Line event string repr', line_event_repr)
+
 print('API version is {}'.format(gpiod.version_string()))
 
 for name, func in test_cases:
