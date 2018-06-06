@@ -44,10 +44,6 @@ typedef struct {
 } gpiod_LineIterObject;
 
 static gpiod_LineBulkObject *gpiod_LineToLineBulk(gpiod_LineObject *line);
-static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
-					PyObject *args, PyObject *kwds);
-static PyObject *gpiod_LineBulk_event_wait(gpiod_LineBulkObject *self,
-					   PyObject *args, PyObject *kwds);
 static gpiod_LineObject *gpiod_MakeLineObject(gpiod_ChipObject *owner,
 					      struct gpiod_line *line);
 static bool gpiod_ChipIsClosed(gpiod_ChipObject *chip);
@@ -354,14 +350,19 @@ static PyObject *gpiod_Line_request(gpiod_LineObject *self,
 				    PyObject *args, PyObject *kwds)
 {
 	gpiod_LineBulkObject *bulk_obj;
-	PyObject *ret;
+	PyObject *ret, *callable;
 
 	bulk_obj = gpiod_LineToLineBulk(self);
 	if (!bulk_obj)
 		return NULL;
 
-	ret = gpiod_LineBulk_request(bulk_obj, args, kwds);
+	callable = PyObject_GetAttrString((PyObject *)bulk_obj, "request");
+	if (!callable)
+		return NULL;
+
+	ret = PyObject_Call(callable, args, kwds);
 	Py_DECREF(bulk_obj);
+	Py_DECREF(callable);
 
 	return ret;
 }
@@ -459,14 +460,19 @@ static PyObject *gpiod_Line_event_wait(gpiod_LineObject *self,
 				       PyObject *args, PyObject *kwds)
 {
 	gpiod_LineBulkObject *bulk_obj;
-	PyObject *events;
+	PyObject *events, *callable;
 
 	bulk_obj = gpiod_LineToLineBulk(self);
 	if (!bulk_obj)
 		return NULL;
 
-	events = gpiod_LineBulk_event_wait(bulk_obj, args, kwds);
+	callable = PyObject_GetAttrString((PyObject *)bulk_obj, "event_wait");
+	if (!callable)
+		return NULL;
+
+	events = PyObject_Call(callable, args, kwds);
 	Py_DECREF(bulk_obj);
+	Py_DECREF(callable);
 	if (!events)
 		return NULL;
 
