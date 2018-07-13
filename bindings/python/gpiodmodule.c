@@ -78,6 +78,21 @@ enum {
 	gpiod_FALLING_EDGE,
 };
 
+static PyObject *gpiod_CallMethodPyArgs(PyObject *obj, const char *method,
+					PyObject *args, PyObject *kwds)
+{
+	PyObject *callable, *ret;
+
+	callable = PyObject_GetAttrString((PyObject *)obj, method);
+	if (!callable)
+		return NULL;
+
+	ret = PyObject_Call(callable, args, kwds);
+	Py_DECREF(callable);
+
+	return ret;
+}
+
 static int gpiod_LineEvent_init(void)
 {
 	PyErr_SetString(PyExc_NotImplementedError,
@@ -350,19 +365,15 @@ static PyObject *gpiod_Line_request(gpiod_LineObject *self,
 				    PyObject *args, PyObject *kwds)
 {
 	gpiod_LineBulkObject *bulk_obj;
-	PyObject *ret, *callable;
+	PyObject *ret;
 
 	bulk_obj = gpiod_LineToLineBulk(self);
 	if (!bulk_obj)
 		return NULL;
 
-	callable = PyObject_GetAttrString((PyObject *)bulk_obj, "request");
-	if (!callable)
-		return NULL;
-
-	ret = PyObject_Call(callable, args, kwds);
+	ret = gpiod_CallMethodPyArgs((PyObject *)bulk_obj,
+				      "request", args, kwds);
 	Py_DECREF(bulk_obj);
-	Py_DECREF(callable);
 
 	return ret;
 }
@@ -461,19 +472,15 @@ static PyObject *gpiod_Line_event_wait(gpiod_LineObject *self,
 				       PyObject *args, PyObject *kwds)
 {
 	gpiod_LineBulkObject *bulk_obj;
-	PyObject *events, *callable;
+	PyObject *events;
 
 	bulk_obj = gpiod_LineToLineBulk(self);
 	if (!bulk_obj)
 		return NULL;
 
-	callable = PyObject_GetAttrString((PyObject *)bulk_obj, "event_wait");
-	if (!callable)
-		return NULL;
-
-	events = PyObject_Call(callable, args, kwds);
+	events = gpiod_CallMethodPyArgs((PyObject *)bulk_obj,
+					"event_wait", args, kwds);
 	Py_DECREF(bulk_obj);
-	Py_DECREF(callable);
 	if (!events)
 		return NULL;
 
