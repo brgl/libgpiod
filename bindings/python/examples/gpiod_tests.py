@@ -244,7 +244,7 @@ def line_flags():
     print('line is requested: {}'.format(line.is_requested()))
 
     print('requesting line')
-    line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_OUT,
+    line.request(consumer="gpiod_test.py", type=gpiod.LINE_REQ_DIR_OUT,
                  flags=(gpiod.LINE_REQ_FLAG_OPEN_DRAIN | gpiod.LINE_REQ_FLAG_ACTIVE_LOW))
 
     print('line is used: {}'.format(line.is_used()))
@@ -261,7 +261,7 @@ add_test('Check various line flags', line_flags)
 def get_value_single_line():
     chip = gpiod.Chip('gpio-mockup-A')
     line = chip.get_line(2)
-    line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_IN)
+    line.request(consumer="gpiod_test.py", type=gpiod.LINE_REQ_DIR_IN)
     print('line value: {}'.format(line.get_value()))
     chip.close()
 
@@ -270,14 +270,14 @@ add_test('Get value - single line', get_value_single_line)
 def set_value_single_line():
     chip = gpiod.Chip('gpiochip0')
     line = chip.get_line(3)
-    line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_IN)
+    line.request(consumer="gpiod_test.py", type=gpiod.LINE_REQ_DIR_IN)
 
     print('line value before: {}'.format(line.get_value()))
     line.release()
-    line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_OUT)
+    line.request(consumer="gpiod_test.py", type=gpiod.LINE_REQ_DIR_OUT)
     line.set_value(1)
     line.release()
-    line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_IN)
+    line.request(consumer="gpiod_test.py", type=gpiod.LINE_REQ_DIR_IN)
     print('line value after: {}'.format(line.get_value()))
 
     chip.close()
@@ -289,7 +289,7 @@ def line_event_single_line():
     line = chip.get_line(1)
 
     print('requesting line for events')
-    line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+    line.request(consumer="gpiod_test.py", type=gpiod.LINE_REQ_EV_BOTH_EDGES)
 
     print('generating a line event')
     fire_line_event('gpiochip0', 1, True)
@@ -308,7 +308,7 @@ def line_event_multiple_lines():
     lines = chip.get_lines((1, 2, 3, 4, 5))
 
     print('requesting lines for events')
-    lines.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+    lines.request(consumer="gpiod_test.py", type=gpiod.LINE_REQ_EV_BOTH_EDGES)
 
     print('generating two line events')
     fire_line_event('gpiochip0', 1, True)
@@ -330,7 +330,7 @@ def line_event_poll_fd():
     chip = gpiod.Chip('gpiochip0')
     lines = chip.get_lines((1, 2, 3, 4, 5, 6))
     print('requesting lines for events')
-    lines.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+    lines.request(consumer="gpiod_test.py", type=gpiod.LINE_REQ_EV_BOTH_EDGES)
 
     print('generating three line events')
     fire_line_event('gpiochip0', 2, True)
@@ -362,7 +362,7 @@ def line_event_repr():
         line = chip.get_line(1)
 
         print('requesting line for events')
-        line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+        line.request(consumer="gpiod_test.py", type=gpiod.LINE_REQ_EV_BOTH_EDGES)
 
         print('generating a line event')
         fire_line_event('gpiochip0', 1, True)
