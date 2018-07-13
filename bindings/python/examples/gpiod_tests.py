@@ -14,7 +14,6 @@ system and that it's detected as gpiochip0.
 '''
 
 import gpiod
-import sys
 import select
 
 test_cases = []
