@@ -1479,7 +1479,7 @@ static gpiod_LineBulkObject *gpiod_ListToLineBulk(PyObject *lines)
 		return NULL;
 	}
 
-	rv = gpiod_LineBulkType.tp_init((PyObject *)bulk, arg, NULL);
+	rv = gpiod_LineBulk_init(bulk, arg);
 	Py_DECREF(arg);
 	if (rv < 0) {
 		Py_DECREF(bulk);
