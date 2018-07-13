@@ -1020,8 +1020,10 @@ static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 
 		val = PyLong_AsLong(next);
 		Py_DECREF(next);
-		if (PyErr_Occurred())
+		if (PyErr_Occurred()) {
+			Py_DECREF(iter);
 			return NULL;
+		}
 
 		vals[i] = (int)val;
 	}
