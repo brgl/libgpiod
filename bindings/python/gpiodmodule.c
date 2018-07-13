@@ -46,7 +46,6 @@ typedef struct {
 static gpiod_LineBulkObject *gpiod_LineToLineBulk(gpiod_LineObject *line);
 static gpiod_LineObject *gpiod_MakeLineObject(gpiod_ChipObject *owner,
 					      struct gpiod_line *line);
-static bool gpiod_ChipIsClosed(gpiod_ChipObject *chip);
 
 enum {
 	gpiod_LINE_REQ_DIR_AS_IS = 1,
@@ -77,6 +76,17 @@ enum {
 	gpiod_RISING_EDGE = 1,
 	gpiod_FALLING_EDGE,
 };
+
+static bool gpiod_ChipIsClosed(gpiod_ChipObject *chip)
+{
+	if (!chip->chip) {
+		PyErr_SetString(PyExc_ValueError,
+				"I/O operation on closed file");
+		return true;
+	}
+
+	return false;
+}
 
 static PyObject *gpiod_CallMethodPyArgs(PyObject *obj, const char *method,
 					PyObject *args, PyObject *kwds)
@@ -1340,17 +1350,6 @@ PyDoc_STRVAR(gpiod_Chip_exit_doc,
 static PyObject *gpiod_Chip_exit(gpiod_ChipObject *chip)
 {
 	return PyObject_CallMethod((PyObject *)chip, "close", "");
-}
-
-static bool gpiod_ChipIsClosed(gpiod_ChipObject *chip)
-{
-	if (!chip->chip) {
-		PyErr_SetString(PyExc_ValueError,
-				"I/O operation on closed file");
-		return true;
-	}
-
-	return false;
 }
 
 PyDoc_STRVAR(gpiod_Chip_name_doc,
