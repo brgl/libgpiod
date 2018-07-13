@@ -399,6 +399,7 @@ static PyObject *gpiod_Line_get_value(gpiod_LineObject *self)
 		return NULL;
 
 	ret = PyList_GetItem(vals, 0);
+	Py_INCREF(ret);
 	Py_DECREF(vals);
 
 	return ret;
