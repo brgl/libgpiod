@@ -283,6 +283,32 @@ def set_value_single_line():
 
 add_test('Set value - single line', set_value_single_line)
 
+def request_line_with_default_values():
+    chip = gpiod.Chip('gpiochip0')
+    line = chip.get_line(3)
+
+    print('requesting a single line with a default value')
+    line.request(consumer='gpiod_test.py', type=gpiod.LINE_REQ_DIR_OUT, default_vals=[ 1 ])
+
+    print('line value after request: {}'.format(line.get_value()))
+
+    chip.close()
+
+add_test('Request line with default value', request_line_with_default_values)
+
+def request_multiple_lines_with_default_values():
+    chip = gpiod.Chip('gpiochip0')
+    lines = chip.get_lines(( 1, 2, 3, 4, 5 ))
+
+    print('requesting lines with default values')
+    lines.request(consumer='gpiod_test.py', type=gpiod.LINE_REQ_DIR_OUT, default_vals=( 1, 0, 1, 0, 1 ))
+
+    print('line values after request: {}'.format(lines.get_values()))
+
+    chip.close()
+
+add_test('Request multiple lines with default values', request_multiple_lines_with_default_values)
+
 def line_event_single_line():
     chip = gpiod.Chip('gpiochip0')
     line = chip.get_line(1)
