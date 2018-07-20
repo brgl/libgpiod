@@ -901,7 +901,7 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 
 	rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|iiO", kwlist,
 					 &consumer, &type,
-					 &flags, &default_vals);
+					 &flags, &def_vals_obj);
 	if (!rv)
 		return NULL;
 
