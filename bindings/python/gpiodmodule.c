@@ -726,7 +726,7 @@ static int gpiod_LineBulk_init(gpiod_LineBulkObject *self, PyObject *args)
 		return -1;
 	}
 
-	self->lines = PyMem_RawCalloc(self->num_lines, sizeof(PyObject *));
+	self->lines = PyMem_Calloc(self->num_lines, sizeof(PyObject *));
 	if (!self->lines) {
 		PyErr_SetString(PyExc_MemoryError, "Out of memory");
 		return -1;
@@ -734,7 +734,7 @@ static int gpiod_LineBulk_init(gpiod_LineBulkObject *self, PyObject *args)
 
 	iter = PyObject_GetIter(lines);
 	if (!iter) {
-		PyMem_RawFree(self->lines);
+		PyMem_Free(self->lines);
 		return -1;
 	}
 
@@ -766,7 +766,7 @@ errout:
 		for (--i; i >= 0; i--)
 			Py_DECREF(self->lines[i]);
 	}
-	PyMem_RawFree(self->lines);
+	PyMem_Free(self->lines);
 	self->lines = NULL;
 
 	return -1;
@@ -782,7 +782,7 @@ static void gpiod_LineBulk_dealloc(gpiod_LineBulkObject *self)
 	for (i = 0; i < self->num_lines; i++)
 		Py_DECREF(self->lines[i]);
 
-	PyMem_RawFree(self->lines);
+	PyMem_Free(self->lines);
 }
 
 static PyObject *gpiod_LineBulk_iternext(gpiod_LineBulkObject *self)
