@@ -1230,27 +1230,15 @@ static gpiod_LineBulkObject *gpiod_LineToLineBulk(gpiod_LineObject *line)
 {
 	gpiod_LineBulkObject *ret;
 	PyObject *args;
-	int rv;
 
 	args = Py_BuildValue("((O))", line);
 	if (!args)
 		return NULL;
 
-	ret = PyObject_New(gpiod_LineBulkObject, &gpiod_LineBulkType);
-	if (!ret) {
-		Py_DECREF(args);
-		return NULL;
-	}
-
-	ret->lines = NULL;
-	ret->num_lines = 0;
-
-	rv = gpiod_LineBulk_init(ret, args);
+	ret = (gpiod_LineBulkObject *)PyObject_CallObject(
+					(PyObject *)&gpiod_LineBulkType,
+					args);
 	Py_DECREF(args);
-	if (rv) {
-		Py_DECREF(ret);
-		return NULL;
-	}
 
 	return ret;
 }
@@ -1466,24 +1454,15 @@ static gpiod_LineBulkObject *gpiod_ListToLineBulk(PyObject *lines)
 {
 	gpiod_LineBulkObject *bulk;
 	PyObject *arg;
-	int rv;
 
 	arg = PyTuple_Pack(1, lines);
 	if (!arg)
 		return NULL;
 
-	bulk = PyObject_New(gpiod_LineBulkObject, &gpiod_LineBulkType);
-	if (!bulk) {
-		Py_DECREF(arg);
-		return NULL;
-	}
-
-	rv = gpiod_LineBulk_init(bulk, arg);
+	bulk = (gpiod_LineBulkObject *)PyObject_CallObject(
+					(PyObject *)&gpiod_LineBulkType,
+					arg);
 	Py_DECREF(arg);
-	if (rv < 0) {
-		Py_DECREF(bulk);
-		return NULL;
-	}
 
 	return bulk;
 }
