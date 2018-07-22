@@ -309,6 +309,23 @@ def request_multiple_lines_with_default_values():
 
 add_test('Request multiple lines with default values', request_multiple_lines_with_default_values)
 
+def request_line_incorrect_number_of_def_vals():
+    with gpiod.Chip('gpiochip0') as chip:
+        lines = chip.get_lines(( 1, 2, 3, 4, 5 ))
+
+        print('requesting lines with incorrect number of default values')
+        try:
+            lines.request(consumer='gpiod_test.py',
+                          type=gpiod.LINE_REQ_DIR_OUT,
+                          default_vals=( 1, 0, 1, 0 ))
+        except TypeError:
+            print('TypeError raised as expected')
+            return
+
+        assert False, 'TypeError expected'
+
+add_test('Request with incorrect number of default values', request_line_incorrect_number_of_def_vals)
+
 def line_event_single_line():
     chip = gpiod.Chip('gpiochip0')
     line = chip.get_line(1)
