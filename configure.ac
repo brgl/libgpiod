@@ -29,6 +29,7 @@ AC_SUBST(VERSION_STR, [$PACKAGE_VERSION$EXTRA_VERSION])
 #    release, then set age to 0.
 #
 # Define the libtool version as (C.R.A):
+# NOTE: this version only applies to the core C library.
 AC_SUBST(ABI_VERSION, [2.0.0])
 # Have a separate ABI version for C++ bindings:
 AC_SUBST(ABI_CXX_VERSION, [1.0.0])
