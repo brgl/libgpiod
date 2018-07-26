@@ -119,7 +119,7 @@ static void gpiod_LineEvent_dealloc(gpiod_LineEventObject *self)
 }
 
 PyDoc_STRVAR(gpiod_LineEvent_get_type_doc,
-"Event type of this line event.");
+"Event type of this line event (integer).");
 
 PyObject *gpiod_LineEvent_get_type(gpiod_LineEventObject *self)
 {
@@ -134,7 +134,7 @@ PyObject *gpiod_LineEvent_get_type(gpiod_LineEventObject *self)
 }
 
 PyDoc_STRVAR(gpiod_LineEvent_get_sec_doc,
-"Seconds value of the line event timestamp.");
+"Seconds value of the line event timestamp (integer).");
 
 PyObject *gpiod_LineEvent_get_sec(gpiod_LineEventObject *self)
 {
@@ -142,7 +142,7 @@ PyObject *gpiod_LineEvent_get_sec(gpiod_LineEventObject *self)
 }
 
 PyDoc_STRVAR(gpiod_LineEvent_get_nsec_doc,
-"Nanoseconds value of the line event timestamp.");
+"Nanoseconds value of the line event timestamp (integer).");
 
 PyObject *gpiod_LineEvent_get_nsec(gpiod_LineEventObject *self)
 {
@@ -150,7 +150,8 @@ PyObject *gpiod_LineEvent_get_nsec(gpiod_LineEventObject *self)
 }
 
 PyDoc_STRVAR(gpiod_LineEvent_get_source_doc,
-"Line object representing the GPIO line on which this event occurred.");
+"Line object representing the GPIO line on which this event\n"
+"occurred (gpiod.Line object).");
 
 gpiod_LineObject *gpiod_LineEvent_get_source(gpiod_LineEventObject *self)
 {
@@ -204,7 +205,8 @@ static PyObject *gpiod_LineEvent_repr(gpiod_LineEventObject *self)
 }
 
 PyDoc_STRVAR(gpiod_LineEventType_doc,
-"Represents a single GPIO line event.");
+"Represents a single GPIO line event. This object is immutable and can only\n"
+"be created by an instance of gpiod.Line.");
 
 static PyTypeObject gpiod_LineEventType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
@@ -235,6 +237,8 @@ static void gpiod_Line_dealloc(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_owner_doc,
+"owner() -> Chip object owning the line\n"
+"\n"
 "Get the GPIO chip owning this line.");
 
 static PyObject *gpiod_Line_owner(gpiod_LineObject *self)
@@ -244,6 +248,8 @@ static PyObject *gpiod_Line_owner(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_offset_doc,
+"offset() -> integer\n"
+"\n"
 "Get the offset of the GPIO line.");
 
 static PyObject *gpiod_Line_offset(gpiod_LineObject *self)
@@ -255,6 +261,8 @@ static PyObject *gpiod_Line_offset(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_name_doc,
+"name() -> string\n"
+"\n"
 "Get the name of the GPIO line.");
 
 static PyObject *gpiod_Line_name(gpiod_LineObject *self)
@@ -272,7 +280,9 @@ static PyObject *gpiod_Line_name(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_consumer_doc,
-"Get the consumer of the GPIO line.");
+"consumer() -> string\n"
+"\n"
+"Get the consumer string of the GPIO line.");
 
 static PyObject *gpiod_Line_consumer(gpiod_LineObject *self)
 {
@@ -289,6 +299,8 @@ static PyObject *gpiod_Line_consumer(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_direction_doc,
+"direction() -> integer\n"
+"\n"
 "Get the direction setting of this GPIO line.");
 
 static PyObject *gpiod_Line_direction(gpiod_LineObject *self)
@@ -310,6 +322,8 @@ static PyObject *gpiod_Line_direction(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_active_state_doc,
+"active_state() -> integer\n"
+"\n"
 "Get the active state setting of this GPIO line.");
 
 static PyObject *gpiod_Line_active_state(gpiod_LineObject *self)
@@ -331,6 +345,8 @@ static PyObject *gpiod_Line_active_state(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_is_used_doc,
+"is_used() -> boolean\n"
+"\n"
 "Check if this line is used by the kernel or other user space process.");
 
 static PyObject *gpiod_Line_is_used(gpiod_LineObject *self)
@@ -345,6 +361,8 @@ static PyObject *gpiod_Line_is_used(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_is_open_drain_doc,
+"is_open_drain() -> boolean\n"
+"\n"
 "Check if this line represents an open-drain GPIO.");
 
 static PyObject *gpiod_Line_is_open_drain(gpiod_LineObject *self)
@@ -359,6 +377,8 @@ static PyObject *gpiod_Line_is_open_drain(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_is_open_source_doc,
+"is_open_source() -> boolean\n"
+"\n"
 "Check if this line represents an open-source GPIO.");
 
 static PyObject *gpiod_Line_is_open_source(gpiod_LineObject *self)
@@ -373,8 +393,23 @@ static PyObject *gpiod_Line_is_open_source(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_request_doc,
-"Request this GPIO line.");
+"request(consumer[, type[, flags[, default_vals]]]) -> None\n"
+"\n"
+"Request this GPIO line.\n"
+"\n"
+"  consumer\n"
+"    Name of the consumer.\n"
+"  type\n"
+"    Type of the request.\n"
+"  flags\n"
+"    Other configuration flags.\n"
+"  default_vals\n"
+"    Default value of this line (as a sequence, example: default_vals=[ 1 ]).");
 
+/*
+ * TODO: add support for 'default_val' argument which will allow users to pass
+ * a single default value directly rather than wrapping it in a sequence.
+ */
 static PyObject *gpiod_Line_request(gpiod_LineObject *self,
 				    PyObject *args, PyObject *kwds)
 {
@@ -393,6 +428,8 @@ static PyObject *gpiod_Line_request(gpiod_LineObject *self,
 }
 
 PyDoc_STRVAR(gpiod_Line_is_requested_doc,
+"is_requested() -> boolean\n"
+"\n"
 "Check if this user has ownership of this line.");
 
 static PyObject *gpiod_Line_is_requested(gpiod_LineObject *self)
@@ -407,6 +444,8 @@ static PyObject *gpiod_Line_is_requested(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_get_value_doc,
+"get_value() -> integer\n"
+"\n"
 "Read the current value of this GPIO line.");
 
 static PyObject *gpiod_Line_get_value(gpiod_LineObject *self)
@@ -431,7 +470,12 @@ static PyObject *gpiod_Line_get_value(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_set_value_doc,
-"Set the value of this GPIO line.");
+"set_value(value) -> None\n"
+"\n"
+"Set the value of this GPIO line.\n"
+"\n"
+"  value\n"
+"    New value (integer)");
 
 static PyObject *gpiod_Line_set_value(gpiod_LineObject *self, PyObject *args)
 {
@@ -462,6 +506,8 @@ static PyObject *gpiod_Line_set_value(gpiod_LineObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(gpiod_Line_release_doc,
+"release() -> None\n"
+"\n"
 "Release this GPIO line.");
 
 static PyObject *gpiod_Line_release(gpiod_LineObject *self)
@@ -480,7 +526,17 @@ static PyObject *gpiod_Line_release(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_event_wait_doc,
-"Wait for a line event to occur on this GPIO line.");
+"event_wait([sec[ ,nsec]]) -> boolean\n"
+"\n"
+"Wait for a line event to occur on this GPIO line.\n"
+"\n"
+"  sec\n"
+"    Number of seconds to wait before timeout.\n"
+"  nsec\n"
+"    Number of nanoseconds to wait before timeout.\n"
+"\n"
+"Returns True if an event occurred on this line before timeout. False\n"
+"otherwise.");
 
 static PyObject *gpiod_Line_event_wait(gpiod_LineObject *self,
 				       PyObject *args, PyObject *kwds)
@@ -508,6 +564,8 @@ static PyObject *gpiod_Line_event_wait(gpiod_LineObject *self,
 }
 
 PyDoc_STRVAR(gpiod_Line_event_read_doc,
+"event_read() -> gpiod.LineEvent object\n"
+"\n"
 "Read a single line event from this GPIO line object.");
 
 static gpiod_LineEventObject *gpiod_Line_event_read(gpiod_LineObject *self)
@@ -540,6 +598,8 @@ static gpiod_LineEventObject *gpiod_Line_event_read(gpiod_LineObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Line_event_get_fd_doc,
+"event_get_fd() -> integer\n"
+"\n"
 "Get the event file descriptor number associated with this line.");
 
 static PyObject *gpiod_Line_event_get_fd(gpiod_LineObject *self)
@@ -686,7 +746,13 @@ static PyMethodDef gpiod_Line_methods[] = {
 };
 
 PyDoc_STRVAR(gpiod_LineType_doc,
-"Represents a GPIO line.");
+"Represents a GPIO line.\n"
+"\n"
+"The lifetime of this object is managed by the chip that owns it. Once\n"
+"the corresponding gpiod.Chip is closed, a gpiod.Line object must not be\n"
+"used.\n"
+"\n"
+"Line objects can only be created by the owning chip.");
 
 static PyTypeObject gpiod_LineType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
@@ -804,6 +870,8 @@ static PyObject *gpiod_LineBulk_iternext(gpiod_LineBulkObject *self)
 }
 
 PyDoc_STRVAR(gpiod_LineBulk_to_list_doc,
+"to_list() -> list of gpiod.Line objects\n"
+"\n"
 "Convert this LineBulk to a list");
 
 static PyObject *gpiod_LineBulk_to_list(gpiod_LineBulkObject *self)
@@ -881,7 +949,18 @@ static void gpiod_MakeRequestConfig(struct gpiod_line_request_config *conf,
 }
 
 PyDoc_STRVAR(gpiod_LineBulk_request_doc,
-"Request all lines held by this LineBulk object.");
+"request(consumer[, type[, flags[, default_vals]]]) -> None\n"
+"\n"
+"Request all lines held by this LineBulk object.\n"
+"\n"
+"  consumer\n"
+"    Name of the consumer.\n"
+"  type\n"
+"    Type of the request.\n"
+"  flags\n"
+"    Other configuration flags.\n"
+"  default_vals\n"
+"    List of default values.\n");
 
 static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 					PyObject *args, PyObject *kwds)
@@ -957,7 +1036,11 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 }
 
 PyDoc_STRVAR(gpiod_LineBulk_get_values_doc,
-"Read the values of all the lines held by this LineBulk object.");
+"get_values() -> list of integers\n"
+"\n"
+"Read the values of all the lines held by this LineBulk object. The index\n"
+"of each value in the returned list corresponds with the index of the line\n"
+"in this gpiod.LineBulk object.");
 
 static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self)
 {
@@ -1003,7 +1086,16 @@ static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self)
 }
 
 PyDoc_STRVAR(gpiod_LineBulk_set_values_doc,
-"Set the values of all the lines held by this LineBulk object.");
+"set_values(values) -> None\n"
+"\n"
+"Set the values of all the lines held by this LineBulk object.\n"
+"\n"
+"  values\n"
+"    List of values (integers) to set.\n"
+"\n"
+"The number of values in the list passed as argument must be the same as\n"
+"the number of lines held by this gpiod.LineBulk object. The index of each\n"
+"value corresponds with the index of each line in the object.\n");
 
 static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 					   PyObject *args)
@@ -1063,6 +1155,8 @@ static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 }
 
 PyDoc_STRVAR(gpiod_LineBulk_release_doc,
+"release() -> None\n"
+"\n"
 "Release all lines held by this LineBulk object.");
 
 static PyObject *gpiod_LineBulk_release(gpiod_LineBulkObject *self)
@@ -1079,7 +1173,18 @@ static PyObject *gpiod_LineBulk_release(gpiod_LineBulkObject *self)
 }
 
 PyDoc_STRVAR(gpiod_LineBulk_event_wait_doc,
-"Poll the lines held by this LineBulk Object for line events.");
+"event_wait([sec[ ,nsec]]) -> gpiod.LineBulk object or None\n"
+"\n"
+"Poll the lines held by this LineBulk Object for line events.\n"
+"\n"
+"  sec\n"
+"    Number of seconds to wait before timeout.\n"
+"  nsec\n"
+"    Number of nanoseconds to wait before timeout.\n"
+"\n"
+"Returns a gpiod.LineBulk object containing references to lines on which\n"
+"events occurred or None if we reached the timeout without any event\n"
+"occurring.");
 
 static PyObject *gpiod_LineBulk_event_wait(gpiod_LineBulkObject *self,
 					   PyObject *args, PyObject *kwds)
@@ -1214,7 +1319,11 @@ static PyMethodDef gpiod_LineBulk_methods[] = {
 };
 
 PyDoc_STRVAR(gpiod_LineBulkType_doc,
-"Represents a set of GPIO lines.");
+"Represents a set of GPIO lines.\n"
+"\n"
+"Objects of this type are immutable. The constructor takes as argument\n"
+"a sequence of gpiod.Line objects. It doesn't accept objects of any other\n"
+"type.");
 
 static PyTypeObject gpiod_LineBulkType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
@@ -1317,7 +1426,10 @@ static PyObject *gpiod_Chip_repr(gpiod_ChipObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Chip_close_doc,
-"Close the associated gpiochip descriptor.");
+"close() -> None\n"
+"\n"
+"Close the associated gpiochip descriptor. The chip object must no longer\n"
+"be used after this method is called.\n");
 
 static PyObject *gpiod_Chip_close(gpiod_ChipObject *self)
 {
@@ -1348,6 +1460,8 @@ static PyObject *gpiod_Chip_exit(gpiod_ChipObject *chip)
 }
 
 PyDoc_STRVAR(gpiod_Chip_name_doc,
+"name() -> string\n"
+"\n"
 "Get the name of the GPIO chip");
 
 static PyObject *gpiod_Chip_name(gpiod_ChipObject *self)
@@ -1359,6 +1473,8 @@ static PyObject *gpiod_Chip_name(gpiod_ChipObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Chip_label_doc,
+"label() -> string\n"
+"\n"
 "Get the label of the GPIO chip");
 
 static PyObject *gpiod_Chip_label(gpiod_ChipObject *self)
@@ -1370,6 +1486,8 @@ static PyObject *gpiod_Chip_label(gpiod_ChipObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Chip_num_lines_doc,
+"num_lines() -> integer\n"
+"\n"
 "Get the number of lines exposed by this GPIO chip.");
 
 static PyObject *gpiod_Chip_num_lines(gpiod_ChipObject *self)
@@ -1397,7 +1515,12 @@ gpiod_MakeLineObject(gpiod_ChipObject *owner, struct gpiod_line *line)
 }
 
 PyDoc_STRVAR(gpiod_Chip_get_line_doc,
-"Get the GPIO line at given offset.");
+"get_line(offset) -> gpiod.Line object\n"
+"\n"
+"Get the GPIO line at given offset.\n"
+"\n"
+"  offset\n"
+"    Line offset (integer)");
 
 static gpiod_LineObject *
 gpiod_Chip_get_line(gpiod_ChipObject *self, PyObject *args)
@@ -1425,7 +1548,15 @@ gpiod_Chip_get_line(gpiod_ChipObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(gpiod_Chip_find_line_doc,
-"Get the GPIO line by name.");
+"find_line(name) -> gpiod.Line object or None\n"
+"\n"
+"Get the GPIO line by name.\n"
+"\n"
+"  name\n"
+"    Line name (string)\n"
+"\n"
+"Returns a gpiod.Line object or None if line with given name is not\n"
+"associated with this chip.");
 
 static gpiod_LineObject *
 gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args)
@@ -1475,7 +1606,12 @@ static gpiod_LineBulkObject *gpiod_ListToLineBulk(PyObject *lines)
 }
 
 PyDoc_STRVAR(gpiod_Chip_get_lines_doc,
-"Get a set of GPIO lines by their offsets.");
+"get_lines(offsets) -> gpiod.LineBulk object\n"
+"\n"
+"Get a set of GPIO lines by their offsets.\n"
+"\n"
+"  offsets\n"
+"    List of lines offsets.");
 
 static gpiod_LineBulkObject *
 gpiod_Chip_get_lines(gpiod_ChipObject *self, PyObject *args)
@@ -1548,6 +1684,8 @@ gpiod_Chip_get_lines(gpiod_ChipObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(gpiod_Chip_get_all_lines_doc,
+"get_all_lines() -> gpiod.LineBulk object\n"
+"\n"
 "Get all lines exposed by this Chip.");
 
 static gpiod_LineBulkObject *
@@ -1598,7 +1736,15 @@ gpiod_Chip_get_all_lines(gpiod_ChipObject *self)
 }
 
 PyDoc_STRVAR(gpiod_Chip_find_lines_doc,
-"Look up a set of lines by their names.");
+"find_lines(names) -> gpiod.LineBulk object\n"
+"\n"
+"Look up a set of lines by their names.\n"
+"\n"
+"  names\n"
+"    Sequence of line names.\n"
+"\n"
+"Unlike find_line(), this method raises an exception if at least one line\n"
+"from the list doesn't exist.");
 
 static gpiod_LineBulkObject *
 gpiod_Chip_find_lines(gpiod_ChipObject *self, PyObject *args)
@@ -1740,7 +1886,35 @@ static PyMethodDef gpiod_Chip_methods[] = {
 };
 
 PyDoc_STRVAR(gpiod_ChipType_doc,
-"Represents a GPIO chip.");
+"Represents a GPIO chip.\n"
+"\n"
+"Chip object manages all resources associated with the GPIO chip\n"
+"it represents.\n"
+"\n"
+"The gpiochip device file is opened during the object's construction.\n"
+"The Chip object's constructor takes a description string as argument the\n"
+"meaning of which depends on the second, optional parameter which defines\n"
+"the way the description string should be interpreted. The available\n"
+"options are: OPEN_BY_LABEL, OPEN_BY_NAME, OPEN_BY_NUMBER, OPEN_BY_PATH,\n"
+"and OPEN_LOOKUP. The last option means that libgpiod should open the chip\n"
+"based on the best guess what the path is. This is also the default if the\n"
+"second argument is missing.\n"
+"\n"
+"Callers must close the chip by calling the close() method when it's no\n"
+"longer used.\n"
+"\n"
+"Example:\n"
+"\n"
+"    chip = gpiod.Chip('gpiochip0', gpiod.Chip.OPEN_BY_NAME)\n"
+"    do_something(chip)\n"
+"    chip.close()\n"
+"\n"
+"The gpiod.Chip class also supports controlled execution ('with' statement).\n"
+"\n"
+"Example:\n"
+"\n"
+"    with gpiod.Chip('0', gpiod.Chip.OPEN_BY_NUMBER) as chip:\n"
+"        do_something(chip)");
 
 static PyTypeObject gpiod_ChipType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
@@ -1797,7 +1971,18 @@ static gpiod_ChipObject *gpiod_ChipIter_next(gpiod_ChipIterObject *self)
 }
 
 PyDoc_STRVAR(gpiod_ChipIterType_doc,
-"Allows to iterate over all GPIO chips in the system.");
+"Allows to iterate over all GPIO chips in the system.\n"
+"\n"
+"The ChipIter's constructor takes no arguments.\n"
+"\n"
+"Each iteration yields the next open GPIO chip handle. The caller is\n"
+"responsible for closing each chip\n"
+"\n"
+"Example:\n"
+"\n"
+"    for chip in gpiod.ChipIter():\n"
+"        do_something_with_chip(chip)\n"
+"        chip.close()");
 
 static PyTypeObject gpiod_ChipIterType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
@@ -1859,7 +2044,19 @@ static gpiod_LineObject *gpiod_LineIter_next(gpiod_LineIterObject *self)
 }
 
 PyDoc_STRVAR(gpiod_LineIterType_doc,
-"Allows to iterate over all lines exposed by a GPIO chip.");
+"Allows to iterate over all lines exposed by a GPIO chip.\n"
+"\n"
+"New line iterator is created by passing a reference to an open gpiod.Chip\n"
+"object to the constructor of gpiod.LineIter.\n"
+"\n"
+"Caller doesn't need to handle the resource management for lines as their\n"
+"lifetime is managed by the owning chip.\n"
+"\n"
+"Example:\n"
+"\n"
+"    chip = gpiod.Chip('gpiochip0')\n"
+"    for line in gpiod.LineIter(chip):\n"
+"        do_stuff_with_line(line)");
 
 static PyTypeObject gpiod_LineIterType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
@@ -1875,7 +2072,16 @@ static PyTypeObject gpiod_LineIterType = {
 };
 
 PyDoc_STRVAR(gpiod_Module_find_line_doc,
-"Lookup a GPIO line by name. Search all gpiochips.");
+"find_line(name) -> gpiod.Line object or None\n"
+"\n"
+"Lookup a GPIO line by name. Search all gpiochips. Returns a gpiod.Line\n"
+"or None if a line with given name doesn't exist in the system.\n"
+"\n"
+"NOTE: the gpiod.Chip object owning the returned line must be closed\n"
+"by the caller.\n"
+"\n"
+"  name\n"
+"    Name of the line to find (string).");
 
 static gpiod_LineObject *gpiod_Module_find_line(PyObject *self GPIOD_UNUSED,
 						PyObject *args)
@@ -1931,6 +2137,8 @@ static gpiod_LineObject *gpiod_Module_find_line(PyObject *self GPIOD_UNUSED,
 }
 
 PyDoc_STRVAR(gpiod_Module_version_string_doc,
+"version_string() -> string\n"
+"\n"
 "Get the API version of the library as a human-readable string.");
 
 static PyObject *gpiod_Module_version_string(void)
@@ -2037,7 +2245,7 @@ static gpiod_ConstDescr gpiod_ConstList[] = {
 PyDoc_STRVAR(gpiod_Module_doc,
 "Python bindings for libgpiod.\n\
 \n\
-This module wraps the native C API of libgpiod in a set of python types.");
+This module wraps the native C API of libgpiod in a set of python classes.");
 
 static PyModuleDef gpiod_Module = {
 	PyModuleDef_HEAD_INIT,
