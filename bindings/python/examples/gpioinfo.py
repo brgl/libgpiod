@@ -27,3 +27,5 @@ for chip in gpiod.ChipIter():
                 'unused' if consumer is None else consumer,
                 'input' if direction == gpiod.Line.DIRECTION_INPUT else 'output',
                 'active-low' if active_state == gpiod.Line.ACTIVE_LOW else 'active-high'))
+
+    chip.close()

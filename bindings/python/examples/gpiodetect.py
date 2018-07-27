@@ -15,3 +15,4 @@ for chip in gpiod.ChipIter():
     print('{} [{}] ({} lines)'.format(chip.name(),
                                       chip.label(),
                                       chip.num_lines()))
+    chip.close()

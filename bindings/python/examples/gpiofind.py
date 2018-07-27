@@ -14,3 +14,4 @@ import sys
 
 line = gpiod.find_line(sys.argv[1])
 print('{} {}'.format(line.owner().name(), line.offset()))
+line.owner().close()
