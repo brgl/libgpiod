@@ -1663,9 +1663,6 @@ gpiod_Chip_find_lines(gpiod_ChipObject *self, PyObject *args)
 
 	bulk = gpiod_ListToLineBulk(lines);
 	Py_DECREF(lines);
-	if (!bulk)
-		return NULL;
-
 	return bulk;
 }
 
