@@ -215,6 +215,20 @@ def find_lines():
 
 add_test('Find multiple lines by name', find_lines)
 
+def find_lines_one_bad():
+    chip = gpiod.Chip('gpiochip0')
+
+    print('looking up lines by names')
+    try:
+        lines = chip.find_lines(['gpio-mockup-A-3', 'nonexistent', 'gpio-mockup-A-7'])
+    except TypeError as ex:
+        print('Error as expected')
+        return
+
+    assert False, 'TypeError expected'
+
+add_test('Find multiple lines but one line name is non-existent', find_lines_one_bad)
+
 def create_line_bulk_from_lines():
     chip = gpiod.Chip('gpio-mockup-A')
     line1 = chip.get_line(2)

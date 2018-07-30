@@ -1646,9 +1646,12 @@ gpiod_Chip_find_lines(gpiod_ChipObject *self, PyObject *args)
 
 		line = gpiod_Chip_find_line(self, arg);
 		Py_DECREF(arg);
-		if (!line) {
+		if (!line || (PyObject *)line == Py_None) {
 			Py_DECREF(iter);
 			Py_DECREF(lines);
+			if ((PyObject *)line == Py_None)
+				PyErr_SetString(PyExc_TypeError,
+						"Unable to find all lines from the list");
 			return NULL;
 		}
 
