@@ -10,9 +10,7 @@ AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_builddir)/config.h
 AM_CFLAGS += -Wall -Wextra -g
 
 noinst_LTLIBRARIES = libtools-common.la
-libtools_common_la_SOURCES = \
-	tools-common.c \
-	tools-common.h
+libtools_common_la_SOURCES = tools-common.c tools-common.h
 
 LDADD = libtools-common.la $(top_builddir)/src/lib/libgpiod.la
 
