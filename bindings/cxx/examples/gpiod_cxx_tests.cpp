@@ -21,6 +21,7 @@
 #include <map>
 #include <cstring>
 #include <cerrno>
+#include <functional>
 
 #include <poll.h>
 
