@@ -20,7 +20,7 @@ AC_SUBST(VERSION_STR, [$PACKAGE_VERSION$EXTRA_VERSION])
 #
 # (...)
 # 3. If the library source code has changed at all since the last update, then
-#    increment revision (‘c:r:a’ becomes ‘c:r+1:a’).
+#    increment revision ('c:r:a' becomes 'c:r+1:a').
 # 4. If any interfaces have been added, removed, or changed since the last
 #    update, increment current, and set revision to 0.
 # 5. If any interfaces have been added since the last public release, then
