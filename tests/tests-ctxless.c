@@ -142,7 +142,7 @@ static int ctxless_event_cb(int evtype, unsigned int offset,
 				    : GPIOD_CTXLESS_EVENT_CB_RET_OK;
 }
 
-static void ctxless_event_loop(void)
+static void ctxless_event_monitor(void)
 {
 	struct ctxless_event_data evdata = { false, false, 0, 0 };
 	struct timespec ts = { 1, 0 };
@@ -150,9 +150,10 @@ static void ctxless_event_loop(void)
 
 	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
 
-	status = gpiod_ctxless_event_loop(test_chip_name(0), 3, false,
-					  TEST_CONSUMER, &ts, NULL,
-					  ctxless_event_cb, &evdata);
+	status = gpiod_ctxless_event_monitor(test_chip_name(0),
+					     GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+					     3, false, TEST_CONSUMER, &ts,
+					     NULL, ctxless_event_cb, &evdata);
 
 	TEST_ASSERT_RET_OK(status);
 	TEST_ASSERT(evdata.got_rising_edge);
@@ -160,11 +161,11 @@ static void ctxless_event_loop(void)
 	TEST_ASSERT_EQ(evdata.count, 2);
 	TEST_ASSERT_EQ(evdata.offset, 3);
 }
-TEST_DEFINE(ctxless_event_loop,
-	    "gpiod_ctxless_event_loop() - single event",
+TEST_DEFINE(ctxless_event_monitor,
+	    "gpiod_ctxless_event_monitor() - single event",
 	    0, { 8 });
 
-static void ctxless_event_loop_multiple(void)
+static void ctxless_event_monitor_multiple(void)
 {
 	struct ctxless_event_data evdata = { false, false, 0, 0 };
 	struct timespec ts = { 1, 0 };
@@ -178,10 +179,11 @@ static void ctxless_event_loop_multiple(void)
 
 	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
 
-	status = gpiod_ctxless_event_loop_multiple(test_chip_name(0), offsets,
-						   4, false, TEST_CONSUMER,
-						   &ts, NULL, ctxless_event_cb,
-						   &evdata);
+	status = gpiod_ctxless_event_monitor_multiple(
+					test_chip_name(0),
+					GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+					offsets, 4, false, TEST_CONSUMER,
+					&ts, NULL, ctxless_event_cb, &evdata);
 
 	TEST_ASSERT_RET_OK(status);
 	TEST_ASSERT(evdata.got_rising_edge);
@@ -189,8 +191,8 @@ static void ctxless_event_loop_multiple(void)
 	TEST_ASSERT_EQ(evdata.count, 2);
 	TEST_ASSERT_EQ(evdata.offset, 3);
 }
-TEST_DEFINE(ctxless_event_loop_multiple,
-	    "gpiod_ctxless_event_loop_multiple() - single event",
+TEST_DEFINE(ctxless_event_monitor_multiple,
+	    "gpiod_ctxless_event_monitor_multiple() - single event",
 	    0, { 8 });
 
 static int error_event_cb(int evtype TEST_UNUSED,
@@ -203,38 +205,40 @@ static int error_event_cb(int evtype TEST_UNUSED,
 	return GPIOD_CTXLESS_EVENT_CB_RET_ERR;
 }
 
-static void ctxless_event_loop_indicate_error(void)
+static void ctxless_event_monitor_indicate_error(void)
 {
 	struct timespec ts = { 1, 0 };
 	int rv;
 
 	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
 
-	rv = gpiod_ctxless_event_loop(test_chip_name(0), 3, false,
-				      TEST_CONSUMER, &ts, NULL,
-				      error_event_cb, NULL);
+	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
+					 GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+					 3, false, TEST_CONSUMER, &ts,
+					 NULL, error_event_cb, NULL);
 
 	TEST_ASSERT_EQ(rv, -1);
 	TEST_ASSERT_ERRNO_IS(ENOTBLK);
 }
-TEST_DEFINE(ctxless_event_loop_indicate_error,
-	    "gpiod_ctxless_event_loop() - error in callback",
+TEST_DEFINE(ctxless_event_monitor_indicate_error,
+	    "gpiod_ctxless_event_monitor() - error in callback",
 	    0, { 8 });
 
-static void ctxless_event_loop_indicate_error_timeout(void)
+static void ctxless_event_monitor_indicate_error_timeout(void)
 {
 	struct timespec ts = { 0, 100000 };
 	int rv;
 
-	rv = gpiod_ctxless_event_loop(test_chip_name(0), 3, false,
-				      TEST_CONSUMER, &ts, NULL,
-				      error_event_cb, NULL);
+	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
+					 GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+					 3, false, TEST_CONSUMER, &ts,
+					 NULL, error_event_cb, NULL);
 
 	TEST_ASSERT_EQ(rv, -1);
 	TEST_ASSERT_ERRNO_IS(ENOTBLK);
 }
-TEST_DEFINE(ctxless_event_loop_indicate_error_timeout,
-	    "gpiod_ctxless_event_loop() - error in callback after timeout",
+TEST_DEFINE(ctxless_event_monitor_indicate_error_timeout,
+	    "gpiod_ctxless_event_monitor() - error in callback after timeout",
 	    0, { 8 });
 
 static void ctxless_find_line_good(void)
