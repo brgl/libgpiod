@@ -55,9 +55,6 @@ static void print_help(void)
 }
 
 struct mon_ctx {
-	bool watch_rising;
-	bool watch_falling;
-
 	unsigned int offset;
 	unsigned int events_wanted;
 	unsigned int events_done;
@@ -203,14 +200,14 @@ static int event_callback(int event_type, unsigned int line_offset,
 
 	switch (event_type) {
 	case GPIOD_CTXLESS_EVENT_CB_RISING_EDGE:
-		if (ctx->watch_rising)
-			handle_event(ctx, event_type, line_offset, timestamp);
-		break;
 	case GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE:
-		if (ctx->watch_falling)
-			handle_event(ctx, event_type, line_offset, timestamp);
+		handle_event(ctx, event_type, line_offset, timestamp);
 		break;
 	default:
+		/*
+		 * REVISIT: This happening would indicate a problem in the
+		 * library.
+		 */
 		return GPIOD_CTXLESS_EVENT_CB_RET_OK;
 	}
 
@@ -242,11 +239,10 @@ static int make_signalfd(void)
 
 int main(int argc, char **argv)
 {
-	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES];
+	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES], num_lines = 0, offset;
+	bool active_low = false, watch_rising = false, watch_falling = false;
 	struct timespec timeout = { 10, 0 };
-	unsigned int num_lines = 0, offset;
-	bool active_low = false;
-	int optc, opti, ret, i;
+	int optc, opti, ret, i, event_type;
 	struct mon_ctx ctx;
 	char *end;
 
@@ -276,10 +272,10 @@ int main(int argc, char **argv)
 			ctx.silent = true;
 			break;
 		case 'r':
-			ctx.watch_rising = true;
+			watch_rising = true;
 			break;
 		case 'f':
-			ctx.watch_falling = true;
+			watch_falling = true;
 			break;
 		case 'F':
 			ctx.fmt = optarg;
@@ -294,8 +290,12 @@ int main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
-	if (!ctx.watch_rising && !ctx.watch_falling)
-		ctx.watch_rising = ctx.watch_falling = true;
+	if (watch_rising && !watch_falling)
+		event_type = GPIOD_CTXLESS_EVENT_RISING_EDGE;
+	else if (watch_falling && !watch_rising)
+		event_type = GPIOD_CTXLESS_EVENT_FALLING_EDGE;
+	else
+		event_type = GPIOD_CTXLESS_EVENT_BOTH_EDGES;
 
 	if (argc < 1)
 		die("gpiochip must be specified");
@@ -314,10 +314,11 @@ int main(int argc, char **argv)
 
 	ctx.sigfd = make_signalfd();
 
-	ret = gpiod_ctxless_event_loop_multiple(argv[0], offsets, num_lines,
-						active_low, "gpiomon",
-						&timeout, poll_callback,
-						event_callback, &ctx);
+	ret = gpiod_ctxless_event_monitor_multiple(argv[0], event_type,
+						   offsets, num_lines,
+						   active_low, "gpiomon",
+						   &timeout, poll_callback,
+						   event_callback, &ctx);
 	if (ret)
 		die_perror("error waiting for events");
 
