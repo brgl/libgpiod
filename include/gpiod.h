@@ -264,7 +264,7 @@ int gpiod_ctxless_event_loop(const char *device, unsigned int offset,
 			     const struct timespec *timeout,
 			     gpiod_ctxless_event_poll_cb poll_cb,
 			     gpiod_ctxless_event_handle_cb event_cb,
-			     void *data) GPIOD_API;
+			     void *data) GPIOD_API GPIOD_DEPRECATED;
 
 /**
  * @brief Wait for events on multiple GPIO lines.
@@ -301,7 +301,7 @@ int gpiod_ctxless_event_loop_multiple(const char *device,
 				      const struct timespec *timeout,
 				      gpiod_ctxless_event_poll_cb poll_cb,
 				      gpiod_ctxless_event_handle_cb event_cb,
-				      void *data) GPIOD_API;
+				      void *data) GPIOD_API GPIOD_DEPRECATED;
 
 /**
  * @brief Wait for events on a single GPIO line.
