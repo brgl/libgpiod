@@ -70,6 +70,11 @@ struct gpiod_line_bulk;
 #define GPIOD_BIT(nr)		(1UL << (nr))
 
 /**
+ * @brief Marks a public function as deprecated.
+ */
+#define GPIOD_DEPRECATED	__attribute__((deprecated))
+
+/**
  * @}
  *
  * @defgroup __high_level__ High-level API
