@@ -165,6 +165,29 @@ TEST_DEFINE(ctxless_event_monitor,
 	    "gpiod_ctxless_event_monitor() - single event",
 	    0, { 8 });
 
+static void ctxless_event_monitor_single_event_type(void)
+{
+	struct ctxless_event_data evdata = { false, false, 0, 0 };
+	struct timespec ts = { 1, 0 };
+	int rv;
+
+	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
+
+	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
+					 GPIOD_CTXLESS_EVENT_FALLING_EDGE,
+					 3, false, TEST_CONSUMER, &ts,
+					 NULL, ctxless_event_cb, &evdata);
+
+	TEST_ASSERT_RET_OK(rv);
+	TEST_ASSERT(evdata.got_falling_edge);
+	TEST_ASSERT_FALSE(evdata.got_rising_edge);
+	TEST_ASSERT_EQ(evdata.count, 2);
+	TEST_ASSERT_EQ(evdata.offset, 3);
+}
+TEST_DEFINE(ctxless_event_monitor_single_event_type,
+	    "gpiod_ctxless_event_monitor() - specify event type",
+	    0, { 8 });
+
 static void ctxless_event_monitor_multiple(void)
 {
 	struct ctxless_event_data evdata = { false, false, 0, 0 };
