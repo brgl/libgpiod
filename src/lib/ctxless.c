@@ -181,9 +181,10 @@ int gpiod_ctxless_event_loop(const char *device, unsigned int offset,
 			     gpiod_ctxless_event_handle_cb event_cb,
 			     void *data)
 {
-	return gpiod_ctxless_event_loop_multiple(device, &offset, 1,
-						 active_low, consumer, timeout,
-						 poll_cb, event_cb, data);
+	return gpiod_ctxless_event_monitor(device,
+					   GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+					   offset, active_low, consumer,
+					   timeout, poll_cb, event_cb, data);
 }
 
 int gpiod_ctxless_event_loop_multiple(const char *device,
@@ -195,10 +196,41 @@ int gpiod_ctxless_event_loop_multiple(const char *device,
 				      gpiod_ctxless_event_handle_cb event_cb,
 				      void *data)
 {
+	return gpiod_ctxless_event_monitor_multiple(
+				device, GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+				offsets, num_lines, active_low, consumer,
+				timeout, poll_cb, event_cb, data);
+}
+
+int gpiod_ctxless_event_monitor(const char *device, int event_type,
+				unsigned int offset, bool active_low,
+				const char *consumer,
+				const struct timespec *timeout,
+				gpiod_ctxless_event_poll_cb poll_cb,
+				gpiod_ctxless_event_handle_cb event_cb,
+				void *data)
+{
+	return gpiod_ctxless_event_monitor_multiple(device, event_type,
+						    &offset, 1, active_low,
+						    consumer, timeout,
+						    poll_cb, event_cb, data);
+}
+
+int gpiod_ctxless_event_monitor_multiple(
+			const char *device, int event_type,
+			const unsigned int *offsets,
+			unsigned int num_lines, bool active_low,
+			const char *consumer,
+			const struct timespec *timeout,
+			gpiod_ctxless_event_poll_cb poll_cb,
+			gpiod_ctxless_event_handle_cb event_cb,
+			void *data)
+{
 	struct gpiod_ctxless_event_poll_fd fds[GPIOD_LINE_BULK_MAX_LINES];
-	int rv, ret, flags, evtype, cnt;
+	struct gpiod_line_request_config conf;
 	struct gpiod_line_event event;
 	struct gpiod_line_bulk bulk;
+	int rv, ret, evtype, cnt;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	unsigned int i;
@@ -227,10 +259,22 @@ int gpiod_ctxless_event_loop_multiple(const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	flags = active_low ? GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW : 0;
+	conf.flags = active_low ? GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW : 0;
+	conf.consumer = consumer;
 
-	rv = gpiod_line_request_bulk_both_edges_events_flags(&bulk,
-							      consumer, flags);
+	if (event_type == GPIOD_CTXLESS_EVENT_RISING_EDGE) {
+		conf.request_type = GPIOD_LINE_REQUEST_EVENT_RISING_EDGE;
+	} else if (event_type == GPIOD_CTXLESS_EVENT_FALLING_EDGE) {
+		conf.request_type = GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE;
+	} else if (event_type == GPIOD_CTXLESS_EVENT_BOTH_EDGES) {
+		conf.request_type = GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES;
+	} else {
+		errno = -EINVAL;
+		ret = -1;
+		goto out;
+	}
+
+	rv = gpiod_line_request_bulk(&bulk, &conf, NULL);
 	if (rv) {
 		ret = -1;
 		goto out;

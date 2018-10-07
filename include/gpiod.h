@@ -70,6 +70,11 @@ struct gpiod_line_bulk;
 #define GPIOD_BIT(nr)		(1UL << (nr))
 
 /**
+ * @brief Marks a public function as deprecated.
+ */
+#define GPIOD_DEPRECATED	__attribute__((deprecated))
+
+/**
  * @}
  *
  * @defgroup __high_level__ High-level API
@@ -147,6 +152,18 @@ int gpiod_ctxless_set_value_multiple(const char *device,
 				     bool active_low, const char *consumer,
 				     gpiod_ctxless_set_value_cb cb,
 				     void *data) GPIOD_API;
+
+/**
+ * @brief Event types that the ctxless event monitor can wait for.
+ */
+enum {
+	/**< Wait for rising edge events only. */
+	GPIOD_CTXLESS_EVENT_RISING_EDGE = 1,
+	/**< Wait for falling edge events only. */
+	GPIOD_CTXLESS_EVENT_FALLING_EDGE,
+	/**< Wait for both types of events. */
+	GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+};
 
 /**
  * @brief Event types that can be passed to the ctxless event callback.
@@ -247,7 +264,7 @@ int gpiod_ctxless_event_loop(const char *device, unsigned int offset,
 			     const struct timespec *timeout,
 			     gpiod_ctxless_event_poll_cb poll_cb,
 			     gpiod_ctxless_event_handle_cb event_cb,
-			     void *data) GPIOD_API;
+			     void *data) GPIOD_API GPIOD_DEPRECATED;
 
 /**
  * @brief Wait for events on multiple GPIO lines.
@@ -284,7 +301,70 @@ int gpiod_ctxless_event_loop_multiple(const char *device,
 				      const struct timespec *timeout,
 				      gpiod_ctxless_event_poll_cb poll_cb,
 				      gpiod_ctxless_event_handle_cb event_cb,
-				      void *data) GPIOD_API;
+				      void *data) GPIOD_API GPIOD_DEPRECATED;
+
+/**
+ * @brief Wait for events on a single GPIO line.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param event_type Type of events to listen for.
+ * @param offset GPIO line offset to monitor.
+ * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
+ * @param timeout Maximum wait time for each iteration.
+ * @param poll_cb Callback function to call when waiting for events.
+ * @param event_cb Callback function to call for each line event.
+ * @param data User data passed to the callback.
+ * @return 0 if no errors were encountered, -1 if an error occurred.
+ * @note The way the ctxless event loop works is described in detail in
+ *       ::gpiod_ctxless_event_monitor_multiple - this is just a wrapper aound
+ *       this routine which calls it for a single GPIO line.
+ */
+int gpiod_ctxless_event_monitor(const char *device, int event_type,
+				unsigned int offset, bool active_low,
+				const char *consumer,
+				const struct timespec *timeout,
+				gpiod_ctxless_event_poll_cb poll_cb,
+				gpiod_ctxless_event_handle_cb event_cb,
+				void *data) GPIOD_API;
+
+/**
+ * @brief Wait for events on multiple GPIO lines.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param event_type Type of events to listen for.
+ * @param offsets Array of GPIO line offsets to monitor.
+ * @param num_lines Number of lines to monitor.
+ * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
+ * @param timeout Maximum wait time for each iteration.
+ * @param poll_cb Callback function to call when waiting for events. Can
+ *                be NULL.
+ * @param event_cb Callback function to call on event occurrence.
+ * @param data User data passed to the callback.
+ * @return 0 no errors were encountered, -1 if an error occurred.
+ * @note The poll callback can be NULL in which case the routine will fall
+ *       back to a basic, ppoll() based callback.
+ *
+ * Internally this routine opens the GPIO chip, requests the set of lines for
+ * the type of events specified in the event_type paramter and calls the
+ * polling callback in a loop. The role of the polling callback is to detect
+ * input events on a set of file descriptors and notify the caller about the
+ * fds ready for reading.
+ *
+ * The ctxless event loop then reads each queued event from marked descriptors
+ * and calls the event callback. Both callbacks can stop the loop at any
+ * point.
+ *
+ * The poll_cb argument can be NULL in which case the function falls back to
+ * a default, ppoll() based callback.
+ */
+int gpiod_ctxless_event_monitor_multiple(
+			const char *device, int event_type,
+			const unsigned int *offsets,
+			unsigned int num_lines, bool active_low,
+			const char *consumer, const struct timespec *timeout,
+			gpiod_ctxless_event_poll_cb poll_cb,
+			gpiod_ctxless_event_handle_cb event_cb,
+			void *data) GPIOD_API;
 
 /**
  * @brief Determine the chip name and line offset of a line with given name.
