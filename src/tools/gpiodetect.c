@@ -24,6 +24,7 @@ static void print_help(void)
 {
 	printf("Usage: %s [OPTIONS]\n", get_progname());
 	printf("List all GPIO chips, print their labels and number of GPIO lines.\n");
+	printf("\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -v, --version:\tdisplay the version and exit\n");

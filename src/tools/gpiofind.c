@@ -24,6 +24,7 @@ static void print_help(void)
 {
 	printf("Usage: %s [OPTIONS] <name>\n", get_progname());
 	printf("Find a GPIO line by name. The output of this command can be used as input for gpioget/set.\n");
+	printf("\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -v, --version:\tdisplay the version and exit\n");

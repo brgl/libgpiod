@@ -48,6 +48,7 @@ static void print_help(void)
 {
 	printf("Usage: %s [OPTIONS] <gpiochip1> ...\n", get_progname());
 	printf("Print information about all lines of the specified GPIO chip(s) (or all gpiochips if none are specified).\n");
+	printf("\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -v, --version:\tdisplay the version and exit\n");
