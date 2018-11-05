@@ -9,6 +9,7 @@
 
 #include <gpiod.h>
 
+#include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -59,6 +60,86 @@ struct gpiod_chip {
 	char label[32];
 };
 
+static bool is_gpiochip_cdev(const char *path)
+{
+	char *name, *pathcpy, *sysfsp, sysfsdev[16], devstr[16];
+	struct stat statbuf;
+	bool ret = false;
+	int rv, fd;
+	ssize_t rd;
+
+	rv = lstat(path, &statbuf);
+	if (rv)
+		goto out;
+
+	/* Is it a character device? */
+	if (!S_ISCHR(statbuf.st_mode)) {
+		/*
+		 * Passing a file descriptor not associated with a character
+		 * device to ioctl() makes it set errno to ENOTTY. Let's do
+		 * the same in order to stay compatible with the versions of
+		 * libgpiod from before the introduction of this routine.
+		 */
+		errno = ENOTTY;
+		goto out;
+	}
+
+	/* Get the basename. */
+	pathcpy = strdup(path);
+	if (!pathcpy)
+		goto out;
+
+	name = basename(pathcpy);
+
+	/* Do we have a corresponding sysfs attribute? */
+	rv = asprintf(&sysfsp, "/sys/bus/gpio/devices/%s/dev", name);
+	if (rv < 0)
+		goto out_free_pathcpy;
+
+	if (access(sysfsp, R_OK) != 0) {
+		/*
+		 * This is a character device but not the one we're after.
+		 * Before the introduction of this function, we'd fail with
+		 * ENOTTY on the first GPIO ioctl() call for this file
+		 * descriptor. Let's stay compatible here and keep returning
+		 * the same error code.
+		 */
+		errno = ENOTTY;
+		goto out_free_sysfsp;
+	}
+
+	/*
+	 * Make sure the major and minor numbers of the character device
+	 * correspond with the ones in the dev attribute in sysfs.
+	 */
+	snprintf(devstr, sizeof(devstr), "%u:%u",
+		 major(statbuf.st_rdev), minor(statbuf.st_rdev));
+
+	fd = open(sysfsp, O_RDONLY);
+	if (fd < 0)
+		goto out_free_sysfsp;
+
+	memset(sysfsdev, 0, sizeof(sysfsdev));
+	rd = read(fd, sysfsdev, strlen(devstr));
+	close(fd);
+	if (rd < 0)
+		goto out_free_sysfsp;
+
+	if (strcmp(sysfsdev, devstr) != 0) {
+		errno = ENODEV;
+		goto out_free_sysfsp;
+	}
+
+	ret = true;
+
+out_free_sysfsp:
+	free(sysfsp);
+out_free_pathcpy:
+	free(pathcpy);
+out:
+	return ret;
+}
+
 struct gpiod_chip *gpiod_chip_open(const char *path)
 {
 	struct gpiochip_info info;
@@ -68,6 +149,15 @@ struct gpiod_chip *gpiod_chip_open(const char *path)
 	fd = open(path, O_RDWR | O_CLOEXEC);
 	if (fd < 0)
 		return NULL;
+
+	/*
+	 * We were able to open the file but is it really a gpiochip character
+	 * device?
+	 */
+	if (!is_gpiochip_cdev(path)) {
+		close(fd);
+		return NULL;
+	}
 
 	chip = malloc(sizeof(*chip));
 	if (!chip)
