@@ -1,3 +1,33 @@
+libgpiod v1.2
+=============
+
+New features:
+- new contextless event monitor that should replace the previous event loop
+  which caused problems on hardware that doesn't allow to watch both rising
+  and falling edge events
+- port gpiomon to the new event monitor
+- deprecate event loop routines
+
+Improvements:
+- many minor improvements and tweaks in the python module
+- new test cases for python bindings
+- add much more detailed documentation for python bindings
+- coding style improvements in gpio-tools
+- remove unicode characters from build scripts
+- improve the help text messages in gpio-tools
+- make gpiod_chip_open() and its variants verify that we're really trying to
+  open a character device associated with a GPIO chip
+
+Bug fixes:
+- fix memory leaks in python bindings
+- fix a memory corruption bug in python bindings
+- fix the default_vals argument in line request implementation in python
+  bindings
+- fix a compilation warning in python bindings
+- fix gpiod_Chip_find_lines() for nonexistent lines (python bindings)
+- add a missing include in C++ bindings examples
+- correctly display the version string in gpio-tools
+
 libgpiod v1.1
 =============
 
