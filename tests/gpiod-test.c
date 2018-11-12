@@ -810,7 +810,7 @@ static bool devpath_is_mockup(const char *devpath)
 
 static void prepare_test(struct _test_chip_descr *descr)
 {
-	const char *devpath, *devnode, *sysname;
+	const char *devpath, *devnode, *sysname, *action;
 	struct udev_monitor *monitor;
 	unsigned int detected = 0;
 	struct test_context *ctx;
@@ -868,9 +868,11 @@ static void prepare_test(struct _test_chip_descr *descr)
 		devpath = udev_device_get_devpath(dev);
 		devnode = udev_device_get_devnode(dev);
 		sysname = udev_device_get_sysname(dev);
+		action = udev_device_get_action(dev);
 
 		if (!devpath || !devnode || !sysname ||
-		    !devpath_is_mockup(devpath)) {
+		    !devpath_is_mockup(devpath) ||
+		    strcmp(action, "add") != 0) {
 			udev_device_unref(dev);
 			continue;
 		}
