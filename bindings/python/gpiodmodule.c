@@ -123,14 +123,14 @@ PyDoc_STRVAR(gpiod_LineEvent_get_type_doc,
 
 PyObject *gpiod_LineEvent_get_type(gpiod_LineEventObject *self)
 {
-	int ret;
+	int rv;
 
 	if (self->event.event_type == GPIOD_LINE_EVENT_RISING_EDGE)
-		ret = gpiod_RISING_EDGE;
+		rv = gpiod_RISING_EDGE;
 	else
-		ret = gpiod_FALLING_EDGE;
+		rv = gpiod_FALLING_EDGE;
 
-	return Py_BuildValue("I", ret);
+	return Py_BuildValue("I", rv);
 }
 
 PyDoc_STRVAR(gpiod_LineEvent_get_sec_doc,

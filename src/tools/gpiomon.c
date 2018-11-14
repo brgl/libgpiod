@@ -141,7 +141,7 @@ static int poll_callback(unsigned int num_lines,
 {
 	struct pollfd pfds[GPIOD_LINE_BULK_MAX_LINES + 1];
 	struct mon_ctx *ctx = data;
-	int cnt, ts, ret;
+	int cnt, ts, rv;
 	unsigned int i;
 
 	for (i = 0; i < num_lines; i++) {
@@ -160,12 +160,12 @@ static int poll_callback(unsigned int num_lines,
 	else if (cnt == 0)
 		return GPIOD_CTXLESS_EVENT_POLL_RET_TIMEOUT;
 
-	ret = cnt;
+	rv = cnt;
 	for (i = 0; i < num_lines; i++) {
 		if (pfds[i].revents) {
 			fds[i].event = true;
 			if (!--cnt)
-				return ret;
+				return rv;
 		}
 	}
 
@@ -243,7 +243,7 @@ int main(int argc, char **argv)
 	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES], num_lines = 0, offset;
 	bool active_low = false, watch_rising = false, watch_falling = false;
 	struct timespec timeout = { 10, 0 };
-	int optc, opti, ret, i, event_type;
+	int optc, opti, rv, i, event_type;
 	struct mon_ctx ctx;
 	char *end;
 
@@ -315,12 +315,12 @@ int main(int argc, char **argv)
 
 	ctx.sigfd = make_signalfd();
 
-	ret = gpiod_ctxless_event_monitor_multiple(argv[0], event_type,
-						   offsets, num_lines,
-						   active_low, "gpiomon",
-						   &timeout, poll_callback,
-						   event_callback, &ctx);
-	if (ret)
+	rv = gpiod_ctxless_event_monitor_multiple(argv[0], event_type,
+						  offsets, num_lines,
+						  active_low, "gpiomon",
+						  &timeout, poll_callback,
+						  event_callback, &ctx);
+	if (rv)
 		die_perror("error waiting for events");
 
 	return EXIT_SUCCESS;

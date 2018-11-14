@@ -37,7 +37,7 @@ static void print_help(void)
 int main(int argc, char **argv)
 {
 	unsigned int *offsets, i, num_lines;
-	int *values, optc, opti, status;
+	int *values, optc, opti, rv;
 	bool active_low = false;
 	char *device, *end;
 
@@ -86,10 +86,10 @@ int main(int argc, char **argv)
 			die("invalid GPIO offset: %s", argv[i + 1]);
 	}
 
-	status = gpiod_ctxless_get_value_multiple(device, offsets, values,
-						  num_lines, active_low,
-						  "gpioget");
-	if (status < 0)
+	rv = gpiod_ctxless_get_value_multiple(device, offsets, values,
+					      num_lines, active_low,
+					      "gpioget");
+	if (rv < 0)
 		die_perror("error reading GPIO values");
 
 	for (i = 0; i < num_lines; i++) {

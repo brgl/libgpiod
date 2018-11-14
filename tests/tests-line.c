@@ -16,7 +16,7 @@ static void line_request_output(void)
 	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line *line_0;
 	struct gpiod_line *line_1;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -26,10 +26,10 @@ static void line_request_output(void)
 	TEST_ASSERT_NOT_NULL(line_0);
 	TEST_ASSERT_NOT_NULL(line_1);
 
-	status = gpiod_line_request_output(line_0, TEST_CONSUMER, 0);
-	TEST_ASSERT_RET_OK(status);
-	status = gpiod_line_request_output(line_1, TEST_CONSUMER, 1);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_output(line_0, TEST_CONSUMER, 0);
+	TEST_ASSERT_RET_OK(rv);
+	rv = gpiod_line_request_output(line_1, TEST_CONSUMER, 1);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(gpiod_line_get_value(line_0), 0);
 	TEST_ASSERT_EQ(gpiod_line_get_value(line_1), 1);
@@ -42,7 +42,7 @@ static void line_request_already_requested(void)
 {
 	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -50,11 +50,11 @@ static void line_request_already_requested(void)
 	line = gpiod_chip_get_line(chip, 0);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_input(line, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER);
-	TEST_ASSERT_NOTEQ(status, 0);
+	rv = gpiod_line_request_input(line, TEST_CONSUMER);
+	TEST_ASSERT_NOTEQ(rv, 0);
 	TEST_ASSERT_ERRNO_IS(EBUSY);
 }
 TEST_DEFINE(line_request_already_requested,
@@ -65,7 +65,7 @@ static void line_consumer(void)
 {
 	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -75,8 +75,8 @@ static void line_consumer(void)
 
 	TEST_ASSERT_NULL(gpiod_line_consumer(line));
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_input(line, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT(!gpiod_line_needs_update(line));
 	TEST_ASSERT_STR_EQ(gpiod_line_consumer(line), TEST_CONSUMER);
@@ -89,7 +89,7 @@ static void line_consumer_long_string(void)
 {
 	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -99,9 +99,9 @@ static void line_consumer_long_string(void)
 
 	TEST_ASSERT_NULL(gpiod_line_consumer(line));
 
-	status = gpiod_line_request_input(line,
-					  "consumer string over 32 characters long");
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_input(line,
+				      "consumer string over 32 characters long");
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT(!gpiod_line_needs_update(line));
 	TEST_ASSERT_STR_EQ(gpiod_line_consumer(line),
@@ -127,7 +127,7 @@ static void line_request_bulk_output(void)
 	struct gpiod_line *lineB2;
 	struct gpiod_line *lineB3;
 	int valA[4], valB[4];
-	int status;
+	int rv;
 
 	chipA = gpiod_chip_open(test_chip_path(0));
 	chipB = gpiod_chip_open(test_chip_path(1));
@@ -167,28 +167,28 @@ static void line_request_bulk_output(void)
 	valA[1] = 0;
 	valA[2] = 0;
 	valA[3] = 1;
-	status = gpiod_line_request_bulk_output(&bulkA, TEST_CONSUMER, valA);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_bulk_output(&bulkA, TEST_CONSUMER, valA);
+	TEST_ASSERT_RET_OK(rv);
 
 	valB[0] = 0;
 	valB[1] = 1;
 	valB[2] = 0;
 	valB[3] = 1;
-	status = gpiod_line_request_bulk_output(&bulkB, TEST_CONSUMER, valB);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_bulk_output(&bulkB, TEST_CONSUMER, valB);
+	TEST_ASSERT_RET_OK(rv);
 
 	memset(valA, 0, sizeof(valA));
 	memset(valB, 0, sizeof(valB));
 
-	status = gpiod_line_get_value_bulk(&bulkA, valA);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_get_value_bulk(&bulkA, valA);
+	TEST_ASSERT_RET_OK(rv);
 	TEST_ASSERT_EQ(valA[0], 1);
 	TEST_ASSERT_EQ(valA[1], 0);
 	TEST_ASSERT_EQ(valA[2], 0);
 	TEST_ASSERT_EQ(valA[3], 1);
 
-	status = gpiod_line_get_value_bulk(&bulkB, valB);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_get_value_bulk(&bulkB, valB);
+	TEST_ASSERT_RET_OK(rv);
 	TEST_ASSERT_EQ(valB[0], 0);
 	TEST_ASSERT_EQ(valB[1], 1);
 	TEST_ASSERT_EQ(valB[2], 0);
@@ -208,7 +208,7 @@ static void line_request_bulk_different_chips(void)
 	struct gpiod_line *lineA1;
 	struct gpiod_line *lineB0;
 	struct gpiod_line *lineB1;
-	int status;
+	int rv;
 
 	chipA = gpiod_chip_open(test_chip_path(0));
 	chipB = gpiod_chip_open(test_chip_path(1));
@@ -235,8 +235,8 @@ static void line_request_bulk_different_chips(void)
 	req.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
 	req.flags = GPIOD_LINE_ACTIVE_STATE_HIGH;
 
-	status = gpiod_line_request_bulk(&bulk, &req, NULL);
-	TEST_ASSERT_NOTEQ(status, 0);
+	rv = gpiod_line_request_bulk(&bulk, &req, NULL);
+	TEST_ASSERT_NOTEQ(rv, 0);
 	TEST_ASSERT_ERRNO_IS(EINVAL);
 }
 TEST_DEFINE(line_request_bulk_different_chips,
@@ -285,7 +285,7 @@ static void line_set_value(void)
 {
 	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -293,8 +293,8 @@ static void line_set_value(void)
 	line = gpiod_chip_get_line(chip, 2);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_output(line, TEST_CONSUMER, 0);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_output(line, TEST_CONSUMER, 0);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_RET_OK(gpiod_line_set_value(line, 1));
 	TEST_ASSERT_EQ(gpiod_line_get_value(line), 1);
@@ -425,7 +425,7 @@ static void line_direction(void)
 {
 	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -433,15 +433,15 @@ static void line_direction(void)
 	line = gpiod_chip_get_line(chip, 5);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_output(line, TEST_CONSUMER, 0);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_output(line, TEST_CONSUMER, 0);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_LINE_DIRECTION_OUTPUT);
 
 	gpiod_line_release(line);
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_input(line, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_LINE_DIRECTION_INPUT);
 }
@@ -453,7 +453,7 @@ static void line_active_state(void)
 {
 	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -461,17 +461,17 @@ static void line_active_state(void)
 	line = gpiod_chip_get_line(chip, 5);
 	TEST_ASSERT_NOT_NULL(line);
 
-	status = gpiod_line_request_input(line, TEST_CONSUMER);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request_input(line, TEST_CONSUMER);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(gpiod_line_active_state(line),
 		       GPIOD_LINE_ACTIVE_STATE_HIGH);
 
 	gpiod_line_release(line);
 
-	status = gpiod_line_request_input_flags(line, TEST_CONSUMER,
+	rv = gpiod_line_request_input_flags(line, TEST_CONSUMER,
 					GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
-	TEST_ASSERT_RET_OK(status);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_EQ(gpiod_line_direction(line), GPIOD_LINE_DIRECTION_INPUT);
 }
@@ -484,7 +484,7 @@ static void line_misc_flags(void)
 	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
 	struct gpiod_line_request_config config;
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	chip = gpiod_chip_open(test_chip_path(0));
 	TEST_ASSERT_NOT_NULL(chip);
@@ -500,8 +500,8 @@ static void line_misc_flags(void)
 	config.consumer = TEST_CONSUMER;
 	config.flags = GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN;
 
-	status = gpiod_line_request(line, &config, 0);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request(line, &config, 0);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT(gpiod_line_is_used(line));
 	TEST_ASSERT(gpiod_line_is_open_drain(line));
@@ -511,8 +511,8 @@ static void line_misc_flags(void)
 
 	config.flags = GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE;
 
-	status = gpiod_line_request(line, &config, 0);
-	TEST_ASSERT_RET_OK(status);
+	rv = gpiod_line_request(line, &config, 0);
+	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT(gpiod_line_is_used(line));
 	TEST_ASSERT_FALSE(gpiod_line_is_open_drain(line));

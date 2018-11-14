@@ -60,12 +60,12 @@ static PRINTF(3, 4) void prinfo(bool *of,
 	char *buf, *buffmt = NULL;
 	size_t len;
 	va_list va;
-	int status;
+	int rv;
 
 	va_start(va, fmt);
-	status = vasprintf(&buf, fmt, va);
+	rv = vasprintf(&buf, fmt, va);
 	va_end(va);
-	if (status < 0)
+	if (rv < 0)
 		die("vasprintf: %s\n", strerror(errno));
 
 	len = strlen(buf) - 1;
@@ -74,8 +74,8 @@ static PRINTF(3, 4) void prinfo(bool *of,
 		*of = true;
 		printf("%s", buf);
 	} else {
-		status = asprintf(&buffmt, "%%%us", prlen);
-		if (status < 0)
+		rv = asprintf(&buffmt, "%%%us", prlen);
+		if (rv < 0)
 			die("asprintf: %s\n", strerror(errno));
 
 		printf(buffmt, buf);

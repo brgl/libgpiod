@@ -145,7 +145,7 @@ struct gpiod_chip *gpiod_chip_open(const char *path)
 {
 	struct gpiochip_info info;
 	struct gpiod_chip *chip;
-	int status, fd;
+	int rv, fd;
 
 	fd = open(path, O_RDWR | O_CLOEXEC);
 	if (fd < 0)
@@ -167,8 +167,8 @@ struct gpiod_chip *gpiod_chip_open(const char *path)
 	memset(chip, 0, sizeof(*chip));
 	memset(&info, 0, sizeof(info));
 
-	status = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &info);
-	if (status < 0)
+	rv = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &info);
+	if (rv < 0)
 		goto err_free_chip;
 
 	chip->fd = fd;
@@ -240,7 +240,7 @@ struct gpiod_line *
 gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 {
 	struct gpiod_line *line;
-	int status;
+	int rv;
 
 	if (offset >= chip->num_lines) {
 		errno = EINVAL;
@@ -270,8 +270,8 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 		line = chip->lines[offset];
 	}
 
-	status = gpiod_line_update(line);
-	if (status < 0)
+	rv = gpiod_line_update(line);
+	if (rv < 0)
 		return NULL;
 
 	return line;
@@ -322,10 +322,10 @@ static int line_get_fd(struct gpiod_line *line)
 
 static void line_maybe_update(struct gpiod_line *line)
 {
-	int status;
+	int rv;
 
-	status = gpiod_line_update(line);
-	if (status < 0)
+	rv = gpiod_line_update(line);
+	if (rv < 0)
 		line->up_to_date = false;
 }
 
@@ -679,13 +679,13 @@ bool gpiod_line_is_free(struct gpiod_line *line)
 int gpiod_line_get_value(struct gpiod_line *line)
 {
 	struct gpiod_line_bulk bulk;
-	int status, value;
+	int rv, value;
 
 	gpiod_line_bulk_init(&bulk);
 	gpiod_line_bulk_add(&bulk, line);
 
-	status = gpiod_line_get_value_bulk(&bulk, &value);
-	if (status < 0)
+	rv = gpiod_line_get_value_bulk(&bulk, &value);
+	if (rv < 0)
 		return -1;
 
 	return value;
@@ -696,7 +696,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 	struct gpiohandle_data data;
 	struct gpiod_line *first;
 	unsigned int i;
-	int status, fd;
+	int rv, fd;
 
 	if (!line_bulk_same_chip(bulk) || !line_bulk_all_requested(bulk))
 		return -1;
@@ -707,8 +707,8 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 
 	fd = line_get_fd(first);
 
-	status = ioctl(fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
-	if (status < 0)
+	rv = ioctl(fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
+	if (rv < 0)
 		return -1;
 
 	for (i = 0; i < gpiod_line_bulk_num_lines(bulk); i++)
@@ -732,7 +732,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 	struct gpiohandle_data data;
 	struct gpiod_line *line;
 	unsigned int i;
-	int status, fd;
+	int rv, fd;
 
 	if (!line_bulk_same_chip(bulk) || !line_bulk_all_requested(bulk))
 		return -1;
@@ -745,8 +745,8 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 	line = gpiod_line_bulk_get_line(bulk, 0);
 	fd = line_get_fd(line);
 
-	status = ioctl(fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
-	if (status < 0)
+	rv = ioctl(fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
+	if (rv < 0)
 		return -1;
 
 	return 0;

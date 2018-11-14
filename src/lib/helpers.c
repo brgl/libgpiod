@@ -30,10 +30,10 @@ struct gpiod_chip *gpiod_chip_open_by_name(const char *name)
 {
 	struct gpiod_chip *chip;
 	char *path;
-	int status;
+	int rv;
 
-	status = asprintf(&path, "/dev/%s", name);
-	if (status < 0)
+	rv = asprintf(&path, "/dev/%s", name);
+	if (rv < 0)
 		return NULL;
 
 	chip = gpiod_chip_open(path);
@@ -46,10 +46,10 @@ struct gpiod_chip *gpiod_chip_open_by_number(unsigned int num)
 {
 	struct gpiod_chip *chip;
 	char *path;
-	int status;
+	int rv;
 
-	status = asprintf(&path, "/dev/gpiochip%u", num);
-	if (!status)
+	rv = asprintf(&path, "/dev/gpiochip%u", num);
+	if (!rv)
 		return NULL;
 
 	chip = gpiod_chip_open(path);

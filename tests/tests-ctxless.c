@@ -13,19 +13,19 @@
 
 static void ctxless_set_get_value(void)
 {
-	int ret;
+	int rv;
 
-	ret = gpiod_ctxless_get_value(test_chip_name(0), 3,
-				      false, TEST_CONSUMER);
-	TEST_ASSERT_EQ(ret, 0);
+	rv = gpiod_ctxless_get_value(test_chip_name(0), 3,
+				     false, TEST_CONSUMER);
+	TEST_ASSERT_EQ(rv, 0);
 
-	ret = gpiod_ctxless_set_value(test_chip_name(0), 3, 1,
-				      false, TEST_CONSUMER, NULL, NULL);
-	TEST_ASSERT_RET_OK(ret);
+	rv = gpiod_ctxless_set_value(test_chip_name(0), 3, 1,
+				     false, TEST_CONSUMER, NULL, NULL);
+	TEST_ASSERT_RET_OK(rv);
 
-	ret = gpiod_ctxless_get_value(test_chip_name(0), 3,
-				      false, TEST_CONSUMER);
-	TEST_ASSERT_EQ(ret, 1);
+	rv = gpiod_ctxless_get_value(test_chip_name(0), 3,
+				     false, TEST_CONSUMER);
+	TEST_ASSERT_EQ(rv, 1);
 }
 TEST_DEFINE(ctxless_set_get_value,
 	    "ctxless set/get value - single line",
@@ -89,13 +89,13 @@ TEST_DEFINE(ctxless_set_get_value_multiple,
 static void ctxless_get_value_multiple_max_lines(void)
 {
 	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES + 1];
-	int values[GPIOD_LINE_BULK_MAX_LINES + 1], ret;
+	int values[GPIOD_LINE_BULK_MAX_LINES + 1], rv;
 
-	ret = gpiod_ctxless_get_value_multiple(test_chip_name(0), offsets,
-					       values,
-					       GPIOD_LINE_BULK_MAX_LINES + 1,
-					       false, TEST_CONSUMER);
-	TEST_ASSERT_NOTEQ(ret, 0);
+	rv = gpiod_ctxless_get_value_multiple(test_chip_name(0), offsets,
+					      values,
+					      GPIOD_LINE_BULK_MAX_LINES + 1,
+					      false, TEST_CONSUMER);
+	TEST_ASSERT_NOTEQ(rv, 0);
 	TEST_ASSERT_ERRNO_IS(EINVAL);
 }
 TEST_DEFINE(ctxless_get_value_multiple_max_lines,
@@ -105,14 +105,14 @@ TEST_DEFINE(ctxless_get_value_multiple_max_lines,
 static void ctxless_set_value_multiple_max_lines(void)
 {
 	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES + 1];
-	int values[GPIOD_LINE_BULK_MAX_LINES + 1], ret;
+	int values[GPIOD_LINE_BULK_MAX_LINES + 1], rv;
 
-	ret = gpiod_ctxless_set_value_multiple(test_chip_name(0), offsets,
-					       values,
-					       GPIOD_LINE_BULK_MAX_LINES + 1,
-					       false, TEST_CONSUMER,
-					       NULL, NULL);
-	TEST_ASSERT_NOTEQ(ret, 0);
+	rv = gpiod_ctxless_set_value_multiple(test_chip_name(0), offsets,
+					      values,
+					      GPIOD_LINE_BULK_MAX_LINES + 1,
+					      false, TEST_CONSUMER,
+					      NULL, NULL);
+	TEST_ASSERT_NOTEQ(rv, 0);
 	TEST_ASSERT_ERRNO_IS(EINVAL);
 }
 TEST_DEFINE(ctxless_set_value_multiple_max_lines,
@@ -146,16 +146,16 @@ static void ctxless_event_monitor(void)
 {
 	struct ctxless_event_data evdata = { false, false, 0, 0 };
 	struct timespec ts = { 1, 0 };
-	int status;
+	int rv;
 
 	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
 
-	status = gpiod_ctxless_event_monitor(test_chip_name(0),
-					     GPIOD_CTXLESS_EVENT_BOTH_EDGES,
-					     3, false, TEST_CONSUMER, &ts,
-					     NULL, ctxless_event_cb, &evdata);
+	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
+					 GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+					 3, false, TEST_CONSUMER, &ts,
+					 NULL, ctxless_event_cb, &evdata);
 
-	TEST_ASSERT_RET_OK(status);
+	TEST_ASSERT_RET_OK(rv);
 	TEST_ASSERT(evdata.got_rising_edge);
 	TEST_ASSERT(evdata.got_falling_edge);
 	TEST_ASSERT_EQ(evdata.count, 2);
@@ -193,7 +193,7 @@ static void ctxless_event_monitor_multiple(void)
 	struct ctxless_event_data evdata = { false, false, 0, 0 };
 	struct timespec ts = { 1, 0 };
 	unsigned int offsets[4];
-	int status;
+	int rv;
 
 	offsets[0] = 2;
 	offsets[1] = 3;
@@ -202,13 +202,13 @@ static void ctxless_event_monitor_multiple(void)
 
 	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
 
-	status = gpiod_ctxless_event_monitor_multiple(
+	rv = gpiod_ctxless_event_monitor_multiple(
 					test_chip_name(0),
 					GPIOD_CTXLESS_EVENT_BOTH_EDGES,
 					offsets, 4, false, TEST_CONSUMER,
 					&ts, NULL, ctxless_event_cb, &evdata);
 
-	TEST_ASSERT_RET_OK(status);
+	TEST_ASSERT_RET_OK(rv);
 	TEST_ASSERT(evdata.got_rising_edge);
 	TEST_ASSERT(evdata.got_falling_edge);
 	TEST_ASSERT_EQ(evdata.count, 2);

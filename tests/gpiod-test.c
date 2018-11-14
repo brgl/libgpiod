@@ -172,11 +172,11 @@ static TEST_PRINTF(1, 2) void err(const char *fmt, ...)
 static void die_test_cleanup(void)
 {
 	struct gpiotool_proc *proc = &globals.test_ctx.tool_proc;
-	int status;
+	int rv;
 
 	if (proc->running) {
 		kill(proc->pid, SIGKILL);
-		waitpid(proc->pid, &status, 0);
+		waitpid(proc->pid, &rv, 0);
 	}
 
 	if (globals.test_ctx.running)
@@ -257,12 +257,12 @@ static TEST_PRINTF(2, 3) char *xappend(char *str, const char *fmt, ...)
 {
 	char *new, *ret;
 	va_list va;
-	int status;
+	int rv;
 
 	va_start(va, fmt);
-	status = vasprintf(&new, fmt, va);
+	rv = vasprintf(&new, fmt, va);
 	va_end(va);
-	if (status < 0)
+	if (rv < 0)
 		die_perr("vasprintf");
 
 	if (!str)
@@ -357,7 +357,7 @@ static void *event_worker(void *data TEST_UNUSED)
 	struct event_thread *ev = &globals.test_ctx.event;
 	struct timeval tv_now, tv_add, tv_res;
 	struct timespec ts;
-	int status, i, fd;
+	int rv, i, fd;
 	char *path;
 	ssize_t rd;
 	char buf;
@@ -376,8 +376,8 @@ static void *event_worker(void *data TEST_UNUSED)
 		ts.tv_sec = tv_res.tv_sec;
 		ts.tv_nsec = tv_res.tv_usec * 1000;
 
-		status = pthread_cond_timedwait(&ev->cond, &ev->lock, &ts);
-		if (status == ETIMEDOUT) {
+		rv = pthread_cond_timedwait(&ev->cond, &ev->lock, &ts);
+		if (rv == ETIMEDOUT) {
 			path = xappend(NULL,
 				       "/sys/kernel/debug/gpio-mockup-event/gpio-mockup-%c/%u",
 				       'A' + ev->chip_index, ev->line_offset);
@@ -400,9 +400,9 @@ static void *event_worker(void *data TEST_UNUSED)
 				die_perr("error writing to gpio event file");
 			else if (rd != 1)
 				die("invalid write size to gpio event file");
-		} else if (status != 0) {
+		} else if (rv != 0) {
 			die("error waiting for conditional variable: %s",
-			    strerror(status));
+			    strerror(rv));
 		}
 
 		event_unlock();
@@ -413,22 +413,22 @@ static void *event_worker(void *data TEST_UNUSED)
 
 static void gpiotool_proc_make_pipes(int *in_fds, int *out_fds, int *err_fds)
 {
-	int status, i, *fds[3];
+	int rv, i, *fds[3];
 
 	fds[0] = in_fds;
 	fds[1] = out_fds;
 	fds[2] = err_fds;
 
 	for (i = 0; i < 3; i++) {
-		status = pipe(fds[i]);
-		if (status < 0)
+		rv = pipe(fds[i]);
+		if (rv < 0)
 			die_perr("unable to create a pipe");
 	}
 }
 
 static void gpiotool_proc_dup_fds(int in_fd, int out_fd, int err_fd)
 {
-	int old_fds[3], new_fds[3], i, status;
+	int old_fds[3], new_fds[3], i, rv;
 
 	old_fds[0] = in_fd;
 	old_fds[1] = out_fd;
@@ -439,8 +439,8 @@ static void gpiotool_proc_dup_fds(int in_fd, int out_fd, int err_fd)
 	new_fds[2] = STDERR_FILENO;
 
 	for (i = 0; i < 3; i++) {
-		status = dup2(old_fds[i], new_fds[i]);
-		if (status < 0)
+		rv = dup2(old_fds[i], new_fds[i]);
+		if (rv < 0)
 			die_perr("unable to duplicate a file descriptor");
 
 		close(old_fds[i]);
@@ -529,7 +529,7 @@ void test_tool_stdin_write(const char *fmt, ...)
 
 void test_tool_run(char *tool, ...)
 {
-	int in_fds[2], out_fds[2], err_fds[2], status;
+	int in_fds[2], out_fds[2], err_fds[2], rv;
 	struct gpiotool_proc *proc;
 	sigset_t sigmask;
 	char *path;
@@ -549,15 +549,15 @@ void test_tool_run(char *tool, ...)
 	gpiotool_proc_make_pipes(in_fds, out_fds, err_fds);
 	path = gpiotool_proc_get_path(tool);
 
-	status = access(path, R_OK | X_OK);
-	if (status)
+	rv = access(path, R_OK | X_OK);
+	if (rv)
 		die_perr("unable to execute '%s'", path);
 
 	sigemptyset(&sigmask);
 	sigaddset(&sigmask, SIGCHLD);
 
-	status = sigprocmask(SIG_BLOCK, &sigmask, NULL);
-	if (status)
+	rv = sigprocmask(SIG_BLOCK, &sigmask, NULL);
+	if (rv)
 		die_perr("unable to block SIGCHLD");
 
 	proc->sig_fd = signalfd(-1, &sigmask, 0);
@@ -617,8 +617,8 @@ void test_tool_wait(void)
 	struct gpiotool_proc *proc;
 	struct pollfd pfd;
 	sigset_t sigmask;
-	int status;
 	ssize_t rd;
+	int rv;
 
 	proc = &globals.test_ctx.tool_proc;
 
@@ -628,10 +628,10 @@ void test_tool_wait(void)
 	pfd.fd = proc->sig_fd;
 	pfd.events = POLLIN | POLLPRI;
 
-	status = poll(&pfd, 1, 5000);
-	if (status == 0)
+	rv = poll(&pfd, 1, 5000);
+	if (rv == 0)
 		die("tool program is taking too long to terminate");
-	else if (status < 0)
+	else if (rv < 0)
 		die_perr("error when polling the signalfd");
 
 	rd = read(proc->sig_fd, &sinfo, sizeof(sinfo));
@@ -644,8 +644,8 @@ void test_tool_wait(void)
 	sigemptyset(&sigmask);
 	sigaddset(&sigmask, SIGCHLD);
 
-	status = sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
-	if (status)
+	rv = sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
+	if (rv)
 		die_perr("unable to unblock SIGCHLD");
 
 	gpiotool_readall(proc->stdout_fd, &proc->stdout);
@@ -736,7 +736,7 @@ bad_version:
 static void check_gpio_mockup(void)
 {
 	const char *modpath;
-	int status;
+	int rv;
 
 	msg("checking gpio-mockup availability");
 
@@ -744,9 +744,9 @@ static void check_gpio_mockup(void)
 	if (!globals.module_ctx)
 		die_perr("error creating kernel module context");
 
-	status = kmod_module_new_from_name(globals.module_ctx,
-					   "gpio-mockup", &globals.module);
-	if (status)
+	rv = kmod_module_new_from_name(globals.module_ctx,
+				       "gpio-mockup", &globals.module);
+	if (rv)
 		die_perr("error allocating module info");
 
 	/* First see if we can find the module. */
@@ -755,14 +755,14 @@ static void check_gpio_mockup(void)
 		die("the gpio-mockup module does not exist in the system or is built into the kernel");
 
 	/* Then see if we can freely load and unload it. */
-	status = kmod_module_probe_insert_module(globals.module, 0,
-						 "gpio_mockup_ranges=-1,4",
-						 NULL, NULL, NULL);
-	if (status)
+	rv = kmod_module_probe_insert_module(globals.module, 0,
+					     "gpio_mockup_ranges=-1,4",
+					     NULL, NULL, NULL);
+	if (rv)
 		die_perr("unable to load gpio-mockup");
 
-	status = kmod_module_remove_module(globals.module, 0);
-	if (status)
+	rv = kmod_module_remove_module(globals.module, 0);
+	if (rv)
 		die_perr("unable to remove gpio-mockup");
 
 	msg("gpio-mockup ok");
@@ -772,7 +772,7 @@ static void load_module(struct _test_chip_descr *descr)
 {
 	unsigned int i;
 	char *modarg;
-	int status;
+	int rv;
 
 	if (descr->num_chips == 0)
 		return;
@@ -785,9 +785,9 @@ static void load_module(struct _test_chip_descr *descr)
 	if (descr->flags & TEST_FLAG_NAMED_LINES)
 		modarg = xappend(modarg, " gpio_mockup_named_lines");
 
-	status = kmod_module_probe_insert_module(globals.module, 0,
-						 modarg, NULL, NULL, NULL);
-	if (status)
+	rv = kmod_module_probe_insert_module(globals.module, 0,
+					     modarg, NULL, NULL, NULL);
+	if (rv)
 		die_perr("unable to load gpio-mockup");
 
 	free(modarg);
@@ -818,7 +818,7 @@ static void prepare_test(struct _test_chip_descr *descr)
 	struct udev_device *dev;
 	struct udev *udev_ctx;
 	struct pollfd pfd;
-	int status;
+	int rv;
 
 	ctx = &globals.test_ctx;
 	memset(ctx, 0, sizeof(*ctx));
@@ -840,13 +840,13 @@ static void prepare_test(struct _test_chip_descr *descr)
 	if (!monitor)
 		die_perr("error creating udev monitor");
 
-	status = udev_monitor_filter_add_match_subsystem_devtype(monitor,
-								 "gpio", NULL);
-	if (status < 0)
+	rv = udev_monitor_filter_add_match_subsystem_devtype(monitor,
+							     "gpio", NULL);
+	if (rv < 0)
 		die_perr("error adding udev filters");
 
-	status = udev_monitor_enable_receiving(monitor);
-	if (status < 0)
+	rv = udev_monitor_enable_receiving(monitor);
+	if (rv < 0)
 		die_perr("error enabling udev event receiving");
 
 	load_module(descr);
@@ -855,10 +855,10 @@ static void prepare_test(struct _test_chip_descr *descr)
 	pfd.events = POLLIN | POLLPRI;
 
 	while (ctx->num_chips > detected) {
-		status = poll(&pfd, 1, 5000);
-		if (status < 0)
+		rv = poll(&pfd, 1, 5000);
+		if (rv < 0)
 			die_perr("error polling for uevents");
-		else if (status == 0)
+		else if (rv == 0)
 			die("timeout waiting for gpiochips");
 
 		dev = udev_monitor_receive_device(monitor);
@@ -880,8 +880,8 @@ static void prepare_test(struct _test_chip_descr *descr)
 		chip = xzalloc(sizeof(*chip));
 		chip->name = xstrdup(sysname);
 		chip->path = xstrdup(devnode);
-		status = sscanf(sysname, "gpiochip%u", &chip->number);
-		if (status != 1)
+		rv = sscanf(sysname, "gpiochip%u", &chip->number);
+		if (rv != 1)
 			die("unable to determine chip number");
 
 		ctx->chips[detected++] = chip;
@@ -937,7 +937,7 @@ static void teardown_test(void)
 	struct mockup_chip *chip;
 	struct event_thread *ev;
 	unsigned int i;
-	int status;
+	int rv;
 
 	event_lock();
 	ev = &globals.test_ctx.event;
@@ -947,10 +947,10 @@ static void teardown_test(void)
 		pthread_cond_broadcast(&ev->cond);
 		event_unlock();
 
-		status = pthread_join(globals.test_ctx.event.thread_id, NULL);
-		if (status != 0)
+		rv = pthread_join(globals.test_ctx.event.thread_id, NULL);
+		if (rv != 0)
 			die("error joining event thread: %s",
-			    strerror(status));
+			    strerror(rv));
 
 		pthread_mutex_destroy(&globals.test_ctx.event.lock);
 		pthread_cond_destroy(&globals.test_ctx.event.cond);
@@ -981,8 +981,8 @@ static void teardown_test(void)
 		free(globals.test_ctx.custom_str);
 
 	if (mockup_loaded()) {
-		status = kmod_module_remove_module(globals.module, 0);
-		if (status)
+		rv = kmod_module_remove_module(globals.module, 0);
+		if (rv)
 			die_perr("unable to remove gpio-mockup");
 	}
 }
@@ -1089,13 +1089,13 @@ void _test_register(struct _test_case *test)
 
 void _test_print_failed(const char *fmt, ...)
 {
-	int status;
 	va_list va;
+	int rv;
 
 	va_start(va, fmt);
-	status = vasprintf(&globals.test_ctx.failed_msg, fmt, va);
+	rv = vasprintf(&globals.test_ctx.failed_msg, fmt, va);
 	va_end(va);
-	if (status < 0)
+	if (rv < 0)
 		die_perr("vasprintf");
 
 	globals.test_ctx.test_failed = true;
@@ -1105,16 +1105,15 @@ void test_set_event(unsigned int chip_index, unsigned int line_offset,
 		    int event_type, unsigned int freq)
 {
 	struct event_thread *ev = &globals.test_ctx.event;
-	int status;
+	int rv;
 
 	event_lock();
 
 	if (!ev->running) {
-		status = pthread_create(&ev->thread_id, NULL,
-					event_worker, NULL);
-		if (status != 0)
+		rv = pthread_create(&ev->thread_id, NULL, event_worker, NULL);
+		if (rv != 0)
 			die("error creating event thread: %s",
-			    strerror(status));
+			    strerror(rv));
 
 		ev->running = true;
 	}
