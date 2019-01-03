@@ -36,7 +36,7 @@ static void print_help(void)
 {
 	printf("Usage: %s [OPTIONS] <chip name/number> <offset1>=<value1> <offset2>=<value2> ...\n",
 	       get_progname());
-	printf("Set GPIO line values of a GPIO chip\n");
+	printf("Set GPIO line values of a GPIO chip and maintain the state until the process exits\n");
 	printf("\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
@@ -53,6 +53,12 @@ static void print_help(void)
 	printf("  wait:\t\tset values and wait for user to press ENTER\n");
 	printf("  time:\t\tset values and sleep for a specified amount of time\n");
 	printf("  signal:\tset values and wait for SIGINT or SIGTERM\n");
+	printf("\n");
+	printf("Note: the state of a GPIO line controlled over the character device reverts to default\n");
+	printf("when the last process referencing the file descriptor representing the device file exits.\n");
+	printf("This means that it's wrong to run gpioset, have it exit and expect the line to continue\n");
+	printf("being driven high or low. It may happen if given pin is floating but it must be interpreted\n");
+	printf("as undefined behavior.\n");
 }
 
 struct callback_data {
