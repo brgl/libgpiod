@@ -47,6 +47,42 @@ arguments to it.
 If building from release tarballs, the configure script is already provided and
 there's no need to invoke autogen.sh.
 
+
+BUILDING with CMake
+-------------------
+
+CMakeLists.txt-files have been added in order to build the project with CMake.
+
+This is a standard cmake && make install. It generates exported .cmake-files
+in order to easily import the installed results in other CMake-projects.
+
+Here are some examples how to build this project
+
+To build the project (always out-of-tree):
+
+  mkdir build
+  cd build
+  cmake <path/to/libgpiod>
+  make install
+
+Release build:
+
+  cmake <path/to/libgpiod> -DCMAKE_BUILD_TYPE=Release
+  make
+
+Debug build and build with Ninja
+
+  cmake <path/to/libgpiod> -DCMAKE_BUILD_TYPE=Debug -GNinja
+  make install
+
+Enable tools and C++-binding
+
+  cmake <path/to/libgpiod> \
+        -DENABLE_TOOLS=ON \
+        -DENABLE_BINDINGS_CXX=ON \
+        -DCMAKE_BUILD_TYPE=Debug
+  make
+
 TOOLS
 -----
 
@@ -133,12 +169,22 @@ superuser privileges:
 
     sudo ./tests/gpiod-test
 
+To enable tests with CMake run
+
+    cmake -DENABLE_TESTS
+
+and then
+
+    ctest
+
+
 BINDINGS
 --------
 
 High-level, object-oriented bindings for C++ and python3 are provided. They
 can be enabled by passing --enable-bindings-cxx and --enable-bindings-python
-arguments respectively to configure.
+arguments respectively to configure. (ENABLE_BINDINGS_CXX and
+ENABLE_BINDING_PYTHON with CMake)
 
 C++ bindings require C++11 support and autoconf-archive collection if building
 from git.
