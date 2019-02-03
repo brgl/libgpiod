@@ -58,10 +58,12 @@ bool chip_iter::operator!=(const chip_iter& rhs) const noexcept
 }
 
 chip_iter::chip_iter(::gpiod_chip_iter *iter)
-	: _m_iter(iter, chip_iter_deleter),
-	  _m_current(chip(::gpiod_chip_iter_next_noclose(this->_m_iter.get())))
+	: _m_iter(iter, chip_iter_deleter)
 {
+	::gpiod_chip* first = ::gpiod_chip_iter_next_noclose(this->_m_iter.get());
 
+	if (first != nullptr)
+		this->_m_current = ::std::move(chip(first));
 }
 
 chip_iter& chip_iter::operator++(void)
