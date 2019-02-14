@@ -126,24 +126,6 @@ TEST_DEFINE(gpiomon_both_events_sigterm,
 	    "tools: gpiomon - receive both types of events and kill with SIGTERM",
 	    0, { 8, 8 });
 
-static void gpiomon_ignore_falling_edge(void)
-{
-	test_tool_run("gpiomon", "--rising-edge",
-		      test_chip_name(0), "4", (char *)NULL);
-	test_set_event(0, 4, TEST_EVENT_FALLING, 100);
-	usleep(300000);
-	test_tool_signal(SIGTERM);
-	test_tool_wait();
-
-	TEST_ASSERT(test_tool_exited());
-	TEST_ASSERT_RET_OK(test_tool_exit_status());
-	TEST_ASSERT_NULL(test_tool_stdout());
-	TEST_ASSERT_NULL(test_tool_stderr());
-}
-TEST_DEFINE(gpiomon_ignore_falling_edge,
-	    "tools: gpiomon - wait for rising edge events, ignore falling edge",
-	    0, { 8, 8 });
-
 static void gpiomon_watch_multiple_lines(void)
 {
 	test_tool_run("gpiomon", "--format=%o", test_chip_name(0),
