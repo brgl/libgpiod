@@ -21,6 +21,7 @@ gpiosetcxx
 doc
 libgpiod.pc
 libgpiodcxx.pc
+*.tar.gz
 
 # autotools stuff
 .deps/
