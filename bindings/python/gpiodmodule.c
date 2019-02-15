@@ -403,18 +403,55 @@ PyDoc_STRVAR(gpiod_Line_request_doc,
 "    Type of the request.\n"
 "  flags\n"
 "    Other configuration flags.\n"
-"  default_vals\n"
-"    Default value of this line (as a sequence, example: default_vals=[ 1 ]).");
+"  default_val\n"
+"    Default value of this line."
+"\n"
+"Note: default_vals argument (sequence of default values passed down to\n"
+"LineBulk.request()) is still supported for backward compatibility but is\n"
+"now deprecated when requesting single lines.");
 
-/*
- * TODO: add support for 'default_val' argument which will allow users to pass
- * a single default value directly rather than wrapping it in a sequence.
- */
 static PyObject *gpiod_Line_request(gpiod_LineObject *self,
 				    PyObject *args, PyObject *kwds)
 {
+	PyObject *ret, *def_val, *def_vals;
 	gpiod_LineBulkObject *bulk_obj;
-	PyObject *ret;
+	int rv;
+
+	def_val = PyDict_GetItemString(kwds, "default_val");
+	def_vals = PyDict_GetItemString(kwds, "default_vals");
+
+	if (def_val && def_vals) {
+		PyErr_SetString(PyExc_TypeError,
+				"Cannot pass both default_val and default_vals arguments at the same time");
+		return NULL;
+	}
+
+	if (def_val) {
+		/*
+		 * If default_val was passed as a single value, we wrap it
+		 * in a tuple and add it to the kwds dictionary to be passed
+		 * down to LineBulk.request(). We also remove the 'default_val'
+		 * entry from kwds.
+		 *
+		 * I'm not sure if it's allowed to modify the kwds dictionary
+		 * but it doesn't seem to cause any problems. If it does then
+		 * we can simply copy the dictionary before calling
+		 * LineBulk.request().
+		 */
+		rv = PyDict_DelItemString(kwds, "default_val");
+		if (rv)
+			return NULL;
+
+		def_vals = Py_BuildValue("(O)", def_val);
+		if (!def_vals)
+			return NULL;
+
+		rv = PyDict_SetItemString(kwds, "default_vals", def_vals);
+		if (rv) {
+			Py_DECREF(def_vals);
+			return NULL;
+		}
+	}
 
 	bulk_obj = gpiod_LineToLineBulk(self);
 	if (!bulk_obj)
