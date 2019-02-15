@@ -421,7 +421,7 @@ static PyObject *gpiod_Line_request(gpiod_LineObject *self,
 		return NULL;
 
 	ret = gpiod_CallMethodPyArgs((PyObject *)bulk_obj,
-				      "request", args, kwds);
+				     "request", args, kwds);
 	Py_DECREF(bulk_obj);
 
 	return ret;
