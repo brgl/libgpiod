@@ -3,7 +3,7 @@
 #
 # This file is part of libgpiod.
 #
-# Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
+# Copyright (C) 2017-2019 Bartosz Golaszewski <bartekgola@gmail.com>
 #
 
 AC_PREREQ(2.61)
@@ -191,6 +191,16 @@ then
 	AC_MSG_NOTICE([doxygen not found - documentation cannot be generated])
 fi
 
+if test "x$cross_compiling" = xno
+then
+	AC_CHECK_PROG([has_help2man], [help2man], [true], [false])
+	AM_CONDITIONAL([WITH_MANPAGES], [test "x$has_help2man" = xtrue])
+	if test "x$has_help2man" = xfalse
+	then
+		AC_MSG_NOTICE([help2man not found - man pages cannot be generated automatically])
+	fi
+fi
+
 AC_CONFIG_FILES([libgpiod.pc
 		 Makefile
 		 include/Makefile
@@ -203,6 +213,7 @@ AC_CONFIG_FILES([libgpiod.pc
 		 bindings/cxx/Makefile
 		 bindings/cxx/examples/Makefile
 		 bindings/python/Makefile
-		 bindings/python/examples/Makefile])
+		 bindings/python/examples/Makefile
+		 man/Makefile])
 
 AC_OUTPUT

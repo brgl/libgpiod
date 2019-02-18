@@ -3,7 +3,7 @@
 #
 # This file is part of libgpiod.
 #
-# Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
+# Copyright (C) 2017-2019 Bartosz Golaszewski <bartekgola@gmail.com>
 #
 
 ACLOCAL_AMFLAGS = -I m4
@@ -16,6 +16,12 @@ pkgconfig_DATA = libgpiod.pc
 if WITH_TESTS
 
 SUBDIRS += tests
+
+endif
+
+if WITH_TOOLS
+
+SUBDIRS += man
 
 endif
 

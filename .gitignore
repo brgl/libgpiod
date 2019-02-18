@@ -43,3 +43,6 @@ stamp-h1
 
 # unit tests
 gpiod-test
+
+# man pages
+*.man
