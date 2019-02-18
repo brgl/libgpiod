@@ -27,6 +27,9 @@ doc:
 		echo INPUT += bindings/cxx/gpiod.hpp) | doxygen -
 .PHONY: doc
 
+clean-local:
+	rm -rf doc
+
 EXTRA_DIST = Doxyfile
 
 endif
