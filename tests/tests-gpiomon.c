@@ -7,10 +7,10 @@
 
 /* Test cases for the gpiomon program. */
 
-#include "gpiod-test.h"
-
 #include <signal.h>
 #include <unistd.h>
+
+#include "gpiod-test.h"
 
 static void gpiomon_single_rising_edge_event(void)
 {

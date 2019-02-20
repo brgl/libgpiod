@@ -7,10 +7,10 @@
 
 /* Test cases for GPIO line events. */
 
-#include "gpiod-test.h"
-
-#include <unistd.h>
 #include <errno.h>
+#include <unistd.h>
+
+#include "gpiod-test.h"
 
 static void event_rising_edge_good(void)
 {

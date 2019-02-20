@@ -7,15 +7,15 @@
 
 /* Common code for GPIO tools. */
 
-#include <gpiod.h>
-#include "tools-common.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <libgen.h>
 #include <errno.h>
+#include <gpiod.h>
+#include <libgen.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "tools-common.h"
 
 const char * get_progname(void)
 {

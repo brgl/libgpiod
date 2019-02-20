@@ -7,9 +7,9 @@
 
 /* Test cases for the high-level API. */
 
-#include "gpiod-test.h"
-
 #include <errno.h>
+
+#include "gpiod-test.h"
 
 static void ctxless_set_get_value(void)
 {

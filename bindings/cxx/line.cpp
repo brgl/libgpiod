@@ -6,7 +6,6 @@
  */
 
 #include <gpiod.hpp>
-
 #include <system_error>
 
 namespace gpiod {

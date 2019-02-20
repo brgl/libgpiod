@@ -7,12 +7,12 @@
 
 /* Implementation of the high-level API. */
 
-#include <gpiod.h>
 
+#include <errno.h>
+#include <gpiod.h>
+#include <poll.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
-#include <poll.h>
 
 int gpiod_ctxless_get_value(const char *device, unsigned int offset,
 			    bool active_low, const char *consumer)

@@ -5,27 +5,27 @@
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
  */
 
-#include "gpiod-test.h"
-
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
+#include <ctype.h>
 #include <errno.h>
-#include <unistd.h>
 #include <fcntl.h>
-#include <poll.h>
-#include <signal.h>
 #include <libgen.h>
 #include <libkmod.h>
 #include <libudev.h>
+#include <poll.h>
 #include <pthread.h>
 #include <regex.h>
-#include <ctype.h>
-#include <sys/time.h>
-#include <sys/utsname.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#include <signal.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/signalfd.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/utsname.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+#include "gpiod-test.h"
 
 #define NORETURN	__attribute__((noreturn))
 #define MALLOC		__attribute__((malloc))

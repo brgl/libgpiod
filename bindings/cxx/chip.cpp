@@ -5,12 +5,11 @@
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
  */
 
-#include <gpiod.hpp>
-
-#include <system_error>
 #include <functional>
-#include <utility>
+#include <gpiod.hpp>
 #include <map>
+#include <system_error>
+#include <utility>
 
 namespace gpiod {
 

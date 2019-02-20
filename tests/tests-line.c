@@ -7,9 +7,9 @@
 
 /* GPIO line test cases. */
 
-#include "gpiod-test.h"
-
 #include <errno.h>
+
+#include "gpiod-test.h"
 
 static void line_request_output(void)
 {

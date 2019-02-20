@@ -7,10 +7,10 @@
 
 /* Test cases for the gpioset program. */
 
-#include "gpiod-test.h"
-
 #include <signal.h>
 #include <unistd.h>
+
+#include "gpiod-test.h"
 
 static void gpioset_set_lines_and_exit(void)
 {

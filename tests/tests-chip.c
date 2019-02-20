@@ -7,10 +7,10 @@
 
 /* Test cases for GPIO chip handling. */
 
-#include "gpiod-test.h"
-
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
+
+#include "gpiod-test.h"
 
 static void chip_open_good(void)
 {

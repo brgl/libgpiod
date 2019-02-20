@@ -5,14 +5,14 @@
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
  */
 
+#include <errno.h>
+#include <getopt.h>
 #include <gpiod.h>
-#include "tools-common.h"
-
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
-#include <getopt.h>
-#include <errno.h>
+
+#include "tools-common.h"
 
 typedef bool (*is_set_func)(struct gpiod_line *);
 

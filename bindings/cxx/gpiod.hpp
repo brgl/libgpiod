@@ -8,13 +8,12 @@
 #ifndef __LIBGPIOD_GPIOD_CXX_HPP__
 #define __LIBGPIOD_GPIOD_CXX_HPP__
 
-#include <gpiod.h>
-
-#include <string>
-#include <vector>
-#include <memory>
 #include <bitset>
 #include <chrono>
+#include <gpiod.h>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace gpiod {
 

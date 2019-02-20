@@ -7,9 +7,9 @@
 
 /* Test cases for the gpioinfo program. */
 
-#include "gpiod-test.h"
-
 #include <stdio.h>
+
+#include "gpiod-test.h"
 
 static void gpioinfo_dump_all_chips(void)
 {

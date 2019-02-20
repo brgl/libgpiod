@@ -7,9 +7,9 @@
 
 /* Misc test cases. */
 
-#include "gpiod-test.h"
-
 #include <errno.h>
+
+#include "gpiod-test.h"
 
 static void version_string(void)
 {

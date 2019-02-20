@@ -7,20 +7,19 @@
 
 /* Low-level, core library code. */
 
-#include <gpiod.h>
-
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <poll.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <sys/sysmacros.h>
+#include <gpiod.h>
 #include <linux/gpio.h>
+#include <poll.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/sysmacros.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 enum {
 	LINE_FREE = 0,

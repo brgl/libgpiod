@@ -5,12 +5,12 @@
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
  */
 
+#include <getopt.h>
 #include <gpiod.h>
-#include "tools-common.h"
-
 #include <stdio.h>
 #include <string.h>
-#include <getopt.h>
+
+#include "tools-common.h"
 
 static const struct option longopts[] = {
 	{ "help",	no_argument,	NULL,	'h' },

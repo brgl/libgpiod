@@ -7,10 +7,9 @@
 
 /* GPIO chip and line iterators. */
 
-#include <gpiod.h>
-
-#include <string.h>
 #include <dirent.h>
+#include <gpiod.h>
+#include <string.h>
 
 struct gpiod_chip_iter {
 	struct gpiod_chip **chips;

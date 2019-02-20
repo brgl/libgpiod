@@ -10,13 +10,11 @@
  * access to neither the internal library data structures nor the kernel UAPI.
  */
 
-#include <gpiod.h>
-
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
 #include <ctype.h>
 #include <errno.h>
+#include <gpiod.h>
+#include <stdio.h>
+#include <string.h>
 
 static bool isuint(const char *str)
 {

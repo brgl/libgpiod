@@ -7,9 +7,9 @@
 
 /* Test cases for the gpiodetect program. */
 
-#include "gpiod-test.h"
-
 #include <stdio.h>
+
+#include "gpiod-test.h"
 
 static void gpiodetect_simple(void)
 {

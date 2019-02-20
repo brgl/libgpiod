@@ -5,19 +5,19 @@
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
  */
 
+#include <errno.h>
 #include <gpiod.h>
-#include "tools-common.h"
-
+#include <getopt.h>
+#include <limits.h>
+#include <poll.h>
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#include <getopt.h>
 #include <sys/select.h>
-#include <signal.h>
 #include <sys/signalfd.h>
-#include <poll.h>
-#include <limits.h>
-#include <errno.h>
 #include <unistd.h>
+
+#include "tools-common.h"
 
 static const struct option longopts[] = {
 	{ "help",		no_argument,		NULL,	'h' },

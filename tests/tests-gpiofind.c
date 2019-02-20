@@ -7,9 +7,9 @@
 
 /* Test cases for the gpiofind program. */
 
-#include "gpiod-test.h"
-
 #include <stdio.h>
+
+#include "gpiod-test.h"
 
 static void gpiofind_found(void)
 {
