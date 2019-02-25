@@ -26,17 +26,18 @@ static const struct option longopts[] = {
 	{ "silent",		no_argument,		NULL,	's' },
 	{ "rising-edge",	no_argument,		NULL,	'r' },
 	{ "falling-edge",	no_argument,		NULL,	'f' },
+	{ "line-buffered",	no_argument,		NULL,	'b' },
 	{ "format",		required_argument,	NULL,	'F' },
 	{ GETOPT_NULL_LONGOPT },
 };
 
-static const char *const shortopts = "+hvln:srfF:";
+static const char *const shortopts = "+hvln:srfbF:";
 
 static void print_help(void)
 {
 	printf("Usage: %s [OPTIONS] <chip name/number> <offset 1> <offset 2> ...\n",
 	       get_progname());
-	printf("Wait for events on GPIO lines\n");
+	printf("Wait for events on GPIO lines and print them to standard output\n");
 	printf("\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
@@ -46,6 +47,7 @@ static void print_help(void)
 	printf("  -s, --silent:\t\tdon't print event info\n");
 	printf("  -r, --rising-edge:\tonly process rising edge events\n");
 	printf("  -f, --falling-edge:\tonly process falling edge events\n");
+	printf("  -b, --line-buffered:\tset standard output as line buffered\n");
 	printf("  -F, --format=FMT\tspecify custom output format\n");
 	printf("\n");
 	printf("Format specifiers:\n");
@@ -277,6 +279,9 @@ int main(int argc, char **argv)
 			break;
 		case 'f':
 			watch_falling = true;
+			break;
+		case 'b':
+			setlinebuf(stdout);
 			break;
 		case 'F':
 			ctx.fmt = optarg;
