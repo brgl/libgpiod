@@ -87,14 +87,7 @@ AC_CHECK_HEADERS([linux/gpio.h], [], [HEADER_NOT_FOUND_LIB([linux/gpio.h])])
 AC_ARG_ENABLE([tools],
 	[AC_HELP_STRING([--enable-tools],
 		[enable libgpiod command-line tools [default=no]])],
-	[
-		if test "x$enableval" = xyes
-		then
-			with_tools=true
-		else
-			with_tools=false
-		fi
-	],
+	[if test "x$enableval" = xyes; then with_tools=true; fi],
 	[with_tools=false])
 AM_CONDITIONAL([WITH_TOOLS], [test "x$with_tools" = xtrue])
 
@@ -116,14 +109,7 @@ fi
 AC_ARG_ENABLE([tests],
 	[AC_HELP_STRING([--enable-tests],
 		[enable libgpiod tests [default=no]])],
-	[
-		if test "x$enableval" = xyes
-		then
-			with_tests=true
-		else
-			with_tests=false
-		fi
-	],
+	[if test "x$enableval" = xyes; then with_tests=true; fi],
 	[with_tests=false])
 AM_CONDITIONAL([WITH_TESTS], [test "x$with_tests" = xtrue])
 
@@ -142,14 +128,7 @@ fi
 AC_ARG_ENABLE([bindings-cxx],
 	[AC_HELP_STRING([--enable-bindings-cxx],
 		[enable C++ bindings [default=no]])],
-	[
-		if test "x$enableval" = xyes
-		then
-			with_bindings_cxx=true
-		else
-			with_bindings_cxx=false
-		fi
-	],
+	[if test "x$enableval" = xyes; then with_bindings_cxx=true; fi],
 	[with_bindings_cxx=false])
 AM_CONDITIONAL([WITH_BINDINGS_CXX], [test "x$with_bindings_cxx" = xtrue])
 
@@ -163,14 +142,7 @@ fi
 AC_ARG_ENABLE([bindings-python],
 	[AC_HELP_STRING([--enable-bindings-python],
 		[enable python3 bindings [default=no]])],
-	[
-		if test "x$enableval" = xyes
-		then
-			with_bindings_python=true
-		else
-			with_bindings_python=false
-		fi
-	],
+	[if test "x$enableval" = xyes; then with_bindings_python=true; fi],
 	[with_bindings_python=false])
 AM_CONDITIONAL([WITH_BINDINGS_PYTHON], [test "x$with_bindings_python" = xtrue])
 
