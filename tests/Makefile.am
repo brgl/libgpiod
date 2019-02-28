@@ -9,7 +9,7 @@
 AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_builddir)/config.h
 AM_CFLAGS += -Wall -Wextra -g $(KMOD_CFLAGS) $(UDEV_CFLAGS)
 AM_LDFLAGS = -pthread
-LDADD = ../src/lib/libgpiod.la $(KMOD_LIBS) $(UDEV_LIBS)
+LDADD = $(top_builddir)/src/lib/libgpiod.la $(KMOD_LIBS) $(UDEV_LIBS)
 
 check_PROGRAMS = gpiod-test
 
