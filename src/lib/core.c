@@ -259,7 +259,6 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 			return NULL;
 
 		memset(line, 0, sizeof(*line));
-		line->fd_handle = NULL;
 
 		line->offset = offset;
 		line->chip = chip;
