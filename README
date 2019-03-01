@@ -118,7 +118,7 @@ TESTING
 A comprehensive testing framework is included with the library and can be
 used to test both the library code and the linux kernel user-space interface.
 
-The minimum kernel version required to run the tests is 4.11. The tests work
+The minimum kernel version required to run the tests is 4.16. The tests work
 together with the gpio-mockup kernel module which must be enabled. NOTE: the
 module must not be built-in.
 
