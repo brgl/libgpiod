@@ -38,7 +38,7 @@ int gpiod_ctxless_get_value_multiple(const char *device,
 	int rv, flags;
 	unsigned int i;
 
-	if (num_lines > GPIOD_LINE_BULK_MAX_LINES) {
+	if (!num_lines || num_lines > GPIOD_LINE_BULK_MAX_LINES) {
 		errno = EINVAL;
 		return -1;
 	}
@@ -95,7 +95,7 @@ int gpiod_ctxless_set_value_multiple(const char *device,
 	unsigned int i;
 	int rv, flags;
 
-	if (num_lines > GPIOD_LINE_BULK_MAX_LINES) {
+	if (!num_lines || num_lines > GPIOD_LINE_BULK_MAX_LINES) {
 		errno = EINVAL;
 		return -1;
 	}
@@ -142,7 +142,7 @@ static int basic_event_poll(unsigned int num_lines,
 	unsigned int i;
 	int rv, ret;
 
-	if (num_lines > GPIOD_LINE_BULK_MAX_LINES)
+	if (!num_lines || num_lines > GPIOD_LINE_BULK_MAX_LINES)
 		return GPIOD_CTXLESS_EVENT_POLL_RET_ERR;
 
 	memset(poll_fds, 0, sizeof(poll_fds));
@@ -235,7 +235,7 @@ int gpiod_ctxless_event_monitor_multiple(
 	struct gpiod_line *line;
 	unsigned int i;
 
-	if (num_lines > GPIOD_LINE_BULK_MAX_LINES) {
+	if (!num_lines || num_lines > GPIOD_LINE_BULK_MAX_LINES) {
 		errno = EINVAL;
 		return -1;
 	}
