@@ -35,8 +35,8 @@ int gpiod_ctxless_get_value_multiple(const char *device,
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
-	int rv, flags;
 	unsigned int i;
+	int rv, flags;
 
 	if (!num_lines || num_lines > GPIOD_LINE_BULK_MAX_LINES) {
 		errno = EINVAL;
