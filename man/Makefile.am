@@ -17,3 +17,5 @@ clean-local:
 	rm -f $(dist_man1_MANS)
 
 endif
+
+EXTRA_DIST = template
