@@ -21,7 +21,7 @@
 
 #define GETOPT_NULL_LONGOPT	NULL, 0, NULL, 0
 
-const char * get_progname(void);
+const char *get_progname(void);
 void die(const char *fmt, ...) NORETURN PRINTF(1, 2);
 void die_perror(const char *fmt, ...) NORETURN PRINTF(1, 2);
 void print_version(void);

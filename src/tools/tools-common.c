@@ -17,7 +17,7 @@
 
 #include "tools-common.h"
 
-const char * get_progname(void)
+const char *get_progname(void)
 {
 	return program_invocation_name;
 }
