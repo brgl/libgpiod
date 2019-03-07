@@ -47,7 +47,7 @@ AC_ARG_VAR([PYTHON_CPPFLAGS],
 AC_ARG_VAR([PYTHON_LIBS],
 	[Libraries to link into Python extensions [default: auto-detect]])
 
-AC_CONFIG_SRCDIR([src])
+AC_CONFIG_SRCDIR([lib])
 AC_CONFIG_HEADER([config.h])
 
 AC_DEFINE([_GNU_SOURCE], [], [We want GNU extensions])
@@ -177,9 +177,8 @@ fi
 AC_CONFIG_FILES([libgpiod.pc
 		 Makefile
 		 include/Makefile
-		 src/Makefile
-		 src/lib/Makefile
-		 src/tools/Makefile
+		 lib/Makefile
+		 tools/Makefile
 		 tests/Makefile
 		 bindings/cxx/libgpiodcxx.pc
 		 bindings/Makefile

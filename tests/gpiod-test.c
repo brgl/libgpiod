@@ -453,7 +453,7 @@ static char *gpiotool_proc_get_path(const char *tool)
 
 	progpath = xstrdup(program_invocation_name);
 	progdir = dirname(progpath);
-	path = xappend(NULL, "%s/../../src/tools/%s", progdir, tool);
+	path = xappend(NULL, "%s/../../tools/%s", progdir, tool);
 	free(progpath);
 
 	return path;

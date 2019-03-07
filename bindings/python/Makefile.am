@@ -15,4 +15,4 @@ gpiod_la_SOURCES = gpiodmodule.c
 gpiod_la_CFLAGS = -I$(top_srcdir)/include/
 gpiod_la_CFLAGS += -Wall -Wextra -g $(PYTHON_CPPFLAGS)
 gpiod_la_LDFLAGS = -module -avoid-version
-gpiod_la_LIBADD = $(top_builddir)/src/lib/libgpiod.la $(PYTHON_LIBS)
+gpiod_la_LIBADD = $(top_builddir)/lib/libgpiod.la $(PYTHON_LIBS)
