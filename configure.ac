@@ -107,6 +107,13 @@ then
 	AC_CHECK_HEADERS([sys/signalfd.h], [], [HEADER_NOT_FOUND_TOOLS([sys/signalfd.h])])
 fi
 
+AC_ARG_ENABLE([install-tests],
+	[AC_HELP_STRING([--enable-install-tests],
+		[enable install tests [default=no]])],
+	[if test "x$enableval" = xyes; then with_install_tests=true; with_tests=true; fi],
+	[with_install_tests=false])
+AM_CONDITIONAL([WITH_INSTALL_TESTS], [test "x$with_install_tests" = xtrue])
+
 AC_ARG_ENABLE([tests],
 	[AC_HELP_STRING([--enable-tests],
 		[enable libgpiod tests [default=no]])],
