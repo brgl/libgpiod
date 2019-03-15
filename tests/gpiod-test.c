@@ -86,6 +86,7 @@ static struct {
 	pid_t main_pid;
 	int pipesize;
 	char *pipebuf;
+	char *toolpath;
 } globals;
 
 enum {
@@ -447,18 +448,6 @@ static void gpiotool_proc_dup_fds(int in_fd, int out_fd, int err_fd)
 	}
 }
 
-static char *gpiotool_proc_get_path(const char *tool)
-{
-	char *path, *progpath, *progdir;
-
-	progpath = xstrdup(program_invocation_name);
-	progdir = dirname(progpath);
-	path = xappend(NULL, "%s/../../tools/%s", progdir, tool);
-	free(progpath);
-
-	return path;
-}
-
 static NORETURN void gpiotool_proc_exec(const char *path, va_list va)
 {
 	size_t num_args;
@@ -545,10 +534,12 @@ void test_tool_run(char *tool, ...)
 	event_lock();
 	if (globals.test_ctx.event.running)
 		die("refusing to fork when the event thread is running");
+	if (!globals.toolpath)
+		die("asked to run tests for gpio-tools, but the executables were not found");
 
 	gpiotool_proc_make_pipes(in_fds, out_fds, err_fds);
-	path = gpiotool_proc_get_path(tool);
 
+	path = xappend(NULL, "%s/%s", globals.toolpath, tool);
 	rv = access(path, R_OK | X_OK);
 	if (rv)
 		die_perr("unable to execute '%s'", path);
@@ -766,6 +757,63 @@ static void check_gpio_mockup(void)
 		die_perr("unable to remove gpio-mockup");
 
 	msg("gpio-mockup ok");
+}
+
+static void check_tool_path(void)
+{
+	/*
+	 * Let's check gpiodetect only and assume all the other tools are in
+	 * the same directory.
+	 */
+	static const char *const tool = "gpiodetect";
+
+	char *progpath, *progdir, *toolpath, *pathenv, *tok;
+
+	/* First check if we're running the from the top source directory. */
+	progpath = xstrdup(program_invocation_name);
+	progdir = dirname(progpath);
+
+	toolpath = xappend(NULL, "%s/../../tools/%s", progdir, tool);
+	if (access(toolpath, R_OK | X_OK) == 0) {
+		free(progpath);
+		goto out;
+	}
+	free(toolpath);
+
+	/* Is the tool in the same directory maybe? */
+	toolpath = xappend(NULL, "%s/%s", progdir, tool);
+	free(progpath);
+	if (access(toolpath, R_OK | X_OK) == 0)
+		goto out;
+	free(toolpath);
+
+	/* Next iterate over directories in $PATH. */
+	pathenv = getenv("PATH");
+	if (!pathenv)
+		return;
+
+	progpath = xstrdup(pathenv);
+	tok = strtok(progpath, ":");
+	while (tok) {
+		toolpath = xappend(NULL, "%s/%s", tok, tool);
+		if (access(toolpath, R_OK) == 0) {
+			free(progpath);
+			goto out;
+		}
+
+		free(toolpath);
+		tok = strtok(NULL, ":");
+	}
+
+	free(progpath);
+	toolpath = NULL;
+
+out:
+	if (toolpath) {
+		toolpath = dirname(toolpath);
+		msg("using gpio-tools from '%s'", toolpath);
+		globals.toolpath = toolpath;
+	}
 }
 
 static void load_module(struct _test_chip_descr *descr)
@@ -1001,6 +1049,7 @@ int main(int argc TEST_UNUSED, char **argv TEST_UNUSED)
 
 	check_kernel();
 	check_gpio_mockup();
+	check_tool_path();
 
 	msg("running tests");
 
