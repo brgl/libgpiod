@@ -22,6 +22,7 @@ doc
 libgpiod.pc
 libgpiodcxx.pc
 *.tar.gz
+*.patch
 
 # autotools stuff
 .deps/
