@@ -174,11 +174,11 @@ fi
 if test "x$cross_compiling" = xno
 then
 	AC_CHECK_PROG([has_help2man], [help2man], [true], [false])
-	AM_CONDITIONAL([WITH_MANPAGES], [test "x$has_help2man" = xtrue])
-	if test "x$has_help2man" = xfalse
-	then
-		AC_MSG_NOTICE([help2man not found - man pages cannot be generated automatically])
-	fi
+fi
+AM_CONDITIONAL([WITH_MANPAGES], [test "x$has_help2man" = xtrue])
+if test "x$has_help2man" = xfalse
+then
+	AC_MSG_NOTICE([help2man not found - man pages cannot be generated automatically])
 fi
 
 AC_CONFIG_FILES([libgpiod.pc
