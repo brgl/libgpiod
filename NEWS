@@ -1,3 +1,36 @@
+libgpiod v1.3
+=============
+
+New features:
+- the gpio-tools now have automatically generated (using help2man) man pages
+  that are bundled with the release tarball
+- support a singular 'default_val' argument in Line.request() in python
+  bindings
+- the test executable can now be installed to the bindir along with the
+  gpio-tools and the testing framework will look for the binaries in standard
+  locations if it's not run from the top source directory
+- gpiomon now supports line buffered output
+
+Improvements:
+- tweaks to the C API documentation
+- treewide unification of the naming of local variables
+- extended helptest in gpioset (explanation of the way the character device
+  works aimed at reducing user confusion when a GPIO line reverts to its
+  default value after gpioset exits)
+- the source directories have been rearranged and the src/ directory was
+  dropped, lib/ and tools/ now live in the top source directory
+- minor coding style fixes in python bindings, ctxless functions and tools
+- automatically generated documentation is now removed by 'make clean'
+- all Makefiles now use top_builddir instead of relative paths
+- code shrink in configure.ac
+- add a brief section about API documentation to README
+
+Bug fixes:
+- fix a segfault causing bug in C++ bindings
+- make bitset_cmp::operator() const as this is required by C++17
+- ignore 'remove' events from udev in the testing framework
+- don't segfault on num_lines = 0 in ctxless functions
+
 libgpiod v1.2
 =============
 
