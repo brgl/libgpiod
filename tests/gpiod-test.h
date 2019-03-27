@@ -93,14 +93,8 @@ const char *test_chip_path(unsigned int index);
 const char *test_chip_name(unsigned int index);
 unsigned int test_chip_num(unsigned int index);
 
-enum {
-	TEST_EVENT_FALLING,
-	TEST_EVENT_RISING,
-	TEST_EVENT_ALTERNATING,
-};
-
-void test_set_event(unsigned int chip_index, unsigned int line_offset,
-		    int event_type, unsigned int freq);
+void test_set_event(unsigned int chip_index,
+		    unsigned int line_offset, unsigned int freq);
 
 void test_tool_run(char *tool, ...);
 void test_tool_wait(void);

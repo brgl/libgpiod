@@ -49,7 +49,6 @@ struct event_thread {
 	unsigned int chip_index;
 	unsigned int line_offset;
 	unsigned int freq;
-	int event_type;
 };
 
 struct gpiotool_proc {
@@ -388,12 +387,7 @@ static void *event_worker(void *data TEST_UNUSED)
 			if (fd < 0)
 				die_perr("error opening gpio event file");
 
-			if (ev->event_type == TEST_EVENT_RISING)
-				buf = '1';
-			else if (ev->event_type == TEST_EVENT_FALLING)
-				buf = '0';
-			else
-				buf = i % 2 == 0 ? '1' : '0';
+			buf = i % 2 == 0 ? '1' : '0';
 
 			rd = write(fd, &buf, 1);
 			close(fd);
@@ -1150,8 +1144,8 @@ void _test_print_failed(const char *fmt, ...)
 	globals.test_ctx.test_failed = true;
 }
 
-void test_set_event(unsigned int chip_index, unsigned int line_offset,
-		    int event_type, unsigned int freq)
+void test_set_event(unsigned int chip_index,
+		    unsigned int line_offset, unsigned int freq)
 {
 	struct event_thread *ev = &globals.test_ctx.event;
 	int rv;
@@ -1169,7 +1163,6 @@ void test_set_event(unsigned int chip_index, unsigned int line_offset,
 
 	ev->chip_index = chip_index;
 	ev->line_offset = line_offset;
-	ev->event_type = event_type;
 	ev->freq = freq;
 
 	pthread_cond_broadcast(&ev->cond);

@@ -16,7 +16,7 @@ static void gpiomon_single_rising_edge_event(void)
 {
 	test_tool_run("gpiomon", "--rising-edge", "--num-events=1",
 		      test_chip_name(1), "4", (char *)NULL);
-	test_set_event(1, 4, TEST_EVENT_RISING, 200);
+	test_set_event(1, 4, 200);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -34,7 +34,7 @@ static void gpiomon_single_rising_edge_event_active_low(void)
 {
 	test_tool_run("gpiomon", "--rising-edge", "--num-events=1",
 		      "--active-low", test_chip_name(1), "4", (char *)NULL);
-	test_set_event(1, 4, TEST_EVENT_RISING, 200);
+	test_set_event(1, 4, 200);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -52,7 +52,7 @@ static void gpiomon_single_rising_edge_event_silent(void)
 {
 	test_tool_run("gpiomon", "--rising-edge", "--num-events=1",
 		      "--silent", test_chip_name(1), "4", (char *)NULL);
-	test_set_event(1, 4, TEST_EVENT_RISING, 200);
+	test_set_event(1, 4, 200);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -68,7 +68,7 @@ static void gpiomon_four_alternating_events(void)
 {
 	test_tool_run("gpiomon", "--num-events=4",
 		      test_chip_name(1), "4", (char *)NULL);
-	test_set_event(1, 4, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(1, 4, 100);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -88,7 +88,7 @@ static void gpiomon_falling_edge_events_sigint(void)
 {
 	test_tool_run("gpiomon", "--falling-edge",
 		      test_chip_name(0), "4", (char *)NULL);
-	test_set_event(0, 4, TEST_EVENT_FALLING, 100);
+	test_set_event(0, 4, 100);
 	usleep(200000);
 	test_tool_signal(SIGINT);
 	test_tool_wait();
@@ -108,7 +108,7 @@ static void gpiomon_both_events_sigterm(void)
 {
 	test_tool_run("gpiomon", "--falling-edge", "--rising-edge",
 		      test_chip_name(0), "4", (char *)NULL);
-	test_set_event(0, 4, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 4, 100);
 	usleep(300000);
 	test_tool_signal(SIGTERM);
 	test_tool_wait();
@@ -130,11 +130,11 @@ static void gpiomon_watch_multiple_lines(void)
 {
 	test_tool_run("gpiomon", "--format=%o", test_chip_name(0),
 		      "1", "2", "3", "4", "5", (char *)NULL);
-	test_set_event(0, 2, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 2, 100);
 	usleep(150000);
-	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 3, 100);
 	usleep(150000);
-	test_set_event(0, 4, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 4, 100);
 	usleep(150000);
 	test_tool_signal(SIGTERM);
 	test_tool_wait();
@@ -154,11 +154,11 @@ static void gpiomon_watch_multiple_lines_not_in_order(void)
 {
 	test_tool_run("gpiomon", "--format=%o", test_chip_name(0),
 		      "5", "2", "7", "1", "6", (char *)NULL);
-	test_set_event(0, 2, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 2, 100);
 	usleep(150000);
-	test_set_event(0, 1, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 1, 100);
 	usleep(150000);
-	test_set_event(0, 6, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 6, 100);
 	usleep(150000);
 	test_tool_signal(SIGTERM);
 	test_tool_wait();
@@ -242,7 +242,7 @@ static void gpiomon_custom_format_event_and_offset(void)
 {
 	test_tool_run("gpiomon", "--num-events=1", "--format=%e %o",
 		      test_chip_name(0), "3", (char *)NULL);
-	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_set_event(0, 3, 100);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -259,7 +259,7 @@ static void gpiomon_custom_format_event_and_offset_joined(void)
 {
 	test_tool_run("gpiomon", "--num-events=1", "--format=%e%o",
 		      test_chip_name(0), "3", (char *)NULL);
-	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_set_event(0, 3, 100);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -276,7 +276,7 @@ static void gpiomon_custom_format_timestamp(void)
 {
 	test_tool_run("gpiomon", "--num-events=1", "--format=%e %o %s.%n",
 		      test_chip_name(0), "3", (char *)NULL);
-	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_set_event(0, 3, 100);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -293,7 +293,7 @@ static void gpiomon_custom_format_double_percent_sign(void)
 {
 	test_tool_run("gpiomon", "--num-events=1", "--format=%%",
 		      test_chip_name(0), "3", (char *)NULL);
-	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_set_event(0, 3, 100);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -310,7 +310,7 @@ static void gpiomon_custom_format_double_percent_sign_and_spec(void)
 {
 	test_tool_run("gpiomon", "--num-events=1", "--format=%%e",
 		      test_chip_name(0), "3", (char *)NULL);
-	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_set_event(0, 3, 100);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -327,7 +327,7 @@ static void gpiomon_custom_format_single_percent_sign(void)
 {
 	test_tool_run("gpiomon", "--num-events=1", "--format=%",
 		      test_chip_name(0), "3", (char *)NULL);
-	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_set_event(0, 3, 100);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -344,7 +344,7 @@ static void gpiomon_custom_format_single_percent_sign_between_chars(void)
 {
 	test_tool_run("gpiomon", "--num-events=1", "--format=foo % bar",
 		      test_chip_name(0), "3", (char *)NULL);
-	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_set_event(0, 3, 100);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());
@@ -361,7 +361,7 @@ static void gpiomon_custom_format_unknown_specifier(void)
 {
 	test_tool_run("gpiomon", "--num-events=1", "--format=%x",
 		      test_chip_name(0), "3", (char *)NULL);
-	test_set_event(0, 3, TEST_EVENT_RISING, 100);
+	test_set_event(0, 3, 100);
 	test_tool_wait();
 
 	TEST_ASSERT(test_tool_exited());

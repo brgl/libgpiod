@@ -148,7 +148,7 @@ static void ctxless_event_monitor(void)
 	struct timespec ts = { 1, 0 };
 	int rv;
 
-	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 3, 100);
 
 	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
 					 GPIOD_CTXLESS_EVENT_BOTH_EDGES,
@@ -171,7 +171,7 @@ static void ctxless_event_monitor_single_event_type(void)
 	struct timespec ts = { 1, 0 };
 	int rv;
 
-	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 3, 100);
 
 	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
 					 GPIOD_CTXLESS_EVENT_FALLING_EDGE,
@@ -200,7 +200,7 @@ static void ctxless_event_monitor_multiple(void)
 	offsets[2] = 5;
 	offsets[3] = 6;
 
-	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 3, 100);
 
 	rv = gpiod_ctxless_event_monitor_multiple(
 					test_chip_name(0),
@@ -233,7 +233,7 @@ static void ctxless_event_monitor_indicate_error(void)
 	struct timespec ts = { 1, 0 };
 	int rv;
 
-	test_set_event(0, 3, TEST_EVENT_ALTERNATING, 100);
+	test_set_event(0, 3, 100);
 
 	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
 					 GPIOD_CTXLESS_EVENT_BOTH_EDGES,
