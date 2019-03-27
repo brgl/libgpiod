@@ -93,6 +93,7 @@ const char *test_chip_path(unsigned int index);
 const char *test_chip_name(unsigned int index);
 unsigned int test_chip_num(unsigned int index);
 
+/* Last argument is the delay between line value switches in microseconds. */
 void test_set_event(unsigned int chip_index,
 		    unsigned int line_offset, unsigned int freq);
 
