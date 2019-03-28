@@ -149,7 +149,7 @@ void line_bulk::release(void) const
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "error reading GPIO line values");
 
-	return ::std::move(values);
+	return values;
 }
 
 void line_bulk::set_values(const ::std::vector<int>& values) const
@@ -197,7 +197,7 @@ line_bulk line_bulk::event_wait(const ::std::chrono::nanoseconds& timeout) const
 			ret.append(line(event_bulk.lines[i], this->_m_bulk[i].get_chip()));
 	}
 
-	return ::std::move(ret);
+	return ret;
 }
 
 line_bulk::operator bool(void) const noexcept
@@ -245,12 +245,12 @@ bool line_bulk::iterator::operator!=(const iterator& rhs) const noexcept
 
 line_bulk::iterator line_bulk::begin(void) noexcept
 {
-	return ::std::move(line_bulk::iterator(this->_m_bulk.begin()));
+	return line_bulk::iterator(this->_m_bulk.begin());
 }
 
 line_bulk::iterator line_bulk::end(void) noexcept
 {
-	return ::std::move(line_bulk::iterator(this->_m_bulk.end()));
+	return line_bulk::iterator(this->_m_bulk.end());
 }
 
 void line_bulk::throw_if_empty(void) const

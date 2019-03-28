@@ -90,14 +90,14 @@ void chip::reset(void) noexcept
 {
 	this->throw_if_noref();
 
-	return ::std::move(::std::string(::gpiod_chip_name(this->_m_chip.get())));
+	return ::std::string(::gpiod_chip_name(this->_m_chip.get()));
 }
 
 ::std::string chip::label(void) const
 {
 	this->throw_if_noref();
 
-	return ::std::move(::std::string(::gpiod_chip_label(this->_m_chip.get())));
+	return ::std::string(::gpiod_chip_label(this->_m_chip.get()));
 }
 
 unsigned int chip::num_lines(void) const
@@ -119,7 +119,7 @@ line chip::get_line(unsigned int offset) const
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "error getting GPIO line from chip");
 
-	return ::std::move(line(line_handle, *this));
+	return line(line_handle, *this);
 }
 
 line chip::find_line(const ::std::string& name) const
@@ -131,7 +131,7 @@ line chip::find_line(const ::std::string& name) const
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "error looking up GPIO line by name");
 
-	return ::std::move(handle ? line(handle, *this) : line());
+	return handle ? line(handle, *this) : line();
 }
 
 line_bulk chip::get_lines(const ::std::vector<unsigned int>& offsets) const
@@ -141,7 +141,7 @@ line_bulk chip::get_lines(const ::std::vector<unsigned int>& offsets) const
 	for (auto& it: offsets)
 		lines.append(this->get_line(it));
 
-	return ::std::move(lines);
+	return lines;
 }
 
 line_bulk chip::get_all_lines(void) const
@@ -151,7 +151,7 @@ line_bulk chip::get_all_lines(void) const
 	for (unsigned int i = 0; i < this->num_lines(); i++)
 		lines.append(this->get_line(i));
 
-	return ::std::move(lines);
+	return lines;
 }
 
 line_bulk chip::find_lines(const ::std::vector<::std::string>& names) const
@@ -163,13 +163,13 @@ line_bulk chip::find_lines(const ::std::vector<::std::string>& names) const
 		line = this->find_line(it);
 		if (!line) {
 			lines.clear();
-			return ::std::move(lines);
+			return lines;
 		}
 
 		lines.append(line);
 	}
 
-	return ::std::move(lines);
+	return lines;
 }
 
 bool chip::operator==(const chip& rhs) const noexcept

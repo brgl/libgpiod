@@ -43,7 +43,7 @@ chip_iter make_chip_iter(void)
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "error creating GPIO chip iterator");
 
-	return ::std::move(chip_iter(iter));
+	return chip_iter(iter);
 }
 
 bool chip_iter::operator==(const chip_iter& rhs) const noexcept
@@ -62,7 +62,7 @@ chip_iter::chip_iter(::gpiod_chip_iter *iter)
 	::gpiod_chip* first = ::gpiod_chip_iter_next_noclose(this->_m_iter.get());
 
 	if (first != nullptr)
-		this->_m_current = ::std::move(chip(first));
+		this->_m_current = chip(first);
 }
 
 chip_iter& chip_iter::operator++(void)
@@ -91,7 +91,7 @@ chip_iter begin(chip_iter iter) noexcept
 
 chip_iter end(const chip_iter&) noexcept
 {
-	return ::std::move(chip_iter());
+	return chip_iter();
 }
 
 line_iter begin(line_iter iter) noexcept
@@ -101,7 +101,7 @@ line_iter begin(line_iter iter) noexcept
 
 line_iter end(const line_iter&) noexcept
 {
-	return ::std::move(line_iter());
+	return line_iter();
 }
 
 line_iter::line_iter(const chip& owner)
