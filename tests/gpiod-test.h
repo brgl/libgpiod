@@ -3,6 +3,7 @@
  * This file is part of libgpiod.
  *
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
+ * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
 /* Testing framework - functions and definitions used by test cases. */
@@ -92,6 +93,10 @@ enum {
 const char *test_chip_path(unsigned int index);
 const char *test_chip_name(unsigned int index);
 unsigned int test_chip_num(unsigned int index);
+
+int test_debugfs_get_value(unsigned int chip_index, unsigned int line_offset);
+void test_debugfs_set_value(unsigned int chip_index,
+			    unsigned int line_offset, int val);
 
 /* Last argument is the delay between line value switches in microseconds. */
 void test_set_event(unsigned int chip_index,

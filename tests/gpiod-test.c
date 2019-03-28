@@ -3,6 +3,7 @@
  * This file is part of libgpiod.
  *
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
+ * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
 #include <ctype.h>
@@ -1111,6 +1112,65 @@ unsigned int test_chip_num(unsigned int index)
 	check_chip_index(index);
 
 	return globals.test_ctx.chips[index]->number;
+}
+
+static int test_debugfs_open(unsigned int chip_index,
+			     unsigned int line_offset, int flags)
+{
+	char *path;
+	int fd;
+
+	path = xappend(NULL, "/sys/kernel/debug/gpio-mockup/gpiochip%u/%u",
+		       chip_index, line_offset);
+
+	fd = open(path, flags);
+	if (fd < 0)
+		die_perr("unable to open the debugfs line ('%s') attribute for reading",
+			 path);
+
+	free(path);
+	return fd;
+}
+
+int test_debugfs_get_value(unsigned int chip_index, unsigned int line_offset)
+{
+	ssize_t rd;
+	char buf;
+	int fd;
+
+	fd = test_debugfs_open(chip_index, line_offset, O_RDONLY);
+
+	rd = read(fd, &buf, 1);
+	if (rd < 0)
+		die_perr("error reading the debugfs line attribute");
+	if (rd != 1)
+		die("unable to read the line value from debugfs");
+	if (buf != '0' && buf != '1')
+		die("invalid line value read from debugfs");
+
+	close(fd);
+	return buf == '0' ? 0 : 1;
+}
+
+void test_debugfs_set_value(unsigned int chip_index,
+			    unsigned int line_offset, int val)
+{
+	char buf[2];
+	ssize_t wr;
+	int fd;
+
+	fd = test_debugfs_open(chip_index, line_offset, O_WRONLY);
+
+	buf[0] = val ? '1' : 0;
+	buf[1] = '\n';
+
+	wr = write(fd, &buf, sizeof(buf));
+	if (wr < 0)
+		die_perr("error writing to the debugfs line attribute");
+	if (wr != sizeof(buf))
+		die("unable to write the line value to debugfs");
+
+	close(fd);
 }
 
 void _test_register(struct _test_case *test)
