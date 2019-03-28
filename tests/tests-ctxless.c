@@ -3,6 +3,7 @@
  * This file is part of libgpiod.
  *
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
+ * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
 /* Test cases for the high-level API. */
@@ -11,7 +12,7 @@
 
 #include "gpiod-test.h"
 
-static void ctxless_set_get_value(void)
+static void ctxless_get_value(void)
 {
 	int rv;
 
@@ -19,68 +20,95 @@ static void ctxless_set_get_value(void)
 				     false, TEST_CONSUMER);
 	TEST_ASSERT_EQ(rv, 0);
 
-	rv = gpiod_ctxless_set_value(test_chip_name(0), 3, 1,
-				     false, TEST_CONSUMER, NULL, NULL);
-	TEST_ASSERT_RET_OK(rv);
+	test_debugfs_set_value(0, 3, 1);
 
 	rv = gpiod_ctxless_get_value(test_chip_name(0), 3,
 				     false, TEST_CONSUMER);
 	TEST_ASSERT_EQ(rv, 1);
 }
-TEST_DEFINE(ctxless_set_get_value,
-	    "ctxless set/get value - single line",
+TEST_DEFINE(ctxless_get_value,
+	    "ctxless get value - single line",
 	    0, { 8 });
+
+static void ctxless_set_value_check(void *data)
+{
+	int *val = data;
+
+	*val = test_debugfs_get_value(0, 3);
+}
+
+static void ctxless_set_value(void)
+{
+	int rv, val;
+
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 3), 0);
+
+	rv = gpiod_ctxless_set_value(test_chip_name(0), 3, 1,
+				     false, TEST_CONSUMER,
+				     ctxless_set_value_check, &val);
+	TEST_ASSERT_RET_OK(rv);
+
+	TEST_ASSERT_EQ(val, 1);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 3), 0);
+}
+TEST_DEFINE(ctxless_set_value,
+	    "ctxless set value - single line",
+	    0, { 8 });
+
+static const unsigned int ctxless_set_value_multiple_offsets[] = {
+	0, 1, 2, 3, 4, 5, 6, 12, 13, 15
+};
+
+static const int ctxless_set_value_multiple_values[] = {
+	1, 1, 1, 0, 0, 1, 0, 1, 0, 0
+};
+
+static void ctxless_set_value_multiple_check(void *data)
+{
+	bool *vals_correct = data;
+	unsigned int offset, i;
+	int val, exp;
+
+	for (i = 0;
+	     i < TEST_ARRAY_SIZE(ctxless_set_value_multiple_values);
+	     i++) {
+		offset = ctxless_set_value_multiple_offsets[i];
+		exp = ctxless_set_value_multiple_values[i];
+		val = test_debugfs_get_value(0, offset);
+
+		if (val != exp) {
+			*vals_correct = false;
+			break;
+		}
+	}
+}
 
 static void ctxless_set_get_value_multiple(void)
 {
-	unsigned int offsets[] = { 0, 1, 2, 3, 4, 5, 6, 12, 13, 15 };
+	bool vals_correct = true;
 	int values[10], rv;
+	unsigned int i;
 
-	rv = gpiod_ctxless_get_value_multiple(test_chip_name(0), offsets,
-					      values, 10, false, TEST_CONSUMER);
+	for (i = 0;
+	     i < TEST_ARRAY_SIZE(ctxless_set_value_multiple_offsets);
+	     i++) {
+		TEST_ASSERT_EQ(test_debugfs_get_value(0,
+				ctxless_set_value_multiple_offsets[i]), 0);
+	}
+
+	for (i = 0;
+	     i < TEST_ARRAY_SIZE(ctxless_set_value_multiple_values);
+	     i++) {
+		values[i] = ctxless_set_value_multiple_values[i];
+	}
+
+	rv = gpiod_ctxless_set_value_multiple(test_chip_name(0),
+					ctxless_set_value_multiple_offsets,
+					values, 10, false, TEST_CONSUMER,
+					ctxless_set_value_multiple_check,
+					&vals_correct);
 	TEST_ASSERT_RET_OK(rv);
-
-	TEST_ASSERT_EQ(values[0], 0);
-	TEST_ASSERT_EQ(values[1], 0);
-	TEST_ASSERT_EQ(values[2], 0);
-	TEST_ASSERT_EQ(values[3], 0);
-	TEST_ASSERT_EQ(values[4], 0);
-	TEST_ASSERT_EQ(values[5], 0);
-	TEST_ASSERT_EQ(values[6], 0);
-	TEST_ASSERT_EQ(values[7], 0);
-	TEST_ASSERT_EQ(values[8], 0);
-	TEST_ASSERT_EQ(values[9], 0);
-
-	values[0] = 1;
-	values[1] = 1;
-	values[2] = 1;
-	values[3] = 0;
-	values[4] = 0;
-	values[5] = 1;
-	values[6] = 0;
-	values[7] = 1;
-	values[8] = 0;
-	values[9] = 0;
-
-	rv = gpiod_ctxless_set_value_multiple(test_chip_name(0), offsets,
-					      values, 10, false, TEST_CONSUMER,
-					      NULL, NULL);
-	TEST_ASSERT_RET_OK(rv);
-
-	rv = gpiod_ctxless_get_value_multiple(test_chip_name(0), offsets,
-					      values, 10, false, TEST_CONSUMER);
-	TEST_ASSERT_RET_OK(rv);
-
-	TEST_ASSERT_EQ(values[0], 1);
-	TEST_ASSERT_EQ(values[1], 1);
-	TEST_ASSERT_EQ(values[2], 1);
-	TEST_ASSERT_EQ(values[3], 0);
-	TEST_ASSERT_EQ(values[4], 0);
-	TEST_ASSERT_EQ(values[5], 1);
-	TEST_ASSERT_EQ(values[6], 0);
-	TEST_ASSERT_EQ(values[7], 1);
-	TEST_ASSERT_EQ(values[8], 0);
-	TEST_ASSERT_EQ(values[9], 0);
+	TEST_ASSERT(vals_correct);
 }
 TEST_DEFINE(ctxless_set_get_value_multiple,
 	    "ctxless set/get value - multiple lines",
