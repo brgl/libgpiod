@@ -147,7 +147,7 @@ bool line::event_wait(const ::std::chrono::nanoseconds& timeout) const
 
 	line_bulk event_bulk = bulk.event_wait(timeout);
 
-	return ::std::move(event_bulk);
+	return !!event_bulk;
 }
 
 line_event line::event_read(void) const

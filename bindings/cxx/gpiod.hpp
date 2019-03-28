@@ -167,7 +167,7 @@ public:
 	 * @brief Check if this object holds a reference to a GPIO chip.
 	 * @return True if this object references a GPIO chip, false otherwise.
 	 */
-	GPIOD_API operator bool(void) const noexcept;
+	GPIOD_API explicit operator bool(void) const noexcept;
 
 	/**
 	 * @brief Check if this object doesn't hold a reference to a GPIO chip.
@@ -422,7 +422,7 @@ public:
 	 * @brief Check if this object holds a reference to any GPIO line.
 	 * @return True if this object references a GPIO line, false otherwise.
 	 */
-	GPIOD_API operator bool(void) const noexcept;
+	GPIOD_API explicit operator bool(void) const noexcept;
 
 	/**
 	 * @brief Check if this object doesn't reference any GPIO line.
@@ -630,7 +630,7 @@ public:
 	 * @brief Check if this object holds any lines.
 	 * @return True if this line_bulk holds at least one line, false otherwise.
 	 */
-	GPIOD_API operator bool(void) const noexcept;
+	GPIOD_API explicit operator bool(void) const noexcept;
 
 	/**
 	 * @brief Check if this object doesn't hold any lines.
