@@ -1,0 +1,105 @@
+TODO list for libgpiod
+
+==========
+
+This document contains the list of things I'd like to have in libgpiod before
+declaring it "mostly feature-complete". If anyone wants to help, this can
+serve as the starting point.
+
+==========
+
+* adjust the testing framework for linux v5.1
+
+This is the most urgent task and is already in progress.
+
+The debugfs interface has changed in linux v5.1 in a non-compatible way and
+consequently the libgpiod tests will now fail. The testing framework must be
+adjusted to work with the new interface. This means:
+
+- only generating events of alternating edges over debugfs
+- being aware of the new pull-down/up property of mockup lines
+- using new paths in debugfs
+- using debugfs to verify that line values are correctly set
+
+At the time of writing of this document the v5.1 release is at rc3. It would
+be best to have this task done by the time the kernel is released, so we can
+switch to the new interface right away.
+
+----------
+
+* implement dbus API for controlling GPIOs
+
+A common complaint from users about gpioset is that the state of a line is not
+retained once the program exits. While this is precisely the way linux
+character devices work, it's understandable that most users will want some
+centralized way of controlling GPIOs - similar to how sysfs worked.
+
+One of the possible solutions is a DBus API. We need a daemon exposing chips
+and lines as dbus objects and allowing to control and inspect lines using
+dbus methods and monitor them using signals.
+
+As of writing of this document some of the work has already been done and the
+skeleton of the dbus daemon written in C using GLib has already been developed
+and is partially functional.
+
+----------
+
+* factor out common parts of the testing framework into a separate library
+
+We now have the core library C API and two sets of language bindings. While
+the core library has proper testing using the custom framework, the tests for
+C++ and Python parts are really just a bunch of examples in a single file.
+
+The idea is to move the parts dealing with gpio-mockup loading (kmod), dummy
+device detection (udev) and kernel version checking out of gpiod-test and into
+a separate library called libgpiod-test that would then be reused by whatever
+mechanism each set of bindings uses for testing.
+
+This way the parts that are orthogonal to unit testing framework but necessary
+for working together with the GPIO testing kernel module would not be
+duplicated.
+
+One caveat: while C++ could use this library as is, there still would be a need
+for a Python wrapper around it for Python bindings.
+
+----------
+
+* porting the unit tests of core libgpiod library to using GLib
+
+Once libgpiod-test is ready, we can think about reusing existing testing
+frameworks instead of using a custom solution.
+
+For the core C library a good candidate would be the GLib unit testing library.
+GLib already provides a significant number of functionalities we currently use
+like starting sub-processes, reading files, assertions plus it also offers a
+range of output formatting and report generation options.
+
+----------
+
+* use a proper unit testing framework for C++ bindings and reuse libgpiod-test
+
+The actual framework for testing is TBD but libgpiod-test could be reused as is
+from C++ code so that we can use gpio-mockup just like for the core library.
+
+----------
+
+* use the python unit testing library for python bindings and reuse
+  libgpiod-test
+
+The best candidate for the testing framework is the standard unittest module
+available in cpython. We'd need however to wrap libgpiod-test in a C module
+for python just like we did for the bindings of the core C library.
+
+----------
+
+* implement a simple daemon for controlling GPIOs in C together with a client
+  program
+
+This is by far the lowest priority task. Similarly as with the dbus daemon:
+the goal is to provide a centralized agent controlling GPIOs with a simple
+interface consisting of a command line client communicating with the server
+over unix sockets.
+
+In this case however the goal is to have as few dependencies as possible. This
+is because for some small systems dbus is overkill. Since we won't be using any
+standardized protocol, it will take much more effort to implement it correctly.
