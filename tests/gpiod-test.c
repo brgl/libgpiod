@@ -379,8 +379,8 @@ static void *event_worker(void *data TEST_UNUSED)
 		rv = pthread_cond_timedwait(&ev->cond, &ev->lock, &ts);
 		if (rv == ETIMEDOUT) {
 			path = xappend(NULL,
-				       "/sys/kernel/debug/gpio-mockup-event/gpio-mockup-%c/%u",
-				       'A' + ev->chip_index, ev->line_offset);
+				       "/sys/kernel/debug/gpio-mockup/gpiochip%d/%u",
+				       ev->chip_index, ev->line_offset);
 
 			fd = open(path, O_RDWR);
 			free(path);
