@@ -3,6 +3,7 @@
  * This file is part of libgpiod.
  *
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
+ * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
 /* Test cases for GPIO line events. */
@@ -200,7 +201,7 @@ static void event_get_value_active_low(void)
 	TEST_ASSERT_EQ(ev.event_type, GPIOD_LINE_EVENT_FALLING_EDGE);
 
 	rv = gpiod_line_get_value(line);
-	TEST_ASSERT_EQ(rv, 0);
+	TEST_ASSERT_EQ(rv, 1);
 }
 TEST_DEFINE(event_get_value_active_low,
 	    "events - mixing events and gpiod_line_get_value() (active-low flag)",
