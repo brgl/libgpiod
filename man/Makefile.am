@@ -10,8 +10,8 @@ if WITH_MANPAGES
 
 dist_man1_MANS = gpiodetect.man gpioinfo.man gpioget.man gpioset.man gpiofind.man gpiomon.man
 
-%.man: $(top_srcdir)/tools/$(*F)
-	help2man $(top_srcdir)/tools/$(*F) --include=./template --output=./$@ --no-info
+%.man: $(top_builddir)/tools/$(*F)
+	help2man $(top_builddir)/tools/$(*F) --include=$(srcdir)/template --output=$(builddir)/$@ --no-info
 
 clean-local:
 	rm -f $(dist_man1_MANS)
