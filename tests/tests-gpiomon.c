@@ -3,6 +3,7 @@
  * This file is part of libgpiod.
  *
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
+ * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
 /* Test cases for the gpiomon program. */
@@ -89,7 +90,7 @@ static void gpiomon_falling_edge_events_sigint(void)
 	test_tool_run("gpiomon", "--falling-edge",
 		      test_chip_name(0), "4", (char *)NULL);
 	test_set_event(0, 4, 100);
-	usleep(200000);
+	usleep(300000);
 	test_tool_signal(SIGINT);
 	test_tool_wait();
 
