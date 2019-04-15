@@ -3,6 +3,7 @@
  * This file is part of libgpiod.
  *
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
+ * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
 /* GPIO line test cases. */
@@ -31,8 +32,8 @@ static void line_request_output(void)
 	rv = gpiod_line_request_output(line_1, TEST_CONSUMER, 1);
 	TEST_ASSERT_RET_OK(rv);
 
-	TEST_ASSERT_EQ(gpiod_line_get_value(line_0), 0);
-	TEST_ASSERT_EQ(gpiod_line_get_value(line_1), 1);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 2), 0);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 5), 1);
 }
 TEST_DEFINE(line_request_output,
 	    "gpiod_line_request_output() - good",
@@ -177,22 +178,15 @@ static void line_request_bulk_output(void)
 	rv = gpiod_line_request_bulk_output(&bulkB, TEST_CONSUMER, valB);
 	TEST_ASSERT_RET_OK(rv);
 
-	memset(valA, 0, sizeof(valA));
-	memset(valB, 0, sizeof(valB));
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 0), 1);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 1), 0);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 2), 0);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 3), 1);
 
-	rv = gpiod_line_get_value_bulk(&bulkA, valA);
-	TEST_ASSERT_RET_OK(rv);
-	TEST_ASSERT_EQ(valA[0], 1);
-	TEST_ASSERT_EQ(valA[1], 0);
-	TEST_ASSERT_EQ(valA[2], 0);
-	TEST_ASSERT_EQ(valA[3], 1);
-
-	rv = gpiod_line_get_value_bulk(&bulkB, valB);
-	TEST_ASSERT_RET_OK(rv);
-	TEST_ASSERT_EQ(valB[0], 0);
-	TEST_ASSERT_EQ(valB[1], 1);
-	TEST_ASSERT_EQ(valB[2], 0);
-	TEST_ASSERT_EQ(valB[3], 1);
+	TEST_ASSERT_EQ(test_debugfs_get_value(1, 0), 0);
+	TEST_ASSERT_EQ(test_debugfs_get_value(1, 1), 1);
+	TEST_ASSERT_EQ(test_debugfs_get_value(1, 2), 0);
+	TEST_ASSERT_EQ(test_debugfs_get_value(1, 3), 1);
 }
 TEST_DEFINE(line_request_bulk_output,
 	    "gpiod_line_request_bulk_output() - good",
@@ -270,12 +264,9 @@ static void line_request_null_default_vals_for_output(void)
 
 	memset(vals, 0, sizeof(vals));
 
-	rv = gpiod_line_get_value_bulk(&bulk, vals);
-	TEST_ASSERT_RET_OK(rv);
-
-	TEST_ASSERT_EQ(vals[0], 0);
-	TEST_ASSERT_EQ(vals[1], 0);
-	TEST_ASSERT_EQ(vals[2], 0);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 0), 0);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 1), 0);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 2), 0);
 }
 TEST_DEFINE(line_request_null_default_vals_for_output,
 	    "gpiod_line_request_bulk() - null default vals for output",
@@ -297,9 +288,9 @@ static void line_set_value(void)
 	TEST_ASSERT_RET_OK(rv);
 
 	TEST_ASSERT_RET_OK(gpiod_line_set_value(line, 1));
-	TEST_ASSERT_EQ(gpiod_line_get_value(line), 1);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 2), 1);
 	TEST_ASSERT_RET_OK(gpiod_line_set_value(line, 0));
-	TEST_ASSERT_EQ(gpiod_line_get_value(line), 0);
+	TEST_ASSERT_EQ(test_debugfs_get_value(0, 2), 0);
 }
 TEST_DEFINE(line_set_value,
 	    "gpiod_line_set_value() - good",
