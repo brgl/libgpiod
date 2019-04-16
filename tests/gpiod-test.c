@@ -31,8 +31,8 @@
 #define NORETURN	__attribute__((noreturn))
 #define MALLOC		__attribute__((malloc))
 
-static const unsigned int min_kern_major = 4;
-static const unsigned int min_kern_minor = 16;
+static const unsigned int min_kern_major = 5;
+static const unsigned int min_kern_minor = 1;
 static const unsigned int min_kern_release = 0;
 
 struct mockup_chip {
