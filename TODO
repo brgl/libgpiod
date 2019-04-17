@@ -8,25 +8,6 @@ serve as the starting point.
 
 ==========
 
-* adjust the testing framework for linux v5.1
-
-This is the most urgent task and is already in progress.
-
-The debugfs interface has changed in linux v5.1 in a non-compatible way and
-consequently the libgpiod tests will now fail. The testing framework must be
-adjusted to work with the new interface. This means:
-
-- only generating events of alternating edges over debugfs
-- being aware of the new pull-down/up property of mockup lines
-- using new paths in debugfs
-- using debugfs to verify that line values are correctly set
-
-At the time of writing of this document the v5.1 release is at rc3. It would
-be best to have this task done by the time the kernel is released, so we can
-switch to the new interface right away.
-
-----------
-
 * implement dbus API for controlling GPIOs
 
 A common complaint from users about gpioset is that the state of a line is not
