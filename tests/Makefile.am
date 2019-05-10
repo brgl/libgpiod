@@ -6,6 +6,8 @@
 # Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
 #
 
+SUBDIRS = mockup
+
 AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_builddir)/config.h
 AM_CFLAGS += -Wall -Wextra -g $(KMOD_CFLAGS) $(UDEV_CFLAGS)
 AM_LDFLAGS = -pthread

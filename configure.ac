@@ -126,6 +126,10 @@ then
 	PKG_CHECK_MODULES([UDEV], [libudev >= 215])
 fi
 
+# ABI version for libgpiomockup (we need this since it can be installed if we
+# enable install-tests).
+AC_SUBST(ABI_MOCKUP_VERSION, [0.0.0])
+
 AC_ARG_ENABLE([bindings-cxx],
 	[AC_HELP_STRING([--enable-bindings-cxx],
 		[enable C++ bindings [default=no]])],
@@ -180,6 +184,7 @@ AC_CONFIG_FILES([libgpiod.pc
 		 lib/Makefile
 		 tools/Makefile
 		 tests/Makefile
+		 tests/mockup/Makefile
 		 bindings/cxx/libgpiodcxx.pc
 		 bindings/Makefile
 		 bindings/cxx/Makefile
