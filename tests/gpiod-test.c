@@ -9,9 +9,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <gpio-mockup.h>
 #include <libgen.h>
-#include <libkmod.h>
-#include <libudev.h>
 #include <poll.h>
 #include <pthread.h>
 #include <regex.h>
@@ -34,12 +33,6 @@
 static const unsigned int min_kern_major = 5;
 static const unsigned int min_kern_minor = 1;
 static const unsigned int min_kern_release = 0;
-
-struct mockup_chip {
-	char *path;
-	char *name;
-	unsigned int number;
-};
 
 struct event_thread {
 	pthread_t thread_id;
@@ -65,7 +58,6 @@ struct gpiotool_proc {
 };
 
 struct test_context {
-	struct mockup_chip **chips;
 	size_t num_chips;
 	bool test_failed;
 	char *failed_msg;
@@ -80,8 +72,7 @@ static struct {
 	struct _test_case *test_list_tail;
 	unsigned int num_tests;
 	unsigned int tests_failed;
-	struct kmod_ctx *module_ctx;
-	struct kmod_module *module;
+	struct gpio_mockup *mockup;
 	struct test_context test_ctx;
 	pid_t main_pid;
 	int pipesize;
@@ -311,18 +302,6 @@ static void check_chip_index(unsigned int index)
 		die("invalid chip number requested from test code");
 }
 
-static bool mockup_loaded(void)
-{
-	int state;
-
-	if (!globals.module_ctx || !globals.module)
-		return false;
-
-	state = kmod_module_get_initstate(globals.module);
-
-	return state == KMOD_MODULE_LIVE;
-}
-
 static void cleanup_func(void)
 {
 	/* Don't cleanup from child processes. */
@@ -333,14 +312,7 @@ static void cleanup_func(void)
 
 	free(globals.pipebuf);
 
-	if (mockup_loaded())
-		kmod_module_remove_module(globals.module, 0);
-
-	if (globals.module)
-		kmod_module_unref(globals.module);
-
-	if (globals.module_ctx)
-		kmod_unref(globals.module_ctx);
+	gpio_mockup_unref(globals.mockup);
 }
 
 static void event_lock(void)
@@ -358,10 +330,7 @@ static void *event_worker(void *data TEST_UNUSED)
 	struct event_thread *ev = &globals.test_ctx.event;
 	struct timeval tv_now, tv_add, tv_res;
 	struct timespec ts;
-	int rv, i, fd;
-	char *path;
-	ssize_t rd;
-	char buf;
+	int rv, i;
 
 	for (i = 0;; i++) {
 		event_lock();
@@ -379,23 +348,10 @@ static void *event_worker(void *data TEST_UNUSED)
 
 		rv = pthread_cond_timedwait(&ev->cond, &ev->lock, &ts);
 		if (rv == ETIMEDOUT) {
-			path = xappend(NULL,
-				       "/sys/kernel/debug/gpio-mockup/gpiochip%d/%u",
-				       ev->chip_index, ev->line_offset);
-
-			fd = open(path, O_RDWR);
-			free(path);
-			if (fd < 0)
-				die_perr("error opening gpio event file");
-
-			buf = i % 2 == 0 ? '1' : '0';
-
-			rd = write(fd, &buf, 1);
-			close(fd);
-			if (rd < 0)
-				die_perr("error writing to gpio event file");
-			else if (rd != 1)
-				die("invalid write size to gpio event file");
+			rv = gpio_mockup_set_pull(globals.mockup, ev->chip_index,
+						  ev->line_offset, i % 2);
+			if (rv)
+				die_perr("error generating line event");
 		} else if (rv != 0) {
 			die("error waiting for conditional variable: %s",
 			    strerror(rv));
@@ -719,41 +675,6 @@ bad_version:
 	    major, minor, release);
 }
 
-static void check_gpio_mockup(void)
-{
-	const char *modpath;
-	int rv;
-
-	msg("checking gpio-mockup availability");
-
-	globals.module_ctx = kmod_new(NULL, NULL);
-	if (!globals.module_ctx)
-		die_perr("error creating kernel module context");
-
-	rv = kmod_module_new_from_name(globals.module_ctx,
-				       "gpio-mockup", &globals.module);
-	if (rv)
-		die_perr("error allocating module info");
-
-	/* First see if we can find the module. */
-	modpath = kmod_module_get_path(globals.module);
-	if (!modpath)
-		die("the gpio-mockup module does not exist in the system or is built into the kernel");
-
-	/* Then see if we can freely load and unload it. */
-	rv = kmod_module_probe_insert_module(globals.module, 0,
-					     "gpio_mockup_ranges=-1,4",
-					     NULL, NULL, NULL);
-	if (rv)
-		die_perr("unable to load gpio-mockup");
-
-	rv = kmod_module_remove_module(globals.module, 0);
-	if (rv)
-		die_perr("unable to remove gpio-mockup");
-
-	msg("gpio-mockup ok");
-}
-
 static void check_tool_path(void)
 {
 	/*
@@ -811,139 +732,38 @@ out:
 	}
 }
 
-static void load_module(struct _test_chip_descr *descr)
-{
-	unsigned int i;
-	char *modarg;
-	int rv;
-
-	if (descr->num_chips == 0)
-		return;
-
-	modarg = xappend(NULL, "gpio_mockup_ranges=");
-	for (i = 0; i < descr->num_chips; i++)
-		modarg = xappend(modarg, "-1,%u,", descr->num_lines[i]);
-	modarg[strlen(modarg) - 1] = '\0'; /* Remove the last comma. */
-
-	if (descr->flags & TEST_FLAG_NAMED_LINES)
-		modarg = xappend(modarg, " gpio_mockup_named_lines");
-
-	rv = kmod_module_probe_insert_module(globals.module, 0,
-					     modarg, NULL, NULL, NULL);
-	if (rv)
-		die_perr("unable to load gpio-mockup");
-
-	free(modarg);
-}
-
-static int chipcmp(const void *c1, const void *c2)
-{
-	const struct mockup_chip *chip1 = *(const struct mockup_chip **)c1;
-	const struct mockup_chip *chip2 = *(const struct mockup_chip **)c2;
-
-	return chip1->number > chip2->number;
-}
-
-static bool devpath_is_mockup(const char *devpath)
-{
-	static const char mockup_devpath[] = "/devices/platform/gpio-mockup";
-
-	return !strncmp(devpath, mockup_devpath, sizeof(mockup_devpath) - 1);
-}
-
 static void prepare_test(struct _test_chip_descr *descr)
 {
-	const char *devpath, *devnode, *sysname, *action;
-	struct udev_monitor *monitor;
-	unsigned int detected = 0;
+	unsigned int *chip_sizes, i;
 	struct test_context *ctx;
-	struct mockup_chip *chip;
-	struct udev_device *dev;
-	struct udev *udev_ctx;
-	struct pollfd pfd;
-	int rv;
+	int rv, flags = 0;
 
 	ctx = &globals.test_ctx;
 	memset(ctx, 0, sizeof(*ctx));
 	ctx->num_chips = descr->num_chips;
-	ctx->chips = xcalloc(ctx->num_chips, sizeof(*ctx->chips));
 	pthread_mutex_init(&ctx->event.lock, NULL);
 	pthread_cond_init(&ctx->event.cond, NULL);
 
-	/*
-	 * We'll setup the udev monitor, insert the module and wait for the
-	 * mockup gpiochips to appear.
-	 */
+	/* Don't try to load the module if we don't need any chips. */
+	if (!ctx->num_chips)
+		return;
 
-	udev_ctx = udev_new();
-	if (!udev_ctx)
-		die_perr("error creating udev context");
+	chip_sizes = calloc(ctx->num_chips, sizeof(unsigned int));
+	if (!chip_sizes)
+		die("out of memory");
 
-	monitor = udev_monitor_new_from_netlink(udev_ctx, "udev");
-	if (!monitor)
-		die_perr("error creating udev monitor");
+	for (i = 0; i < ctx->num_chips; i++)
+		chip_sizes[i] = descr->num_lines[i];
 
-	rv = udev_monitor_filter_add_match_subsystem_devtype(monitor,
-							     "gpio", NULL);
-	if (rv < 0)
-		die_perr("error adding udev filters");
+	if (descr->flags & TEST_FLAG_NAMED_LINES)
+		flags |= GPIO_MOCKUP_FLAG_NAMED_LINES;
 
-	rv = udev_monitor_enable_receiving(monitor);
-	if (rv < 0)
-		die_perr("error enabling udev event receiving");
+	rv = gpio_mockup_probe(globals.mockup,
+			       ctx->num_chips, chip_sizes, flags);
+	if (rv)
+		die_perr("unable to load gpio-mockup kernel module");
 
-	load_module(descr);
-
-	pfd.fd = udev_monitor_get_fd(monitor);
-	pfd.events = POLLIN | POLLPRI;
-
-	while (ctx->num_chips > detected) {
-		rv = poll(&pfd, 1, 5000);
-		if (rv < 0)
-			die_perr("error polling for uevents");
-		else if (rv == 0)
-			die("timeout waiting for gpiochips");
-
-		dev = udev_monitor_receive_device(monitor);
-		if (!dev)
-			die_perr("error reading device info");
-
-		devpath = udev_device_get_devpath(dev);
-		devnode = udev_device_get_devnode(dev);
-		sysname = udev_device_get_sysname(dev);
-		action = udev_device_get_action(dev);
-
-		if (!devpath || !devnode || !sysname ||
-		    !devpath_is_mockup(devpath) ||
-		    strcmp(action, "add") != 0) {
-			udev_device_unref(dev);
-			continue;
-		}
-
-		chip = xzalloc(sizeof(*chip));
-		chip->name = xstrdup(sysname);
-		chip->path = xstrdup(devnode);
-		rv = sscanf(sysname, "gpiochip%u", &chip->number);
-		if (rv != 1)
-			die("unable to determine chip number");
-
-		ctx->chips[detected++] = chip;
-		udev_device_unref(dev);
-	}
-
-	udev_monitor_unref(monitor);
-	udev_unref(udev_ctx);
-
-	/*
-	 * We can't assume that the order in which the mockup gpiochip
-	 * devices are created will be deterministic, yet we want the
-	 * index passed to the test_chip_*() functions to correspond with the
-	 * order in which the chips were defined in the TEST_DEFINE()
-	 * macro.
-	 *
-	 * Once all gpiochips are there, sort them by chip number.
-	 */
-	qsort(ctx->chips, ctx->num_chips, sizeof(*ctx->chips), chipcmp);
+	free(chip_sizes);
 }
 
 static void run_test(struct _test_case *test)
@@ -977,31 +797,32 @@ static void run_test(struct _test_case *test)
 static void teardown_test(void)
 {
 	struct gpiotool_proc *tool_proc;
-	struct mockup_chip *chip;
+	struct test_context *ctx;
 	struct event_thread *ev;
-	unsigned int i;
 	int rv;
 
+	ctx = &globals.test_ctx;
+
 	event_lock();
-	ev = &globals.test_ctx.event;
+	ev = &ctx->event;
 
 	if (ev->running) {
 		ev->should_stop = true;
 		pthread_cond_broadcast(&ev->cond);
 		event_unlock();
 
-		rv = pthread_join(globals.test_ctx.event.thread_id, NULL);
+		rv = pthread_join(ctx->event.thread_id, NULL);
 		if (rv != 0)
 			die("error joining event thread: %s",
 			    strerror(rv));
 
-		pthread_mutex_destroy(&globals.test_ctx.event.lock);
-		pthread_cond_destroy(&globals.test_ctx.event.cond);
+		pthread_mutex_destroy(&ctx->event.lock);
+		pthread_cond_destroy(&ctx->event.cond);
 	} else {
 		event_unlock();
 	}
 
-	tool_proc = &globals.test_ctx.tool_proc;
+	tool_proc = &ctx->tool_proc;
 	if (tool_proc->running) {
 		test_tool_signal(SIGKILL);
 		test_tool_wait();
@@ -1010,24 +831,15 @@ static void teardown_test(void)
 	if (tool_proc->pid)
 		gpiotool_proc_cleanup();
 
-	for (i = 0; i < globals.test_ctx.num_chips; i++) {
-		chip = globals.test_ctx.chips[i];
+	if (ctx->custom_str)
+		free(ctx->custom_str);
 
-		free(chip->path);
-		free(chip->name);
-		free(chip);
-	}
+	if (!ctx->num_chips)
+		return;
 
-	free(globals.test_ctx.chips);
-
-	if (globals.test_ctx.custom_str)
-		free(globals.test_ctx.custom_str);
-
-	if (mockup_loaded()) {
-		rv = kmod_module_remove_module(globals.module, 0);
-		if (rv)
-			die_perr("unable to remove gpio-mockup");
-	}
+	rv = gpio_mockup_remove(globals.mockup);
+	if (rv)
+		die_perr("unable to remove gpio-mockup kernel module");
 }
 
 int main(int argc TEST_UNUSED, char **argv TEST_UNUSED)
@@ -1043,8 +855,11 @@ int main(int argc TEST_UNUSED, char **argv TEST_UNUSED)
 	msg("%u tests registered", globals.num_tests);
 
 	check_kernel();
-	check_gpio_mockup();
 	check_tool_path();
+
+	globals.mockup = gpio_mockup_new();
+	if (!globals.mockup)
+		die_perr("error checking the availability of gpio-mockup");
 
 	msg("running tests");
 
@@ -1097,82 +912,49 @@ const char *test_chip_path(unsigned int index)
 {
 	check_chip_index(index);
 
-	return globals.test_ctx.chips[index]->path;
+	return gpio_mockup_chip_path(globals.mockup, index);
 }
 
 const char *test_chip_name(unsigned int index)
 {
 	check_chip_index(index);
 
-	return globals.test_ctx.chips[index]->name;
+	return gpio_mockup_chip_name(globals.mockup, index);
 }
 
 unsigned int test_chip_num(unsigned int index)
 {
+	int chip_num;
+
 	check_chip_index(index);
 
-	return globals.test_ctx.chips[index]->number;
-}
+	chip_num = gpio_mockup_chip_num(globals.mockup, index);
+	if (chip_num < 0)
+		die_perr("error getting the chip number");
 
-static int test_debugfs_open(unsigned int chip_index,
-			     unsigned int line_offset, int flags)
-{
-	char *path;
-	int fd;
-
-	path = xappend(NULL, "/sys/kernel/debug/gpio-mockup/gpiochip%u/%u",
-		       chip_index, line_offset);
-
-	fd = open(path, flags);
-	if (fd < 0)
-		die_perr("unable to open the debugfs line ('%s') attribute for reading",
-			 path);
-
-	free(path);
-	return fd;
+	return chip_num;
 }
 
 int test_debugfs_get_value(unsigned int chip_index, unsigned int line_offset)
 {
-	ssize_t rd;
-	char buf;
-	int fd;
+	int rv;
 
-	fd = test_debugfs_open(globals.test_ctx.chips[chip_index]->number,
-			       line_offset, O_RDONLY);
-
-	rd = read(fd, &buf, 1);
-	if (rd < 0)
+	rv = gpio_mockup_get_value(globals.mockup, chip_index, line_offset);
+	if (rv < 0)
 		die_perr("error reading the debugfs line attribute");
-	if (rd != 1)
-		die("unable to read the line value from debugfs");
-	if (buf != '0' && buf != '1')
-		die("invalid line value read from debugfs");
 
-	close(fd);
-	return buf == '0' ? 0 : 1;
+	return rv;
 }
 
 void test_debugfs_set_value(unsigned int chip_index,
 			    unsigned int line_offset, int val)
 {
-	char buf[2];
-	ssize_t wr;
-	int fd;
+	int rv;
 
-	fd = test_debugfs_open(globals.test_ctx.chips[chip_index]->number,
-			       line_offset, O_WRONLY);
-
-	buf[0] = val ? '1' : 0;
-	buf[1] = '\n';
-
-	wr = write(fd, &buf, sizeof(buf));
-	if (wr < 0)
+	rv = gpio_mockup_set_pull(globals.mockup, chip_index,
+				  line_offset, val);
+	if (rv)
 		die_perr("error writing to the debugfs line attribute");
-	if (wr != sizeof(buf))
-		die("unable to write the line value to debugfs");
-
-	close(fd);
 }
 
 void _test_register(struct _test_case *test)
@@ -1223,7 +1005,7 @@ void test_set_event(unsigned int chip_index,
 		ev->running = true;
 	}
 
-	ev->chip_index = globals.test_ctx.chips[chip_index]->number;
+	ev->chip_index = chip_index;
 	ev->line_offset = line_offset;
 	ev->freq = freq;
 

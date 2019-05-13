@@ -8,10 +8,12 @@
 
 SUBDIRS = mockup
 
-AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_builddir)/config.h
-AM_CFLAGS += -Wall -Wextra -g $(KMOD_CFLAGS) $(UDEV_CFLAGS)
+AM_CFLAGS = -I$(top_srcdir)/include/ -I$(top_srcdir)/tests/mockup/
+AM_CFLAGS += -include $(top_builddir)/config.h
+AM_CFLAGS += -Wall -Wextra -g
 AM_LDFLAGS = -pthread
-LDADD = $(top_builddir)/lib/libgpiod.la $(KMOD_LIBS) $(UDEV_LIBS)
+LDADD = $(top_builddir)/lib/libgpiod.la
+LDADD += $(top_builddir)/tests/mockup/libgpiomockup.la
 
 bin_PROGRAMS = gpiod-test
 
@@ -35,7 +37,7 @@ gpiod_test_SOURCES +=	tests-gpiodetect.c \
 
 endif
 
-all-local:
+all-local: gpiod-test
 	@echo " ********************************************************"
 	@echo " * Tests have been built as tests/gpio-test.            *"
 	@echo " *                                                      *"
