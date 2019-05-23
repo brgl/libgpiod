@@ -11,11 +11,7 @@ AM_CFLAGS += -Wall -Wextra -g $(KMOD_CFLAGS) $(UDEV_CFLAGS)
 AM_LDFLAGS = -pthread
 LDADD = $(top_builddir)/lib/libgpiod.la $(KMOD_LIBS) $(UDEV_LIBS)
 
-if WITH_INSTALL_TESTS
 bin_PROGRAMS = gpiod-test
-else
-check_PROGRAMS = gpiod-test
-endif
 
 gpiod_test_SOURCES =	gpiod-test.c \
 			gpiod-test.h \
@@ -37,7 +33,7 @@ gpiod_test_SOURCES +=	tests-gpiodetect.c \
 
 endif
 
-check: check-am
+all-local:
 	@echo " ********************************************************"
 	@echo " * Tests have been built as tests/gpio-test.            *"
 	@echo " *                                                      *"
