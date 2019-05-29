@@ -1138,7 +1138,8 @@ int test_debugfs_get_value(unsigned int chip_index, unsigned int line_offset)
 	char buf;
 	int fd;
 
-	fd = test_debugfs_open(chip_index, line_offset, O_RDONLY);
+	fd = test_debugfs_open(globals.test_ctx.chips[chip_index]->number,
+			       line_offset, O_RDONLY);
 
 	rd = read(fd, &buf, 1);
 	if (rd < 0)
@@ -1159,7 +1160,8 @@ void test_debugfs_set_value(unsigned int chip_index,
 	ssize_t wr;
 	int fd;
 
-	fd = test_debugfs_open(chip_index, line_offset, O_WRONLY);
+	fd = test_debugfs_open(globals.test_ctx.chips[chip_index]->number,
+			       line_offset, O_WRONLY);
 
 	buf[0] = val ? '1' : 0;
 	buf[1] = '\n';
@@ -1221,7 +1223,7 @@ void test_set_event(unsigned int chip_index,
 		ev->running = true;
 	}
 
-	ev->chip_index = chip_index;
+	ev->chip_index = globals.test_ctx.chips[chip_index]->number;
 	ev->line_offset = line_offset;
 	ev->freq = freq;
 
