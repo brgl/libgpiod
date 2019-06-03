@@ -131,12 +131,13 @@ static void gpiomon_watch_multiple_lines(void)
 {
 	test_tool_run("gpiomon", "--format=%o", test_chip_name(0),
 		      "1", "2", "3", "4", "5", (char *)NULL);
-	test_set_event(0, 2, 100);
-	usleep(150000);
-	test_set_event(0, 3, 100);
-	usleep(150000);
-	test_set_event(0, 4, 100);
-	usleep(150000);
+	usleep(100000);
+	test_trigger_event(0, 2);
+	usleep(100000);
+	test_trigger_event(0, 3);
+	usleep(100000);
+	test_trigger_event(0, 4);
+	usleep(100000);
 	test_tool_signal(SIGTERM);
 	test_tool_wait();
 
@@ -155,12 +156,13 @@ static void gpiomon_watch_multiple_lines_not_in_order(void)
 {
 	test_tool_run("gpiomon", "--format=%o", test_chip_name(0),
 		      "5", "2", "7", "1", "6", (char *)NULL);
-	test_set_event(0, 2, 100);
-	usleep(150000);
-	test_set_event(0, 1, 100);
-	usleep(150000);
-	test_set_event(0, 6, 100);
-	usleep(150000);
+	usleep(100000);
+	test_trigger_event(0, 2);
+	usleep(100000);
+	test_trigger_event(0, 1);
+	usleep(100000);
+	test_trigger_event(0, 6);
+	usleep(100000);
 	test_tool_signal(SIGTERM);
 	test_tool_wait();
 
