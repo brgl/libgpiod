@@ -90,7 +90,7 @@ static void gpiomon_falling_edge_events_sigint(void)
 	test_tool_run("gpiomon", "--falling-edge",
 		      test_chip_name(0), "4", (char *)NULL);
 	test_set_event(0, 4, 100);
-	usleep(300000);
+	usleep(400000);
 	test_tool_signal(SIGINT);
 	test_tool_wait();
 
@@ -110,7 +110,7 @@ static void gpiomon_both_events_sigterm(void)
 	test_tool_run("gpiomon", "--falling-edge", "--rising-edge",
 		      test_chip_name(0), "4", (char *)NULL);
 	test_set_event(0, 4, 100);
-	usleep(300000);
+	usleep(400000);
 	test_tool_signal(SIGTERM);
 	test_tool_wait();
 
