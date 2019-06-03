@@ -102,6 +102,8 @@ void test_debugfs_set_value(unsigned int chip_index,
 void test_set_event(unsigned int chip_index,
 		    unsigned int line_offset, unsigned int freq);
 
+void test_trigger_event(unsigned int chip_index, unsigned int line_offset);
+
 void test_tool_run(char *tool, ...);
 void test_tool_wait(void);
 const char *test_tool_stdout(void);

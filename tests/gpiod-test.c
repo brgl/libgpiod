@@ -1014,6 +1014,20 @@ void test_set_event(unsigned int chip_index,
 	event_unlock();
 }
 
+void test_trigger_event(unsigned int chip_index, unsigned int line_offset)
+{
+	int val, rv;
+
+	val = gpio_mockup_get_value(globals.mockup, chip_index, line_offset);
+	if (val < 0)
+		die_perr("error reading GPIO value from debugfs");
+
+	rv = gpio_mockup_set_pull(globals.mockup, chip_index,
+				  line_offset, val ? 0 : 1);
+	if (rv)
+		die_perr("error setting GPIO line pull over debugfs");
+}
+
 bool test_regex_match(const char *str, const char *pattern)
 {
 	char errbuf[128];
