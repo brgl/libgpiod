@@ -1,3 +1,23 @@
+libgpiod v1.4
+=============
+
+New features:
+- updated the testing framework to work with linux v5.1 in which the debugfs
+  interface of the GPIO testing module changed in a backward incompatible way
+- factored out the code controlling the GPIO testing module into a separate
+  shared library that may be reused by future testing executables for different
+  language bindings
+- removed the --enable-install-tests build option and the make check target as
+  they were redundant, subsequently tests are now installed as a normal program
+  whenever they're enabled with --enable-tests
+
+Improvements:
+- removed unnecessary std::move calls from C++ bindings
+- added the explicit keyword to bool() operators in C++ bindings
+
+Bug fixes:
+- fix out of source build of man pages
+
 libgpiod v1.3
 =============
 
