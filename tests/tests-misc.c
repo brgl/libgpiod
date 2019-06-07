@@ -2,23 +2,28 @@
 /*
  * This file is part of libgpiod.
  *
- * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
+ * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
-/* Misc test cases. */
-
-#include <errno.h>
+#include <string.h>
 
 #include "gpiod-test.h"
 
-static void version_string(void)
+#define GPIOD_TEST_GROUP "misc"
+
+GPIOD_TEST_CASE(version_string, 0, { 1 })
 {
-	/* Check that gpiod_version_string() returns an actual string. */
-	TEST_ASSERT_NOT_NULL(gpiod_version_string());
-	TEST_ASSERT(strlen(gpiod_version_string()) > 0);
-	TEST_ASSERT_REGEX_MATCH(gpiod_version_string(),
-				"^[0-9]+\\.[0-9]+[0-9a-zA-Z\\.]*$");
+	g_autoptr(GRegex) regex = NULL;
+	GError *err = NULL;
+	const gchar *ver;
+
+	ver = gpiod_version_string();
+	g_assert_nonnull(ver);
+	gpiod_test_return_if_failed();
+	g_assert_cmpuint(strlen(ver), >, 0);
+
+	regex = g_regex_new("^[0-9]+\\.[0-9]+[0-9a-zA-Z\\.]*$", 0, 0, &err);
+	g_assert_null(err);
+	gpiod_test_return_if_failed();
+	g_assert_true(g_regex_match(regex, ver, 0, NULL));
 }
-TEST_DEFINE(version_string,
-	    "gpiod_version_string()",
-	    0, { });

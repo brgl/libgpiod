@@ -122,12 +122,24 @@ AC_DEFUN([FUNC_NOT_FOUND_TESTS],
 
 if test "x$with_tests" = xtrue
 then
-	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
-	AC_CHECK_FUNC([regexec], [], [FUNC_NOT_FOUND_TESTS([regexec])])
 	AC_CHECK_HEADERS([linux/version.h], [], [HEADER_NOT_FOUND_TESTS([linux/version.h])])
 
+	# For libgpiomockup
+	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
 	PKG_CHECK_MODULES([KMOD], [libkmod >= 18])
 	PKG_CHECK_MODULES([UDEV], [libudev >= 215])
+
+	# For core library tests
+	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.50])
+
+	if test "x$with_tools" = xtrue
+	then
+		AC_CHECK_PROG([has_bats], [bats], [true], [false])
+		if test "x$has_bats" = "xflase"
+		then
+			AC_MSG_NOTICE(["bats not found - gpio-tools tests cannot be run])
+		fi
+	fi
 fi
 
 # ABI version for libgpiomockup (we need this since it can be installed if we

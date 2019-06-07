@@ -2,97 +2,86 @@
 /*
  * This file is part of libgpiod.
  *
- * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
+ * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
-/* Iterator test cases. */
+#include <string.h>
 
 #include "gpiod-test.h"
 
-static void chip_iter(void)
-{
-	TEST_CLEANUP(test_free_chip_iter) struct gpiod_chip_iter *iter = NULL;
-	struct gpiod_chip *chip;
-	bool A, B, C;
+#define GPIOD_TEST_GROUP "iter"
 
-	A = B = C = false;
+GPIOD_TEST_CASE(chip_iter, 0, { 8, 8, 8 })
+{
+	g_autoptr(gpiod_chip_iter_struct) iter = NULL;
+	struct gpiod_chip *chip;
+	gboolean A, B, C;
+
+	A = B = C = FALSE;
 
 	iter = gpiod_chip_iter_new();
-	TEST_ASSERT_NOT_NULL(iter);
+	g_assert_nonnull(iter);
+	gpiod_test_return_if_failed();
 
 	gpiod_foreach_chip(iter, chip) {
 		if (strcmp(gpiod_chip_label(chip), "gpio-mockup-A") == 0)
-			A = true;
+			A = TRUE;
 		else if (strcmp(gpiod_chip_label(chip), "gpio-mockup-B") == 0)
-			B = true;
+			B = TRUE;
 		else if (strcmp(gpiod_chip_label(chip), "gpio-mockup-C") == 0)
-			C = true;
+			C = TRUE;
 	}
 
-	TEST_ASSERT(A);
-	TEST_ASSERT(B);
-	TEST_ASSERT(C);
+	g_assert_true(A);
+	g_assert_true(B);
+	g_assert_true(C);
 }
-TEST_DEFINE(chip_iter,
-	    "gpiod_chip_iter - simple loop",
-	    0, { 8, 8, 8 });
 
-static void chip_iter_noclose(void)
+GPIOD_TEST_CASE(chip_iter_no_close, 0, { 8, 8, 8 })
 {
-	TEST_CLEANUP(test_free_chip_iter_noclose)
-			struct gpiod_chip_iter *iter = NULL;
-	TEST_CLEANUP_CHIP struct gpiod_chip *chipA = NULL;
-	TEST_CLEANUP_CHIP struct gpiod_chip *chipB = NULL;
-	TEST_CLEANUP_CHIP struct gpiod_chip *chipC = NULL;
+	g_autoptr(gpiod_chip_iter_struct) iter = NULL;
+	g_autoptr(gpiod_chip_struct) chipA = NULL;
+	g_autoptr(gpiod_chip_struct) chipB = NULL;
+	g_autoptr(gpiod_chip_struct) chipC = NULL;
 	struct gpiod_chip *chip;
-	bool A, B, C;
-
-	A = B = C = false;
 
 	iter = gpiod_chip_iter_new();
-	TEST_ASSERT_NOT_NULL(iter);
+	g_assert_nonnull(iter);
+	gpiod_test_return_if_failed();
 
 	gpiod_foreach_chip_noclose(iter, chip) {
-		if (strcmp(gpiod_chip_label(chip), "gpio-mockup-A") == 0) {
-			A = true;
+		if (strcmp(gpiod_chip_label(chip), "gpio-mockup-A") == 0)
 			chipA = chip;
-		} else if (strcmp(gpiod_chip_label(chip),
-				  "gpio-mockup-B") == 0) {
-			B = true;
+		else if (strcmp(gpiod_chip_label(chip), "gpio-mockup-B") == 0)
 			chipB = chip;
-		} else if (strcmp(gpiod_chip_label(chip),
-				  "gpio-mockup-C") == 0) {
-			C = true;
+		else if (strcmp(gpiod_chip_label(chip), "gpio-mockup-C") == 0)
 			chipC = chip;
-		} else {
+		else
 			gpiod_chip_close(chip);
-		}
 	}
 
-	TEST_ASSERT(A);
-	TEST_ASSERT(B);
-	TEST_ASSERT(C);
+	g_assert_nonnull(chipA);
+	g_assert_nonnull(chipB);
+	g_assert_nonnull(chipC);
 
 	gpiod_chip_iter_free_noclose(iter);
 	iter = NULL;
 
 	/* See if the chips are still open and usable. */
-	TEST_ASSERT_STR_EQ(gpiod_chip_label(chipA), "gpio-mockup-A");
-	TEST_ASSERT_STR_EQ(gpiod_chip_label(chipB), "gpio-mockup-B");
-	TEST_ASSERT_STR_EQ(gpiod_chip_label(chipC), "gpio-mockup-C");
+	g_assert_cmpstr(gpiod_chip_label(chipA), ==, "gpio-mockup-A");
+	g_assert_cmpstr(gpiod_chip_label(chipB), ==, "gpio-mockup-B");
+	g_assert_cmpstr(gpiod_chip_label(chipC), ==, "gpio-mockup-C");
 }
-TEST_DEFINE(chip_iter_noclose,
-	    "gpiod_chip_iter - simple loop, noclose variant",
-	    0, { 8, 8, 8 });
 
-static void chip_iter_break(void)
+GPIOD_TEST_CASE(chip_iter_break, 0, { 8, 8, 8, 8, 8 })
 {
-	TEST_CLEANUP(test_free_chip_iter) struct gpiod_chip_iter *iter = NULL;
+	g_autoptr(gpiod_chip_iter_struct) iter = NULL;
 	struct gpiod_chip *chip;
-	int i = 0;
+	guint i = 0;
 
 	iter = gpiod_chip_iter_new();
-	TEST_ASSERT_NOT_NULL(iter);
+	g_assert_nonnull(iter);
+	gpiod_test_return_if_failed();
 
 	gpiod_foreach_chip(iter, chip) {
 		if ((strcmp(gpiod_chip_label(chip), "gpio-mockup-A") == 0) ||
@@ -107,32 +96,28 @@ static void chip_iter_break(void)
 	gpiod_chip_iter_free(iter);
 	iter = NULL;
 
-	TEST_ASSERT_EQ(i, 3);
+	g_assert_cmpuint(i, ==, 3);
 }
-TEST_DEFINE(chip_iter_break,
-	    "gpiod_chip_iter - break",
-	    0, { 8, 8, 8, 8, 8 });
 
-static void line_iter(void)
+GPIOD_TEST_CASE(line_iter, 0, { 8 })
 {
-	TEST_CLEANUP(test_free_line_iter) struct gpiod_line_iter *iter = NULL;
-	TEST_CLEANUP_CHIP struct gpiod_chip *chip = NULL;
+	g_autoptr(gpiod_line_iter_struct) iter = NULL;
+	g_autoptr(gpiod_chip_struct) chip = NULL;
 	struct gpiod_line *line;
-	unsigned int i = 0;
+	guint i = 0;
 
-	chip = gpiod_chip_open(test_chip_path(0));
-	TEST_ASSERT_NOT_NULL(chip);
+	chip = gpiod_chip_open(gpiod_test_chip_path(0));
+	g_assert_nonnull(chip);
+	gpiod_test_return_if_failed();
 
 	iter = gpiod_line_iter_new(chip);
-	TEST_ASSERT_NOT_NULL(iter);
+	g_assert_nonnull(iter);
+	gpiod_test_return_if_failed();
 
 	gpiod_foreach_line(iter, line) {
-		TEST_ASSERT_EQ(i, gpiod_line_offset(line));
+		g_assert_cmpuint(i, ==, gpiod_line_offset(line));
 		i++;
 	}
 
-	TEST_ASSERT_EQ(8, i);
+	g_assert_cmpuint(i, ==, 8);
 }
-TEST_DEFINE(line_iter,
-	    "gpiod_line_iter - simple loop, check offsets",
-	    0, { 8 });

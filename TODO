@@ -25,18 +25,6 @@ and is partially functional.
 
 ----------
 
-* porting the unit tests of core libgpiod library to using GLib
-
-Once libgpiod-test is ready, we can think about reusing existing testing
-frameworks instead of using a custom solution.
-
-For the core C library a good candidate would be the GLib unit testing library.
-GLib already provides a significant number of functionalities we currently use
-like starting sub-processes, reading files, assertions plus it also offers a
-range of output formatting and report generation options.
-
-----------
-
 * use a proper unit testing framework for C++ bindings and reuse libgpiod-test
 
 The actual framework for testing is TBD but libgpiod-test could be reused as is

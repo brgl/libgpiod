@@ -2,167 +2,156 @@
 /*
  * This file is part of libgpiod.
  *
- * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
  * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
-
-/* Test cases for the high-level API. */
 
 #include <errno.h>
 
 #include "gpiod-test.h"
 
-static void ctxless_get_value(void)
+#define GPIOD_TEST_GROUP "ctxless"
+
+GPIOD_TEST_CASE(get_value, 0, { 8 })
 {
-	int rv;
+	gint ret;
 
-	rv = gpiod_ctxless_get_value(test_chip_name(0), 3,
-				     false, TEST_CONSUMER);
-	TEST_ASSERT_EQ(rv, 0);
+	ret = gpiod_ctxless_get_value(gpiod_test_chip_name(0), 3,
+				      false, GPIOD_TEST_CONSUMER);
+	g_assert_cmpint(ret, ==, 0);
 
-	test_debugfs_set_value(0, 3, 1);
+	gpiod_test_chip_set_pull(0, 3, 1);
 
-	rv = gpiod_ctxless_get_value(test_chip_name(0), 3,
-				     false, TEST_CONSUMER);
-	TEST_ASSERT_EQ(rv, 1);
-}
-TEST_DEFINE(ctxless_get_value,
-	    "ctxless get value - single line",
-	    0, { 8 });
-
-static void ctxless_set_value_check(void *data)
-{
-	int *val = data;
-
-	*val = test_debugfs_get_value(0, 3);
+	ret = gpiod_ctxless_get_value(gpiod_test_chip_name(0), 3,
+				      false, GPIOD_TEST_CONSUMER);
+	g_assert_cmpint(ret, ==, 1);
 }
 
-static void ctxless_set_value(void)
+static void set_value_check(gpointer data G_GNUC_UNUSED)
 {
-	int rv, val;
-
-	TEST_ASSERT_EQ(test_debugfs_get_value(0, 3), 0);
-
-	rv = gpiod_ctxless_set_value(test_chip_name(0), 3, 1,
-				     false, TEST_CONSUMER,
-				     ctxless_set_value_check, &val);
-	TEST_ASSERT_RET_OK(rv);
-
-	TEST_ASSERT_EQ(val, 1);
-	TEST_ASSERT_EQ(test_debugfs_get_value(0, 3), 0);
+	g_assert_cmpint(gpiod_test_chip_get_value(0, 3), ==, 1);
 }
-TEST_DEFINE(ctxless_set_value,
-	    "ctxless set value - single line",
-	    0, { 8 });
 
-static const unsigned int ctxless_set_value_multiple_offsets[] = {
+GPIOD_TEST_CASE(set_value, 0, { 8 })
+{
+	gint ret;
+
+	gpiod_test_chip_set_pull(0, 3, 0);
+
+	ret = gpiod_ctxless_set_value(gpiod_test_chip_name(0), 3, 1,
+				      false, GPIOD_TEST_CONSUMER,
+				      set_value_check, NULL);
+	gpiod_test_return_if_failed();
+	g_assert_cmpint(ret, ==, 0);
+
+	g_assert_cmpint(gpiod_test_chip_get_value(0, 3), ==, 0);
+}
+
+static const guint get_value_multiple_offsets[] = {
+	1, 3, 4, 5, 6, 7, 8, 9, 13, 14
+};
+
+static const gint get_value_multiple_expected[] = {
+	1, 1, 1, 0, 0, 0, 1, 0, 1, 1
+};
+
+GPIOD_TEST_CASE(get_value_multiple, 0, { 16 })
+{
+	gint ret, values[10];
+	guint i;
+
+	for (i = 0; i < G_N_ELEMENTS(get_value_multiple_offsets); i++)
+		gpiod_test_chip_set_pull(0, get_value_multiple_offsets[i],
+					 get_value_multiple_expected[i]);
+
+	ret = gpiod_ctxless_get_value_multiple(gpiod_test_chip_name(0),
+					       get_value_multiple_offsets,
+					       values, 10, false,
+					       GPIOD_TEST_CONSUMER);
+	g_assert_cmpint(ret, ==, 0);
+
+	for (i = 0; i < G_N_ELEMENTS(get_value_multiple_offsets); i++)
+		g_assert_cmpint(values[i], ==, get_value_multiple_expected[i]);
+}
+
+static const guint set_value_multiple_offsets[] = {
 	0, 1, 2, 3, 4, 5, 6, 12, 13, 15
 };
 
-static const int ctxless_set_value_multiple_values[] = {
+static const gint set_value_multiple_values[] = {
 	1, 1, 1, 0, 0, 1, 0, 1, 0, 0
 };
 
-static void ctxless_set_value_multiple_check(void *data)
+static void set_value_multiple_check(gpointer data G_GNUC_UNUSED)
 {
-	bool *vals_correct = data;
-	unsigned int offset, i;
-	int val, exp;
+	guint i, offset;
+	gint val, exp;
 
-	for (i = 0;
-	     i < TEST_ARRAY_SIZE(ctxless_set_value_multiple_values);
-	     i++) {
-		offset = ctxless_set_value_multiple_offsets[i];
-		exp = ctxless_set_value_multiple_values[i];
-		val = test_debugfs_get_value(0, offset);
+	for (i = 0; i < G_N_ELEMENTS(set_value_multiple_values); i++) {
+		offset = set_value_multiple_offsets[i];
+		exp = set_value_multiple_values[i];
+		val = gpiod_test_chip_get_value(0, offset);
 
-		if (val != exp) {
-			*vals_correct = false;
-			break;
-		}
+		g_assert_cmpint(val, ==, exp);
 	}
 }
 
-static void ctxless_set_get_value_multiple(void)
+GPIOD_TEST_CASE(set_value_multiple, 0, { 16 })
 {
-	bool vals_correct = true;
-	int values[10], rv;
-	unsigned int i;
+	gint values[10], ret;
+	guint i;
 
-	for (i = 0;
-	     i < TEST_ARRAY_SIZE(ctxless_set_value_multiple_offsets);
-	     i++) {
-		TEST_ASSERT_EQ(test_debugfs_get_value(0,
-				ctxless_set_value_multiple_offsets[i]), 0);
-	}
+	for (i = 0; i < G_N_ELEMENTS(set_value_multiple_offsets); i++)
+		values[i] = set_value_multiple_values[i];
 
-	for (i = 0;
-	     i < TEST_ARRAY_SIZE(ctxless_set_value_multiple_values);
-	     i++) {
-		values[i] = ctxless_set_value_multiple_values[i];
-	}
-
-	rv = gpiod_ctxless_set_value_multiple(test_chip_name(0),
-					ctxless_set_value_multiple_offsets,
-					values, 10, false, TEST_CONSUMER,
-					ctxless_set_value_multiple_check,
-					&vals_correct);
-	TEST_ASSERT_RET_OK(rv);
-	TEST_ASSERT(vals_correct);
+	ret = gpiod_ctxless_set_value_multiple(gpiod_test_chip_name(0),
+			set_value_multiple_offsets, values, 10, false,
+			GPIOD_TEST_CONSUMER, set_value_multiple_check, NULL);
+	gpiod_test_return_if_failed();
+	g_assert_cmpint(ret, ==, 0);
 }
-TEST_DEFINE(ctxless_set_get_value_multiple,
-	    "ctxless set/get value - multiple lines",
-	    0, { 16 });
 
-static void ctxless_get_value_multiple_max_lines(void)
+GPIOD_TEST_CASE(get_value_multiple_max_lines, 0, { 128 })
 {
-	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES + 1];
-	int values[GPIOD_LINE_BULK_MAX_LINES + 1], rv;
+	gint values[GPIOD_LINE_BULK_MAX_LINES + 1], ret;
+	guint offsets[GPIOD_LINE_BULK_MAX_LINES + 1];
 
-	rv = gpiod_ctxless_get_value_multiple(test_chip_name(0), offsets,
-					      values,
-					      GPIOD_LINE_BULK_MAX_LINES + 1,
-					      false, TEST_CONSUMER);
-	TEST_ASSERT_NOTEQ(rv, 0);
-	TEST_ASSERT_ERRNO_IS(EINVAL);
+	ret = gpiod_ctxless_get_value_multiple(gpiod_test_chip_name(0),
+					       offsets, values,
+					       GPIOD_LINE_BULK_MAX_LINES + 1,
+					       false, GPIOD_TEST_CONSUMER);
+	g_assert_cmpint(ret, ==, -1);
+	g_assert_cmpint(errno, ==, EINVAL);
 }
-TEST_DEFINE(ctxless_get_value_multiple_max_lines,
-	    "gpiod_ctxless_get_value_multiple() exceed max lines",
-	    0, { 128 });
 
-static void ctxless_set_value_multiple_max_lines(void)
+GPIOD_TEST_CASE(set_value_multiple_max_lines, 0, { 128 })
 {
-	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES + 1];
-	int values[GPIOD_LINE_BULK_MAX_LINES + 1], rv;
+	gint values[GPIOD_LINE_BULK_MAX_LINES + 1], ret;
+	guint offsets[GPIOD_LINE_BULK_MAX_LINES + 1];
 
-	rv = gpiod_ctxless_set_value_multiple(test_chip_name(0), offsets,
-					      values,
-					      GPIOD_LINE_BULK_MAX_LINES + 1,
-					      false, TEST_CONSUMER,
-					      NULL, NULL);
-	TEST_ASSERT_NOTEQ(rv, 0);
-	TEST_ASSERT_ERRNO_IS(EINVAL);
+	ret = gpiod_ctxless_set_value_multiple(gpiod_test_chip_name(0),
+				offsets, values, GPIOD_LINE_BULK_MAX_LINES + 1,
+				false, GPIOD_TEST_CONSUMER, NULL, NULL);
+	g_assert_cmpint(ret, ==, -1);
+	g_assert_cmpint(errno, ==, EINVAL);
 }
-TEST_DEFINE(ctxless_set_value_multiple_max_lines,
-	    "gpiod_ctxless_set_value_multiple() exceed max lines",
-	    0, { 128 });
 
 struct ctxless_event_data {
-	bool got_rising_edge;
-	bool got_falling_edge;
-	unsigned int offset;
-	unsigned int count;
+	gboolean got_rising_edge;
+	gboolean got_falling_edge;
+	guint offset;
+	guint count;
 };
 
-static int ctxless_event_cb(int evtype, unsigned int offset,
-			   const struct timespec *ts TEST_UNUSED, void *data)
+static int ctxless_event_cb(gint evtype, guint offset,
+			    const struct timespec *ts G_GNUC_UNUSED,
+			    gpointer data)
 {
 	struct ctxless_event_data *evdata = data;
 
 	if (evtype == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE)
-		evdata->got_rising_edge = true;
+		evdata->got_rising_edge = TRUE;
 	else if (evtype == GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE)
-		evdata->got_falling_edge = true;
+		evdata->got_falling_edge = TRUE;
 
 	evdata->offset = offset;
 
@@ -170,170 +159,157 @@ static int ctxless_event_cb(int evtype, unsigned int offset,
 				    : GPIOD_CTXLESS_EVENT_CB_RET_OK;
 }
 
-static void ctxless_event_monitor(void)
+GPIOD_TEST_CASE(event_monitor, 0, { 8 })
 {
+	g_autoptr(GpiodTestEventThread) ev_thread = NULL;
 	struct ctxless_event_data evdata = { false, false, 0, 0 };
 	struct timespec ts = { 1, 0 };
-	int rv;
+	gint ret;
 
-	test_set_event(0, 3, 100);
+	ev_thread = gpiod_test_start_event_thread(0, 3, 100);
 
-	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
-					 GPIOD_CTXLESS_EVENT_BOTH_EDGES,
-					 3, false, TEST_CONSUMER, &ts,
-					 NULL, ctxless_event_cb, &evdata);
-
-	TEST_ASSERT_RET_OK(rv);
-	TEST_ASSERT(evdata.got_rising_edge);
-	TEST_ASSERT(evdata.got_falling_edge);
-	TEST_ASSERT_EQ(evdata.count, 2);
-	TEST_ASSERT_EQ(evdata.offset, 3);
+	ret = gpiod_ctxless_event_monitor(gpiod_test_chip_name(0),
+					  GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+					  3, false, GPIOD_TEST_CONSUMER, &ts,
+					  NULL, ctxless_event_cb, &evdata);
+	g_assert_cmpint(ret, ==, 0);
+	g_assert_true(evdata.got_rising_edge);
+	g_assert_true(evdata.got_falling_edge);
+	g_assert_cmpuint(evdata.count, ==, 2);
+	g_assert_cmpuint(evdata.offset, ==, 3);
 }
-TEST_DEFINE(ctxless_event_monitor,
-	    "gpiod_ctxless_event_monitor() - single event",
-	    0, { 8 });
 
-static void ctxless_event_monitor_single_event_type(void)
+GPIOD_TEST_CASE(event_monitor_single_event_type, 0, { 8 })
 {
+	g_autoptr(GpiodTestEventThread) ev_thread = NULL;
 	struct ctxless_event_data evdata = { false, false, 0, 0 };
 	struct timespec ts = { 1, 0 };
-	int rv;
+	gint ret;
 
-	test_set_event(0, 3, 100);
+	ev_thread = gpiod_test_start_event_thread(0, 3, 100);
 
-	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
-					 GPIOD_CTXLESS_EVENT_FALLING_EDGE,
-					 3, false, TEST_CONSUMER, &ts,
-					 NULL, ctxless_event_cb, &evdata);
-
-	TEST_ASSERT_RET_OK(rv);
-	TEST_ASSERT(evdata.got_falling_edge);
-	TEST_ASSERT_FALSE(evdata.got_rising_edge);
-	TEST_ASSERT_EQ(evdata.count, 2);
-	TEST_ASSERT_EQ(evdata.offset, 3);
+	ret = gpiod_ctxless_event_monitor(gpiod_test_chip_name(0),
+					  GPIOD_CTXLESS_EVENT_FALLING_EDGE,
+					  3, false, GPIOD_TEST_CONSUMER, &ts,
+					  NULL, ctxless_event_cb, &evdata);
+	g_assert_cmpint(ret, ==, 0);
+	g_assert_false(evdata.got_rising_edge);
+	g_assert_true(evdata.got_falling_edge);
+	g_assert_cmpuint(evdata.count, ==, 2);
+	g_assert_cmpuint(evdata.offset, ==, 3);
 }
-TEST_DEFINE(ctxless_event_monitor_single_event_type,
-	    "gpiod_ctxless_event_monitor() - specify event type",
-	    0, { 8 });
 
-static void ctxless_event_monitor_multiple(void)
+GPIOD_TEST_CASE(event_monitor_multiple, 0, { 8 })
 {
+	g_autoptr(GpiodTestEventThread) ev_thread = NULL;
 	struct ctxless_event_data evdata = { false, false, 0, 0 };
 	struct timespec ts = { 1, 0 };
-	unsigned int offsets[4];
-	int rv;
+	guint offsets[4];
+	gint ret;
 
 	offsets[0] = 2;
 	offsets[1] = 3;
 	offsets[2] = 5;
 	offsets[3] = 6;
 
-	test_set_event(0, 3, 100);
+	ev_thread = gpiod_test_start_event_thread(0, 3, 100);
 
-	rv = gpiod_ctxless_event_monitor_multiple(
-					test_chip_name(0),
-					GPIOD_CTXLESS_EVENT_BOTH_EDGES,
-					offsets, 4, false, TEST_CONSUMER,
-					&ts, NULL, ctxless_event_cb, &evdata);
-
-	TEST_ASSERT_RET_OK(rv);
-	TEST_ASSERT(evdata.got_rising_edge);
-	TEST_ASSERT(evdata.got_falling_edge);
-	TEST_ASSERT_EQ(evdata.count, 2);
-	TEST_ASSERT_EQ(evdata.offset, 3);
+	ret = gpiod_ctxless_event_monitor_multiple(gpiod_test_chip_name(0),
+		GPIOD_CTXLESS_EVENT_BOTH_EDGES, offsets, 4, false,
+		GPIOD_TEST_CONSUMER, &ts, NULL, ctxless_event_cb, &evdata);
+	g_assert_cmpint(ret, ==, 0);
+	g_assert_true(evdata.got_rising_edge);
+	g_assert_true(evdata.got_falling_edge);
+	g_assert_cmpuint(evdata.count, ==, 2);
+	g_assert_cmpuint(evdata.offset, ==, 3);
 }
-TEST_DEFINE(ctxless_event_monitor_multiple,
-	    "gpiod_ctxless_event_monitor_multiple() - single event",
-	    0, { 8 });
 
-static int error_event_cb(int evtype TEST_UNUSED,
-			  unsigned int offset TEST_UNUSED,
-			  const struct timespec *ts TEST_UNUSED,
-			  void *data TEST_UNUSED)
+static int error_event_cb(gint evtype G_GNUC_UNUSED,
+			  guint offset G_GNUC_UNUSED,
+			  const struct timespec *ts G_GNUC_UNUSED,
+			  gpointer data G_GNUC_UNUSED)
 {
 	errno = ENOTBLK;
 
 	return GPIOD_CTXLESS_EVENT_CB_RET_ERR;
 }
 
-static void ctxless_event_monitor_indicate_error(void)
+GPIOD_TEST_CASE(event_monitor_indicate_error, 0, { 8 })
 {
+	g_autoptr(GpiodTestEventThread) ev_thread = NULL;
 	struct timespec ts = { 1, 0 };
-	int rv;
+	gint ret;
 
-	test_set_event(0, 3, 100);
+	ev_thread = gpiod_test_start_event_thread(0, 3, 100);
 
-	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
-					 GPIOD_CTXLESS_EVENT_BOTH_EDGES,
-					 3, false, TEST_CONSUMER, &ts,
-					 NULL, error_event_cb, NULL);
-
-	TEST_ASSERT_EQ(rv, -1);
-	TEST_ASSERT_ERRNO_IS(ENOTBLK);
+	ret = gpiod_ctxless_event_monitor(gpiod_test_chip_name(0),
+					  GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+					  3, false, GPIOD_TEST_CONSUMER, &ts,
+					  NULL, error_event_cb, NULL);
+	g_assert_cmpint(ret, ==, -1);
+	g_assert_cmpint(errno, ==, ENOTBLK);
 }
-TEST_DEFINE(ctxless_event_monitor_indicate_error,
-	    "gpiod_ctxless_event_monitor() - error in callback",
-	    0, { 8 });
 
-static void ctxless_event_monitor_indicate_error_timeout(void)
+static int error_event_cb_timeout(gint evtype,
+				  guint offset G_GNUC_UNUSED,
+				  const struct timespec *ts G_GNUC_UNUSED,
+				  gpointer data G_GNUC_UNUSED)
+{
+	errno = ENOTBLK;
+
+	g_assert_cmpint(evtype, ==, GPIOD_CTXLESS_EVENT_CB_TIMEOUT);
+
+	return GPIOD_CTXLESS_EVENT_CB_RET_ERR;
+}
+
+GPIOD_TEST_CASE(event_monitor_indicate_error_timeout, 0, { 8 })
 {
 	struct timespec ts = { 0, 100000 };
-	int rv;
+	gint ret;
 
-	rv = gpiod_ctxless_event_monitor(test_chip_name(0),
-					 GPIOD_CTXLESS_EVENT_BOTH_EDGES,
-					 3, false, TEST_CONSUMER, &ts,
-					 NULL, error_event_cb, NULL);
-
-	TEST_ASSERT_EQ(rv, -1);
-	TEST_ASSERT_ERRNO_IS(ENOTBLK);
+	ret = gpiod_ctxless_event_monitor(gpiod_test_chip_name(0),
+					  GPIOD_CTXLESS_EVENT_BOTH_EDGES,
+					  3, false, GPIOD_TEST_CONSUMER, &ts,
+					  NULL, error_event_cb_timeout, NULL);
+	g_assert_cmpint(ret, ==, -1);
+	g_assert_cmpint(errno, ==, ENOTBLK);
 }
-TEST_DEFINE(ctxless_event_monitor_indicate_error_timeout,
-	    "gpiod_ctxless_event_monitor() - error in callback after timeout",
-	    0, { 8 });
 
-static void ctxless_find_line_good(void)
+GPIOD_TEST_CASE(find_line, GPIOD_TEST_FLAG_NAMED_LINES, { 8, 16, 16, 8 })
 {
-	unsigned int offset;
-	char chip[32];
-	int rv;
+	gchar chip[32];
+	guint offset;
+	gint ret;
 
-	rv = gpiod_ctxless_find_line("gpio-mockup-C-14", chip,
-				     sizeof(chip), &offset);
-	TEST_ASSERT_EQ(rv, 1);
-	TEST_ASSERT_EQ(offset, 14);
-	TEST_ASSERT_STR_EQ(chip, test_chip_name(2));
+	ret = gpiod_ctxless_find_line("gpio-mockup-C-14", chip,
+				      sizeof(chip), &offset);
+	g_assert_cmpint(ret, ==, 1);
+	g_assert_cmpuint(offset, ==, 14);
+	g_assert_cmpstr(chip, ==, gpiod_test_chip_name(2));
 }
-TEST_DEFINE(ctxless_find_line_good,
-	    "gpiod_ctxless_find_line() - good",
-	    TEST_FLAG_NAMED_LINES, { 8, 16, 16, 8 });
 
-static void ctxless_find_line_truncated(void)
+GPIOD_TEST_CASE(find_line_truncated,
+		GPIOD_TEST_FLAG_NAMED_LINES, { 8, 16, 16, 8 })
 {
-	unsigned int offset;
-	char chip[6];
-	int rv;
+	gchar chip[6];
+	guint offset;
+	gint ret;
 
-	rv = gpiod_ctxless_find_line("gpio-mockup-C-14", chip,
-				     sizeof(chip), &offset);
-	TEST_ASSERT_EQ(rv, 1);
-	TEST_ASSERT_EQ(offset, 14);
-	TEST_ASSERT_STR_EQ(chip, "gpioc");
+	ret = gpiod_ctxless_find_line("gpio-mockup-C-14", chip,
+				      sizeof(chip), &offset);
+	g_assert_cmpint(ret, ==, 1);
+	g_assert_cmpuint(offset, ==, 14);
+	g_assert_cmpstr(chip, ==, "gpioc");
 }
-TEST_DEFINE(ctxless_find_line_truncated,
-	    "gpiod_ctxless_find_line() - chip name truncated",
-	    TEST_FLAG_NAMED_LINES, { 8, 16, 16, 8 });
 
-static void ctxless_find_line_not_found(void)
+GPIOD_TEST_CASE(find_line_not_found,
+		GPIOD_TEST_FLAG_NAMED_LINES, { 8, 16, 16, 8 })
 {
-	unsigned int offset;
-	char chip[32];
-	int rv;
+	gchar chip[32];
+	guint offset;
+	gint ret;
 
-	rv = gpiod_ctxless_find_line("nonexistent", chip,
-				     sizeof(chip), &offset);
-	TEST_ASSERT_EQ(rv, 0);
+	ret = gpiod_ctxless_find_line("nonexistent", chip,
+				      sizeof(chip), &offset);
+	g_assert_cmpint(ret, ==, 0);
 }
-TEST_DEFINE(ctxless_find_line_not_found,
-	    "gpiod_ctxless_find_line() - not found",
-	    TEST_FLAG_NAMED_LINES, { 8, 16, 16, 8 });

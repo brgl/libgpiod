@@ -27,3 +27,11 @@ gpioset_SOURCES = gpioset.c
 gpiomon_SOURCES = gpiomon.c
 
 gpiofind_SOURCES = gpiofind.c
+
+EXTRA_DIST = gpio-tools-test.bats
+
+if WITH_TESTS
+
+bin_SCRIPTS = gpio-tools-test.bats
+
+endif
