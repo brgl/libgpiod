@@ -25,26 +25,6 @@ and is partially functional.
 
 ----------
 
-* factor out common parts of the testing framework into a separate library
-
-We now have the core library C API and two sets of language bindings. While
-the core library has proper testing using the custom framework, the tests for
-C++ and Python parts are really just a bunch of examples in a single file.
-
-The idea is to move the parts dealing with gpio-mockup loading (kmod), dummy
-device detection (udev) and kernel version checking out of gpiod-test and into
-a separate library called libgpiod-test that would then be reused by whatever
-mechanism each set of bindings uses for testing.
-
-This way the parts that are orthogonal to unit testing framework but necessary
-for working together with the GPIO testing kernel module would not be
-duplicated.
-
-One caveat: while C++ could use this library as is, there still would be a need
-for a Python wrapper around it for Python bindings.
-
-----------
-
 * porting the unit tests of core libgpiod library to using GLib
 
 Once libgpiod-test is ready, we can think about reusing existing testing
