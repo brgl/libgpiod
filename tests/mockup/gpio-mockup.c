@@ -304,6 +304,8 @@ EXPORT int gpio_mockup_probe(struct gpio_mockup *ctx, unsigned int num_chips,
 	if (!ctx->chips)
 		goto err_remove_module;
 
+	ctx->num_chips = num_chips;
+
 	pfd.fd = udev_monitor_get_fd(monitor);
 	pfd.events = POLLIN | POLLPRI;
 
