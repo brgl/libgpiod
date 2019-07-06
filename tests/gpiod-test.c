@@ -311,6 +311,8 @@ static void cleanup_func(void)
 	msg("cleaning up");
 
 	free(globals.pipebuf);
+	if (globals.toolpath)
+		free(globals.toolpath);
 
 	gpio_mockup_unref(globals.mockup);
 }
