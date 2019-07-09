@@ -165,7 +165,7 @@ EXPORT void gpio_mockup_unref(struct gpio_mockup *ctx)
 }
 
 static char *make_module_param_string(unsigned int num_chips,
-				      unsigned int *num_lines, int flags)
+				      const unsigned int *num_lines, int flags)
 {
 	char *params, *new;
 	unsigned int i;
@@ -250,7 +250,7 @@ static struct gpio_mockup_chip *make_chip(const char *sysname,
 }
 
 EXPORT int gpio_mockup_probe(struct gpio_mockup *ctx, unsigned int num_chips,
-			     unsigned int *chip_sizes, int flags)
+			     const unsigned int *chip_sizes, int flags)
 {
 	const char *devpath, *devnode, *sysname, *action;
 	struct gpio_mockup_chip *chip;

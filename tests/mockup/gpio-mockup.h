@@ -17,7 +17,7 @@ void gpio_mockup_ref(struct gpio_mockup *ctx);
 void gpio_mockup_unref(struct gpio_mockup *ctx);
 
 int gpio_mockup_probe(struct gpio_mockup *ctx, unsigned int num_chips,
-		      unsigned int *chip_sizes, int flags);
+		      const unsigned int *chip_sizes, int flags);
 int gpio_mockup_remove(struct gpio_mockup *ctx);
 
 const char *gpio_mockup_chip_name(struct gpio_mockup *ctx, unsigned int idx);
