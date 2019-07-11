@@ -39,7 +39,7 @@ endif
 
 all-local: gpiod-test
 	@echo " ********************************************************"
-	@echo " * Tests have been built as tests/gpio-test.            *"
+	@echo " * Tests have been built as tests/gpiod-test.           *"
 	@echo " *                                                      *"
 	@echo " * They require a recent linux kernel version and the   *"
 	@echo " * gpio-mockup module (must not be built-in).           *"
