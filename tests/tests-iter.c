@@ -64,6 +64,8 @@ static void chip_iter_noclose(void)
 				  "gpio-mockup-C") == 0) {
 			C = true;
 			chipC = chip;
+		} else {
+			gpiod_chip_close(chip);
 		}
 	}
 
