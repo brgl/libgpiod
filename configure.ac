@@ -70,6 +70,9 @@ AC_DEFUN([FUNC_NOT_FOUND_LIB],
 AC_DEFUN([HEADER_NOT_FOUND_LIB],
 	[ERR_NOT_FOUND([$1 header], [the library])])
 
+AC_DEFUN([HEADER_NOT_FOUND_TESTS],
+	[ERR_NOT_FOUND([$1 header], [the test suite])])
+
 # This is always checked (library needs this)
 AC_HEADER_STDC
 AC_FUNC_MALLOC
@@ -121,6 +124,7 @@ if test "x$with_tests" = xtrue
 then
 	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
 	AC_CHECK_FUNC([regexec], [], [FUNC_NOT_FOUND_TESTS([regexec])])
+	AC_CHECK_HEADERS([linux/version.h], [], [HEADER_NOT_FOUND_TESTS([linux/version.h])])
 
 	PKG_CHECK_MODULES([KMOD], [libkmod >= 18])
 	PKG_CHECK_MODULES([UDEV], [libudev >= 215])

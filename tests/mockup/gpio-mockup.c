@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <libkmod.h>
 #include <libudev.h>
+#include <linux/version.h>
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,10 +19,7 @@
 #include "gpio-mockup.h"
 
 #define EXPORT			__attribute__((visibility("default")))
-
-static const unsigned int min_kern_major = 5;
-static const unsigned int min_kern_minor = 1;
-static const unsigned int min_kern_release = 0;
+#define MIN_KERNEL_VERSION	KERNEL_VERSION(5, 1, 0)
 
 struct gpio_mockup_chip {
 	char *name;
@@ -60,29 +58,12 @@ static bool check_kernel_version(void)
 		return false;
 	}
 
-	if (major < min_kern_major) {
-		goto bad_version;
-	} else if (major > min_kern_major) {
-		goto good_version;
-	} else {
-		if (minor < min_kern_minor) {
-			goto bad_version;
-		} else if (minor > min_kern_minor) {
-			goto good_version;
-		} else {
-			if (release < min_kern_release)
-				goto bad_version;
-			else
-				goto good_version;
-		}
+	if (KERNEL_VERSION(major, minor, release) < MIN_KERNEL_VERSION) {
+		errno = EOPNOTSUPP;
+		return false;
 	}
 
-good_version:
 	return true;
-
-bad_version:
-	errno = EOPNOTSUPP;
-	return false;
 }
 
 EXPORT struct gpio_mockup *gpio_mockup_new(void)
