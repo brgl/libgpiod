@@ -314,7 +314,8 @@ static void cleanup_func(void)
 	if (globals.toolpath)
 		free(globals.toolpath);
 
-	gpio_mockup_unref(globals.mockup);
+	if (globals.mockup)
+		gpio_mockup_unref(globals.mockup);
 }
 
 static void event_lock(void)
