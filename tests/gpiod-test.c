@@ -857,12 +857,12 @@ int main(int argc TEST_UNUSED, char **argv TEST_UNUSED)
 	msg("libgpiod test suite");
 	msg("%u tests registered", globals.num_tests);
 
-	check_kernel();
-	check_tool_path();
-
 	globals.mockup = gpio_mockup_new();
 	if (!globals.mockup)
 		die_perr("error checking the availability of gpio-mockup");
+
+	check_kernel();
+	check_tool_path();
 
 	msg("running tests");
 
