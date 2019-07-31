@@ -119,8 +119,12 @@ static void list_lines(struct gpiod_chip *chip)
 		     : prinfo(&of, 12, "unnamed");
 		printf(" ");
 
-		consumer ? prinfo(&of, 12, "\"%s\"", consumer)
-			 : prinfo(&of, 12, "unused");
+		if (!gpiod_line_is_used(line))
+			prinfo(&of, 12, "unused");
+		else
+			consumer ? prinfo(&of, 12, "\"%s\"", consumer)
+				 : prinfo(&of, 12, "kernel");
+
 		printf(" ");
 
 		prinfo(&of, 8, "%s ", direction == GPIOD_LINE_DIRECTION_INPUT
