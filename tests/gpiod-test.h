@@ -36,8 +36,6 @@ typedef void (*_gpiod_test_func)(void);
 
 typedef struct _gpiod_test_case _GpiodTestCase;
 struct _gpiod_test_case {
-	_GpiodTestCase *_next;
-
 	const gchar *path;
 	_gpiod_test_func func;
 

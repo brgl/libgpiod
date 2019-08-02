@@ -33,9 +33,7 @@ struct gpiod_test_event_thread {
 };
 
 static struct {
-	_GpiodTestCase *test_list_head;
-	_GpiodTestCase *test_list_tail;
-	guint num_tests;
+	GList *tests;
 	struct gpio_mockup *mockup;
 } globals;
 
@@ -92,15 +90,20 @@ static void unref_mockup(void)
 	gpio_mockup_unref(globals.mockup);
 }
 
+static void add_test_from_list(gpointer element, gpointer data G_GNUC_UNUSED)
+{
+	_GpiodTestCase *test = element;
+
+	g_test_add_data_func(test->path, test, test_func_wrapper);
+}
+
 int main(gint argc, gchar **argv)
 {
-	_GpiodTestCase *test;
-
 	g_test_init(&argc, &argv, NULL);
 	g_test_set_nonfatal_assertions();
 
 	g_debug("running libgpiod test suite");
-	g_debug("%u tests registered", globals.num_tests);
+	g_debug("%u tests registered", g_list_length(globals.tests));
 
 	/*
 	 * Setup libgpiomockup first so that it runs its own kernel version
@@ -115,27 +118,14 @@ int main(gint argc, gchar **argv)
 
 	check_kernel();
 
-	for (test = globals.test_list_head; test; test = test->_next)
-		g_test_add_data_func(test->path, test, test_func_wrapper);
+	g_list_foreach(globals.tests, add_test_from_list, NULL);
 
 	return g_test_run();
 }
 
 void _gpiod_test_register(_GpiodTestCase *test)
 {
-	_GpiodTestCase *tmp;
-
-	if (!globals.test_list_head) {
-		globals.test_list_head = globals.test_list_tail = test;
-		test->_next = NULL;
-	} else {
-		tmp = globals.test_list_tail;
-		globals.test_list_tail = test;
-		test->_next = NULL;
-		tmp->_next = test;
-	}
-
-	globals.num_tests++;
+	globals.tests = g_list_append(globals.tests, test);
 }
 
 const gchar *gpiod_test_chip_path(guint index)
