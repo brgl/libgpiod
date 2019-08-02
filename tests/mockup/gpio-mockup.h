@@ -8,6 +8,10 @@
 #ifndef __GPIO_MOCKUP_H__
 #define __GPIO_MOCKUP_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct gpio_mockup;
 
 #define GPIO_MOCKUP_FLAG_NAMED_LINES	(1 << 0)
@@ -28,5 +32,9 @@ int gpio_mockup_get_value(struct gpio_mockup *ctx,
 			  unsigned int chip_idx, unsigned int line_offset);
 int gpio_mockup_set_pull(struct gpio_mockup *ctx, unsigned int chip_idx,
 			 unsigned int line_offset, int pull);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* __GPIO_MOCKUP_H__ */
