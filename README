@@ -116,22 +116,28 @@ TESTING
 -------
 
 A comprehensive testing framework is included with the library and can be
-used to test both the library code and the linux kernel user-space interface.
+used to test both the core library code as well as the kernel-to-user-space
+interface.
 
-The minimum kernel version required to run the tests is 4.16. The tests work
-together with the gpio-mockup kernel module which must be enabled. NOTE: the
-module must not be built-in.
+The minimum kernel version required to run the tests can be checked in the
+tests/gpiod-test.c source file (it's subject to change if new features are
+added to the kernel). The tests work together with the gpio-mockup kernel
+module which must be enabled. NOTE: the module must not be built-in.
 
-To build the testing executable run:
-
-    ./configure --enable-tests
-    make check
+To build the testing executable add the '--enable-tests' option when running
+the configure script. If enabled, the tests will be installed next to
+gpio-tools.
 
 As opposed to standard autotools projects, libgpiod doesn't execute any tests
 when invoking 'make check'. Instead the user must run them manually with
-superuser privileges:
+superuser privileges.
 
-    sudo ./tests/gpiod-test
+The testing framework uses the GLib unit testing library so development package
+for GLib must be installed.
+
+The gpio-tools programs can be tested separately using the gpio-tools-test.bats
+script. It requires bats[1] to run and assumes that the tested executables are
+in the same directory as the script.
 
 BINDINGS
 --------
@@ -168,3 +174,5 @@ CONTRIBUTING
 Contributions are welcome - please send patches and bug reports to
 linux-gpio@vger.kernel.org (add the [libgpiod] prefix to the e-mail subject
 line) and stick to the linux kernel coding style when submitting new code.
+
+[1] https://github.com/bats-core/bats-core
