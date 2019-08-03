@@ -375,13 +375,26 @@ EXPORT int gpio_mockup_remove(struct gpio_mockup *ctx)
 	return 0;
 }
 
-EXPORT const char *
-gpio_mockup_chip_name(struct gpio_mockup *ctx, unsigned int idx)
+static bool index_valid(struct gpio_mockup *ctx, unsigned int idx)
 {
 	if (!ctx->chips) {
 		errno = ENODEV;
-		return NULL;
+		return false;
 	}
+
+	if (idx >= ctx->num_chips) {
+		errno = EINVAL;
+		return false;
+	}
+
+	return true;
+}
+
+EXPORT const char *
+gpio_mockup_chip_name(struct gpio_mockup *ctx, unsigned int idx)
+{
+	if (!index_valid(ctx, idx))
+		return NULL;
 
 	return ctx->chips[idx]->name;
 }
@@ -389,20 +402,16 @@ gpio_mockup_chip_name(struct gpio_mockup *ctx, unsigned int idx)
 EXPORT const char *
 gpio_mockup_chip_path(struct gpio_mockup *ctx, unsigned int idx)
 {
-	if (!ctx->chips) {
-		errno = ENODEV;
+	if (!index_valid(ctx, idx))
 		return NULL;
-	}
 
 	return ctx->chips[idx]->path;
 }
 
 EXPORT int gpio_mockup_chip_num(struct gpio_mockup *ctx, unsigned int idx)
 {
-	if (!ctx->chips) {
-		errno = ENODEV;
+	if (!index_valid(ctx, idx))
 		return -1;
-	}
 
 	return ctx->chips[idx]->num;
 }
@@ -432,10 +441,8 @@ EXPORT int gpio_mockup_get_value(struct gpio_mockup *ctx,
 	char buf;
 	int fd;
 
-	if (!ctx->chips) {
-		errno = ENODEV;
+	if (!index_valid(ctx, chip_idx))
 		return -1;
-	}
 
 	fd = debugfs_open(ctx->chips[chip_idx]->num, line_offset, O_RDONLY);
 	if (fd < 0)
@@ -465,10 +472,8 @@ EXPORT int gpio_mockup_set_pull(struct gpio_mockup *ctx,
 	ssize_t wr;
 	int fd;
 
-	if (!ctx->chips) {
-		errno = ENODEV;
+	if (!index_valid(ctx, chip_idx))
 		return -1;
-	}
 
 	fd = debugfs_open(ctx->chips[chip_idx]->num, line_offset, O_WRONLY);
 	if (fd < 0)
