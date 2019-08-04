@@ -119,6 +119,7 @@ int main(gint argc, gchar **argv)
 	check_kernel();
 
 	g_list_foreach(globals.tests, add_test_from_list, NULL);
+	g_list_free(globals.tests);
 
 	return g_test_run();
 }
