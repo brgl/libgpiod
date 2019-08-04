@@ -107,7 +107,7 @@ EXPORT struct gpio_mockup *gpio_mockup_new(void)
 	if (rv)
 		goto err_unref_module;
 
-	/* We need to chech that the gpio-mockup debugfs directory exists. */
+	/* We need to check that the gpio-mockup debugfs directory exists. */
 	rv = access("/sys/kernel/debug/gpio-mockup", R_OK);
 	if (rv)
 		goto err_unref_module;
