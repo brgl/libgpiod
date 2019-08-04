@@ -19,6 +19,10 @@
 #include "gpio-mockup.h"
 
 #define EXPORT			__attribute__((visibility("default")))
+/*
+ * The gpio-mockup features (including the debugfs interface) we're using
+ * in this library have first been released in the linux kernel version below.
+ */
 #define MIN_KERNEL_VERSION	KERNEL_VERSION(5, 1, 0)
 
 struct gpio_mockup_chip {
