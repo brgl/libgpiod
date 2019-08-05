@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 	});
 
 	for (;;) {
-		auto events = lines.event_wait(::std::chrono::nanoseconds(1000000000));
+		auto events = lines.event_wait(::std::chrono::seconds(1));
 		if (events) {
 			for (auto& it: events)
 				print_event(it.event_read());
