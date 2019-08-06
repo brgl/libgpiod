@@ -19,3 +19,9 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgpiodcxx.pc
 
 SUBDIRS = . examples
+
+if WITH_TESTS
+
+SUBDIRS += tests
+
+endif

@@ -25,13 +25,6 @@ and is partially functional.
 
 ----------
 
-* use a proper unit testing framework for C++ bindings and reuse libgpiod-test
-
-The actual framework for testing is TBD but libgpiod-test could be reused as is
-from C++ code so that we can use gpio-mockup just like for the core library.
-
-----------
-
 * use the python unit testing library for python bindings and reuse
   libgpiod-test
 

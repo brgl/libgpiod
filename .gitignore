@@ -15,6 +15,7 @@ gpiogetcxx
 gpioinfocxx
 gpiomoncxx
 gpiosetcxx
+gpiod-cxx-test
 *.o
 *.lo
 *.la

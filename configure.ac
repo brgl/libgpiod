@@ -73,6 +73,9 @@ AC_DEFUN([HEADER_NOT_FOUND_LIB],
 AC_DEFUN([HEADER_NOT_FOUND_TESTS],
 	[ERR_NOT_FOUND([$1 header], [the test suite])])
 
+AC_DEFUN([HEADER_NOT_FOUND_CXX],
+	[ERR_NOT_FOUND([$1 header], [C++ bindings])])
+
 # This is always checked (library needs this)
 AC_HEADER_STDC
 AC_FUNC_MALLOC
@@ -158,6 +161,13 @@ then
 	AC_LIBTOOL_CXX
 	# This needs autoconf-archive
 	AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
+
+	if test "x$with_tests" = xtrue
+	then
+		AC_LANG_PUSH([C++])
+		AC_CHECK_HEADERS([catch.hpp], [], [HEADER_NOT_FOUND_CXX([catch.hpp])])
+		AC_LANG_POP([C++])
+	fi
 fi
 
 AC_ARG_ENABLE([bindings-python],
@@ -205,6 +215,7 @@ AC_CONFIG_FILES([libgpiod.pc
 		 bindings/Makefile
 		 bindings/cxx/Makefile
 		 bindings/cxx/examples/Makefile
+		 bindings/cxx/tests/Makefile
 		 bindings/python/Makefile
 		 bindings/python/examples/Makefile
 		 man/Makefile])
