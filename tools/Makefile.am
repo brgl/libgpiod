@@ -28,10 +28,10 @@ gpiomon_SOURCES = gpiomon.c
 
 gpiofind_SOURCES = gpiofind.c
 
-EXTRA_DIST = gpio-tools-test.bats
+EXTRA_DIST = gpio-tools-test.bats gpio-tools-test.sh
 
 if WITH_TESTS
 
-bin_SCRIPTS = gpio-tools-test.bats
+bin_SCRIPTS = gpio-tools-test.sh gpio-tools-test.bats
 
 endif

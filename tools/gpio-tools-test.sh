@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+#
+# This file is part of libgpiod.
+#
+# Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
+#
+
+MIN_KERNEL_VERSION="5.1.0"
+BATS_SCRIPT="gpio-tools-test.bats"
+SOURCE_DIR="$(dirname ${BASH_SOURCE[0]})"
+
+die() {
+	echo "$@" 1>&2
+	exit 1
+}
+
+check_kernel() {
+	local REQUIRED=$1
+	local CURRENT=$(uname -r)
+
+	SORTED=$(printf "$REQUIRED\n$CURRENT" | sort -V | head -n 1)
+
+	if [ "$SORTED" != "$REQUIRED" ]
+	then
+		die "linux kernel version must be at least: v$REQUIRED - got: v$CURRENT"
+	fi
+}
+
+check_prog() {
+	local PROG=$1
+
+	which "$PROG" > /dev/null
+	if [ "$?" -ne "0" ]
+	then
+		die "$PROG not found - needed to run the tests"
+	fi
+}
+
+# Check all required non-coreutils tools
+check_prog bats
+check_prog modprobe
+check_prog rmmod
+check_prog udevadm
+
+# Check if we're running a kernel at the required version or later
+check_kernel $MIN_KERNEL_VERSION
+
+# The bats script must be in the same directory.
+if [ ! -e "$SOURCE_DIR/$BATS_SCRIPT" ]
+then
+	die "testing script not found"
+fi
+
+BATS_PATH=$(which bats)
+
+exec $BATS_PATH $SOURCE_DIR/$BATS_SCRIPT
