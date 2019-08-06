@@ -55,4 +55,4 @@ fi
 
 BATS_PATH=$(which bats)
 
-exec $BATS_PATH $SOURCE_DIR/$BATS_SCRIPT
+exec $BATS_PATH $SOURCE_DIR/$BATS_SCRIPT ${1+"$@"}
