@@ -153,7 +153,6 @@ coproc_tool_wait() {
 }
 
 setup() {
-	echo $BATS_TMPDIR >> /tmp/dirdir
 	gpio_mockup_remove
 }
 
