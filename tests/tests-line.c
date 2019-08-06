@@ -462,6 +462,8 @@ GPIOD_TEST_CASE(misc_flags, 0, { 8 })
 	g_assert_true(gpiod_line_is_used(line));
 	g_assert_true(gpiod_line_is_open_drain(line));
 	g_assert_false(gpiod_line_is_open_source(line));
+	g_assert_cmpint(gpiod_line_direction(line), ==,
+			GPIOD_LINE_DIRECTION_OUTPUT);
 
 	gpiod_line_release(line);
 
@@ -473,6 +475,71 @@ GPIOD_TEST_CASE(misc_flags, 0, { 8 })
 	g_assert_true(gpiod_line_is_used(line));
 	g_assert_false(gpiod_line_is_open_drain(line));
 	g_assert_true(gpiod_line_is_open_source(line));
+	/*
+	 * FIXME Enable the line below once the open-source/drain issue is
+	 * fixed in the kernel.
+	 */
+/*
+	g_assert_cmpint(gpiod_line_direction(line), ==,
+			GPIOD_LINE_DIRECTION_OUTPUT);
+*/
+}
+
+GPIOD_TEST_CASE(misc_flags_work_together, 0, { 8 })
+{
+	g_autoptr(gpiod_chip_struct) chip = NULL;
+	struct gpiod_line_request_config config;
+	struct gpiod_line *line;
+	gint ret;
+
+	chip = gpiod_chip_open(gpiod_test_chip_path(0));
+	g_assert_nonnull(chip);
+	gpiod_test_return_if_failed();
+
+	line = gpiod_chip_get_line(chip, 2);
+	g_assert_nonnull(line);
+	gpiod_test_return_if_failed();
+
+	/*
+	 * Verify that open drain/source flags work together
+	 * with active_low.
+	 */
+
+	config.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT;
+	config.consumer = GPIOD_TEST_CONSUMER;
+	config.flags = GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN |
+		       GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
+
+	ret = gpiod_line_request(line, &config, 0);
+	g_assert_cmpint(ret, ==, 0);
+
+	g_assert_true(gpiod_line_is_used(line));
+	g_assert_true(gpiod_line_is_open_drain(line));
+	g_assert_false(gpiod_line_is_open_source(line));
+	g_assert_cmpint(gpiod_line_active_state(line), ==,
+			GPIOD_LINE_ACTIVE_STATE_LOW);
+	/*
+	 * FIXME Enable the line below once the open-source/drain issue is
+	 * fixed in the kernel.
+	 */
+/*
+	g_assert_cmpint(gpiod_line_direction(line), ==,
+			GPIOD_LINE_DIRECTION_OUTPUT);
+*/
+
+	gpiod_line_release(line);
+
+	config.flags = GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE |
+		       GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
+
+	ret = gpiod_line_request(line, &config, 0);
+	g_assert_cmpint(ret, ==, 0);
+
+	g_assert_true(gpiod_line_is_used(line));
+	g_assert_false(gpiod_line_is_open_drain(line));
+	g_assert_true(gpiod_line_is_open_source(line));
+	g_assert_cmpint(gpiod_line_active_state(line), ==,
+			GPIOD_LINE_ACTIVE_STATE_LOW);
 }
 
 GPIOD_TEST_CASE(open_source_open_drain_input_mode, 0, { 8 })
