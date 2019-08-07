@@ -578,9 +578,11 @@ teardown() {
 @test "gpiomon: single rising edge event (active-low)" {
 	gpio_mockup_probe 8 8
 
+	gpio_mockup_set_pull 1 4 1
+
 	coproc_run_tool gpiomon --rising-edge --active-low "$(gpio_mockup_chip_name 1)" 4
 
-	gpio_mockup_set_pull 1 4 1
+	gpio_mockup_set_pull 1 4 0
 	sleep 0.2
 
 	coproc_tool_kill
