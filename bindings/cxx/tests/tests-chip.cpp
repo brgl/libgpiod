@@ -70,7 +70,7 @@ TEST_CASE("GPIO chip can be opened with the open() method in different modes", "
 	mockup::probe_guard mockup_chips({ 8, 8, 8 });
 	::gpiod::chip chip;
 
-	REQUIRE_FALSE(chip);
+	REQUIRE_FALSE(!!chip);
 
 	SECTION("open by name")
 	{
@@ -102,7 +102,7 @@ TEST_CASE("Uninitialized GPIO chip behaves correctly", "[chip]")
 
 	SECTION("uninitialized chip is 'false'")
 	{
-		REQUIRE_FALSE(chip);
+		REQUIRE_FALSE(!!chip);
 	}
 
 	SECTION("using uninitialized chip throws logic_error")
@@ -149,7 +149,7 @@ TEST_CASE("Chip object can be reset", "[chip]")
 	::gpiod::chip chip(mockup::instance().chip_name(0));
 	REQUIRE(chip);
 	chip.reset();
-	REQUIRE_FALSE(chip);
+	REQUIRE_FALSE(!!chip);
 }
 
 TEST_CASE("Chip info can be correctly retrieved", "[chip]")
