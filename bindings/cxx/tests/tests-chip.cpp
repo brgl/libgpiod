@@ -107,7 +107,7 @@ TEST_CASE("Uninitialized GPIO chip behaves correctly", "[chip]")
 
 	SECTION("using uninitialized chip throws logic_error")
 	{
-		REQUIRE_THROWS_AS(chip.name(), ::std::logic_error&);
+		REQUIRE_THROWS_AS(chip.name(), ::std::logic_error);
 	}
 }
 
@@ -139,7 +139,7 @@ TEST_CASE("GPIO chip can be opened with the open() method with implicit lookup",
 
 TEST_CASE("Trying to open a nonexistent chip throws system_error", "[chip]")
 {
-	REQUIRE_THROWS_AS(::gpiod::chip("nonexistent-chip"), ::std::system_error&);
+	REQUIRE_THROWS_AS(::gpiod::chip("nonexistent-chip"), ::std::system_error);
 }
 
 TEST_CASE("Chip object can be reset", "[chip]")
@@ -244,12 +244,12 @@ TEST_CASE("Errors occurring when retrieving lines are correctly reported", "[chi
 
 	SECTION("invalid offset (single line)")
 	{
-		REQUIRE_THROWS_AS(chip.get_line(9), ::std::out_of_range&);
+		REQUIRE_THROWS_AS(chip.get_line(9), ::std::out_of_range);
 	}
 
 	SECTION("invalid offset (multiple lines)")
 	{
-		REQUIRE_THROWS_AS(chip.get_lines({ 1, 19, 4, 7 }), ::std::out_of_range&);
+		REQUIRE_THROWS_AS(chip.get_lines({ 1, 19, 4, 7 }), ::std::out_of_range);
 	}
 
 	SECTION("line not found by name")

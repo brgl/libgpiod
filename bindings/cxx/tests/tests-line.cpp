@@ -131,7 +131,7 @@ TEST_CASE("Line bulk object works correctly", "[line][bulk]")
 	{
 		auto lines = chip.get_all_lines();
 
-		REQUIRE_THROWS_AS(lines.get(11), ::std::out_of_range&);
+		REQUIRE_THROWS_AS(lines.get(11), ::std::out_of_range);
 	}
 }
 
@@ -251,7 +251,7 @@ TEST_CASE("Exported line can be released", "[line]")
 	line.release();
 
 	REQUIRE_FALSE(line.is_requested());
-	REQUIRE_THROWS_AS(line.get_value(), ::std::system_error&);
+	REQUIRE_THROWS_AS(line.get_value(), ::std::system_error);
 }
 
 TEST_CASE("Uninitialized GPIO line behaves correctly", "[line]")
@@ -265,7 +265,7 @@ TEST_CASE("Uninitialized GPIO line behaves correctly", "[line]")
 
 	SECTION("using uninitialized line throws logic_error")
 	{
-		REQUIRE_THROWS_AS(line.name(), ::std::logic_error&);
+		REQUIRE_THROWS_AS(line.name(), ::std::logic_error);
 	}
 }
 
@@ -280,7 +280,7 @@ TEST_CASE("Uninitialized GPIO line_bulk behaves correctly", "[line][bulk]")
 
 	SECTION("using uninitialized line_bulk throws logic_error")
 	{
-		REQUIRE_THROWS_AS(bulk.get(0), ::std::logic_error&);
+		REQUIRE_THROWS_AS(bulk.get(0), ::std::logic_error);
 	}
 }
 
@@ -298,7 +298,7 @@ TEST_CASE("Cannot request the same line twice", "[line]")
 		auto line = chip.get_line(3);
 
 		REQUIRE_NOTHROW(line.request(config));
-		REQUIRE_THROWS_AS(line.request(config), ::std::system_error&);
+		REQUIRE_THROWS_AS(line.request(config), ::std::system_error);
 	}
 
 	SECTION("request the same line twice in line_bulk")
@@ -309,7 +309,7 @@ TEST_CASE("Cannot request the same line twice", "[line]")
 		 */
 		auto lines = chip.get_lines({ 2, 3, 4, 4 });
 
-		REQUIRE_THROWS_AS(lines.request(config), ::std::system_error&);
+		REQUIRE_THROWS_AS(lines.request(config), ::std::system_error);
 	}
 }
 
@@ -321,12 +321,12 @@ TEST_CASE("Cannot get/set values of unrequested lines", "[line]")
 
 	SECTION("get value")
 	{
-		REQUIRE_THROWS_AS(line.get_value(), ::std::system_error&);
+		REQUIRE_THROWS_AS(line.get_value(), ::std::system_error);
 	}
 
 	SECTION("set value")
 	{
-		REQUIRE_THROWS_AS(line.set_value(1), ::std::system_error&);
+		REQUIRE_THROWS_AS(line.set_value(1), ::std::system_error);
 	}
 }
 

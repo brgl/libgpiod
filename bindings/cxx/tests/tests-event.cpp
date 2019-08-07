@@ -149,7 +149,7 @@ TEST_CASE("It's possible to retrieve the event file descriptor", "[event][line]"
 
 	SECTION("error if not requested")
 	{
-		REQUIRE_THROWS_AS(line.event_get_fd(), ::std::system_error&);
+		REQUIRE_THROWS_AS(line.event_get_fd(), ::std::system_error);
 	}
 
 	SECTION("error if requested for values")
@@ -157,7 +157,7 @@ TEST_CASE("It's possible to retrieve the event file descriptor", "[event][line]"
 		config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
 
 		line.request(config);
-		REQUIRE_THROWS_AS(line.event_get_fd(), ::std::system_error&);
+		REQUIRE_THROWS_AS(line.event_get_fd(), ::std::system_error);
 	}
 }
 
