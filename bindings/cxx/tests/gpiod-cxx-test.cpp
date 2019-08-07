@@ -5,8 +5,6 @@
  * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
 #include <linux/version.h>
 #include <sys/utsname.h>
 #include <system_error>
