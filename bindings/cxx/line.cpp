@@ -183,8 +183,8 @@ int line::event_get_fd(void) const
 	int ret = ::gpiod_line_event_get_fd(this->_m_line);
 
 	if (ret < 0)
-		::std::system_error(errno, ::std::system_category(),
-				    "unable to get the line event file descriptor");
+		throw ::std::system_error(errno, ::std::system_category(),
+					  "unable to get the line event file descriptor");
 
 	return ret;
 }
