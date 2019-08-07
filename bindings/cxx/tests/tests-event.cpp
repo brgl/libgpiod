@@ -5,7 +5,7 @@
  * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <gpiod.hpp>
 #include <map>
 #include <poll.h>

@@ -6,7 +6,7 @@
  */
 
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <linux/version.h>
 #include <sys/utsname.h>
 #include <system_error>
