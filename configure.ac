@@ -164,9 +164,11 @@ then
 
 	if test "x$with_tests" = xtrue
 	then
-		AC_LANG_PUSH([C++])
-		AC_CHECK_HEADERS([catch2/catch.hpp], [], [HEADER_NOT_FOUND_CXX([catch2/catch.hpp])])
-		AC_LANG_POP([C++])
+		PKG_CHECK_MODULES([CATCH2], [catch2],, [
+			AC_LANG_PUSH([C++])
+			AC_CHECK_HEADERS([catch2/catch.hpp], [], [HEADER_NOT_FOUND_CXX([catch2/catch.hpp])])
+			AC_LANG_POP([C++])
+		])
 	fi
 fi
 

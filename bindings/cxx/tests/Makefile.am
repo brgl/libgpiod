@@ -8,7 +8,7 @@
 
 AM_CPPFLAGS = -I$(top_srcdir)/bindings/cxx/ -I$(top_srcdir)/include
 AM_CPPFLAGS += -I$(top_srcdir)/tests/mockup/
-AM_CPPFLAGS += -Wall -Wextra -g -std=gnu++11
+AM_CPPFLAGS += -Wall -Wextra -g -std=gnu++11 $(CATCH2_CFLAGS)
 AM_LDFLAGS = -lgpiodcxx -L$(top_builddir)/bindings/cxx/
 AM_LDFLAGS += -lgpiomockup -L$(top_builddir)/tests/mockup/
 AM_LDFLAGS += -pthread
