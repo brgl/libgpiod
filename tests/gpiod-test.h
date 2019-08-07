@@ -84,9 +84,9 @@ enum {
 	} while (0)
 
 /* Wrappers around libgpiomockup helpers. */
-const gchar *gpiod_test_chip_path(guint index);
-const gchar *gpiod_test_chip_name(guint index);
-gint gpiod_test_chip_num(guint index);
+const gchar *gpiod_test_chip_path(guint idx);
+const gchar *gpiod_test_chip_name(guint idx);
+gint gpiod_test_chip_num(guint idx);
 gint gpiod_test_chip_get_value(guint chip_index, guint line_offset);
 void gpiod_test_chip_set_pull(guint chip_index, guint line_offset, gint pull);
 

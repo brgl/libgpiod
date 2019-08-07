@@ -129,11 +129,11 @@ void _gpiod_test_register(_GpiodTestCase *test)
 	globals.tests = g_list_append(globals.tests, test);
 }
 
-const gchar *gpiod_test_chip_path(guint index)
+const gchar *gpiod_test_chip_path(guint idx)
 {
 	const gchar *path;
 
-	path = gpio_mockup_chip_path(globals.mockup, index);
+	path = gpio_mockup_chip_path(globals.mockup, idx);
 	if (!path)
 		g_error("unable to retrieve the chip path: %s",
 			g_strerror(errno));
@@ -141,11 +141,11 @@ const gchar *gpiod_test_chip_path(guint index)
 	return path;
 }
 
-const gchar *gpiod_test_chip_name(guint index)
+const gchar *gpiod_test_chip_name(guint idx)
 {
 	const gchar *name;
 
-	name = gpio_mockup_chip_name(globals.mockup, index);
+	name = gpio_mockup_chip_name(globals.mockup, idx);
 	if (!name)
 		g_error("unable to retrieve the chip name: %s",
 			g_strerror(errno));
@@ -153,11 +153,11 @@ const gchar *gpiod_test_chip_name(guint index)
 	return name;
 }
 
-gint gpiod_test_chip_num(unsigned int index)
+gint gpiod_test_chip_num(unsigned int idx)
 {
 	gint num;
 
-	num = gpio_mockup_chip_num(globals.mockup, index);
+	num = gpio_mockup_chip_num(globals.mockup, idx);
 	if (num < 0)
 		g_error("unable to retrieve the chip number: %s",
 			g_strerror(errno));
