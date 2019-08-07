@@ -117,7 +117,7 @@ GPIOD_TEST_CASE(rising_edge_ignore_falling, 0, { 8 })
 	g_assert_cmpint(ev[2].event_type, ==, GPIOD_LINE_EVENT_RISING_EDGE);
 }
 
-GPIOD_TEST_CASE(rising_edge_active_low, 0, { 8 })
+GPIOD_TEST_CASE(falling_edge_active_low, 0, { 8 })
 {
 	g_autoptr(GpiodTestEventThread) ev_thread = NULL;
 	g_autoptr(gpiod_chip_struct) chip = NULL;
@@ -134,7 +134,7 @@ GPIOD_TEST_CASE(rising_edge_active_low, 0, { 8 })
 	g_assert_nonnull(line);
 	gpiod_test_return_if_failed();
 
-	ret = gpiod_line_request_rising_edge_events_flags(line,
+	ret = gpiod_line_request_falling_edge_events_flags(line,
 		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
 	g_assert_cmpint(ret, ==, 0);
 
@@ -146,7 +146,7 @@ GPIOD_TEST_CASE(rising_edge_active_low, 0, { 8 })
 	ret = gpiod_line_event_read(line, &ev);
 	g_assert_cmpint(ret, ==, 0);
 
-	g_assert_cmpint(ev.event_type, ==, GPIOD_LINE_EVENT_RISING_EDGE);
+	g_assert_cmpint(ev.event_type, ==, GPIOD_LINE_EVENT_FALLING_EDGE);
 }
 
 GPIOD_TEST_CASE(get_value, 0, { 8 })
