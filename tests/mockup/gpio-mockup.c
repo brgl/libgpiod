@@ -105,7 +105,8 @@ EXPORT struct gpio_mockup *gpio_mockup_new(void)
 	 * Then see if we can freely load and unload it. If it's already
 	 * loaded - no problem, we'll remove it next anyway.
 	 */
-	rv = kmod_module_probe_insert_module(ctx->module, 0,
+	rv = kmod_module_probe_insert_module(ctx->module,
+					     KMOD_PROBE_IGNORE_LOADED,
 					     "gpio_mockup_ranges=-1,4",
 					     NULL, NULL, NULL);
 	if (rv)
