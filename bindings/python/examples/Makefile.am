@@ -6,8 +6,7 @@
 # Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
 #
 
-EXTRA_DIST =	gpiod_tests.py \
-		gpiodetect.py \
+EXTRA_DIST =	gpiodetect.py \
 		gpiofind.py \
 		gpioget.py \
 		gpioinfo.py \

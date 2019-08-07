@@ -220,6 +220,7 @@ AC_CONFIG_FILES([libgpiod.pc
 		 bindings/cxx/tests/Makefile
 		 bindings/python/Makefile
 		 bindings/python/examples/Makefile
+		 bindings/python/tests/Makefile
 		 man/Makefile])
 
 AC_OUTPUT

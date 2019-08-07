@@ -25,15 +25,6 @@ and is partially functional.
 
 ----------
 
-* use the python unit testing library for python bindings and reuse
-  libgpiod-test
-
-The best candidate for the testing framework is the standard unittest module
-available in cpython. We'd need however to wrap libgpiod-test in a C module
-for python just like we did for the bindings of the core C library.
-
-----------
-
 * implement a simple daemon for controlling GPIOs in C together with a client
   program
 
