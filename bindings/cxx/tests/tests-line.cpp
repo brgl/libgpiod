@@ -22,10 +22,19 @@ TEST_CASE("Global find_line() function works", "[line]")
 {
 	mockup::probe_guard mockup_chips({ 8, 8, 8, 8, 8 }, mockup::FLAG_NAMED_LINES);
 
-	auto line = ::gpiod::find_line("gpio-mockup-C-5");
-	REQUIRE(line.offset() == 5);
-	REQUIRE(line.name() == "gpio-mockup-C-5");
-	REQUIRE(line.get_chip().label() == "gpio-mockup-C");
+	SECTION("line found")
+	{
+		auto line = ::gpiod::find_line("gpio-mockup-C-5");
+		REQUIRE(line.offset() == 5);
+		REQUIRE(line.name() == "gpio-mockup-C-5");
+		REQUIRE(line.get_chip().label() == "gpio-mockup-C");
+	}
+
+	SECTION("line not found")
+	{
+		auto line = ::gpiod::find_line("nonexistent-line");
+		REQUIRE_FALSE(line);
+	}
 }
 
 TEST_CASE("Line information can be correctly retrieved", "[line]")
