@@ -410,7 +410,7 @@ static PyObject *gpiod_Line_is_open_source(gpiod_LineObject *self,
 }
 
 PyDoc_STRVAR(gpiod_Line_request_doc,
-"request(consumer[, type[, flags[, default_vals]]]) -> None\n"
+"request(consumer[, type[, flags[, default_val]]]) -> None\n"
 "\n"
 "Request this GPIO line.\n"
 "\n"
