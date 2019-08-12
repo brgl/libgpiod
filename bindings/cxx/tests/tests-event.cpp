@@ -7,7 +7,6 @@
 
 #include <catch2/catch.hpp>
 #include <gpiod.hpp>
-#include <map>
 #include <poll.h>
 
 #include "gpio-mockup.hpp"
@@ -166,7 +165,6 @@ TEST_CASE("Event file descriptors can be used for polling", "[event]")
 	mockup::probe_guard mockup_chips({ 8 });
 	mockup::event_thread events(0, 3, 200);
 	::gpiod::chip chip(mockup::instance().chip_name(0));
-	::std::map<int, ::gpiod::line> fd_line_map;
 	auto lines = chip.get_lines({ 0, 1, 2, 3, 4, 5 });
 
 	::gpiod::line_request config;
@@ -175,24 +173,20 @@ TEST_CASE("Event file descriptors can be used for polling", "[event]")
 
 	lines.request(config);
 
-	fd_line_map[lines[1].event_get_fd()] = lines[1];
-	fd_line_map[lines[3].event_get_fd()] = lines[3];
-	fd_line_map[lines[5].event_get_fd()] = lines[5];
-
-	::pollfd fds[3];
+	::std::vector<::pollfd> fds(3);
 	fds[0].fd = lines[1].event_get_fd();
 	fds[1].fd = lines[3].event_get_fd();
 	fds[2].fd = lines[5].event_get_fd();
 
 	fds[0].events = fds[1].events = fds[2].events = POLLIN | POLLPRI;
 
-	int ret = ::poll(fds, 3, 1000);
+	int ret = ::poll(fds.data(), 3, 1000);
 	REQUIRE(ret == 1);
 
 	for (int i = 0; i < 3; i++) {
 		if (fds[i].revents) {
-			auto event = fd_line_map[fds[i].fd].event_read();
-			REQUIRE(event.source == fd_line_map[fds[i].fd]);
+			auto event = lines[3].event_read();
+			REQUIRE(event.source == lines[3]);
 			REQUIRE(event.event_type == ::gpiod::line_event::RISING_EDGE);
 		}
 	}
