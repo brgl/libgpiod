@@ -14,13 +14,15 @@ import sys
 
 def print_event(event):
     if event.type == gpiod.LineEvent.RISING_EDGE:
-        print(' RISING EDGE', end='')
+        evstr = ' RISING EDGE'
     elif event.type == gpiod.LineEvent.FALLING_EDGE:
-        print('FALLING EDGE', end='')
+        evstr = 'FALLING EDGE'
     else:
         raise TypeError('Invalid event type')
 
-    print(' {}.{} line: {}'.format(event.sec, event.nsec, event.source.offset()))
+    print('event: {} offset: {} timestamp: [{}.{}]'.format(evstr,
+                                                           event.source.offset(),
+                                                           event.sec, event.nsec))
 
 if len(sys.argv) < 3:
     raise TypeError('usage: gpiomon.py <gpiochip> <offset1> <offset2> ...')
