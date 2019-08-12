@@ -25,4 +25,4 @@ with gpiod.Chip(sys.argv[1]) as chip:
 
     lines = chip.get_lines(offsets)
     lines.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_OUT)
-    vals = lines.set_values(values)
+    lines.set_values(values)
