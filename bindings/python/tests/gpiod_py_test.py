@@ -417,22 +417,28 @@ class LineRequestBehavior(MockupTestCase):
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_IN)
-            with self.assertRaises(OSError):
+            with self.assertRaises(OSError) as err_ctx:
                 line.request(consumer=default_consumer,
                              type=gpiod.LINE_REQ_DIR_IN)
+
+            self.assertEqual(err_ctx.exception.errno, errno.EBUSY)
 
     def test_line_request_twice_in_bulk(self):
         with gpiod.Chip(mockup.chip_name(0)) as chip:
             lines = chip.get_lines(( 2, 3, 6, 6 ))
-            with self.assertRaises(OSError):
+            with self.assertRaises(OSError) as err_ctx:
                 lines.request(consumer=default_consumer,
                               type=gpiod.LINE_REQ_DIR_IN)
+
+            self.assertEqual(err_ctx.exception.errno, errno.EBUSY)
 
     def test_use_value_unrequested(self):
         with gpiod.Chip(mockup.chip_name(0)) as chip:
             line = chip.get_line(3)
-            with self.assertRaises(OSError):
+            with self.assertRaises(OSError) as err_ctx:
                 line.get_value()
+
+            self.assertEqual(err_ctx.exception.errno, errno.EPERM)
 
 #
 # Iterator test cases
@@ -610,16 +616,20 @@ class EventFileDescriptor(MockupTestCase):
     def test_event_get_fd_not_requested(self):
         with gpiod.Chip(mockup.chip_name(0)) as chip:
             line = chip.get_line(3)
-            with self.assertRaises(OSError):
+            with self.assertRaises(OSError) as err_ctx:
                 fd = line.event_get_fd();
+
+            self.assertEqual(err_ctx.exception.errno, errno.EPERM)
 
     def test_event_get_fd_requested_for_values(self):
         with gpiod.Chip(mockup.chip_name(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_IN)
-            with self.assertRaises(OSError):
+            with self.assertRaises(OSError) as err_ctx:
                 fd = line.event_get_fd();
+
+            self.assertEqual(err_ctx.exception.errno, errno.EPERM)
 
     def test_event_fd_polling(self):
         with EventThread(0, 2, 200):
