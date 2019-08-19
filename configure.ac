@@ -206,10 +206,10 @@ then
 	AC_MSG_NOTICE([help2man not found - man pages cannot be generated automatically])
 fi
 
-AC_CONFIG_FILES([libgpiod.pc
-		 Makefile
+AC_CONFIG_FILES([Makefile
 		 include/Makefile
 		 lib/Makefile
+		 lib/libgpiod.pc
 		 tools/Makefile
 		 tests/Makefile
 		 tests/mockup/Makefile

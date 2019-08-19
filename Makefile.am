@@ -40,6 +40,3 @@ clean-local:
 EXTRA_DIST = Doxyfile
 
 endif
-
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libgpiod.pc

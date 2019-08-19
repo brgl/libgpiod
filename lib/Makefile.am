@@ -12,3 +12,6 @@ libgpiod_la_CFLAGS = -Wall -Wextra -g
 libgpiod_la_CFLAGS += -fvisibility=hidden -I$(top_srcdir)/include/
 libgpiod_la_CFLAGS += -include $(top_builddir)/config.h
 libgpiod_la_LDFLAGS = -version-info $(subst .,:,$(ABI_VERSION))
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libgpiod.pc
