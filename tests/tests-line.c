@@ -475,14 +475,8 @@ GPIOD_TEST_CASE(misc_flags, 0, { 8 })
 	g_assert_true(gpiod_line_is_used(line));
 	g_assert_false(gpiod_line_is_open_drain(line));
 	g_assert_true(gpiod_line_is_open_source(line));
-	/*
-	 * FIXME Enable the line below once the open-source/drain issue is
-	 * fixed in the kernel.
-	 */
-/*
 	g_assert_cmpint(gpiod_line_direction(line), ==,
 			GPIOD_LINE_DIRECTION_OUTPUT);
-*/
 }
 
 GPIOD_TEST_CASE(misc_flags_work_together, 0, { 8 })
@@ -518,14 +512,8 @@ GPIOD_TEST_CASE(misc_flags_work_together, 0, { 8 })
 	g_assert_false(gpiod_line_is_open_source(line));
 	g_assert_cmpint(gpiod_line_active_state(line), ==,
 			GPIOD_LINE_ACTIVE_STATE_LOW);
-	/*
-	 * FIXME Enable the line below once the open-source/drain issue is
-	 * fixed in the kernel.
-	 */
-/*
 	g_assert_cmpint(gpiod_line_direction(line), ==,
 			GPIOD_LINE_DIRECTION_OUTPUT);
-*/
 
 	gpiod_line_release(line);
 

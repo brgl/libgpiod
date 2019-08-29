@@ -54,6 +54,6 @@ public:
 	kernel_checker& operator=(kernel_checker&& other) = delete;
 };
 
-kernel_checker require_kernel(5, 2, 7);
+kernel_checker require_kernel(5, 2, 11);
 
 } /* namespace */

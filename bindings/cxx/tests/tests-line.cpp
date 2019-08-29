@@ -82,8 +82,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 
 		REQUIRE(line.offset() == 4);
 		REQUIRE(line.name() == "gpio-mockup-A-4");
-		/* FIXME Uncomment the line below once this issue is fixed in the kernel. */
-		//REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
 		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_LOW);
 		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());

@@ -299,8 +299,7 @@ class LineInfo(MockupTestCase):
                          flags=flags)
             self.assertEqual(line.offset(), 4)
             self.assertEqual(line.name(), 'gpio-mockup-A-4')
-            # FIXME Uncomment the line below once this issue is fixed in the kernel.
-            #self.assertEqual(line.direction(), gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(line.direction(), gpiod.Line.DIRECTION_OUTPUT)
             self.assertEqual(line.active_state(), gpiod.Line.ACTIVE_LOW)
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
@@ -655,6 +654,6 @@ class EventFileDescriptor(MockupTestCase):
 #
 
 if __name__ == '__main__':
-    check_kernel(5, 2, 7)
+    check_kernel(5, 2, 11)
     mockup = gpiomockup.Mockup()
     unittest.main()
