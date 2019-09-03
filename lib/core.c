@@ -120,12 +120,14 @@ static bool is_gpiochip_cdev(const char *path)
 		goto out_free_sysfsp;
 
 	memset(sysfsdev, 0, sizeof(sysfsdev));
-	rd = read(fd, sysfsdev, strlen(devstr));
+	rd = read(fd, sysfsdev, sizeof(sysfsdev) - 1);
 	close(fd);
 	if (rd < 0)
 		goto out_free_sysfsp;
 
-	if (strcmp(sysfsdev, devstr) != 0) {
+	rd--; /* Ignore trailing newline. */
+	if ((size_t)rd != strlen(devstr) ||
+	    strncmp(sysfsdev, devstr, rd) != 0) {
 		errno = ENODEV;
 		goto out_free_sysfsp;
 	}
