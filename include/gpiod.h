@@ -742,10 +742,18 @@ int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
  * The line is updated by calling gpiod_line_update() from within
  * gpiod_chip_get_line() and on every line request/release. However: an error
  * returned from gpiod_line_update() only breaks the execution of the former.
- * The request/release routines only set the internal up-to-date flag to false
+ * The request/release routines only set the internal needs_update flag to true
  * and continue their execution. This routine allows to check if a line info
  * update failed at some point and we should call gpiod_line_update()
  * explicitly.
+ *
+ * This routine will not indicate any potential changes introduced by external
+ * actors (such as a different process requesting the line). We currently have
+ * no mechanism provided by the kernel for that and for the sake of speed and
+ * simplicity of this low-level library we don't want to re-read the line info
+ * automatically everytime a property is retrieved. Any daemon using this
+ * library must track the state of lines on its own and call
+ * ::gpiod_line_update if needed.
  */
 bool gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API;
 

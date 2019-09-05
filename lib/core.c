@@ -41,7 +41,7 @@ struct gpiod_line {
 	bool open_drain;
 
 	int state;
-	bool up_to_date;
+	bool needs_update;
 
 	struct gpiod_chip *chip;
 	struct line_fd_handle *fd_handle;
@@ -326,7 +326,7 @@ static void line_maybe_update(struct gpiod_line *line)
 
 	rv = gpiod_line_update(line);
 	if (rv < 0)
-		line->up_to_date = false;
+		line->needs_update = true;
 }
 
 struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line)
@@ -376,7 +376,7 @@ bool gpiod_line_is_open_source(struct gpiod_line *line)
 
 bool gpiod_line_needs_update(struct gpiod_line *line)
 {
-	return !line->up_to_date;
+	return line->needs_update;
 }
 
 int gpiod_line_update(struct gpiod_line *line)
@@ -405,7 +405,7 @@ int gpiod_line_update(struct gpiod_line *line)
 	strncpy(line->name, info.name, sizeof(line->name));
 	strncpy(line->consumer, info.consumer, sizeof(line->consumer));
 
-	line->up_to_date = true;
+	line->needs_update = false;
 
 	return 0;
 }
