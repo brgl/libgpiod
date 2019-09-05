@@ -12,9 +12,10 @@
 import gpiod
 import sys
 
-line = gpiod.find_line(sys.argv[1])
-if line is None:
-    sys.exit(1)
+if __name__ == '__main__':
+    line = gpiod.find_line(sys.argv[1])
+    if line is None:
+        sys.exit(1)
 
-print('{} {}'.format(line.owner().name(), line.offset()))
-line.owner().close()
+    print('{} {}'.format(line.owner().name(), line.offset()))
+    line.owner().close()
