@@ -15,11 +15,12 @@ AM_LDFLAGS += -pthread
 
 bin_PROGRAMS = gpiod-cxx-test
 
-gpiod_cxx_test_SOURCES =	gpiod-cxx-test-main.cpp \
-				gpiod-cxx-test.cpp \
-				gpio-mockup.cpp \
-				gpio-mockup.hpp \
-				tests-chip.cpp \
-				tests-event.cpp \
-				tests-iter.cpp \
-				tests-line.cpp
+gpiod_cxx_test_SOURCES =			\
+		gpiod-cxx-test-main.cpp		\
+		gpiod-cxx-test.cpp		\
+		gpio-mockup.cpp			\
+		gpio-mockup.hpp			\
+		tests-chip.cpp			\
+		tests-event.cpp			\
+		tests-iter.cpp			\
+		tests-line.cpp

@@ -19,14 +19,15 @@ LDADD += $(GLIB_LIBS)
 
 bin_PROGRAMS = gpiod-test
 
-gpiod_test_SOURCES =	gpiod-test.c \
-			gpiod-test.h \
-			tests-chip.c \
-			tests-ctxless.c \
-			tests-event.c \
-			tests-iter.c \
-			tests-line.c \
-			tests-misc.c
+gpiod_test_SOURCES =			\
+		gpiod-test.c		\
+		gpiod-test.h		\
+		tests-chip.c		\
+		tests-ctxless.c		\
+		tests-event.c		\
+		tests-iter.c		\
+		tests-line.c		\
+		tests-misc.c
 
 all-local: gpiod-test
 	@echo " ********************************************************"
