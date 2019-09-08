@@ -36,7 +36,3 @@ over unix sockets.
 In this case however the goal is to have as few dependencies as possible. This
 is because for some small systems dbus is overkill. Since we won't be using any
 standardized protocol, it will take much more effort to implement it correctly.
-
-----------
-
-* extend gpiomon with an option to run external processes on line events
