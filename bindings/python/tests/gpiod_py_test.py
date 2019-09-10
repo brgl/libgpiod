@@ -68,7 +68,7 @@ class EventThread(threading.Thread):
         self.join()
 
 def check_kernel(major, minor, release):
-    current = os.uname().release
+    current = os.uname().release.split('-')[0]
     required = '{}.{}.{}'.format(major, minor, release)
     if version.parse(current) < version.parse(required):
         raise NotImplementedError(
