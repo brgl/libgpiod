@@ -307,6 +307,11 @@ class LineInfo(MockupTestCase):
             self.assertTrue(line.is_open_drain())
             self.assertFalse(line.is_open_source())
 
+    def test_update_line_info(self):
+        with gpiod.Chip(mockup.chip_name(0)) as chip:
+            line = chip.get_line(3)
+            line.update()
+
 class LineValues(MockupTestCase):
 
     chip_sizes = ( 8, )
