@@ -194,6 +194,17 @@ const chip& line::get_chip(void) const
 	return this->_m_chip;
 }
 
+void line::update(void) const
+{
+	this->throw_if_null();
+
+	int ret = ::gpiod_line_update(this->_m_line);
+
+	if (ret < 0)
+		throw ::std::system_error(errno, ::std::system_category(),
+					  "unable to update the line info");
+}
+
 void line::reset(void)
 {
 	this->_m_line = nullptr;

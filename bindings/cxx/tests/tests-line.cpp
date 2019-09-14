@@ -89,6 +89,11 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.is_open_drain());
 		REQUIRE_FALSE(line.is_open_source());
 	}
+
+	SECTION("update line info")
+	{
+		REQUIRE_NOTHROW(line.update());
+	}
 }
 
 TEST_CASE("Line bulk object works correctly", "[line][bulk]")
