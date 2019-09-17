@@ -36,3 +36,18 @@ over unix sockets.
 In this case however the goal is to have as few dependencies as possible. This
 is because for some small systems dbus is overkill. Since we won't be using any
 standardized protocol, it will take much more effort to implement it correctly.
+
+----------
+
+* re-write the python bindings to make them more 'pythonic'
+
+There are several problems with the current python API. For instance: instead
+of methods, properties should be used wherever possible (chip's name and label,
+line's direction, active-state etc.), we should probably store the line objects
+within the chip instead of creating them everytime get_line() is called and
+several more.
+
+The idea is to create a new Python module with a different name and convert
+the current gpiod module into a compatiblity layer that would simply translate
+the calls from the new interface to the old one - this way we won't break
+existing programs.
