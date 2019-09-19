@@ -593,10 +593,8 @@ static PyObject *gpiod_Line_update(gpiod_LineObject *self,
 	int ret;
 
 	ret = gpiod_line_update(self->line);
-	if (ret) {
-		PyErr_SetFromErrno(PyExc_OSError);
-		return NULL;
-	}
+	if (ret)
+		return PyErr_SetFromErrno(PyExc_OSError);
 
 	Py_RETURN_NONE;
 }
@@ -663,9 +661,9 @@ static gpiod_LineEventObject *gpiod_Line_event_read(gpiod_LineObject *self,
 	rv = gpiod_line_event_read(self->line, &ret->event);
 	Py_END_ALLOW_THREADS;
 	if (rv) {
-		PyErr_SetFromErrno(PyExc_OSError);
 		Py_DECREF(ret);
-		return NULL;
+		return (gpiod_LineEventObject *)PyErr_SetFromErrno(
+							PyExc_OSError);
 	}
 
 	Py_INCREF(self);
@@ -1113,10 +1111,8 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_request_bulk(&bulk, &conf, default_vals);
 	Py_END_ALLOW_THREADS;
-	if (rv) {
-		PyErr_SetFromErrno(PyExc_OSError);
-		return NULL;
-	}
+	if (rv)
+		return PyErr_SetFromErrno(PyExc_OSError);
 
 	Py_RETURN_NONE;
 }
@@ -1145,10 +1141,8 @@ static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self,
 	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_get_value_bulk(&bulk, vals);
 	Py_END_ALLOW_THREADS;
-	if (rv) {
-		PyErr_SetFromErrno(PyExc_OSError);
-		return NULL;
-	}
+	if (rv)
+		return PyErr_SetFromErrno(PyExc_OSError);
 
 	val_list = PyList_New(self->num_lines);
 	if (!val_list)
@@ -1233,10 +1227,8 @@ static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_set_value_bulk(&bulk, vals);
 	Py_END_ALLOW_THREADS;
-	if (rv) {
-		PyErr_SetFromErrno(PyExc_OSError);
-		return NULL;
-	}
+	if (rv)
+		return PyErr_SetFromErrno(PyExc_OSError);
 
 	Py_RETURN_NONE;
 }
@@ -1305,12 +1297,10 @@ static PyObject *gpiod_LineBulk_event_wait(gpiod_LineBulkObject *self,
 	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_event_wait_bulk(&bulk, &ts, &ev_bulk);
 	Py_END_ALLOW_THREADS;
-	if (rv < 0) {
-		PyErr_SetFromErrno(PyExc_OSError);
-		return NULL;
-	} else if (rv == 0) {
+	if (rv < 0)
+		return PyErr_SetFromErrno(PyExc_OSError);
+	else if (rv == 0)
 		Py_RETURN_NONE;
-	}
 
 	ret = PyList_New(gpiod_line_bulk_num_lines(&ev_bulk));
 	if (!ret)
@@ -1634,10 +1624,8 @@ gpiod_Chip_get_line(gpiod_ChipObject *self, PyObject *args)
 	Py_BEGIN_ALLOW_THREADS;
 	line = gpiod_chip_get_line(self->chip, offset);
 	Py_END_ALLOW_THREADS;
-	if (!line) {
-		PyErr_SetFromErrno(PyExc_OSError);
-		return NULL;
-	}
+	if (!line)
+		return (gpiod_LineObject *)PyErr_SetFromErrno(PyExc_OSError);
 
 	return gpiod_MakeLineObject(self, line);
 }
@@ -1676,8 +1664,7 @@ gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args)
 			return (gpiod_LineObject *)Py_None;
 		}
 
-		PyErr_SetFromErrno(PyExc_OSError);
-		return NULL;
+		return (gpiod_LineObject *)PyErr_SetFromErrno(PyExc_OSError);
 	}
 
 	return gpiod_MakeLineObject(self, line);
@@ -1798,10 +1785,9 @@ gpiod_Chip_get_all_lines(gpiod_ChipObject *self, PyObject *Py_UNUSED(ignored))
 		return NULL;
 
 	rv = gpiod_chip_get_all_lines(self->chip, &bulk);
-	if (rv) {
-		PyErr_SetFromErrno(PyExc_OSError);
-		return NULL;
-	}
+	if (rv)
+		return (gpiod_LineBulkObject *)PyErr_SetFromErrno(
+							PyExc_OSError);
 
 	list = PyList_New(gpiod_line_bulk_num_lines(&bulk));
 	if (!list)
@@ -2204,8 +2190,7 @@ static gpiod_LineObject *gpiod_Module_find_line(PyObject *Py_UNUSED(self),
 			return (gpiod_LineObject *)Py_None;
 		}
 
-		PyErr_SetFromErrno(PyExc_OSError);
-		return NULL;
+		return (gpiod_LineObject *)PyErr_SetFromErrno(PyExc_OSError);
 	}
 
 	chip = gpiod_line_get_chip(line);
