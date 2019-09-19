@@ -112,6 +112,22 @@ Examples:
     # Monitor multiple lines, exit after the first event.
     $ gpiomon --silent --num-events=1 gpiochip0 2 3 5
 
+BINDINGS
+--------
+
+High-level, object-oriented bindings for C++ and python3 are provided. They
+can be enabled by passing --enable-bindings-cxx and --enable-bindings-python
+arguments respectively to configure.
+
+C++ bindings require C++11 support and autoconf-archive collection if building
+from git.
+
+Python bindings require python3 support and libpython development files. Care
+must be taken when cross-compiling python bindings: users usually must specify
+the PYTHON_CPPFLAGS and PYTHON_LIBS variables in order to point the build
+system to the correct locations. During native builds, the configure script
+can auto-detect the location of the development files.
+
 TESTING
 -------
 
@@ -122,7 +138,9 @@ interface.
 The minimum kernel version required to run the tests can be checked in the
 tests/gpiod-test.c source file (it's subject to change if new features are
 added to the kernel). The tests work together with the gpio-mockup kernel
-module which must be enabled. NOTE: the module must not be built-in.
+module which must be enabled. NOTE: the module must not be built-in. A helper
+library - libgpiomockup - is included to enable straightforward interaction
+with the module.
 
 To build the testing executable add the '--enable-tests' option when running
 the configure script. If enabled, the tests will be installed next to
@@ -139,21 +157,12 @@ The gpio-tools programs can be tested separately using the gpio-tools-test.bats
 script. It requires bats[1] to run and assumes that the tested executables are
 in the same directory as the script.
 
-BINDINGS
---------
+Both C++ and Python bindings also include their own test-suites. Both reuse the
+libgpiomockup library to avoid code duplication when interacting with
+gpio-mockup.
 
-High-level, object-oriented bindings for C++ and python3 are provided. They
-can be enabled by passing --enable-bindings-cxx and --enable-bindings-python
-arguments respectively to configure.
-
-C++ bindings require C++11 support and autoconf-archive collection if building
-from git.
-
-Python bindings require python3 support and libpython development files. Care
-must be taken when cross-compiling python bindings: users usually must specify
-the PYTHON_CPPFLAGS and PYTHON_LIBS variables in order to point the build
-system to the correct locations. During native builds, the configure script
-can auto-detect the location of the development files.
+Python test-suite uses the standard unittest package. C++ tests use an external
+testing framework - Catch2 - which must be installed in the system.
 
 DOCUMENTATION
 -------------
