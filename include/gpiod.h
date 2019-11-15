@@ -345,7 +345,7 @@ int gpiod_ctxless_event_monitor(const char *device, int event_type,
  *       back to a basic, ppoll() based callback.
  *
  * Internally this routine opens the GPIO chip, requests the set of lines for
- * the type of events specified in the event_type paramter and calls the
+ * the type of events specified in the event_type parameter and calls the
  * polling callback in a loop. The role of the polling callback is to detect
  * input events on a set of file descriptors and notify the caller about the
  * fds ready for reading.
