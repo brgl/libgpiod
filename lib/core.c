@@ -463,6 +463,20 @@ static bool line_bulk_all_free(struct gpiod_line_bulk *bulk)
 	return true;
 }
 
+static __u32 line_request_flag_to_gpio_handleflag(int flags)
+{
+	int hflags = 0;
+
+	if (flags & GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN)
+		hflags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
+	if (flags & GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE)
+		hflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
+	if (flags & GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW)
+		hflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
+
+	return hflags;
+}
+
 static int line_request_values(struct gpiod_line_bulk *bulk,
 			       const struct gpiod_line_request_config *config,
 			       const int *default_vals)
@@ -488,19 +502,14 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 
 	memset(&req, 0, sizeof(req));
 
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN)
-		req.flags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE)
-		req.flags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW)
-		req.flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
+	req.lines = gpiod_line_bulk_num_lines(bulk);
+	req.flags = line_request_flag_to_gpio_handleflag(config->flags);
 
 	if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_INPUT)
 		req.flags |= GPIOHANDLE_REQUEST_INPUT;
 	else if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT)
 		req.flags |= GPIOHANDLE_REQUEST_OUTPUT;
 
-	req.lines = gpiod_line_bulk_num_lines(bulk);
 
 	gpiod_line_bulk_foreach_line_off(bulk, line, i) {
 		req.lineoffsets[i] = gpiod_line_offset(line);
@@ -548,14 +557,8 @@ static int line_request_event_single(struct gpiod_line *line,
 			sizeof(req.consumer_label) - 1);
 
 	req.lineoffset = gpiod_line_offset(line);
+	req.handleflags = line_request_flag_to_gpio_handleflag(config->flags);
 	req.handleflags |= GPIOHANDLE_REQUEST_INPUT;
-
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN)
-		req.handleflags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE)
-		req.handleflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW)
-		req.handleflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
 	if (config->request_type == GPIOD_LINE_REQUEST_EVENT_RISING_EDGE)
 		req.eventflags |= GPIOEVENT_REQUEST_RISING_EDGE;
