@@ -11,9 +11,9 @@
 
 namespace gpiod {
 
-const ::std::bitset<32> line_request::FLAG_ACTIVE_LOW("001");
-const ::std::bitset<32> line_request::FLAG_OPEN_SOURCE("010");
-const ::std::bitset<32> line_request::FLAG_OPEN_DRAIN("100");
+const ::std::bitset<32> line_request::FLAG_ACTIVE_LOW(GPIOD_BIT(0));
+const ::std::bitset<32> line_request::FLAG_OPEN_SOURCE(GPIOD_BIT(1));
+const ::std::bitset<32> line_request::FLAG_OPEN_DRAIN(GPIOD_BIT(2));
 
 namespace {
 
