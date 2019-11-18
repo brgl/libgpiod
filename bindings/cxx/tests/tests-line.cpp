@@ -201,7 +201,7 @@ TEST_CASE("Line values can be set and read", "[line]")
 		REQUIRE(mockup::instance().chip_get_value(0, 7) == 0);
 	}
 
-	SECTION("set multiple values with default values paramter")
+	SECTION("set multiple values with default values parameter")
 	{
 		auto lines = chip.get_lines({ 1, 2, 4, 6, 7 });
 		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
