@@ -623,7 +623,7 @@ gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
  *
  * This is a variant of ::gpiod_line_bulk_foreach_line which uses an integer
  * variable (either signed or unsigned) to store the loop state. This offset
- * variable is guaranteed to correspond with the offset of the current line in
+ * variable is guaranteed to correspond to the offset of the current line in
  * the bulk->lines array.
  */
 #define gpiod_line_bulk_foreach_line_off(bulk, line, offset)		\

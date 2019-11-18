@@ -1121,7 +1121,7 @@ PyDoc_STRVAR(gpiod_LineBulk_get_values_doc,
 "get_values() -> list of integers\n"
 "\n"
 "Read the values of all the lines held by this LineBulk object. The index\n"
-"of each value in the returned list corresponds with the index of the line\n"
+"of each value in the returned list corresponds to the index of the line\n"
 "in this gpiod.LineBulk object.");
 
 static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self,
@@ -1176,7 +1176,7 @@ PyDoc_STRVAR(gpiod_LineBulk_set_values_doc,
 "\n"
 "The number of values in the list passed as argument must be the same as\n"
 "the number of lines held by this gpiod.LineBulk object. The index of each\n"
-"value corresponds with the index of each line in the object.\n");
+"value corresponds to the index of each line in the object.\n");
 
 static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 					   PyObject *args)
@@ -1199,7 +1199,7 @@ static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 	num_vals = PyObject_Size(val_list);
 	if (self->num_lines != num_vals) {
 		PyErr_SetString(PyExc_TypeError,
-				"Number of values must correspond with the number of lines");
+				"Number of values must correspond to the number of lines");
 		return NULL;
 	}
 

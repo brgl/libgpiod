@@ -110,7 +110,7 @@ static bool is_gpiochip_cdev(const char *path)
 
 	/*
 	 * Make sure the major and minor numbers of the character device
-	 * correspond with the ones in the dev attribute in sysfs.
+	 * correspond to the ones in the dev attribute in sysfs.
 	 */
 	snprintf(devstr, sizeof(devstr), "%u:%u",
 		 major(statbuf.st_rdev), minor(statbuf.st_rdev));
