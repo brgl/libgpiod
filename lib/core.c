@@ -742,8 +742,10 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 
 	memset(&data, 0, sizeof(data));
 
-	for (i = 0; i < gpiod_line_bulk_num_lines(bulk); i++)
-		data.values[i] = (uint8_t)!!values[i];
+	if (values) {
+		for (i = 0; i < gpiod_line_bulk_num_lines(bulk); i++)
+			data.values[i] = (uint8_t)!!values[i];
+	}
 
 	line = gpiod_line_bulk_get_line(bulk, 0);
 	fd = line_get_fd(line);
