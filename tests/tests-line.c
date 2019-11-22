@@ -78,7 +78,6 @@ GPIOD_TEST_CASE(consumer, 0, { 8 })
 
 	ret = gpiod_line_request_input(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
-	g_assert_false(gpiod_line_needs_update(line));
 	g_assert_cmpstr(gpiod_line_consumer(line), ==, GPIOD_TEST_CONSUMER);
 }
 
@@ -101,7 +100,6 @@ GPIOD_TEST_CASE(consumer_long_string, 0, { 8 })
 	ret = gpiod_line_request_input(line,
 			"consumer string over 32 characters long");
 	g_assert_cmpint(ret, ==, 0);
-	g_assert_false(gpiod_line_needs_update(line));
 	g_assert_cmpstr(gpiod_line_consumer(line), ==,
 			"consumer string over 32 charact");
 	g_assert_cmpuint(strlen(gpiod_line_consumer(line)), ==, 31);
