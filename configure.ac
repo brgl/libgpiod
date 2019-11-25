@@ -183,8 +183,11 @@ if test "x$with_bindings_python" = xtrue
 then
 	AM_PATH_PYTHON([3.0], [],
 		[AC_MSG_ERROR([python3 not found - needed for python bindings])])
-	AC_CHECK_FILE(["$PYTHON-config"], [],
-		[AC_MSG_ERROR([python3-config not found - needed for python bindings])])
+	AC_CHECK_PROG([has_python_config], [python3-config], [true], [false])
+	if test "x$has_python_config" = xfalse
+	then
+		AC_MSG_ERROR([python3-config not found - needed for python bindings])
+	fi
 	AS_IF([test -z "$PYTHON_CPPFLAGS"],
 		[AC_SUBST(PYTHON_CPPFLAGS, [`$PYTHON-config --includes`])])
 	AS_IF([test -z "$PYTHON_LIBS"],
