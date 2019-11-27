@@ -49,7 +49,7 @@ unsigned int line::offset(void) const
 	return consumer ? ::std::string(consumer) : ::std::string();
 }
 
-int line::direction(void) const noexcept
+int line::direction(void) const
 {
 	this->throw_if_null();
 
@@ -58,7 +58,7 @@ int line::direction(void) const noexcept
 	return dir == GPIOD_LINE_DIRECTION_INPUT ? DIRECTION_INPUT : DIRECTION_OUTPUT;
 }
 
-int line::active_state(void) const noexcept
+int line::active_state(void) const
 {
 	this->throw_if_null();
 

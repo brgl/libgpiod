@@ -41,7 +41,6 @@ struct gpiod_line {
 	bool open_drain;
 
 	int state;
-	bool needs_update;
 
 	struct gpiod_chip *chip;
 	struct line_fd_handle *fd_handle;
@@ -110,7 +109,7 @@ static bool is_gpiochip_cdev(const char *path)
 
 	/*
 	 * Make sure the major and minor numbers of the character device
-	 * correspond with the ones in the dev attribute in sysfs.
+	 * correspond to the ones in the dev attribute in sysfs.
 	 */
 	snprintf(devstr, sizeof(devstr), "%u:%u",
 		 major(statbuf.st_rdev), minor(statbuf.st_rdev));
@@ -320,15 +319,6 @@ static int line_get_fd(struct gpiod_line *line)
 	return line->fd_handle->fd;
 }
 
-static void line_maybe_update(struct gpiod_line *line)
-{
-	int rv;
-
-	rv = gpiod_line_update(line);
-	if (rv < 0)
-		line->needs_update = true;
-}
-
 struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line)
 {
 	return line->chip;
@@ -374,9 +364,9 @@ bool gpiod_line_is_open_source(struct gpiod_line *line)
 	return line->open_source;
 }
 
-bool gpiod_line_needs_update(struct gpiod_line *line)
+bool gpiod_line_needs_update(struct gpiod_line *line GPIOD_UNUSED)
 {
-	return line->needs_update;
+	return false;
 }
 
 int gpiod_line_update(struct gpiod_line *line)
@@ -404,8 +394,6 @@ int gpiod_line_update(struct gpiod_line *line)
 
 	strncpy(line->name, info.name, sizeof(line->name));
 	strncpy(line->consumer, info.consumer, sizeof(line->consumer));
-
-	line->needs_update = false;
 
 	return 0;
 }
@@ -463,6 +451,20 @@ static bool line_bulk_all_free(struct gpiod_line_bulk *bulk)
 	return true;
 }
 
+static __u32 line_request_flag_to_gpio_handleflag(int flags)
+{
+	int hflags = 0;
+
+	if (flags & GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN)
+		hflags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
+	if (flags & GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE)
+		hflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
+	if (flags & GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW)
+		hflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
+
+	return hflags;
+}
+
 static int line_request_values(struct gpiod_line_bulk *bulk,
 			       const struct gpiod_line_request_config *config,
 			       const int *default_vals)
@@ -488,19 +490,14 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 
 	memset(&req, 0, sizeof(req));
 
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN)
-		req.flags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE)
-		req.flags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW)
-		req.flags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
+	req.lines = gpiod_line_bulk_num_lines(bulk);
+	req.flags = line_request_flag_to_gpio_handleflag(config->flags);
 
 	if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_INPUT)
 		req.flags |= GPIOHANDLE_REQUEST_INPUT;
 	else if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT)
 		req.flags |= GPIOHANDLE_REQUEST_OUTPUT;
 
-	req.lines = gpiod_line_bulk_num_lines(bulk);
 
 	gpiod_line_bulk_foreach_line_off(bulk, line, i) {
 		req.lineoffsets[i] = gpiod_line_offset(line);
@@ -528,7 +525,12 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
 		line->state = LINE_REQUESTED_VALUES;
 		line_set_fd(line, line_fd);
-		line_maybe_update(line);
+
+		rv = gpiod_line_update(line);
+		if (rv) {
+			gpiod_line_release_bulk(bulk);
+			return rv;
+		}
 	}
 
 	return 0;
@@ -548,14 +550,8 @@ static int line_request_event_single(struct gpiod_line *line,
 			sizeof(req.consumer_label) - 1);
 
 	req.lineoffset = gpiod_line_offset(line);
+	req.handleflags = line_request_flag_to_gpio_handleflag(config->flags);
 	req.handleflags |= GPIOHANDLE_REQUEST_INPUT;
-
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN)
-		req.handleflags |= GPIOHANDLE_REQUEST_OPEN_DRAIN;
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE)
-		req.handleflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW)
-		req.handleflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
 
 	if (config->request_type == GPIOD_LINE_REQUEST_EVENT_RISING_EDGE)
 		req.eventflags |= GPIOEVENT_REQUEST_RISING_EDGE;
@@ -574,7 +570,12 @@ static int line_request_event_single(struct gpiod_line *line,
 
 	line->state = LINE_REQUESTED_EVENTS;
 	line_set_fd(line, line_fd);
-	line_maybe_update(line);
+
+	rv = gpiod_line_update(line);
+	if (rv) {
+		gpiod_line_release(line);
+		return rv;
+	}
 
 	return 0;
 }
@@ -739,8 +740,10 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 
 	memset(&data, 0, sizeof(data));
 
-	for (i = 0; i < gpiod_line_bulk_num_lines(bulk); i++)
-		data.values[i] = (uint8_t)!!values[i];
+	if (values) {
+		for (i = 0; i < gpiod_line_bulk_num_lines(bulk); i++)
+			data.values[i] = (uint8_t)!!values[i];
+	}
 
 	line = gpiod_line_bulk_get_line(bulk, 0);
 	fd = line_get_fd(line);

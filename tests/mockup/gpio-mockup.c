@@ -333,7 +333,7 @@ EXPORT int gpio_mockup_probe(struct gpio_mockup *ctx, unsigned int num_chips,
 	/*
 	 * We can't assume that the order in which the mockup gpiochip
 	 * devices are created will be deterministic, yet we want the
-	 * index passed to the test_chip_*() functions to correspond with the
+	 * index passed to the test_chip_*() functions to correspond to the
 	 * order in which the chips were defined in the TEST_DEFINE()
 	 * macro.
 	 *

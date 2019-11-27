@@ -345,7 +345,7 @@ int gpiod_ctxless_event_monitor(const char *device, int event_type,
  *       back to a basic, ppoll() based callback.
  *
  * Internally this routine opens the GPIO chip, requests the set of lines for
- * the type of events specified in the event_type paramter and calls the
+ * the type of events specified in the event_type parameter and calls the
  * polling callback in a loop. The role of the polling callback is to detect
  * input events on a set of file descriptors and notify the caller about the
  * fds ready for reading.
@@ -623,7 +623,7 @@ gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
  *
  * This is a variant of ::gpiod_line_bulk_foreach_line which uses an integer
  * variable (either signed or unsigned) to store the loop state. This offset
- * variable is guaranteed to correspond with the offset of the current line in
+ * variable is guaranteed to correspond to the offset of the current line in
  * the bulk->lines array.
  */
 #define gpiod_line_bulk_foreach_line_off(bulk, line, offset)		\
@@ -725,37 +725,32 @@ bool gpiod_line_is_open_source(struct gpiod_line *line) GPIOD_API;
 /**
  * @brief Re-read the line info.
  * @param line GPIO line object.
- * @return 0 is the operation succeeds. In case of an error this routine
+ * @return 0 if the operation succeeds. In case of an error this routine
  *         returns -1 and sets the last error number.
  *
  * The line info is initially retrieved from the kernel by
- * gpiod_chip_get_line(). Users can use this line to manually re-read the line
- * info.
+ * gpiod_chip_get_line() and is later re-read after every successful request.
+ * Users can use this function to manually re-read the line info when needed.
+ *
+ * We currently have no mechanism provided by the kernel for keeping the line
+ * info synchronized and for the sake of speed and simplicity of this low-level
+ * library we don't want to re-read the line info automatically everytime
+ * a property is retrieved. Any daemon using this library must track the state
+ * of lines on its own and call this routine if needed.
+ *
+ * The state of requested lines is kept synchronized (or rather cannot be
+ * changed by external agents while the ownership of the line is taken) so
+ * there's no need to call this function in that case.
  */
 int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Check if the line info needs to be updated.
  * @param line GPIO line object.
- * @return Returns false if the line is up-to-date. True otherwise.
- *
- * The line is updated by calling gpiod_line_update() from within
- * gpiod_chip_get_line() and on every line request/release. However: an error
- * returned from gpiod_line_update() only breaks the execution of the former.
- * The request/release routines only set the internal needs_update flag to true
- * and continue their execution. This routine allows to check if a line info
- * update failed at some point and we should call gpiod_line_update()
- * explicitly.
- *
- * This routine will not indicate any potential changes introduced by external
- * actors (such as a different process requesting the line). We currently have
- * no mechanism provided by the kernel for that and for the sake of speed and
- * simplicity of this low-level library we don't want to re-read the line info
- * automatically everytime a property is retrieved. Any daemon using this
- * library must track the state of lines on its own and call
- * ::gpiod_line_update if needed.
+ * @return Deprecated and no longer functional - always returns false.
  */
-bool gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API;
+bool
+gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API GPIOD_DEPRECATED;
 
 /**
  * @}

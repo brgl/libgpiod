@@ -31,7 +31,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(gpiod_chip_struct, gpiod_chip_close);
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(gpiod_chip_iter_struct, gpiod_chip_iter_free);
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(gpiod_line_iter_struct, gpiod_line_iter_free);
 
-/* There are private definitions and should not be used directly. */
+/* These are private definitions and should not be used directly. */
 typedef void (*_gpiod_test_func)(void);
 
 typedef struct _gpiod_test_case _GpiodTestCase;

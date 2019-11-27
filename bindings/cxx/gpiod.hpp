@@ -312,13 +312,13 @@ public:
 	 * @brief Get current direction of this line.
 	 * @return Current direction setting.
 	 */
-	GPIOD_API int direction(void) const noexcept;
+	GPIOD_API int direction(void) const;
 
 	/**
 	 * @brief Get current active state of this line.
 	 * @return Current active state setting.
 	 */
-	GPIOD_API int active_state(void) const noexcept;
+	GPIOD_API int active_state(void) const;
 
 	/**
 	 * @brief Check if this line is used by the kernel or other user space
