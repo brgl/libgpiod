@@ -6,9 +6,21 @@
  */
 
 #include <gpiod.hpp>
+#include <map>
 #include <system_error>
 
 namespace gpiod {
+
+namespace {
+
+const ::std::map<int, int> bias_mapping = {
+	{ GPIOD_LINE_BIAS_PULL_UP,	line::BIAS_PULL_UP, },
+	{ GPIOD_LINE_BIAS_PULL_DOWN,	line::BIAS_PULL_DOWN, },
+	{ GPIOD_LINE_BIAS_DISABLE,	line::BIAS_DISABLE, },
+	{ GPIOD_LINE_BIAS_AS_IS,	line::BIAS_AS_IS, },
+};
+
+} /* namespace */
 
 line::line(void)
 	: _m_line(nullptr),
@@ -65,6 +77,13 @@ int line::active_state(void) const
 	int active = ::gpiod_line_active_state(this->_m_line);
 
 	return active == GPIOD_LINE_ACTIVE_STATE_HIGH ? ACTIVE_HIGH : ACTIVE_LOW;
+}
+
+int line::bias(void) const
+{
+	this->throw_if_null();
+
+	return bias_mapping.at(::gpiod_line_bias(this->_m_line));
 }
 
 bool line::is_used(void) const
