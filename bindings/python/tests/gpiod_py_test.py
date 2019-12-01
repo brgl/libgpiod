@@ -493,6 +493,189 @@ class LineValues(MockupTestCase):
             line.set_value(0)
             self.assertEqual(mockup.chip_get_value(0, 3), 1)
 
+class LineConfig(MockupTestCase):
+
+    chip_sizes = ( 8, )
+
+    def test_set_config_direction(self):
+        with gpiod.Chip(mockup.chip_name(0)) as chip:
+            line = chip.get_line(3)
+            line.request(consumer=default_consumer,
+                         type=gpiod.LINE_REQ_DIR_IN)
+            self.assertEqual(line.direction(), gpiod.Line.DIRECTION_INPUT)
+            line.set_config(gpiod.LINE_REQ_DIR_IN, 0, 0)
+            self.assertEqual(line.direction(), gpiod.Line.DIRECTION_INPUT)
+            line.set_config(gpiod.LINE_REQ_DIR_OUT,0,0)
+            self.assertEqual(line.direction(), gpiod.Line.DIRECTION_OUTPUT)
+
+    def test_set_config_flags(self):
+        with gpiod.Chip(mockup.chip_name(0)) as chip:
+            line = chip.get_line(3)
+            line.request(consumer=default_consumer,
+                         type=gpiod.LINE_REQ_DIR_OUT)
+            line.set_config(gpiod.LINE_REQ_DIR_OUT,
+                            gpiod.LINE_REQ_FLAG_ACTIVE_LOW, 0)
+            self.assertEqual(mockup.chip_get_value(0, 3), 1)
+            line.set_config(gpiod.LINE_REQ_DIR_OUT, 0, 0)
+            self.assertEqual(mockup.chip_get_value(0, 3), 0)
+
+    def test_set_config_output_value(self):
+        with gpiod.Chip(mockup.chip_name(0)) as chip:
+            line = chip.get_line(3)
+            line.request(consumer=default_consumer,
+                         type=gpiod.LINE_REQ_DIR_IN)
+            line.set_config(gpiod.LINE_REQ_DIR_OUT,0,1)
+            self.assertEqual(mockup.chip_get_value(0, 3), 1)
+            line.set_config(gpiod.LINE_REQ_DIR_OUT,0,0)
+            self.assertEqual(mockup.chip_get_value(0, 3), 0)
+
+    def test_set_config_output_no_value(self):
+         with gpiod.Chip(mockup.chip_name(0)) as chip:
+            line = chip.get_line(3)
+            line.request(consumer=default_consumer,
+                         type=gpiod.LINE_REQ_DIR_OUT,
+                         default_val=1)
+            self.assertEqual(mockup.chip_get_value(0, 3), 1)
+            line.set_config(gpiod.LINE_REQ_DIR_OUT,0)
+            self.assertEqual(mockup.chip_get_value(0, 3), 0)
+
+    def test_set_config_bulk_output_no_values(self):
+         with gpiod.Chip(mockup.chip_name(0)) as chip:
+            lines = chip.get_lines(( 0, 3, 4, 6 ))
+            lines.request(consumer=default_consumer,
+                          type=gpiod.LINE_REQ_DIR_OUT,
+                          default_vals=(1,1,1,1))
+            self.assertEqual(mockup.chip_get_value(0, 0), 1)
+            self.assertEqual(mockup.chip_get_value(0, 3), 1)
+            self.assertEqual(mockup.chip_get_value(0, 4), 1)
+            self.assertEqual(mockup.chip_get_value(0, 6), 1)
+            lines.set_config(gpiod.LINE_REQ_DIR_OUT,0)
+            self.assertEqual(mockup.chip_get_value(0, 0), 0)
+            self.assertEqual(mockup.chip_get_value(0, 3), 0)
+            self.assertEqual(mockup.chip_get_value(0, 4), 0)
+            self.assertEqual(mockup.chip_get_value(0, 6), 0)
+
+class LineFlags(MockupTestCase):
+
+    chip_sizes = ( 8, )
+
+    def test_set_flags(self):
+        with gpiod.Chip(mockup.chip_name(0)) as chip:
+            line = chip.get_line(3)
+            line.request(consumer=default_consumer,
+                         type=gpiod.LINE_REQ_DIR_OUT,
+                         default_val=1)
+            self.assertEqual(mockup.chip_get_value(0, 3), 1)
+            line.set_flags(gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
+            self.assertEqual(mockup.chip_get_value(0, 3), 0)
+            line.set_flags(0)
+            self.assertEqual(mockup.chip_get_value(0, 3), 1)
+
+    def test_set_flags_bulk(self):
+        with gpiod.Chip(mockup.chip_name(0)) as chip:
+            lines = chip.get_lines(( 0, 3, 4, 6 ))
+            lines.request(consumer=default_consumer,
+                          type=gpiod.LINE_REQ_DIR_OUT,
+                          default_vals=(1,1,1,1))
+            self.assertEqual(mockup.chip_get_value(0, 0), 1)
+            self.assertEqual(mockup.chip_get_value(0, 3), 1)
+            self.assertEqual(mockup.chip_get_value(0, 4), 1)
+            self.assertEqual(mockup.chip_get_value(0, 6), 1)
+            lines.set_flags(gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
+            self.assertEqual(mockup.chip_get_value(0, 0), 0)
+            self.assertEqual(mockup.chip_get_value(0, 3), 0)
+            self.assertEqual(mockup.chip_get_value(0, 4), 0)
+            self.assertEqual(mockup.chip_get_value(0, 6), 0)
+            lines.set_flags(0)
+            self.assertEqual(mockup.chip_get_value(0, 0), 1)
+            self.assertEqual(mockup.chip_get_value(0, 3), 1)
+            self.assertEqual(mockup.chip_get_value(0, 4), 1)
+            self.assertEqual(mockup.chip_get_value(0, 6), 1)
+
+class LineDirection(MockupTestCase):
+
+    chip_sizes = ( 8, )
+
+    def test_set_direction(self):
+        with gpiod.Chip(mockup.chip_name(0)) as chip:
+            line = chip.get_line(3)
+            line.request(consumer=default_consumer,
+                         type=gpiod.LINE_REQ_DIR_OUT)
+            self.assertEqual(line.direction(), gpiod.Line.DIRECTION_OUTPUT)
+            line.set_direction_input()
+            self.assertEqual(line.direction(), gpiod.Line.DIRECTION_INPUT)
+            line.set_direction_output(0)
+            self.assertEqual(line.direction(), gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(mockup.chip_get_value(0, 3), 0)
+            line.set_direction_output(1)
+            self.assertEqual(line.direction(), gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(mockup.chip_get_value(0, 3), 1)
+            line.set_direction_output()
+            self.assertEqual(line.direction(), gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(mockup.chip_get_value(0, 3), 0)
+
+    def test_set_direction_bulk(self):
+        with gpiod.Chip(mockup.chip_name(0)) as chip:
+            lines = chip.get_lines(( 0, 3, 4, 6 ))
+            lines.request(consumer=default_consumer,
+                          type=gpiod.LINE_REQ_DIR_OUT)
+            self.assertEqual(lines.to_list()[0].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[1].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[2].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[3].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            lines.set_direction_input()
+            self.assertEqual(lines.to_list()[0].direction(),
+                             gpiod.Line.DIRECTION_INPUT)
+            self.assertEqual(lines.to_list()[1].direction(),
+                             gpiod.Line.DIRECTION_INPUT)
+            self.assertEqual(lines.to_list()[2].direction(),
+                             gpiod.Line.DIRECTION_INPUT)
+            self.assertEqual(lines.to_list()[3].direction(),
+                             gpiod.Line.DIRECTION_INPUT)
+            lines.set_direction_output((0,0,1,0))
+            self.assertEqual(lines.to_list()[0].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[1].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[2].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[3].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(mockup.chip_get_value(0, 0), 0)
+            self.assertEqual(mockup.chip_get_value(0, 3), 0)
+            self.assertEqual(mockup.chip_get_value(0, 4), 1)
+            self.assertEqual(mockup.chip_get_value(0, 6), 0)
+            lines.set_direction_output((1,1,1,0))
+            self.assertEqual(lines.to_list()[0].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[1].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[2].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[3].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(mockup.chip_get_value(0, 0), 1)
+            self.assertEqual(mockup.chip_get_value(0, 3), 1)
+            self.assertEqual(mockup.chip_get_value(0, 4), 1)
+            self.assertEqual(mockup.chip_get_value(0, 6), 0)
+            lines.set_direction_output()
+            self.assertEqual(lines.to_list()[0].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[1].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[2].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(lines.to_list()[3].direction(),
+                             gpiod.Line.DIRECTION_OUTPUT)
+            self.assertEqual(mockup.chip_get_value(0, 0), 0)
+            self.assertEqual(mockup.chip_get_value(0, 3), 0)
+            self.assertEqual(mockup.chip_get_value(0, 4), 0)
+            self.assertEqual(mockup.chip_get_value(0, 6), 0)
+
 class LineRequestBehavior(MockupTestCase):
 
     chip_sizes = ( 8, )
