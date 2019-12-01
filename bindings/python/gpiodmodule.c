@@ -1216,6 +1216,42 @@ static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self,
 	return val_list;
 }
 
+static int gpiod_TupleToIntArray(PyObject *src, int *dst, Py_ssize_t nv)
+{
+	Py_ssize_t num_vals, i;
+	PyObject *iter, *next;
+	int val;
+
+	num_vals = PyObject_Size(src);
+	if (num_vals != nv) {
+		PyErr_SetString(PyExc_TypeError,
+				"Number of values must correspond to the number of lines");
+		return -1;
+	}
+
+	iter = PyObject_GetIter(src);
+	if (!iter)
+		return -1;
+
+	for (i = 0;; i++) {
+		next = PyIter_Next(iter);
+		if (!next) {
+			Py_DECREF(iter);
+			break;
+		}
+
+		val = PyLong_AsLong(next);
+		Py_DECREF(next);
+		if (PyErr_Occurred()) {
+			Py_DECREF(iter);
+			return -1;
+		}
+		dst[i] = (int)val;
+	}
+
+	return 0;
+}
+
 PyDoc_STRVAR(gpiod_LineBulk_set_values_doc,
 "set_values(values) -> None\n"
 "\n"
@@ -1231,10 +1267,9 @@ PyDoc_STRVAR(gpiod_LineBulk_set_values_doc,
 static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 					   PyObject *args)
 {
-	int rv, vals[GPIOD_LINE_BULK_MAX_LINES], val;
-	PyObject *val_list, *iter, *next;
+	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
 	struct gpiod_line_bulk bulk;
-	Py_ssize_t num_vals, i;
+	PyObject *val_list;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
 		return NULL;
@@ -1246,33 +1281,9 @@ static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 	if (!rv)
 		return NULL;
 
-	num_vals = PyObject_Size(val_list);
-	if (self->num_lines != num_vals) {
-		PyErr_SetString(PyExc_TypeError,
-				"Number of values must correspond to the number of lines");
+	rv = gpiod_TupleToIntArray(val_list, vals, self->num_lines);
+	if (rv)
 		return NULL;
-	}
-
-	iter = PyObject_GetIter(val_list);
-	if (!iter)
-		return NULL;
-
-	for (i = 0;; i++) {
-		next = PyIter_Next(iter);
-		if (!next) {
-			Py_DECREF(iter);
-			break;
-		}
-
-		val = PyLong_AsLong(next);
-		Py_DECREF(next);
-		if (PyErr_Occurred()) {
-			Py_DECREF(iter);
-			return NULL;
-		}
-
-		vals[i] = (int)val;
-	}
 
 	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_set_value_bulk(&bulk, vals);
