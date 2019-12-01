@@ -670,7 +670,7 @@ public:
 	/**
 	 * @brief Set values of all lines held by this object.
 	 * @param values Vector of values to set. Must be the same size as the
-	 *        number of lines held by this line_bulk.
+	 *               number of lines held by this line_bulk.
 	 */
 	GPIOD_API void set_values(const ::std::vector<int>& values) const;
 
@@ -706,7 +706,7 @@ public:
 	/**
 	 * @brief Poll the set of lines for line events.
 	 * @param timeout Number of nanoseconds to wait before returning an
-	 *        empty line_bulk.
+	 *                empty line_bulk.
 	 * @return Returns a line_bulk object containing lines on which events
 	 *         occurred.
 	 */
