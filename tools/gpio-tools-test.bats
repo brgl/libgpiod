@@ -442,6 +442,79 @@ teardown() {
 	test "$status" -eq "0"
 }
 
+@test "gpioset: set lines and wait for SIGTERM (push-pull)" {
+	gpio_mockup_probe 8 8 8
+
+	coproc_run_tool gpioset --drive=push-pull --mode=signal "$(gpio_mockup_chip_name 2)" \
+					0=0 1=0 2=1 3=1 4=1 5=1 6=0 7=1
+
+	gpio_mockup_check_value 2 0 0
+	gpio_mockup_check_value 2 1 0
+	gpio_mockup_check_value 2 2 1
+	gpio_mockup_check_value 2 3 1
+	gpio_mockup_check_value 2 4 1
+	gpio_mockup_check_value 2 5 1
+	gpio_mockup_check_value 2 6 0
+	gpio_mockup_check_value 2 7 1
+
+	coproc_tool_kill
+	coproc_tool_wait
+
+	test "$status" -eq "0"
+}
+
+@test "gpioset: set lines and wait for SIGTERM (open-drain)" {
+	gpio_mockup_probe 8 8 8
+
+	gpio_mockup_set_pull 2 2 1
+	gpio_mockup_set_pull 2 3 1
+	gpio_mockup_set_pull 2 5 1
+	gpio_mockup_set_pull 2 7 1
+
+	coproc_run_tool gpioset --drive=open-drain --mode=signal "$(gpio_mockup_chip_name 2)" \
+					0=0 1=0 2=1 3=1 4=1 5=1 6=0 7=1
+
+	gpio_mockup_check_value 2 0 0
+	gpio_mockup_check_value 2 1 0
+	gpio_mockup_check_value 2 2 1
+	gpio_mockup_check_value 2 3 1
+	gpio_mockup_check_value 2 4 0
+	gpio_mockup_check_value 2 5 1
+	gpio_mockup_check_value 2 6 0
+	gpio_mockup_check_value 2 7 1
+
+	coproc_tool_kill
+	coproc_tool_wait
+
+	test "$status" -eq "0"
+}
+
+@test "gpioset: set lines and wait for SIGTERM (open-source)" {
+	gpio_mockup_probe 8 8 8
+
+	gpio_mockup_set_pull 2 2 1
+	gpio_mockup_set_pull 2 3 1
+	gpio_mockup_set_pull 2 5 1
+	gpio_mockup_set_pull 2 7 1
+
+	coproc_run_tool gpioset --drive=open-source --mode=signal "$(gpio_mockup_chip_name 2)" \
+					0=0 1=0 2=1 3=0 4=1 5=1 6=0 7=1
+
+	gpio_mockup_check_value 2 0 0
+	gpio_mockup_check_value 2 1 0
+	gpio_mockup_check_value 2 2 1
+	gpio_mockup_check_value 2 3 1
+	gpio_mockup_check_value 2 4 1
+	gpio_mockup_check_value 2 5 1
+	gpio_mockup_check_value 2 6 0
+	gpio_mockup_check_value 2 7 1
+
+	coproc_tool_kill
+	coproc_tool_wait
+
+	test "$status" -eq "0"
+}
+
 @test "gpioset: set some lines and wait for ENTER" {
 	gpio_mockup_probe 8 8 8
 
@@ -565,6 +638,15 @@ teardown() {
 
 	test "$status" -eq "1"
 	output_regex_match ".*invalid bias.*"
+}
+
+@test "gpioset: invalid drive" {
+	gpio_mockup_probe 8 8 8
+
+	run_tool gpioset --drive=bad "$(gpio_mockup_chip_name 1)" 0=1 1=1
+
+	test "$status" -eq "1"
+	output_regex_match ".*invalid drive.*"
 }
 
 @test "gpioset: daemonize in invalid mode" {
