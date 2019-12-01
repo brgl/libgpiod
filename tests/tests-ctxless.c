@@ -26,9 +26,39 @@ GPIOD_TEST_CASE(get_value, 0, { 8 })
 	g_assert_cmpint(ret, ==, 1);
 }
 
-static void set_value_check(gpointer data G_GNUC_UNUSED)
+GPIOD_TEST_CASE(get_value_ext, 0, { 8 })
+{
+	gint ret;
+
+	ret = gpiod_ctxless_get_value_ext(gpiod_test_chip_name(0), 3,
+				false, GPIOD_TEST_CONSUMER,
+				GPIOD_CTXLESS_FLAG_BIAS_PULL_DOWN);
+	g_assert_cmpint(ret, ==, 0);
+
+	ret = gpiod_ctxless_get_value_ext(gpiod_test_chip_name(0), 3,
+				false, GPIOD_TEST_CONSUMER,
+				GPIOD_CTXLESS_FLAG_BIAS_PULL_UP);
+	g_assert_cmpint(ret, ==, 1);
+
+	ret = gpiod_ctxless_get_value_ext(gpiod_test_chip_name(0), 3,
+				true, GPIOD_TEST_CONSUMER
+				, GPIOD_CTXLESS_FLAG_BIAS_PULL_DOWN);
+	g_assert_cmpint(ret, ==, 1);
+
+	ret = gpiod_ctxless_get_value_ext(gpiod_test_chip_name(0), 3,
+				true, GPIOD_TEST_CONSUMER,
+				GPIOD_CTXLESS_FLAG_BIAS_PULL_UP);
+	g_assert_cmpint(ret, ==, 0);
+}
+
+static void set_value_check_hi(gpointer data G_GNUC_UNUSED)
 {
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 3), ==, 1);
+}
+
+static void set_value_check_lo(gpointer data G_GNUC_UNUSED)
+{
+	g_assert_cmpint(gpiod_test_chip_get_value(0, 3), ==, 0);
 }
 
 GPIOD_TEST_CASE(set_value, 0, { 8 })
@@ -39,11 +69,41 @@ GPIOD_TEST_CASE(set_value, 0, { 8 })
 
 	ret = gpiod_ctxless_set_value(gpiod_test_chip_name(0), 3, 1,
 				      false, GPIOD_TEST_CONSUMER,
-				      set_value_check, NULL);
+				      set_value_check_hi, NULL);
 	gpiod_test_return_if_failed();
 	g_assert_cmpint(ret, ==, 0);
 
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 3), ==, 0);
+}
+
+GPIOD_TEST_CASE(set_value_ext, 0, { 8 })
+{
+	gint ret;
+
+	gpiod_test_chip_set_pull(0, 3, 0);
+
+	ret = gpiod_ctxless_set_value_ext(gpiod_test_chip_name(0), 3, 1,
+			false, GPIOD_TEST_CONSUMER,
+			set_value_check_hi, NULL, 0);
+	gpiod_test_return_if_failed();
+	g_assert_cmpint(ret, ==, 0);
+	g_assert_cmpint(gpiod_test_chip_get_value(0, 3), ==, 0);
+
+	/* test drive flags by checking that sets are caught by emulation */
+	ret = gpiod_ctxless_set_value_ext(gpiod_test_chip_name(0), 3, 1,
+			false, GPIOD_TEST_CONSUMER, set_value_check_lo,
+			NULL, GPIOD_CTXLESS_FLAG_OPEN_DRAIN);
+	gpiod_test_return_if_failed();
+	g_assert_cmpint(ret, ==, 0);
+	g_assert_cmpint(gpiod_test_chip_get_value(0, 3), ==, 0);
+
+	gpiod_test_chip_set_pull(0, 3, 1);
+	ret = gpiod_ctxless_set_value_ext(gpiod_test_chip_name(0), 3, 0,
+			false, GPIOD_TEST_CONSUMER, set_value_check_hi,
+			NULL, GPIOD_CTXLESS_FLAG_OPEN_SOURCE);
+	gpiod_test_return_if_failed();
+	g_assert_cmpint(ret, ==, 0);
+	g_assert_cmpint(gpiod_test_chip_get_value(0, 3), ==, 1);
 }
 
 static const guint get_value_multiple_offsets[] = {
