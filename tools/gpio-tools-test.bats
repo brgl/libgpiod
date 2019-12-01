@@ -312,6 +312,34 @@ teardown() {
 	test "$output" = "1 1 0 0 1 0 1 0"
 }
 
+@test "gpioget: read all lines (pull-up)" {
+	gpio_mockup_probe 8 8 8
+
+	gpio_mockup_set_pull 1 2 1
+	gpio_mockup_set_pull 1 3 1
+	gpio_mockup_set_pull 1 5 1
+	gpio_mockup_set_pull 1 7 1
+
+	run_tool gpioget --bias=pull-up "$(gpio_mockup_chip_name 1)" 0 1 2 3 4 5 6 7
+
+	test "$status" -eq "0"
+	test "$output" = "1 1 1 1 1 1 1 1"
+}
+
+@test "gpioget: read all lines (pull-down)" {
+	gpio_mockup_probe 8 8 8
+
+	gpio_mockup_set_pull 1 2 1
+	gpio_mockup_set_pull 1 3 1
+	gpio_mockup_set_pull 1 5 1
+	gpio_mockup_set_pull 1 7 1
+
+	run_tool gpioget --bias=pull-down "$(gpio_mockup_chip_name 1)" 0 1 2 3 4 5 6 7
+
+	test "$status" -eq "0"
+	test "$output" = "0 0 0 0 0 0 0 0"
+}
+
 @test "gpioget: read some lines" {
 	gpio_mockup_probe 8 8 8
 
@@ -357,6 +385,15 @@ teardown() {
 
 	test "$status" -eq "1"
 	output_regex_match ".*error reading GPIO values.*"
+}
+
+@test "gpioget: invalid bias" {
+	gpio_mockup_probe 8 8 8
+
+	run_tool gpioget --bias=bad "$(gpio_mockup_chip_name 1)" 0 1
+
+	test "$status" -eq "1"
+	output_regex_match ".*invalid bias.*"
 }
 
 #
@@ -521,6 +558,15 @@ teardown() {
 	output_regex_match ".*invalid offset"
 }
 
+@test "gpioset: invalid bias" {
+	gpio_mockup_probe 8 8 8
+
+	run_tool gpioset --bias=bad "$(gpio_mockup_chip_name 1)" 0=1 1=1
+
+	test "$status" -eq "1"
+	output_regex_match ".*invalid bias.*"
+}
+
 @test "gpioset: daemonize in invalid mode" {
 	gpio_mockup_probe 8 8 8
 
@@ -576,6 +622,42 @@ teardown() {
 "event:\\s+FALLING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[[0-9]+\.[0-9]+\]"
 }
 
+@test "gpiomon: single falling edge event (pull-up)" {
+	gpio_mockup_probe 8 8
+
+	gpio_mockup_set_pull 1 4 0
+
+	coproc_run_tool gpiomon --bias=pull-up "$(gpio_mockup_chip_name 1)" 4
+
+	gpio_mockup_set_pull 1 4 0
+	sleep 0.2
+
+	coproc_tool_kill
+	coproc_tool_wait
+
+	test "$status" -eq "0"
+	output_regex_match \
+"event:\\s+FALLING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[[0-9]+\.[0-9]+\]"
+}
+
+@test "gpiomon: single rising edge event (pull-down)" {
+	gpio_mockup_probe 8 8
+
+	gpio_mockup_set_pull 1 4 1
+
+	coproc_run_tool gpiomon --bias=pull-down "$(gpio_mockup_chip_name 1)" 4
+
+	gpio_mockup_set_pull 1 4 1
+	sleep 0.2
+
+	coproc_tool_kill
+	coproc_tool_wait
+
+	test "$status" -eq "0"
+	output_regex_match \
+"event:\\s+RISING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[[0-9]+\.[0-9]+\]"
+}
+
 @test "gpiomon: single rising edge event (active-low)" {
 	gpio_mockup_probe 8 8
 
@@ -592,7 +674,6 @@ teardown() {
 	test "$status" -eq "0"
 	output_regex_match \
 "event:\\s+RISING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[[0-9]+\.[0-9]+\]"
-
 }
 
 @test "gpiomon: single rising edge event (silent mode)" {
@@ -747,6 +828,15 @@ teardown() {
 
 	test "$status" -eq "1"
 	output_regex_match ".*error waiting for events"
+}
+
+@test "gpiomon: invalid bias" {
+	gpio_mockup_probe 8 8 8
+
+	run_tool gpiomon --bias=bad "$(gpio_mockup_chip_name 1)" 0 1
+
+	test "$status" -eq "1"
+	output_regex_match ".*invalid bias.*"
 }
 
 @test "gpiomon: custom format (event type + offset)" {
