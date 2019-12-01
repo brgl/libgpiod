@@ -14,6 +14,26 @@
 #include <stdio.h>
 #include <string.h>
 
+static int ctxless_flags_to_line_request_flags(bool active_low, int flags)
+{
+	int req_flags = 0;
+
+	if (active_low)
+		req_flags |= GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
+	if (flags & GPIOD_CTXLESS_FLAG_OPEN_DRAIN)
+		req_flags |= GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN;
+	if (flags & GPIOD_CTXLESS_FLAG_OPEN_SOURCE)
+		req_flags |= GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE;
+	if (flags & GPIOD_CTXLESS_FLAG_BIAS_DISABLE)
+		req_flags |= GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE;
+	if (flags & GPIOD_CTXLESS_FLAG_BIAS_PULL_UP)
+		req_flags |= GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP;
+	if (flags & GPIOD_CTXLESS_FLAG_BIAS_PULL_DOWN)
+		req_flags |= GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN;
+
+	return req_flags;
+}
+
 int gpiod_ctxless_get_value(const char *device, unsigned int offset,
 			    bool active_low, const char *consumer)
 {
@@ -27,16 +47,44 @@ int gpiod_ctxless_get_value(const char *device, unsigned int offset,
 	return value;
 }
 
+int gpiod_ctxless_get_value_ext(const char *device, unsigned int offset,
+				bool active_low, const char *consumer,
+				int flags)
+{
+	int value, rv;
+
+	rv = gpiod_ctxless_get_value_multiple_ext(device, &offset, &value, 1,
+						  active_low, consumer, flags);
+	if (rv < 0)
+		return rv;
+
+	return value;
+}
+
 int gpiod_ctxless_get_value_multiple(const char *device,
 				     const unsigned int *offsets, int *values,
 				     unsigned int num_lines, bool active_low,
 				     const char *consumer)
 {
+	int rv;
+
+	rv = gpiod_ctxless_get_value_multiple_ext(device, offsets, values,
+						  num_lines, active_low,
+						  consumer, 0);
+	return rv;
+}
+
+int gpiod_ctxless_get_value_multiple_ext(const char *device,
+					 const unsigned int *offsets,
+					 int *values, unsigned int num_lines,
+					 bool active_low,
+					 const char *consumer, int flags)
+{
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	unsigned int i;
-	int rv, flags;
+	int rv, req_flags;
 
 	if (!num_lines || num_lines > GPIOD_LINE_BULK_MAX_LINES) {
 		errno = EINVAL;
@@ -59,9 +107,8 @@ int gpiod_ctxless_get_value_multiple(const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	flags = active_low ? GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW : 0;
-
-	rv = gpiod_line_request_bulk_input_flags(&bulk, consumer, flags);
+	req_flags = ctxless_flags_to_line_request_flags(active_low, flags);
+	rv = gpiod_line_request_bulk_input_flags(&bulk, consumer, req_flags);
 	if (rv < 0) {
 		gpiod_chip_close(chip);
 		return -1;
@@ -83,17 +130,39 @@ int gpiod_ctxless_set_value(const char *device, unsigned int offset, int value,
 						active_low, consumer, cb, data);
 }
 
+int gpiod_ctxless_set_value_ext(const char *device, unsigned int offset,
+				int value, bool active_low,
+				const char *consumer,
+				gpiod_ctxless_set_value_cb cb,
+				void *data, int flags)
+{
+	return gpiod_ctxless_set_value_multiple_ext(device, &offset, &value,
+						    1, active_low, consumer,
+						    cb, data, flags);
+}
+
 int gpiod_ctxless_set_value_multiple(const char *device,
 				     const unsigned int *offsets,
 				     const int *values, unsigned int num_lines,
 				     bool active_low, const char *consumer,
 				     gpiod_ctxless_set_value_cb cb, void *data)
 {
+	return gpiod_ctxless_set_value_multiple_ext(device, offsets, values,
+						    num_lines, active_low,
+						    consumer, cb, data, 0);
+}
+
+int gpiod_ctxless_set_value_multiple_ext(
+			const char *device, const unsigned int *offsets,
+			const int *values, unsigned int num_lines,
+			bool active_low, const char *consumer,
+			gpiod_ctxless_set_value_cb cb, void *data, int flags)
+{
 	struct gpiod_line_bulk bulk;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	unsigned int i;
-	int rv, flags;
+	int rv, req_flags;
 
 	if (!num_lines || num_lines > GPIOD_LINE_BULK_MAX_LINES) {
 		errno = EINVAL;
@@ -116,10 +185,9 @@ int gpiod_ctxless_set_value_multiple(const char *device,
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	flags = active_low ? GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW : 0;
-
+	req_flags = ctxless_flags_to_line_request_flags(active_low, flags);
 	rv = gpiod_line_request_bulk_output_flags(&bulk, consumer,
-						  flags, values);
+						  req_flags, values);
 	if (rv < 0) {
 		gpiod_chip_close(chip);
 		return -1;
@@ -216,6 +284,19 @@ int gpiod_ctxless_event_monitor(const char *device, int event_type,
 						    poll_cb, event_cb, data);
 }
 
+int gpiod_ctxless_event_monitor_ext(const char *device, int event_type,
+				    unsigned int offset, bool active_low,
+				    const char *consumer,
+				    const struct timespec *timeout,
+				    gpiod_ctxless_event_poll_cb poll_cb,
+				    gpiod_ctxless_event_handle_cb event_cb,
+				    void *data, int flags)
+{
+	return gpiod_ctxless_event_monitor_multiple_ext(
+			device, event_type, &offset, 1, active_low,
+			consumer, timeout, poll_cb, event_cb, data, flags);
+}
+
 int gpiod_ctxless_event_monitor_multiple(
 			const char *device, int event_type,
 			const unsigned int *offsets,
@@ -225,6 +306,21 @@ int gpiod_ctxless_event_monitor_multiple(
 			gpiod_ctxless_event_poll_cb poll_cb,
 			gpiod_ctxless_event_handle_cb event_cb,
 			void *data)
+{
+	return gpiod_ctxless_event_monitor_multiple_ext(
+			device, event_type, offsets,
+			num_lines, active_low, consumer, timeout,
+			poll_cb, event_cb, data, 0);
+}
+
+int gpiod_ctxless_event_monitor_multiple_ext(
+			const char *device, int event_type,
+			const unsigned int *offsets,
+			unsigned int num_lines, bool active_low,
+			const char *consumer, const struct timespec *timeout,
+			gpiod_ctxless_event_poll_cb poll_cb,
+			gpiod_ctxless_event_handle_cb event_cb,
+			void *data, int flags)
 {
 	struct gpiod_ctxless_event_poll_fd fds[GPIOD_LINE_BULK_MAX_LINES];
 	struct gpiod_line_request_config conf;
@@ -259,7 +355,7 @@ int gpiod_ctxless_event_monitor_multiple(
 		gpiod_line_bulk_add(&bulk, line);
 	}
 
-	conf.flags = active_low ? GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW : 0;
+	conf.flags = ctxless_flags_to_line_request_flags(active_low, flags);
 	conf.consumer = consumer;
 
 	if (event_type == GPIOD_CTXLESS_EVENT_RISING_EDGE) {

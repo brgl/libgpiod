@@ -36,9 +36,7 @@ struct gpiod_line {
 	unsigned int offset;
 	int direction;
 	int active_state;
-	bool used;
-	bool open_source;
-	bool open_drain;
+	__u32 info_flags;
 
 	int state;
 
@@ -349,19 +347,31 @@ int gpiod_line_active_state(struct gpiod_line *line)
 	return line->active_state;
 }
 
+int gpiod_line_bias(struct gpiod_line *line)
+{
+	if (line->info_flags & GPIOLINE_FLAG_BIAS_DISABLE)
+		return GPIOD_LINE_BIAS_DISABLE;
+	if (line->info_flags & GPIOLINE_FLAG_BIAS_PULL_UP)
+		return GPIOD_LINE_BIAS_PULL_UP;
+	if (line->info_flags & GPIOLINE_FLAG_BIAS_PULL_DOWN)
+		return GPIOD_LINE_BIAS_PULL_DOWN;
+
+	return GPIOD_LINE_BIAS_AS_IS;
+}
+
 bool gpiod_line_is_used(struct gpiod_line *line)
 {
-	return line->used;
+	return line->info_flags & GPIOLINE_FLAG_KERNEL;
 }
 
 bool gpiod_line_is_open_drain(struct gpiod_line *line)
 {
-	return line->open_drain;
+	return line->info_flags & GPIOLINE_FLAG_OPEN_DRAIN;
 }
 
 bool gpiod_line_is_open_source(struct gpiod_line *line)
 {
-	return line->open_source;
+	return line->info_flags & GPIOLINE_FLAG_OPEN_SOURCE;
 }
 
 bool gpiod_line_needs_update(struct gpiod_line *line GPIOD_UNUSED)
@@ -388,9 +398,7 @@ int gpiod_line_update(struct gpiod_line *line)
 						? GPIOD_LINE_ACTIVE_STATE_LOW
 						: GPIOD_LINE_ACTIVE_STATE_HIGH;
 
-	line->used = info.flags & GPIOLINE_FLAG_KERNEL;
-	line->open_drain = info.flags & GPIOLINE_FLAG_OPEN_DRAIN;
-	line->open_source = info.flags & GPIOLINE_FLAG_OPEN_SOURCE;
+	line->info_flags = info.flags;
 
 	strncpy(line->name, info.name, sizeof(line->name));
 	strncpy(line->consumer, info.consumer, sizeof(line->consumer));
@@ -461,6 +469,12 @@ static __u32 line_request_flag_to_gpio_handleflag(int flags)
 		hflags |= GPIOHANDLE_REQUEST_OPEN_SOURCE;
 	if (flags & GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW)
 		hflags |= GPIOHANDLE_REQUEST_ACTIVE_LOW;
+	if (flags & GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE)
+		hflags |= GPIOHANDLE_REQUEST_BIAS_DISABLE;
+	if (flags & GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN)
+		hflags |= GPIOHANDLE_REQUEST_BIAS_PULL_DOWN;
+	if (flags & GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP)
+		hflags |= GPIOHANDLE_REQUEST_BIAS_PULL_UP;
 
 	return hflags;
 }

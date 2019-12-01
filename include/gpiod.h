@@ -85,6 +85,22 @@ struct gpiod_line_bulk;
  */
 
 /**
+ * @brief Miscellaneous GPIO flags.
+ */
+enum {
+	GPIOD_CTXLESS_FLAG_OPEN_DRAIN		= GPIOD_BIT(0),
+	/**< The line is an open-drain port. */
+	GPIOD_CTXLESS_FLAG_OPEN_SOURCE		= GPIOD_BIT(1),
+	/**< The line is an open-source port. */
+	GPIOD_CTXLESS_FLAG_BIAS_DISABLE		= GPIOD_BIT(2),
+	/**< The line has neither either pull-up nor pull-down resistor */
+	GPIOD_CTXLESS_FLAG_BIAS_PULL_DOWN	= GPIOD_BIT(3),
+	/**< The line has pull-down resistor enabled */
+	GPIOD_CTXLESS_FLAG_BIAS_PULL_UP		= GPIOD_BIT(4),
+	/**< The line has pull-up resistor enabled */
+};
+
+/**
  * @brief Read current value from a single GPIO line.
  * @param device Name, path, number or label of the gpiochip.
  * @param offset Offset of the GPIO line.
@@ -94,6 +110,19 @@ struct gpiod_line_bulk;
  */
 int gpiod_ctxless_get_value(const char *device, unsigned int offset,
 			    bool active_low, const char *consumer) GPIOD_API;
+
+/**
+ * @brief Read current value from a single GPIO line.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param offset Offset of the GPIO line.
+ * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
+ * @param flags The flags for the line.
+ * @return 0 or 1 (GPIO value) if the operation succeeds, -1 on error.
+ */
+int gpiod_ctxless_get_value_ext(const char *device, unsigned int offset,
+				bool active_low, const char *consumer,
+				int flags) GPIOD_API;
 
 /**
  * @brief Read current values from a set of GPIO lines.
@@ -109,6 +138,23 @@ int gpiod_ctxless_get_value_multiple(const char *device,
 				     const unsigned int *offsets, int *values,
 				     unsigned int num_lines, bool active_low,
 				     const char *consumer) GPIOD_API;
+
+/**
+ * @brief Read current values from a set of GPIO lines.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param offsets Array of offsets of lines whose values should be read.
+ * @param values Buffer in which the values will be stored.
+ * @param num_lines Number of lines, must be > 0.
+ * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
+ * @param flags The flags for the lines.
+ * @return 0 if the operation succeeds, -1 on error.
+ */
+int gpiod_ctxless_get_value_multiple_ext(const char *device,
+					 const unsigned int *offsets,
+					 int *values, unsigned int num_lines,
+					 bool active_low, const char *consumer,
+					 int flags) GPIOD_API;
 
 /**
  * @brief Simple set value callback signature.
@@ -134,6 +180,26 @@ int gpiod_ctxless_set_value(const char *device, unsigned int offset, int value,
 			    void *data) GPIOD_API;
 
 /**
+ * @brief Set value of a single GPIO line.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param offset The offset of the GPIO line.
+ * @param value New value (0 or 1).
+ * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
+ * @param cb Optional callback function that will be called right after setting
+ *           the value. Users can use this, for example, to pause the execution
+ *           after toggling a GPIO.
+ * @param data Optional user data that will be passed to the callback function.
+ * @param flags The flags for the line.
+ * @return 0 if the operation succeeds, -1 on error.
+ */
+int gpiod_ctxless_set_value_ext(const char *device, unsigned int offset,
+				int value, bool active_low,
+				const char *consumer,
+				gpiod_ctxless_set_value_cb cb,
+				void *data, int flags) GPIOD_API;
+
+/**
  * @brief Set values of multiple GPIO lines.
  * @param device Name, path, number or label of the gpiochip.
  * @param offsets Array of offsets of lines the values of which should be set.
@@ -152,6 +218,29 @@ int gpiod_ctxless_set_value_multiple(const char *device,
 				     bool active_low, const char *consumer,
 				     gpiod_ctxless_set_value_cb cb,
 				     void *data) GPIOD_API;
+
+/**
+ * @brief Set values of multiple GPIO lines.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param offsets Array of offsets of lines the values of which should be set.
+ * @param values Array of integers containing new values.
+ * @param num_lines Number of lines, must be > 0.
+ * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
+ * @param cb Optional callback function that will be called right after setting
+ *           all values. Works the same as in ::gpiod_ctxless_set_value.
+ * @param data Optional user data that will be passed to the callback function.
+ * @param flags The flags for the lines.
+ * @return 0 if the operation succeeds, -1 on error.
+ */
+int gpiod_ctxless_set_value_multiple_ext(const char *device,
+					 const unsigned int *offsets,
+					 const int *values,
+					 unsigned int num_lines,
+					 bool active_low,
+					 const char *consumer,
+					 gpiod_ctxless_set_value_cb cb,
+					 void *data, int flags) GPIOD_API;
 
 /**
  * @brief Event types that the ctxless event monitor can wait for.
@@ -328,6 +417,31 @@ int gpiod_ctxless_event_monitor(const char *device, int event_type,
 				void *data) GPIOD_API;
 
 /**
+ * @brief Wait for events on a single GPIO line.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param event_type Type of events to listen for.
+ * @param offset GPIO line offset to monitor.
+ * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
+ * @param timeout Maximum wait time for each iteration.
+ * @param poll_cb Callback function to call when waiting for events.
+ * @param event_cb Callback function to call for each line event.
+ * @param data User data passed to the callback.
+ * @param flags The flags for the line.
+ * @return 0 if no errors were encountered, -1 if an error occurred.
+ * @note The way the ctxless event loop works is described in detail in
+ *       ::gpiod_ctxless_event_monitor_multiple - this is just a wrapper aound
+ *       this routine which calls it for a single GPIO line.
+ */
+int gpiod_ctxless_event_monitor_ext(const char *device, int event_type,
+				    unsigned int offset, bool active_low,
+				    const char *consumer,
+				    const struct timespec *timeout,
+				    gpiod_ctxless_event_poll_cb poll_cb,
+				    gpiod_ctxless_event_handle_cb event_cb,
+				    void *data, int flags) GPIOD_API;
+
+/**
  * @brief Wait for events on multiple GPIO lines.
  * @param device Name, path, number or label of the gpiochip.
  * @param event_type Type of events to listen for.
@@ -365,6 +479,47 @@ int gpiod_ctxless_event_monitor_multiple(
 			gpiod_ctxless_event_poll_cb poll_cb,
 			gpiod_ctxless_event_handle_cb event_cb,
 			void *data) GPIOD_API;
+
+/**
+ * @brief Wait for events on multiple GPIO lines.
+ * @param device Name, path, number or label of the gpiochip.
+ * @param event_type Type of events to listen for.
+ * @param offsets Array of GPIO line offsets to monitor.
+ * @param num_lines Number of lines to monitor.
+ * @param active_low The active state of this line - true if low.
+ * @param consumer Name of the consumer.
+ * @param timeout Maximum wait time for each iteration.
+ * @param poll_cb Callback function to call when waiting for events. Can
+ *                be NULL.
+ * @param event_cb Callback function to call on event occurrence.
+ * @param data User data passed to the callback.
+ * @param flags The flags for the lines.
+ * @return 0 no errors were encountered, -1 if an error occurred.
+ * @note The poll callback can be NULL in which case the routine will fall
+ *       back to a basic, ppoll() based callback.
+ *
+ * Internally this routine opens the GPIO chip, requests the set of lines for
+ * the type of events specified in the event_type parameter and calls the
+ * polling callback in a loop. The role of the polling callback is to detect
+ * input events on a set of file descriptors and notify the caller about the
+ * fds ready for reading.
+ *
+ * The ctxless event loop then reads each queued event from marked descriptors
+ * and calls the event callback. Both callbacks can stop the loop at any
+ * point.
+ *
+ * The poll_cb argument can be NULL in which case the function falls back to
+ * a default, ppoll() based callback.
+ */
+int gpiod_ctxless_event_monitor_multiple_ext(
+			const char *device, int event_type,
+			const unsigned int *offsets,
+			unsigned int num_lines, bool active_low,
+			const char *consumer, const struct timespec *timeout,
+			gpiod_ctxless_event_poll_cb poll_cb,
+			gpiod_ctxless_event_handle_cb event_cb,
+			void *data, int flags) GPIOD_API;
+
 
 /**
  * @brief Determine the chip name and line offset of a line with given name.
@@ -659,6 +814,20 @@ enum {
 };
 
 /**
+ * @brief Possible internal bias settings.
+ */
+enum {
+	GPIOD_LINE_BIAS_AS_IS = 1,
+	/**< The internal bias state is unknown. */
+	GPIOD_LINE_BIAS_DISABLE,
+	/**< The internal bias is disabled. */
+	GPIOD_LINE_BIAS_PULL_UP,
+	/**< The internal pull-up bias is enabled. */
+	GPIOD_LINE_BIAS_PULL_DOWN,
+	/**< The internal pull-down bias is enabled. */
+};
+
+/**
  * @brief Read the GPIO line offset.
  * @param line GPIO line object.
  * @return Line offset.
@@ -696,6 +865,14 @@ int gpiod_line_direction(struct gpiod_line *line) GPIOD_API;
  * @return Returns GPIOD_LINE_ACTIVE_STATE_HIGH or GPIOD_LINE_ACTIVE_STATE_LOW.
  */
 int gpiod_line_active_state(struct gpiod_line *line) GPIOD_API;
+
+/**
+ * @brief Read the GPIO line bias setting.
+ * @param line GPIO line object.
+ * @return Returns GPIOD_LINE_BIAS_PULL_UP, GPIOD_LINE_BIAS_PULL_DOWN,
+ *         GPIOD_LINE_BIAS_DISABLE or GPIOD_LINE_BIAS_AS_IS.
+ */
+int gpiod_line_bias(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Check if the line is currently in use.
@@ -787,6 +964,12 @@ enum {
 	/**< The line is an open-source port. */
 	GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW	= GPIOD_BIT(2),
 	/**< The active state of the line is low (high is the default). */
+	GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE	= GPIOD_BIT(3),
+	/**< The line has neither either pull-up nor pull-down resistor. */
+	GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN	= GPIOD_BIT(4),
+	/**< The line has pull-down resistor enabled. */
+	GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP	= GPIOD_BIT(5),
+	/**< The line has pull-up resistor enabled. */
 };
 
 /**
