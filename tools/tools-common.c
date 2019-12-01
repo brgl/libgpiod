@@ -57,3 +57,25 @@ void print_version(void)
 	printf("This is free software: you are free to change and redistribute it.\n");
 	printf("There is NO WARRANTY, to the extent permitted by law.\n");
 }
+
+int bias_flags(const char *option)
+{
+	if (strcmp(option, "pull-down") == 0)
+		return GPIOD_CTXLESS_FLAG_BIAS_PULL_DOWN;
+	if (strcmp(option, "pull-up") == 0)
+		return GPIOD_CTXLESS_FLAG_BIAS_PULL_UP;
+	if (strcmp(option, "disable") == 0)
+		return GPIOD_CTXLESS_FLAG_BIAS_DISABLE;
+	if (strcmp(option, "as-is") != 0)
+		die("invalid bias: %s", option);
+	return 0;
+}
+
+void print_bias_help(void)
+{
+	printf("Biases:\n");
+	printf("  as-is:\tleave bias unchanged\n");
+	printf("  disable:\tdisable bias\n");
+	printf("  pull-up:\tenable pull-up\n");
+	printf("  pull-down:\tenable pull-down\n");
+}

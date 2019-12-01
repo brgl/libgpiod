@@ -25,5 +25,7 @@ const char *get_progname(void);
 void die(const char *fmt, ...) NORETURN PRINTF(1, 2);
 void die_perror(const char *fmt, ...) NORETURN PRINTF(1, 2);
 void print_version(void);
+int bias_flags(const char *option);
+void print_bias_help(void);
 
 #endif /* __GPIOD_TOOLS_COMMON_H__ */
