@@ -1480,6 +1480,19 @@ int gpiod_line_event_read(struct gpiod_line *line,
 			  struct gpiod_line_event *event) GPIOD_API;
 
 /**
+ * @brief Read up to a certain number of events from the GPIO line.
+ * @param line GPIO line object.
+ * @param events Buffer to which the event data will be copied. Must hold at
+ *               least the amount of events specified in num_events.
+ * @param num_events Specifies how many events can be stored in the buffer.
+ * @return On success returns the number of events stored in the buffer, on
+ *         failure -1 is returned.
+ */
+int gpiod_line_event_read_multiple(struct gpiod_line *line,
+				   struct gpiod_line_event *events,
+				   unsigned int num_events) GPIOD_API;
+
+/**
  * @brief Get the event file descriptor.
  * @param line GPIO line object.
  * @return Number of the event file descriptor or -1 if the user tries to
@@ -1502,6 +1515,18 @@ int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
  * translates the kernel representation of the event to the libgpiod format.
  */
 int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event) GPIOD_API;
+
+/**
+ * @brief Read up to a certain number of events directly from a file descriptor.
+ * @param fd File descriptor.
+ * @param events Buffer to which the event data will be copied. Must hold at
+ *               least the amount of events specified in num_events.
+ * @param num_events Specifies how many events can be stored in the buffer.
+ * @return On success returns the number of events stored in the buffer, on
+ *         failure -1 is returned.
+ */
+int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
+				      unsigned int num_events) GPIOD_API;
 
 /**
  * @}

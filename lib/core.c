@@ -1010,13 +1010,26 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 int gpiod_line_event_read(struct gpiod_line *line,
 			  struct gpiod_line_event *event)
 {
+	int ret;
+
+	ret = gpiod_line_event_read_multiple(line, event, 1);
+	if (ret < 0)
+		return -1;
+
+	return 0;
+}
+
+int gpiod_line_event_read_multiple(struct gpiod_line *line,
+				   struct gpiod_line_event *events,
+				   unsigned int num_events)
+{
 	int fd;
 
 	fd = gpiod_line_event_get_fd(line);
 	if (fd < 0)
 		return -1;
 
-	return gpiod_line_event_read_fd(fd, event);
+	return gpiod_line_event_read_fd_multiple(fd, events, num_events);
 }
 
 int gpiod_line_event_get_fd(struct gpiod_line *line)
@@ -1031,25 +1044,51 @@ int gpiod_line_event_get_fd(struct gpiod_line *line)
 
 int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
 {
-	struct gpioevent_data evdata;
+	int ret;
+
+	ret = gpiod_line_event_read_fd_multiple(fd, event, 1);
+	if (ret < 0)
+		return -1;
+
+	return 0;
+}
+
+int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
+				      unsigned int num_events)
+{
+	/*
+	 * 16 is the maximum number of events the kernel can store in the FIFO
+	 * so we can allocate the buffer on the stack.
+	 */
+	struct gpioevent_data evdata[16], *curr;
+	struct gpiod_line_event *event;
+	unsigned int events_read, i;
 	ssize_t rd;
 
-	memset(&evdata, 0, sizeof(evdata));
+	memset(evdata, 0, sizeof(evdata));
 
-	rd = read(fd, &evdata, sizeof(evdata));
+	rd = read(fd, evdata, sizeof(evdata));
 	if (rd < 0) {
 		return -1;
-	} else if (rd != sizeof(evdata)) {
+	} else if ((unsigned int)rd < sizeof(*evdata)) {
 		errno = EIO;
 		return -1;
 	}
 
-	event->event_type = evdata.id == GPIOEVENT_EVENT_RISING_EDGE
-						? GPIOD_LINE_EVENT_RISING_EDGE
-						: GPIOD_LINE_EVENT_FALLING_EDGE;
+	events_read = rd / sizeof(*evdata);
+	if (events_read < num_events)
+		num_events = events_read;
 
-	event->ts.tv_sec = evdata.timestamp / 1000000000ULL;
-	event->ts.tv_nsec = evdata.timestamp % 1000000000ULL;
+	for (i = 0; i < num_events; i++) {
+		curr = &evdata[i];
+		event = &events[i];
 
-	return 0;
+		event->event_type = curr->id == GPIOEVENT_EVENT_RISING_EDGE
+					? GPIOD_LINE_EVENT_RISING_EDGE
+					: GPIOD_LINE_EVENT_FALLING_EDGE;
+		event->ts.tv_sec = curr->timestamp / 1000000000ULL;
+		event->ts.tv_nsec = curr->timestamp % 1000000000ULL;
+	}
+
+	return i;
 }
