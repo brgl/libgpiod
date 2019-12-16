@@ -1012,12 +1012,9 @@ int gpiod_line_event_read(struct gpiod_line *line,
 {
 	int fd;
 
-	if (line->state != LINE_REQUESTED_EVENTS) {
-		errno = EPERM;
+	fd = gpiod_line_event_get_fd(line);
+	if (fd < 0)
 		return -1;
-	}
-
-	fd = line_get_fd(line);
 
 	return gpiod_line_event_read_fd(fd, event);
 }
