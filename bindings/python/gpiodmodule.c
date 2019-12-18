@@ -850,6 +850,57 @@ static gpiod_LineEventObject *gpiod_Line_event_read(gpiod_LineObject *self,
 	return ret;
 }
 
+PyDoc_STRVAR(gpiod_Line_event_read_multiple_doc,
+"event_read_multiple() -> list of gpiod.LineEvent object\n"
+"\n"
+"Read multiple line events from this GPIO line object.");
+
+static PyObject *gpiod_Line_event_read_multiple(gpiod_LineObject *self,
+						PyObject *Py_UNUSED(ignored))
+{
+	struct gpiod_line_event evbuf[16];
+	gpiod_LineEventObject *event;
+	int rv, num_events, i;
+	PyObject *events;
+
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
+	memset(evbuf, 0, sizeof(evbuf));
+	Py_BEGIN_ALLOW_THREADS;
+	num_events = gpiod_line_event_read_multiple(self->line, evbuf,
+					sizeof(evbuf) / sizeof(*evbuf));
+	Py_END_ALLOW_THREADS;
+	if (num_events < 0)
+		return PyErr_SetFromErrno(PyExc_OSError);
+
+	events = PyList_New(num_events);
+	if (!events)
+		return NULL;
+
+	for (i = 0; i < num_events; i++) {
+		event = PyObject_New(gpiod_LineEventObject,
+				     &gpiod_LineEventType);
+		if (!event) {
+			Py_DECREF(events);
+			return NULL;
+		}
+
+		memcpy(&event->event, &evbuf[i], sizeof(event->event));
+		Py_INCREF(self);
+		event->source = self;
+
+		rv = PyList_SetItem(events, i, (PyObject *)event);
+		if (rv < 0) {
+			Py_DECREF(events);
+			Py_DECREF(event);
+			return NULL;
+		}
+	}
+
+	return events;
+}
+
 PyDoc_STRVAR(gpiod_Line_event_get_fd_doc,
 "event_get_fd() -> integer\n"
 "\n"
@@ -1025,6 +1076,12 @@ static PyMethodDef gpiod_Line_methods[] = {
 		.ml_meth = (PyCFunction)gpiod_Line_event_read,
 		.ml_flags = METH_NOARGS,
 		.ml_doc = gpiod_Line_event_read_doc,
+	},
+	{
+		.ml_name = "event_read_multiple",
+		.ml_meth = (PyCFunction)gpiod_Line_event_read_multiple,
+		.ml_flags = METH_NOARGS,
+		.ml_doc = gpiod_Line_event_read_multiple_doc,
 	},
 	{
 		.ml_name = "event_get_fd",
