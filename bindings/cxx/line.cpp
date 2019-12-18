@@ -206,6 +206,23 @@ bool line::event_wait(const ::std::chrono::nanoseconds& timeout) const
 	return !!event_bulk;
 }
 
+line_event line::make_line_event(const ::gpiod_line_event& event) const noexcept
+{
+	line_event ret;
+
+	if (event.event_type == GPIOD_LINE_EVENT_RISING_EDGE)
+		ret.event_type = line_event::RISING_EDGE;
+	else if (event.event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
+		ret.event_type = line_event::FALLING_EDGE;
+
+	ret.timestamp = ::std::chrono::nanoseconds(
+				event.ts.tv_nsec + (event.ts.tv_sec * 1000000000));
+
+	ret.source = *this;
+
+	return ret;
+}
+
 line_event line::event_read(void) const
 {
 	this->throw_if_null();
@@ -219,17 +236,29 @@ line_event line::event_read(void) const
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "error reading line event");
 
-	if (event_buf.event_type == GPIOD_LINE_EVENT_RISING_EDGE)
-		event.event_type = line_event::RISING_EDGE;
-	else if (event_buf.event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
-		event.event_type = line_event::FALLING_EDGE;
+	return this->make_line_event(event_buf);
+}
 
-	event.timestamp = ::std::chrono::nanoseconds(
-				event_buf.ts.tv_nsec + (event_buf.ts.tv_sec * 1000000000));
+::std::vector<line_event> line::event_read_multiple(void) const
+{
+	this->throw_if_null();
 
-	event.source = *this;
+	/* 16 is the maximum number of events stored in the kernel FIFO. */
+	::std::array<::gpiod_line_event, 16> event_buf;
+	::std::vector<line_event> events;
+	int rv;
 
-	return event;
+	rv = ::gpiod_line_event_read_multiple(this->_m_line,
+					      event_buf.data(), event_buf.size());
+	if (rv < 0)
+		throw ::std::system_error(errno, ::std::system_category(),
+					  "error reading multiple line events");
+
+	events.reserve(rv);
+	for (int i = 0; i < rv; i++)
+		events.push_back(this->make_line_event(event_buf[i]));
+
+	return events;
 }
 
 int line::event_get_fd(void) const

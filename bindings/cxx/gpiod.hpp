@@ -422,6 +422,12 @@ public:
 	GPIOD_API line_event event_read(void) const;
 
 	/**
+	 * @brief Read multiple line events.
+	 * @return Vector of line event objects.
+	 */
+	GPIOD_API ::std::vector<line_event> event_read_multiple(void) const;
+
+	/**
 	 * @brief Get the event file descriptor associated with this line.
 	 * @return File descriptor number.
 	 */
@@ -513,6 +519,7 @@ private:
 	line(::gpiod_line* line, const chip& owner);
 
 	void throw_if_null(void) const;
+	line_event make_line_event(const ::gpiod_line_event& event) const noexcept;
 
 	::gpiod_line* _m_line;
 	chip _m_chip;
