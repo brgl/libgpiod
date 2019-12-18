@@ -12,6 +12,7 @@ import gpiod
 import gpiomockup
 import os
 import select
+import time
 import threading
 import unittest
 
@@ -832,6 +833,27 @@ class EventSingleLine(MockupTestCase):
                 event = line.event_read()
                 self.assertEqual(event.type, gpiod.LineEvent.RISING_EDGE)
                 self.assertEqual(event.source.offset(), 4)
+
+    def test_single_line_read_multiple_events(self):
+        with gpiod.Chip(mockup.chip_name(0)) as chip:
+            line = chip.get_line(4)
+            line.request(consumer=default_consumer,
+                         type=gpiod.LINE_REQ_EV_BOTH_EDGES)
+            mockup.chip_set_pull(0, 4, 1)
+            time.sleep(0.01)
+            mockup.chip_set_pull(0, 4, 0)
+            time.sleep(0.01)
+            mockup.chip_set_pull(0, 4, 1)
+            time.sleep(0.01)
+            self.assertTrue(line.event_wait(sec=1))
+            events = line.event_read_multiple()
+            self.assertEqual(len(events), 3)
+            self.assertEqual(events[0].type, gpiod.LineEvent.RISING_EDGE)
+            self.assertEqual(events[1].type, gpiod.LineEvent.FALLING_EDGE)
+            self.assertEqual(events[2].type, gpiod.LineEvent.RISING_EDGE)
+            self.assertEqual(events[0].source.offset(), 4)
+            self.assertEqual(events[1].source.offset(), 4)
+            self.assertEqual(events[2].source.offset(), 4)
 
 class EventBulk(MockupTestCase):
 
