@@ -1,21 +1,3 @@
-!.gitignore
-libgpiod.la
-libgpiodcxx.la
-libtools-common.la
-gpiodetect
-gpioinfo
-gpioget
-gpioset
-gpiomon
-gpiofind
-gpiod_cxx_tests
-gpiodetectcxx
-gpiofindcxx
-gpiogetcxx
-gpioinfocxx
-gpiomoncxx
-gpiosetcxx
-gpiod-cxx-test
 *.o
 *.lo
 *.la
@@ -43,9 +25,3 @@ libtool
 *-libtool
 m4/
 stamp-h1
-
-# unit tests
-gpiod-test
-
-# man pages
-*.man
