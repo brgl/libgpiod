@@ -6,7 +6,7 @@
 # Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
 #
 
-bin_SCRIPTS = gpiod_py_test.py
+dist_bin_SCRIPTS = gpiod_py_test.py
 
 pyexec_LTLIBRARIES = gpiomockup.la
 
