@@ -38,6 +38,7 @@ static void print_help(void)
 {
 	printf("Usage: %s [OPTIONS] <chip name/number> <offset 1> <offset 2> ...\n",
 	       get_progname());
+	printf("\n");
 	printf("Wait for events on GPIO lines and print them to standard output\n");
 	printf("\n");
 	printf("Options:\n");

@@ -38,6 +38,7 @@ static void print_help(void)
 {
 	printf("Usage: %s [OPTIONS] <chip name/number> <offset1>=<value1> <offset2>=<value2> ...\n",
 	       get_progname());
+	printf("\n");
 	printf("Set GPIO line values of a GPIO chip and maintain the state until the process exits\n");
 	printf("\n");
 	printf("Options:\n");
