@@ -47,6 +47,7 @@ static const char *const shortopts = "+hv";
 static void print_help(void)
 {
 	printf("Usage: %s [OPTIONS] <gpiochip1> ...\n", get_progname());
+	printf("\n");
 	printf("Print information about all lines of the specified GPIO chip(s) (or all gpiochips if none are specified).\n");
 	printf("\n");
 	printf("Options:\n");

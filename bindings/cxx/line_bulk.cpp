@@ -14,6 +14,9 @@ namespace gpiod {
 const ::std::bitset<32> line_request::FLAG_ACTIVE_LOW(GPIOD_BIT(0));
 const ::std::bitset<32> line_request::FLAG_OPEN_SOURCE(GPIOD_BIT(1));
 const ::std::bitset<32> line_request::FLAG_OPEN_DRAIN(GPIOD_BIT(2));
+const ::std::bitset<32> line_request::FLAG_BIAS_DISABLE(GPIOD_BIT(3));
+const ::std::bitset<32> line_request::FLAG_BIAS_PULL_DOWN(GPIOD_BIT(4));
+const ::std::bitset<32> line_request::FLAG_BIAS_PULL_UP(GPIOD_BIT(5));
 
 namespace {
 
@@ -38,6 +41,9 @@ const ::std::map<::std::bitset<32>, int, bitset_cmp> reqflag_mapping = {
 	{ line_request::FLAG_ACTIVE_LOW,	GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW, },
 	{ line_request::FLAG_OPEN_DRAIN,	GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN, },
 	{ line_request::FLAG_OPEN_SOURCE,	GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE, },
+	{ line_request::FLAG_BIAS_DISABLE,	GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE, },
+	{ line_request::FLAG_BIAS_PULL_DOWN,	GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN, },
+	{ line_request::FLAG_BIAS_PULL_UP,	GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP, },
 };
 
 } /* namespace */
@@ -168,6 +174,89 @@ void line_bulk::set_values(const ::std::vector<int>& values) const
 	if (rv)
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "error setting GPIO line values");
+}
+
+void line_bulk::set_config(int direction, ::std::bitset<32> flags,
+			   const ::std::vector<int> values) const
+{
+	this->throw_if_empty();
+
+	if (!values.empty() && this->_m_bulk.size() != values.size())
+		throw ::std::invalid_argument("the number of default values must correspond with the number of lines");
+
+	::gpiod_line_bulk bulk;
+	int rv, gflags;
+
+	gflags = 0;
+
+	for (auto& it: reqflag_mapping) {
+		if ((it.first & flags).to_ulong())
+			gflags |= it.second;
+	}
+
+	this->to_line_bulk(::std::addressof(bulk));
+
+	rv = ::gpiod_line_set_config_bulk(::std::addressof(bulk), direction,
+					  gflags, values.data());
+	if (rv)
+		throw ::std::system_error(errno, ::std::system_category(),
+					  "error setting GPIO line config");
+}
+
+void line_bulk::set_flags(::std::bitset<32> flags) const
+{
+	this->throw_if_empty();
+
+	::gpiod_line_bulk bulk;
+	int rv, gflags;
+
+	this->to_line_bulk(::std::addressof(bulk));
+
+	gflags = 0;
+
+	for (auto& it: reqflag_mapping) {
+		if ((it.first & flags).to_ulong())
+			gflags |= it.second;
+	}
+
+	rv = ::gpiod_line_set_flags_bulk(::std::addressof(bulk), gflags);
+	if (rv)
+		throw ::std::system_error(errno, ::std::system_category(),
+					  "error setting GPIO line flags");
+}
+
+void line_bulk::set_direction_input() const
+{
+	this->throw_if_empty();
+
+	::gpiod_line_bulk bulk;
+	int rv;
+
+	this->to_line_bulk(::std::addressof(bulk));
+
+	rv = ::gpiod_line_set_direction_input_bulk(::std::addressof(bulk));
+	if (rv)
+		throw ::std::system_error(errno, ::std::system_category(),
+			"error setting GPIO line direction to input");
+}
+
+void line_bulk::set_direction_output(const ::std::vector<int>& values) const
+{
+	this->throw_if_empty();
+
+	if (values.size() != this->_m_bulk.size())
+		throw ::std::invalid_argument("the size of values array must correspond with the number of lines");
+
+	::gpiod_line_bulk bulk;
+	int rv;
+
+	this->to_line_bulk(::std::addressof(bulk));
+
+	rv = ::gpiod_line_set_direction_output_bulk(::std::addressof(bulk),
+						    values.data());
+	if (rv)
+		throw ::std::system_error(errno, ::std::system_category(),
+			"error setting GPIO line direction to output");
 }
 
 line_bulk line_bulk::event_wait(const ::std::chrono::nanoseconds& timeout) const

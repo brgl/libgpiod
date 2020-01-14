@@ -14,24 +14,30 @@
 #include "tools-common.h"
 
 static const struct option longopts[] = {
-	{ "help",	no_argument,	NULL,	'h' },
-	{ "version",	no_argument,	NULL,	'v' },
-	{ "active-low",	no_argument,	NULL,	'l' },
+	{ "help",	no_argument,		NULL,	'h' },
+	{ "version",	no_argument,		NULL,	'v' },
+	{ "active-low",	no_argument,		NULL,	'l' },
+	{ "bias",	required_argument,	NULL,	'B' },
 	{ GETOPT_NULL_LONGOPT },
 };
 
-static const char *const shortopts = "+hvl";
+static const char *const shortopts = "+hvlB:";
 
 static void print_help(void)
 {
 	printf("Usage: %s [OPTIONS] <chip name/number> <offset 1> <offset 2> ...\n",
 	       get_progname());
+	printf("\n");
 	printf("Read line value(s) from a GPIO chip\n");
 	printf("\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -v, --version:\tdisplay the version and exit\n");
 	printf("  -l, --active-low:\tset the line active state to low\n");
+	printf("  -B, --bias=[as-is|disable|pull-down|pull-up] (defaults to 'as-is'):\n");
+	printf("		set the line bias\n");
+	printf("\n");
+	print_bias_help();
 }
 
 int main(int argc, char **argv)
@@ -39,6 +45,7 @@ int main(int argc, char **argv)
 	unsigned int *offsets, i, num_lines;
 	int *values, optc, opti, rv;
 	bool active_low = false;
+	int flags = 0;
 	char *device, *end;
 
 	for (;;) {
@@ -55,6 +62,9 @@ int main(int argc, char **argv)
 			return EXIT_SUCCESS;
 		case 'l':
 			active_low = true;
+			break;
+		case 'B':
+			flags = bias_flags(optarg);
 			break;
 		case '?':
 			die("try %s --help", get_progname());
@@ -86,9 +96,9 @@ int main(int argc, char **argv)
 			die("invalid GPIO offset: %s", argv[i + 1]);
 	}
 
-	rv = gpiod_ctxless_get_value_multiple(device, offsets, values,
-					      num_lines, active_low,
-					      "gpioget");
+	rv = gpiod_ctxless_get_value_multiple_ext(device, offsets, values,
+						  num_lines, active_low,
+						  "gpioget", flags);
 	if (rv < 0)
 		die_perror("error reading GPIO values");
 

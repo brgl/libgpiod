@@ -8,6 +8,7 @@
 #include <catch2/catch.hpp>
 #include <gpiod.hpp>
 #include <poll.h>
+#include <thread>
 
 #include "gpio-mockup.hpp"
 
@@ -216,4 +217,34 @@ TEST_CASE("It's possible to read values from lines requested for events", "[even
 		line.request(config);
 		REQUIRE(line.get_value() == 0);
 	}
+}
+
+TEST_CASE("It's possible to read more than one line event", "[event][line]")
+{
+	mockup::probe_guard mockup_chips({ 8 });
+	::gpiod::chip chip(mockup::instance().chip_name(0));
+	auto line = chip.get_line(4);
+	::gpiod::line_request config;
+
+	config.consumer = consumer.c_str();
+	config.request_type = ::gpiod::line_request::EVENT_BOTH_EDGES;
+
+	line.request(config);
+
+	mockup::instance().chip_set_pull(0, 4, 1);
+	::std::this_thread::sleep_for(::std::chrono::milliseconds(10));
+	mockup::instance().chip_set_pull(0, 4, 0);
+	::std::this_thread::sleep_for(::std::chrono::milliseconds(10));
+	mockup::instance().chip_set_pull(0, 4, 1);
+	::std::this_thread::sleep_for(::std::chrono::milliseconds(10));
+
+	auto events = line.event_read_multiple();
+
+	REQUIRE(events.size() == 3);
+	REQUIRE(events.at(0).event_type == ::gpiod::line_event::RISING_EDGE);
+	REQUIRE(events.at(1).event_type == ::gpiod::line_event::FALLING_EDGE);
+	REQUIRE(events.at(2).event_type == ::gpiod::line_event::RISING_EDGE);
+	REQUIRE(events.at(0).source == line);
+	REQUIRE(events.at(1).source == line);
+	REQUIRE(events.at(2).source == line);
 }

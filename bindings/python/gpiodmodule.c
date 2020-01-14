@@ -60,6 +60,9 @@ enum {
 	gpiod_LINE_REQ_FLAG_OPEN_DRAIN		= GPIOD_BIT(0),
 	gpiod_LINE_REQ_FLAG_OPEN_SOURCE		= GPIOD_BIT(1),
 	gpiod_LINE_REQ_FLAG_ACTIVE_LOW		= GPIOD_BIT(2),
+	gpiod_LINE_REQ_FLAG_BIAS_DISABLE	= GPIOD_BIT(3),
+	gpiod_LINE_REQ_FLAG_BIAS_PULL_DOWN	= GPIOD_BIT(4),
+	gpiod_LINE_REQ_FLAG_BIAS_PULL_UP	= GPIOD_BIT(5),
 };
 
 enum {
@@ -70,6 +73,13 @@ enum {
 enum {
 	gpiod_ACTIVE_HIGH = 1,
 	gpiod_ACTIVE_LOW,
+};
+
+enum {
+	gpiod_BIAS_AS_IS = 1,
+	gpiod_BIAS_DISABLE,
+	gpiod_BIAS_PULL_UP,
+	gpiod_BIAS_PULL_DOWN,
 };
 
 enum {
@@ -358,6 +368,34 @@ static PyObject *gpiod_Line_active_state(gpiod_LineObject *self,
 	return ret;
 }
 
+PyDoc_STRVAR(gpiod_Line_bias_doc,
+"bias() -> integer\n"
+"\n"
+"Get the bias setting of this GPIO line.");
+
+static PyObject *gpiod_Line_bias(gpiod_LineObject *self,
+				 PyObject *Py_UNUSED(ignored))
+{
+	int bias;
+
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
+	bias = gpiod_line_bias(self->line);
+
+	switch (bias) {
+	case GPIOD_LINE_BIAS_PULL_UP:
+		return Py_BuildValue("I", gpiod_BIAS_PULL_UP);
+	case GPIOD_LINE_BIAS_PULL_DOWN:
+		return Py_BuildValue("I", gpiod_BIAS_PULL_DOWN);
+	case GPIOD_LINE_BIAS_DISABLE:
+		return Py_BuildValue("I", gpiod_BIAS_DISABLE);
+	case GPIOD_LINE_BIAS_AS_IS:
+	default:
+		return Py_BuildValue("I", gpiod_BIAS_AS_IS);
+	}
+}
+
 PyDoc_STRVAR(gpiod_Line_is_used_doc,
 "is_used() -> boolean\n"
 "\n"
@@ -434,8 +472,12 @@ static PyObject *gpiod_Line_request(gpiod_LineObject *self,
 	gpiod_LineBulkObject *bulk_obj;
 	int rv;
 
-	def_val = PyDict_GetItemString(kwds, "default_val");
-	def_vals = PyDict_GetItemString(kwds, "default_vals");
+	if (PyDict_Size(kwds) > 0) {
+		def_val = PyDict_GetItemString(kwds, "default_val");
+		def_vals = PyDict_GetItemString(kwds, "default_vals");
+	} else {
+		def_val = def_vals = NULL;
+	}
 
 	if (def_val && def_vals) {
 		PyErr_SetString(PyExc_TypeError,
@@ -547,14 +589,150 @@ static PyObject *gpiod_Line_set_value(gpiod_LineObject *self, PyObject *args)
 	if (!bulk_obj)
 		return NULL;
 
-	vals = Py_BuildValue("((O))", val);
+	vals = Py_BuildValue("(O)", val);
 	if (!vals) {
 		Py_DECREF(bulk_obj);
 		return NULL;
 	}
 
 	ret = PyObject_CallMethod((PyObject *)bulk_obj,
-				  "set_values", "O", vals);
+				  "set_values", "(O)", vals);
+	Py_DECREF(bulk_obj);
+	Py_DECREF(vals);
+
+	return ret;
+}
+
+PyDoc_STRVAR(gpiod_Line_set_config_doc,
+"set_config(direction,flags,value) -> None\n"
+"\n"
+"Set the configuration of this GPIO line.\n"
+"\n"
+"  direction\n"
+"    New direction (integer)\n"
+"  flags\n"
+"    New flags (integer)\n"
+"  value\n"
+"    New value (integer)");
+
+static PyObject *gpiod_Line_set_config(gpiod_LineObject *self, PyObject *args)
+{
+	gpiod_LineBulkObject *bulk_obj;
+	PyObject *dirn, *flags, *val, *vals, *ret;
+	int rv;
+
+	val = NULL;
+	rv = PyArg_ParseTuple(args, "OO|O", &dirn, &flags, &val);
+	if (!rv)
+		return NULL;
+
+	bulk_obj = gpiod_LineToLineBulk(self);
+	if (!bulk_obj)
+		return NULL;
+
+	if (val) {
+		vals = Py_BuildValue("(O)", val);
+		if (!vals) {
+			Py_DECREF(bulk_obj);
+			return NULL;
+		}
+		ret = PyObject_CallMethod((PyObject *)bulk_obj,
+				"set_config", "OO(O)", dirn, flags, vals);
+		Py_DECREF(vals);
+	} else {
+		ret = PyObject_CallMethod((PyObject *)bulk_obj,
+				"set_config", "OO", dirn, flags);
+	}
+
+	Py_DECREF(bulk_obj);
+
+	return ret;
+}
+
+PyDoc_STRVAR(gpiod_Line_set_flags_doc,
+"set_flags(flags) -> None\n"
+"\n"
+"Set the flags of this GPIO line.\n"
+"\n"
+"  flags\n"
+"    New flags (integer)");
+
+static PyObject *gpiod_Line_set_flags(gpiod_LineObject *self, PyObject *args)
+{
+	gpiod_LineBulkObject *bulk_obj;
+	PyObject *ret;
+
+	bulk_obj = gpiod_LineToLineBulk(self);
+	if (!bulk_obj)
+		return NULL;
+
+	ret = PyObject_CallMethod((PyObject *)bulk_obj,
+				  "set_flags", "O", args);
+	Py_DECREF(bulk_obj);
+
+	return ret;
+}
+
+PyDoc_STRVAR(gpiod_Line_set_direction_input_doc,
+"set_direction_input() -> None\n"
+"\n"
+"Set the direction of this GPIO line to input.\n");
+
+static PyObject *gpiod_Line_set_direction_input(gpiod_LineObject *self,
+						PyObject *Py_UNUSED(ignored))
+{
+	gpiod_LineBulkObject *bulk_obj;
+	PyObject *ret;
+
+	bulk_obj = gpiod_LineToLineBulk(self);
+	if (!bulk_obj)
+		return NULL;
+
+	ret = PyObject_CallMethod((PyObject *)bulk_obj,
+				  "set_direction_input", "");
+	Py_DECREF(bulk_obj);
+
+	return ret;
+}
+
+PyDoc_STRVAR(gpiod_Line_set_direction_output_doc,
+"set_direction_output(value) -> None\n"
+"\n"
+"Set the direction of this GPIO line to output.\n"
+"\n"
+"  value\n"
+"    New value (integer)");
+
+static PyObject *gpiod_Line_set_direction_output(gpiod_LineObject *self,
+						 PyObject *args)
+{
+	gpiod_LineBulkObject *bulk_obj;
+	PyObject *val, *vals, *ret;
+	int rv;
+	const char *fmt;
+
+	val = NULL;
+	rv = PyArg_ParseTuple(args, "|O", &val);
+	if (!rv)
+		return NULL;
+
+	if (val) {
+		fmt = "(O)";
+		vals = Py_BuildValue(fmt, val);
+	} else {
+		vals = Py_BuildValue("()");
+		fmt = "O"; /* pass empty args to bulk */
+	}
+	if (!vals)
+		return NULL;
+
+	bulk_obj = gpiod_LineToLineBulk(self);
+	if (!bulk_obj)
+		return NULL;
+
+	ret = PyObject_CallMethod((PyObject *)bulk_obj,
+				  "set_direction_output", fmt, vals);
+
 	Py_DECREF(bulk_obj);
 	Py_DECREF(vals);
 
@@ -672,6 +850,57 @@ static gpiod_LineEventObject *gpiod_Line_event_read(gpiod_LineObject *self,
 	return ret;
 }
 
+PyDoc_STRVAR(gpiod_Line_event_read_multiple_doc,
+"event_read_multiple() -> list of gpiod.LineEvent object\n"
+"\n"
+"Read multiple line events from this GPIO line object.");
+
+static PyObject *gpiod_Line_event_read_multiple(gpiod_LineObject *self,
+						PyObject *Py_UNUSED(ignored))
+{
+	struct gpiod_line_event evbuf[16];
+	gpiod_LineEventObject *event;
+	int rv, num_events, i;
+	PyObject *events;
+
+	if (gpiod_ChipIsClosed(self->owner))
+		return NULL;
+
+	memset(evbuf, 0, sizeof(evbuf));
+	Py_BEGIN_ALLOW_THREADS;
+	num_events = gpiod_line_event_read_multiple(self->line, evbuf,
+					sizeof(evbuf) / sizeof(*evbuf));
+	Py_END_ALLOW_THREADS;
+	if (num_events < 0)
+		return PyErr_SetFromErrno(PyExc_OSError);
+
+	events = PyList_New(num_events);
+	if (!events)
+		return NULL;
+
+	for (i = 0; i < num_events; i++) {
+		event = PyObject_New(gpiod_LineEventObject,
+				     &gpiod_LineEventType);
+		if (!event) {
+			Py_DECREF(events);
+			return NULL;
+		}
+
+		memcpy(&event->event, &evbuf[i], sizeof(event->event));
+		Py_INCREF(self);
+		event->source = self;
+
+		rv = PyList_SetItem(events, i, (PyObject *)event);
+		if (rv < 0) {
+			Py_DECREF(events);
+			Py_DECREF(event);
+			return NULL;
+		}
+	}
+
+	return events;
+}
+
 PyDoc_STRVAR(gpiod_Line_event_get_fd_doc,
 "event_get_fd() -> integer\n"
 "\n"
@@ -753,6 +982,12 @@ static PyMethodDef gpiod_Line_methods[] = {
 		.ml_doc = gpiod_Line_active_state_doc,
 	},
 	{
+		.ml_name = "bias",
+		.ml_meth = (PyCFunction)gpiod_Line_bias,
+		.ml_flags = METH_NOARGS,
+		.ml_doc = gpiod_Line_bias_doc,
+	},
+	{
 		.ml_name = "is_used",
 		.ml_meth = (PyCFunction)gpiod_Line_is_used,
 		.ml_flags = METH_NOARGS,
@@ -795,6 +1030,30 @@ static PyMethodDef gpiod_Line_methods[] = {
 		.ml_doc = gpiod_Line_set_value_doc,
 	},
 	{
+		.ml_name = "set_config",
+		.ml_meth = (PyCFunction)gpiod_Line_set_config,
+		.ml_flags = METH_VARARGS,
+		.ml_doc = gpiod_Line_set_config_doc,
+	},
+	{
+		.ml_name = "set_flags",
+		.ml_meth = (PyCFunction)gpiod_Line_set_flags,
+		.ml_flags = METH_VARARGS,
+		.ml_doc = gpiod_Line_set_flags_doc,
+	},
+	{
+		.ml_name = "set_direction_input",
+		.ml_meth = (PyCFunction)gpiod_Line_set_direction_input,
+		.ml_flags = METH_NOARGS,
+		.ml_doc = gpiod_Line_set_direction_input_doc,
+	},
+	{
+		.ml_name = "set_direction_output",
+		.ml_meth = (PyCFunction)gpiod_Line_set_direction_output,
+		.ml_flags = METH_VARARGS,
+		.ml_doc = gpiod_Line_set_direction_output_doc,
+	},
+	{
 		.ml_name = "release",
 		.ml_meth = (PyCFunction)gpiod_Line_release,
 		.ml_flags = METH_NOARGS,
@@ -817,6 +1076,12 @@ static PyMethodDef gpiod_Line_methods[] = {
 		.ml_meth = (PyCFunction)gpiod_Line_event_read,
 		.ml_flags = METH_NOARGS,
 		.ml_doc = gpiod_Line_event_read_doc,
+	},
+	{
+		.ml_name = "event_read_multiple",
+		.ml_meth = (PyCFunction)gpiod_Line_event_read_multiple,
+		.ml_flags = METH_NOARGS,
+		.ml_doc = gpiod_Line_event_read_multiple_doc,
 	},
 	{
 		.ml_name = "event_get_fd",
@@ -1030,6 +1295,12 @@ static void gpiod_MakeRequestConfig(struct gpiod_line_request_config *conf,
 		conf->flags |= GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE;
 	if (flags & gpiod_LINE_REQ_FLAG_ACTIVE_LOW)
 		conf->flags |= GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
+	if (flags & gpiod_LINE_REQ_FLAG_BIAS_DISABLE)
+		conf->flags |= GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE;
+	if (flags & gpiod_LINE_REQ_FLAG_BIAS_PULL_DOWN)
+		conf->flags |= GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN;
+	if (flags & gpiod_LINE_REQ_FLAG_BIAS_PULL_UP)
+		conf->flags |= GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP;
 }
 
 PyDoc_STRVAR(gpiod_LineBulk_request_doc,
@@ -1166,6 +1437,42 @@ static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self,
 	return val_list;
 }
 
+static int gpiod_TupleToIntArray(PyObject *src, int *dst, Py_ssize_t nv)
+{
+	Py_ssize_t num_vals, i;
+	PyObject *iter, *next;
+	int val;
+
+	num_vals = PyObject_Size(src);
+	if (num_vals != nv) {
+		PyErr_SetString(PyExc_TypeError,
+				"Number of values must correspond to the number of lines");
+		return -1;
+	}
+
+	iter = PyObject_GetIter(src);
+	if (!iter)
+		return -1;
+
+	for (i = 0;; i++) {
+		next = PyIter_Next(iter);
+		if (!next) {
+			Py_DECREF(iter);
+			break;
+		}
+
+		val = PyLong_AsLong(next);
+		Py_DECREF(next);
+		if (PyErr_Occurred()) {
+			Py_DECREF(iter);
+			return -1;
+		}
+		dst[i] = (int)val;
+	}
+
+	return 0;
+}
+
 PyDoc_STRVAR(gpiod_LineBulk_set_values_doc,
 "set_values(values) -> None\n"
 "\n"
@@ -1181,10 +1488,9 @@ PyDoc_STRVAR(gpiod_LineBulk_set_values_doc,
 static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 					   PyObject *args)
 {
-	int rv, vals[GPIOD_LINE_BULK_MAX_LINES], val;
-	PyObject *val_list, *iter, *next;
+	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
 	struct gpiod_line_bulk bulk;
-	Py_ssize_t num_vals, i;
+	PyObject *val_list;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
 		return NULL;
@@ -1196,36 +1502,174 @@ static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 	if (!rv)
 		return NULL;
 
-	num_vals = PyObject_Size(val_list);
-	if (self->num_lines != num_vals) {
-		PyErr_SetString(PyExc_TypeError,
-				"Number of values must correspond to the number of lines");
+	rv = gpiod_TupleToIntArray(val_list, vals, self->num_lines);
+	if (rv)
 		return NULL;
-	}
-
-	iter = PyObject_GetIter(val_list);
-	if (!iter)
-		return NULL;
-
-	for (i = 0;; i++) {
-		next = PyIter_Next(iter);
-		if (!next) {
-			Py_DECREF(iter);
-			break;
-		}
-
-		val = PyLong_AsLong(next);
-		Py_DECREF(next);
-		if (PyErr_Occurred()) {
-			Py_DECREF(iter);
-			return NULL;
-		}
-
-		vals[i] = (int)val;
-	}
 
 	Py_BEGIN_ALLOW_THREADS;
 	rv = gpiod_line_set_value_bulk(&bulk, vals);
+	Py_END_ALLOW_THREADS;
+	if (rv)
+		return PyErr_SetFromErrno(PyExc_OSError);
+
+	Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(gpiod_LineBulk_set_config_doc,
+"set_config(direction,flags,values) -> None\n"
+"\n"
+"Set the configuration of all the lines held by this LineBulk object.\n"
+"\n"
+"  direction\n"
+"    New direction (integer)\n"
+"  flags\n"
+"    New flags (integer)\n"
+"  values\n"
+"    List of values (integers) to set when direction is output.\n"
+"\n"
+"The number of values in the list passed as argument must be the same as\n"
+"the number of lines held by this gpiod.LineBulk object. The index of each\n"
+"value corresponds to the index of each line in the object.\n");
+
+static PyObject *gpiod_LineBulk_set_config(gpiod_LineBulkObject *self,
+					   PyObject *args)
+{
+	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
+	PyObject *val_list;
+	struct gpiod_line_bulk bulk;
+	const int *valp;
+	int dirn, flags;
+
+	if (gpiod_LineBulkOwnerIsClosed(self))
+		return NULL;
+
+	gpiod_LineBulkObjToCLineBulk(self, &bulk);
+
+	val_list = NULL;
+	rv = PyArg_ParseTuple(args, "ii|(O)", &dirn, &flags, &val_list);
+	if (!rv)
+		return NULL;
+
+	if (val_list == NULL) {
+		valp = NULL;
+	} else {
+		memset(vals, 0, sizeof(vals));
+		rv = gpiod_TupleToIntArray(val_list, vals, self->num_lines);
+		if (rv)
+			return NULL;
+		valp = vals;
+	}
+
+	Py_BEGIN_ALLOW_THREADS;
+	rv = gpiod_line_set_config_bulk(&bulk, dirn, flags, valp);
+	Py_END_ALLOW_THREADS;
+	if (rv)
+		return PyErr_SetFromErrno(PyExc_OSError);
+
+	Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(gpiod_LineBulk_set_flags_doc,
+"set_flags(flags) -> None\n"
+"\n"
+"Set the flags of all the lines held by this LineBulk object.\n"
+"\n"
+"  flags\n"
+"    New flags (integer)");
+
+static PyObject *gpiod_LineBulk_set_flags(gpiod_LineBulkObject *self,
+					  PyObject *args)
+{
+	int rv;
+	struct gpiod_line_bulk bulk;
+	int flags;
+
+	if (gpiod_LineBulkOwnerIsClosed(self))
+		return NULL;
+
+	gpiod_LineBulkObjToCLineBulk(self, &bulk);
+
+	rv = PyArg_ParseTuple(args, "i", &flags);
+	if (!rv)
+		return NULL;
+
+	Py_BEGIN_ALLOW_THREADS;
+	rv = gpiod_line_set_flags_bulk(&bulk, flags);
+	Py_END_ALLOW_THREADS;
+	if (rv)
+		return PyErr_SetFromErrno(PyExc_OSError);
+
+	Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(gpiod_LineBulk_set_direction_input_doc,
+"set_direction_input() -> None\n"
+"\n"
+"Set the direction of all the lines held by this LineBulk object to input.\n");
+
+static PyObject *gpiod_LineBulk_set_direction_input(gpiod_LineBulkObject *self,
+						PyObject *Py_UNUSED(ignored))
+{
+	struct gpiod_line_bulk bulk;
+	int rv;
+
+	if (gpiod_LineBulkOwnerIsClosed(self))
+		return NULL;
+
+	gpiod_LineBulkObjToCLineBulk(self, &bulk);
+
+	Py_BEGIN_ALLOW_THREADS;
+	rv = gpiod_line_set_direction_input_bulk(&bulk);
+	Py_END_ALLOW_THREADS;
+	if (rv)
+		return PyErr_SetFromErrno(PyExc_OSError);
+
+	Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(gpiod_LineBulk_set_direction_output_doc,
+"set_direction_output(value) -> None\n"
+"\n"
+"Set the direction of all the lines held by this LineBulk object to output.\n"
+"\n"
+"  values\n"
+"    List of values (integers) to set when direction is output.\n"
+"\n"
+"The number of values in the list passed as argument must be the same as\n"
+"the number of lines held by this gpiod.LineBulk object. The index of each\n"
+"value corresponds to the index of each line in the object.\n");
+
+static PyObject *gpiod_LineBulk_set_direction_output(
+				gpiod_LineBulkObject *self,
+				PyObject *args)
+{
+	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
+	PyObject *val_list;
+	struct gpiod_line_bulk bulk;
+	const int *valp;
+
+	if (gpiod_LineBulkOwnerIsClosed(self))
+		return NULL;
+
+	gpiod_LineBulkObjToCLineBulk(self, &bulk);
+
+	val_list = NULL;
+	rv = PyArg_ParseTuple(args, "|O", &val_list);
+	if (!rv)
+		return NULL;
+
+	if (val_list == NULL)
+		valp = NULL;
+	else {
+		memset(vals, 0, sizeof(vals));
+		rv = gpiod_TupleToIntArray(val_list, vals, self->num_lines);
+		if (rv)
+			return NULL;
+		valp = vals;
+	}
+
+	Py_BEGIN_ALLOW_THREADS;
+	rv = gpiod_line_set_direction_output_bulk(&bulk, valp);
 	Py_END_ALLOW_THREADS;
 	if (rv)
 		return PyErr_SetFromErrno(PyExc_OSError);
@@ -1380,6 +1824,30 @@ static PyMethodDef gpiod_LineBulk_methods[] = {
 		.ml_meth = (PyCFunction)gpiod_LineBulk_set_values,
 		.ml_doc = gpiod_LineBulk_set_values_doc,
 		.ml_flags = METH_VARARGS,
+	},
+	{
+		.ml_name = "set_config",
+		.ml_meth = (PyCFunction)gpiod_LineBulk_set_config,
+		.ml_flags = METH_VARARGS,
+		.ml_doc = gpiod_LineBulk_set_config_doc,
+	},
+	{
+		.ml_name = "set_flags",
+		.ml_meth = (PyCFunction)gpiod_LineBulk_set_flags,
+		.ml_flags = METH_VARARGS,
+		.ml_doc = gpiod_LineBulk_set_flags_doc,
+	},
+	{
+		.ml_name = "set_direction_input",
+		.ml_meth = (PyCFunction)gpiod_LineBulk_set_direction_input,
+		.ml_flags = METH_NOARGS,
+		.ml_doc = gpiod_LineBulk_set_direction_input_doc,
+	},
+	{
+		.ml_name = "set_direction_output",
+		.ml_meth = (PyCFunction)gpiod_LineBulk_set_direction_output,
+		.ml_flags = METH_VARARGS,
+		.ml_doc = gpiod_LineBulk_set_direction_output_doc,
 	},
 	{
 		.ml_name = "release",
@@ -2314,6 +2782,26 @@ static gpiod_ConstDescr gpiod_ConstList[] = {
 		.val = gpiod_ACTIVE_LOW,
 	},
 	{
+		.typeobj = &gpiod_LineType,
+		.name = "BIAS_AS_IS",
+		.val = gpiod_BIAS_AS_IS,
+	},
+	{
+		.typeobj = &gpiod_LineType,
+		.name = "BIAS_DISABLE",
+		.val = gpiod_BIAS_DISABLE,
+	},
+	{
+		.typeobj = &gpiod_LineType,
+		.name = "BIAS_PULL_UP",
+		.val = gpiod_BIAS_PULL_UP,
+	},
+	{
+		.typeobj = &gpiod_LineType,
+		.name = "BIAS_PULL_DOWN",
+		.val = gpiod_BIAS_PULL_DOWN,
+	},
+	{
 		.typeobj = &gpiod_LineEventType,
 		.name = "RISING_EDGE",
 		.val = gpiod_RISING_EDGE,
@@ -2380,6 +2868,18 @@ static gpiod_ModuleConst gpiod_ModuleConsts[] = {
 	{
 		.name = "LINE_REQ_FLAG_ACTIVE_LOW",
 		.value = gpiod_LINE_REQ_FLAG_ACTIVE_LOW,
+	},
+	{
+		.name = "LINE_REQ_FLAG_BIAS_DISABLE",
+		.value = gpiod_LINE_REQ_FLAG_BIAS_DISABLE,
+	},
+	{
+		.name = "LINE_REQ_FLAG_BIAS_PULL_DOWN",
+		.value = gpiod_LINE_REQ_FLAG_BIAS_PULL_DOWN,
+	},
+	{
+		.name = "LINE_REQ_FLAG_BIAS_PULL_UP",
+		.value = gpiod_LINE_REQ_FLAG_BIAS_PULL_UP,
 	},
 	{ }
 };

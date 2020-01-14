@@ -9,7 +9,7 @@
 AC_PREREQ(2.61)
 
 AC_INIT([libgpiod], 1.5)
-AC_SUBST(EXTRA_VERSION, [.devel])
+AC_SUBST(EXTRA_VERSION, [.rc2])
 
 AC_DEFINE_UNQUOTED([GPIOD_VERSION_STR],
 			["$PACKAGE_VERSION$EXTRA_VERSION"],
@@ -30,9 +30,9 @@ AC_SUBST(VERSION_STR, [$PACKAGE_VERSION$EXTRA_VERSION])
 #
 # Define the libtool version as (C.R.A):
 # NOTE: this version only applies to the core C library.
-AC_SUBST(ABI_VERSION, [3.1.1])
+AC_SUBST(ABI_VERSION, [4.0.2])
 # Have a separate ABI version for C++ bindings:
-AC_SUBST(ABI_CXX_VERSION, [1.2.0])
+AC_SUBST(ABI_CXX_VERSION, [2.0.1])
 
 AC_CONFIG_AUX_DIR([autostuff])
 AC_CONFIG_MACRO_DIRS([m4])
@@ -90,6 +90,15 @@ AC_CHECK_HEADERS([dirent.h], [], [HEADER_NOT_FOUND_LIB([dirent.h])])
 AC_CHECK_HEADERS([sys/poll.h], [], [HEADER_NOT_FOUND_LIB([sys/poll.h])])
 AC_CHECK_HEADERS([sys/sysmacros.h], [], [HEADER_NOT_FOUND_LIB([sys/sysmacros.h])])
 AC_CHECK_HEADERS([linux/gpio.h], [], [HEADER_NOT_FOUND_LIB([linux/gpio.h])])
+AC_CHECK_HEADERS([linux/version.h], [], [HEADER_NOT_FOUND_LIB([linux/version.h])])
+
+AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+#include <linux/version.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 5, 0)
+#error
+#endif
+)],
+[], [AC_MSG_ERROR(["libgpiod needs linux headers version >= v5.5.0"])])
 
 AC_ARG_ENABLE([tools],
 	[AC_HELP_STRING([--enable-tools],
@@ -126,8 +135,6 @@ AC_DEFUN([FUNC_NOT_FOUND_TESTS],
 
 if test "x$with_tests" = xtrue
 then
-	AC_CHECK_HEADERS([linux/version.h], [], [HEADER_NOT_FOUND_TESTS([linux/version.h])])
-
 	# For libgpiomockup
 	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
 	PKG_CHECK_MODULES([KMOD], [libkmod >= 18])

@@ -23,6 +23,8 @@ static const struct option longopts[] = {
 	{ "help",		no_argument,		NULL,	'h' },
 	{ "version",		no_argument,		NULL,	'v' },
 	{ "active-low",		no_argument,		NULL,	'l' },
+	{ "bias",		required_argument,	NULL,	'B' },
+	{ "drive",		required_argument,	NULL,	'D' },
 	{ "mode",		required_argument,	NULL,	'm' },
 	{ "sec",		required_argument,	NULL,	's' },
 	{ "usec",		required_argument,	NULL,	'u' },
@@ -30,23 +32,35 @@ static const struct option longopts[] = {
 	{ GETOPT_NULL_LONGOPT },
 };
 
-static const char *const shortopts = "+hvlm:s:u:b";
+static const char *const shortopts = "+hvlB:D:m:s:u:b";
 
 static void print_help(void)
 {
 	printf("Usage: %s [OPTIONS] <chip name/number> <offset1>=<value1> <offset2>=<value2> ...\n",
 	       get_progname());
+	printf("\n");
 	printf("Set GPIO line values of a GPIO chip and maintain the state until the process exits\n");
 	printf("\n");
 	printf("Options:\n");
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -v, --version:\tdisplay the version and exit\n");
 	printf("  -l, --active-low:\tset the line active state to low\n");
+	printf("  -B, --bias=[as-is|disable|pull-down|pull-up] (defaults to 'as-is'):\n");
+	printf("		set the line bias\n");
+	printf("  -D, --drive=[push-pull|open-drain|open-source] (defaults to 'push-pull'):\n");
+	printf("		set the line drive mode\n");
 	printf("  -m, --mode=[exit|wait|time|signal] (defaults to 'exit'):\n");
 	printf("		tell the program what to do after setting values\n");
 	printf("  -s, --sec=SEC:\tspecify the number of seconds to wait (only valid for --mode=time)\n");
 	printf("  -u, --usec=USEC:\tspecify the number of microseconds to wait (only valid for --mode=time)\n");
 	printf("  -b, --background:\tafter setting values: detach from the controlling terminal\n");
+	printf("\n");
+	print_bias_help();
+	printf("\n");
+	printf("Drives:\n");
+	printf("  push-pull:\tdrive the line both high and low\n");
+	printf("  open-drain:\tdrive the line low or go high impedance\n");
+	printf("  open-source:\tdrive the line high or go high impedance\n");
 	printf("\n");
 	printf("Modes:\n");
 	printf("  exit:\t\tset values and exit immediately\n");
@@ -178,11 +192,22 @@ static const struct mode_mapping *parse_mode(const char *mode)
 	return NULL;
 }
 
+static int drive_flags(const char *option)
+{
+	if (strcmp(option, "open-drain") == 0)
+		return GPIOD_CTXLESS_FLAG_OPEN_DRAIN;
+	if (strcmp(option, "open-source") == 0)
+		return GPIOD_CTXLESS_FLAG_OPEN_SOURCE;
+	if (strcmp(option, "push-pull") != 0)
+		die("invalid drive: %s", option);
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	const struct mode_mapping *mode = &modes[MODE_EXIT];
 	unsigned int *offsets, num_lines, i;
-	int *values, rv, optc, opti;
+	int *values, rv, optc, opti, flags = 0;
 	struct callback_data cbdata;
 	bool active_low = false;
 	char *device, *end;
@@ -203,6 +228,12 @@ int main(int argc, char **argv)
 			return EXIT_SUCCESS;
 		case 'l':
 			active_low = true;
+			break;
+		case 'B':
+			flags |= bias_flags(optarg);
+			break;
+		case 'D':
+			flags |= drive_flags(optarg);
 			break;
 		case 'm':
 			mode = parse_mode(optarg);
@@ -268,9 +299,10 @@ int main(int argc, char **argv)
 			die("invalid offset: %s", argv[i + 1]);
 	}
 
-	rv = gpiod_ctxless_set_value_multiple(device, offsets, values,
-					      num_lines, active_low, "gpioset",
-					      mode->callback, &cbdata);
+	rv = gpiod_ctxless_set_value_multiple_ext(
+				device, offsets, values,
+				num_lines, active_low, "gpioset",
+				mode->callback, &cbdata, flags);
 	if (rv < 0)
 		die_perror("error setting the GPIO line values");
 

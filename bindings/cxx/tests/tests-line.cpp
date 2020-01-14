@@ -52,6 +52,9 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.consumer().empty());
 		REQUIRE_FALSE(line.is_requested());
 		REQUIRE_FALSE(line.is_used());
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_AS_IS);
 	}
 
 	SECTION("exported line")
@@ -68,6 +71,9 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
 		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_AS_IS);
 	}
 
 	SECTION("exported line with flags")
@@ -88,6 +94,87 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.is_used());
 		REQUIRE(line.is_open_drain());
 		REQUIRE_FALSE(line.is_open_source());
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_AS_IS);
+	}
+
+	SECTION("exported open source line")
+	{
+		::gpiod::line_request config;
+
+		config.consumer = consumer.c_str();
+		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
+		config.flags = ::gpiod::line_request::FLAG_OPEN_SOURCE;
+		line.request(config);
+
+		REQUIRE(line.offset() == 4);
+		REQUIRE(line.name() == "gpio-mockup-A-4");
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE(line.is_requested());
+		REQUIRE(line.is_used());
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE(line.is_open_source());
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_AS_IS);
+	}
+
+	SECTION("exported bias disable line")
+	{
+		::gpiod::line_request config;
+
+		config.consumer = consumer.c_str();
+		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
+		config.flags = ::gpiod::line_request::FLAG_BIAS_DISABLE;
+		line.request(config);
+
+		REQUIRE(line.offset() == 4);
+		REQUIRE(line.name() == "gpio-mockup-A-4");
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE(line.is_requested());
+		REQUIRE(line.is_used());
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_DISABLE);
+	}
+
+	SECTION("exported pull-down line")
+	{
+		::gpiod::line_request config;
+
+		config.consumer = consumer.c_str();
+		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
+		config.flags = ::gpiod::line_request::FLAG_BIAS_PULL_DOWN;
+		line.request(config);
+
+		REQUIRE(line.offset() == 4);
+		REQUIRE(line.name() == "gpio-mockup-A-4");
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE(line.is_requested());
+		REQUIRE(line.is_used());
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_PULL_DOWN);
+	}
+
+	SECTION("exported pull-up line")
+	{
+		::gpiod::line_request config;
+
+		config.consumer = consumer.c_str();
+		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
+		config.flags = ::gpiod::line_request::FLAG_BIAS_PULL_UP;
+		line.request(config);
+
+		REQUIRE(line.offset() == 4);
+		REQUIRE(line.name() == "gpio-mockup-A-4");
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE(line.is_requested());
+		REQUIRE(line.is_used());
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_PULL_UP);
 	}
 
 	SECTION("update line info")
@@ -233,6 +320,134 @@ TEST_CASE("Line values can be set and read", "[line]")
 		line.set_value(1);
 		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
 		line.set_value(0);
+		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
+	}
+}
+
+TEST_CASE("Line can be reconfigured", "[line]")
+{
+	mockup::probe_guard mockup_chips({ 8 });
+	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::line_request config;
+
+	config.consumer = consumer.c_str();
+
+	SECTION("set config (single line, active-state)")
+	{
+		auto line = chip.get_line(3);
+		config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
+		config.flags = 0;
+		line.request(config);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_INPUT);
+		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+
+		line.set_config(::gpiod::line_request::DIRECTION_OUTPUT,
+			::gpiod::line_request::FLAG_ACTIVE_LOW,1);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_LOW);
+		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
+		line.set_value(0);
+		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
+
+		line.set_config(::gpiod::line_request::DIRECTION_OUTPUT, 0);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
+		line.set_value(1);
+		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
+	}
+
+	SECTION("set flags (single line, active-state)")
+	{
+		auto line = chip.get_line(3);
+		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
+		config.flags = 0;
+		line.request(config,1);
+		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
+
+		line.set_flags(::gpiod::line_request::FLAG_ACTIVE_LOW);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_LOW);
+		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
+
+		line.set_flags(0);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
+	}
+
+	SECTION("set flags (single line, drive)")
+	{
+		auto line = chip.get_line(3);
+		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
+		config.flags = 0;
+		line.request(config);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+
+		line.set_flags(::gpiod::line_request::FLAG_OPEN_DRAIN);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+
+		line.set_flags(::gpiod::line_request::FLAG_OPEN_SOURCE);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE(line.is_open_source());
+
+		line.set_flags(0);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+	}
+
+	SECTION("set flags (single line, bias)")
+	{
+		auto line = chip.get_line(3);
+		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
+		config.flags = 0;
+		line.request(config);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+
+		line.set_flags(::gpiod::line_request::FLAG_OPEN_DRAIN);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+
+		line.set_flags(::gpiod::line_request::FLAG_OPEN_SOURCE);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE(line.is_open_source());
+
+		line.set_flags(0);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		REQUIRE_FALSE(line.is_open_drain());
+		REQUIRE_FALSE(line.is_open_source());
+	}
+
+	SECTION("set direction input (single line)")
+	{
+		auto line = chip.get_line(3);
+		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
+		config.flags = 0;
+		line.request(config);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
+		line.set_direction_input();
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_INPUT);
+	}
+
+	SECTION("set direction output (single line)")
+	{
+		auto line = chip.get_line(3);
+		config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
+		config.flags = 0;
+		line.request(config);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_INPUT);
+		line.set_direction_output(1);
+		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
 		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
 	}
 }

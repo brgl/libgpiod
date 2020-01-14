@@ -1,3 +1,73 @@
+libgpiod v1.5
+=============
+
+New features:
+- switched to using the GLib testing framework for core library tests and BATS
+  (Bash Automated Testing System) for command-line tools
+- used Catch2 C++ testing framework to implement a proper test-suite for C++
+  bindings while also reusing the API provided by libgpiomockup
+- used Python's unittest package to implement a proper test suite for Python
+  bindings and reused libgpiockup again
+- provided line::update() and Line.update() routines for C++ and Python
+  bindings respectively allowing to update the line info from bindings as well
+- added support for bias flags which are a new functionality first available in
+  linux v5.5; subsequently the library now requires v5.5 kernel headers to
+  build; the new flags are supported in the core library, C++ and Python
+  bindings as well as the command-line tools
+- added support for the new SET_CONFIG ioctl(): this too is a new functionality
+  added in linux v5.5; both features have been implemented in the library by
+  Kent Gibson
+- added routines for reading multiple line events at once to the core library,
+  C++ and Python bindings
+
+Improvements:
+- constified function arguments where applicable in libgpiomockup
+- fixed the name of the test exeucutable displayed at build time
+- improved the function pointer casting in Python bindings to avoid warnings
+  emitted by GCC8
+- switched to using the KERNEL_VERSION() macro in tests instead of handcoded
+  version parsing
+- improved the setup ordering in tests (setup libgpiomockup before checking
+  the kernel version
+- add 'extern "c"' to the libgpiomockup header to make it usable from C++
+- add chip index validation to libgpiomockup functions
+- check if the debugfs directory used by libgpiomockup is writable before
+  using it to set the pull of dummy lines
+- add several new test cases
+- improved Python example programs (made gpiomon's output similar to the
+  original tool, make gpioset wait for an ENTER pres by default)
+- fixed the major:minor number comparison between the device and sysfs
+- deprecated the gpiod_line_needs_update() function and removed the logic
+  behind it from the library
+- shrank the Python bindings a bit by directly returning the value from
+  PyErr_SetFromErrno()
+- dropped noexcept from methods which can throw in C++ bindings
+- switched to initializing the bitset with integers instead of strings in C++
+  bindings
+- allowed gpiod_line_set_value_bulk() to accept null pointers
+- when building Python bindings: check for the existence of python-config
+- improved the readability of help text messages for command-line tools
+- reworked the .gitignore file: added libtool scripts generated during
+  cross-compilation and split the main .gitignore into several fine-grained
+  files
+- fixed several misspellings
+- other minor tweaks and improvements
+
+Bug fixes:
+- fixed memory leaks in libgpiomockup
+- fixed memory leaks in the testing framework
+- fixed a segfault in error path in tests
+- make gpioinfo show lines claimed by the kernel as used even if they have no
+  named consumer
+- fixed the test cases validating the '--active-low' switch in gpiomon and
+  the GPIOHANDLE_REQUEST_ACTIVE_LOW flag in the core library after a fix
+  for incorrect behavior was merged in linux v5.2.7
+- stopped failing at init-time of libgpiomockup if gpio-mockup is already
+  loaded
+- added a missing throw keyword in error path in C++ bindings
+- fixed a segfault in Python bindings when calling Line.request() without
+  the consumer argument
+
 libgpiod v1.4
 =============
 

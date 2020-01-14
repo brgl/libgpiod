@@ -6,9 +6,21 @@
  */
 
 #include <gpiod.hpp>
+#include <map>
 #include <system_error>
 
 namespace gpiod {
+
+namespace {
+
+const ::std::map<int, int> bias_mapping = {
+	{ GPIOD_LINE_BIAS_PULL_UP,	line::BIAS_PULL_UP, },
+	{ GPIOD_LINE_BIAS_PULL_DOWN,	line::BIAS_PULL_DOWN, },
+	{ GPIOD_LINE_BIAS_DISABLE,	line::BIAS_DISABLE, },
+	{ GPIOD_LINE_BIAS_AS_IS,	line::BIAS_AS_IS, },
+};
+
+} /* namespace */
 
 line::line(void)
 	: _m_line(nullptr),
@@ -65,6 +77,13 @@ int line::active_state(void) const
 	int active = ::gpiod_line_active_state(this->_m_line);
 
 	return active == GPIOD_LINE_ACTIVE_STATE_HIGH ? ACTIVE_HIGH : ACTIVE_LOW;
+}
+
+int line::bias(void) const
+{
+	this->throw_if_null();
+
+	return bias_mapping.at(::gpiod_line_bias(this->_m_line));
 }
 
 bool line::is_used(void) const
@@ -139,6 +158,43 @@ void line::set_value(int val) const
 	bulk.set_values({ val });
 }
 
+void line::set_config(int direction, ::std::bitset<32> flags,
+			int value) const
+{
+	this->throw_if_null();
+
+	line_bulk bulk({ *this });
+
+	bulk.set_config(direction, flags, { value });
+}
+
+void line::set_flags(::std::bitset<32> flags) const
+{
+	this->throw_if_null();
+
+	line_bulk bulk({ *this });
+
+	bulk.set_flags(flags);
+}
+
+void line::set_direction_input() const
+{
+	this->throw_if_null();
+
+	line_bulk bulk({ *this });
+
+	bulk.set_direction_input();
+}
+
+void line::set_direction_output(int value) const
+{
+	this->throw_if_null();
+
+	line_bulk bulk({ *this });
+
+	bulk.set_direction_output({ value });
+}
+
 bool line::event_wait(const ::std::chrono::nanoseconds& timeout) const
 {
 	this->throw_if_null();
@@ -148,6 +204,23 @@ bool line::event_wait(const ::std::chrono::nanoseconds& timeout) const
 	line_bulk event_bulk = bulk.event_wait(timeout);
 
 	return !!event_bulk;
+}
+
+line_event line::make_line_event(const ::gpiod_line_event& event) const noexcept
+{
+	line_event ret;
+
+	if (event.event_type == GPIOD_LINE_EVENT_RISING_EDGE)
+		ret.event_type = line_event::RISING_EDGE;
+	else if (event.event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
+		ret.event_type = line_event::FALLING_EDGE;
+
+	ret.timestamp = ::std::chrono::nanoseconds(
+				event.ts.tv_nsec + (event.ts.tv_sec * 1000000000));
+
+	ret.source = *this;
+
+	return ret;
 }
 
 line_event line::event_read(void) const
@@ -163,17 +236,29 @@ line_event line::event_read(void) const
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "error reading line event");
 
-	if (event_buf.event_type == GPIOD_LINE_EVENT_RISING_EDGE)
-		event.event_type = line_event::RISING_EDGE;
-	else if (event_buf.event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
-		event.event_type = line_event::FALLING_EDGE;
+	return this->make_line_event(event_buf);
+}
 
-	event.timestamp = ::std::chrono::nanoseconds(
-				event_buf.ts.tv_nsec + (event_buf.ts.tv_sec * 1000000000));
+::std::vector<line_event> line::event_read_multiple(void) const
+{
+	this->throw_if_null();
 
-	event.source = *this;
+	/* 16 is the maximum number of events stored in the kernel FIFO. */
+	::std::array<::gpiod_line_event, 16> event_buf;
+	::std::vector<line_event> events;
+	int rv;
 
-	return event;
+	rv = ::gpiod_line_event_read_multiple(this->_m_line,
+					      event_buf.data(), event_buf.size());
+	if (rv < 0)
+		throw ::std::system_error(errno, ::std::system_category(),
+					  "error reading multiple line events");
+
+	events.reserve(rv);
+	for (int i = 0; i < rv; i++)
+		events.push_back(this->make_line_event(event_buf[i]));
+
+	return events;
 }
 
 int line::event_get_fd(void) const
