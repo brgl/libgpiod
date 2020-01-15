@@ -154,7 +154,7 @@ fi
 
 # ABI version for libgpiomockup (we need this since it can be installed if we
 # enable install-tests).
-AC_SUBST(ABI_MOCKUP_VERSION, [0.0.0])
+AC_SUBST(ABI_MOCKUP_VERSION, [0.1.0])
 
 AC_ARG_ENABLE([bindings-cxx],
 	[AC_HELP_STRING([--enable-bindings-cxx],
