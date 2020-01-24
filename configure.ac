@@ -33,6 +33,9 @@ AC_SUBST(VERSION_STR, [$PACKAGE_VERSION$EXTRA_VERSION])
 AC_SUBST(ABI_VERSION, [4.0.2])
 # Have a separate ABI version for C++ bindings:
 AC_SUBST(ABI_CXX_VERSION, [2.0.1])
+# ABI version for libgpiomockup (we need this since it can be installed if we
+# enable install-tests).
+AC_SUBST(ABI_MOCKUP_VERSION, [0.1.0])
 
 AC_CONFIG_AUX_DIR([autostuff])
 AC_CONFIG_MACRO_DIRS([m4])
@@ -151,10 +154,6 @@ then
 		fi
 	fi
 fi
-
-# ABI version for libgpiomockup (we need this since it can be installed if we
-# enable install-tests).
-AC_SUBST(ABI_MOCKUP_VERSION, [0.1.0])
 
 AC_ARG_ENABLE([bindings-cxx],
 	[AC_HELP_STRING([--enable-bindings-cxx],
