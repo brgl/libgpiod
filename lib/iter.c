@@ -28,13 +28,13 @@ static int dir_filter(const struct dirent *dir)
 	return !strncmp(dir->d_name, "gpiochip", 8);
 }
 
-static void free_dirs(struct dirent ***dirs, unsigned int num_dirs)
+static void free_dirs(struct dirent **dirs, unsigned int num_dirs)
 {
 	unsigned int i;
 
 	for (i = 0; i < num_dirs; i++)
-		free((*dirs)[i]);
-	free(*dirs);
+		free(dirs[i]);
+	free(dirs);
 }
 
 struct gpiod_chip_iter *gpiod_chip_iter_new(void)
@@ -69,7 +69,7 @@ struct gpiod_chip_iter *gpiod_chip_iter_new(void)
 			goto err_close_chips;
 	}
 
-	free_dirs(&dirs, num_chips);
+	free_dirs(dirs, num_chips);
 
 	return iter;
 
@@ -85,7 +85,7 @@ err_free_iter:
 	free(iter);
 
 err_free_dirs:
-	free_dirs(&dirs, num_chips);
+	free_dirs(dirs, num_chips);
 
 	return NULL;
 }
