@@ -32,8 +32,9 @@ libraries other than the standard C library with GNU extensions.
 
 The autoconf version needed to compile the project is 2.61.
 
-Recent (as in >= v4.8) kernel headers are also required for the GPIO user
-API definitions.
+Recent kernel headers are also required for the GPIO user API definitions. For
+the exact version of kernel headers required, please refer to the configure.ac
+contents.
 
 To build the project (including command-line utilities) run:
 
