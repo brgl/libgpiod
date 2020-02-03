@@ -660,7 +660,7 @@ public:
 	 *                     output direction requests.
 	 */
 	GPIOD_API void request(const line_request& config,
-			       const std::vector<int> default_vals = std::vector<int>()) const;
+			       const ::std::vector<int> default_vals = ::std::vector<int>()) const;
 
 	/**
 	 * @brief Release all lines held by this object.
@@ -690,7 +690,7 @@ public:
 	 *               Only relevant for output direction requests.
 	 */
 	GPIOD_API void set_config(int direction, ::std::bitset<32> flags,
-				  const ::std::vector<int> values = std::vector<int>()) const;
+				  const ::std::vector<int> values = ::std::vector<int>()) const;
 
 	/**
 	 * @brief Set configuration flags of all lines held by this object.

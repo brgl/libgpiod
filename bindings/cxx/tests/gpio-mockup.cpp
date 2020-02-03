@@ -56,7 +56,7 @@ void mockup::remove(void)
 					  "unable to remove gpio-mockup module");
 }
 
-std::string mockup::chip_name(unsigned int idx) const
+::std::string mockup::chip_name(unsigned int idx) const
 {
 	const char *name = ::gpio_mockup_chip_name(this->_m_mockup, idx);
 	if (!name)
@@ -66,7 +66,7 @@ std::string mockup::chip_name(unsigned int idx) const
 	return ::std::string(name);
 }
 
-std::string mockup::chip_path(unsigned int idx) const
+::std::string mockup::chip_path(unsigned int idx) const
 {
 	const char *path = ::gpio_mockup_chip_path(this->_m_mockup, idx);
 	if (!path)

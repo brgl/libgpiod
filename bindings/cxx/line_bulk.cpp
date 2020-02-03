@@ -68,7 +68,7 @@ void line_bulk::append(const line& new_line)
 		throw ::std::logic_error("maximum number of lines reached");
 
 	if (this->_m_bulk.size() >= 1 && this->_m_bulk.begin()->get_chip() != new_line.get_chip())
-		throw std::logic_error("line_bulk cannot hold GPIO lines from different chips");
+		throw ::std::logic_error("line_bulk cannot hold GPIO lines from different chips");
 
 	this->_m_bulk.push_back(new_line);
 }
@@ -98,7 +98,7 @@ void line_bulk::clear(void)
 	this->_m_bulk.clear();
 }
 
-void line_bulk::request(const line_request& config, const std::vector<int> default_vals) const
+void line_bulk::request(const line_request& config, const ::std::vector<int> default_vals) const
 {
 	this->throw_if_empty();
 
@@ -345,7 +345,7 @@ line_bulk::iterator line_bulk::end(void) noexcept
 void line_bulk::throw_if_empty(void) const
 {
 	if (this->_m_bulk.empty())
-		throw std::logic_error("line_bulk not holding any GPIO lines");
+		throw ::std::logic_error("line_bulk not holding any GPIO lines");
 }
 
 void line_bulk::to_line_bulk(::gpiod_line_bulk *bulk) const
