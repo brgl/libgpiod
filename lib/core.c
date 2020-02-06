@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <gpiod.h>
+#include <limits.h>
 #include <linux/gpio.h>
 #include <poll.h>
 #include <stdint.h>
@@ -75,7 +76,7 @@ struct gpiod_chip {
 
 static bool is_gpiochip_cdev(const char *path)
 {
-	char *name, *pathcpy, *sysfsp, sysfsdev[16], devstr[16];
+	char *name, *realname, *sysfsp, sysfsdev[16], devstr[16];
 	struct stat statbuf;
 	bool ret = false;
 	int rv, fd;
@@ -84,6 +85,19 @@ static bool is_gpiochip_cdev(const char *path)
 	rv = lstat(path, &statbuf);
 	if (rv)
 		goto out;
+
+	/*
+	 * Is it a symbolic link? We have to resolve symbolic link before
+	 * checking the rest.
+	 */
+	realname = S_ISLNK(statbuf.st_mode) ? realpath(path, NULL)
+					    : strdup(path);
+	if (realname == NULL)
+		goto out;
+
+	rv = stat(realname, &statbuf);
+	if (rv)
+		goto out_free_realname;
 
 	/* Is it a character device? */
 	if (!S_ISCHR(statbuf.st_mode)) {
@@ -94,20 +108,16 @@ static bool is_gpiochip_cdev(const char *path)
 		 * libgpiod from before the introduction of this routine.
 		 */
 		errno = ENOTTY;
-		goto out;
+		goto out_free_realname;
 	}
 
 	/* Get the basename. */
-	pathcpy = strdup(path);
-	if (!pathcpy)
-		goto out;
-
-	name = basename(pathcpy);
+	name = basename(realname);
 
 	/* Do we have a corresponding sysfs attribute? */
 	rv = asprintf(&sysfsp, "/sys/bus/gpio/devices/%s/dev", name);
 	if (rv < 0)
-		goto out_free_pathcpy;
+		goto out_free_realname;
 
 	if (access(sysfsp, R_OK) != 0) {
 		/*
@@ -149,8 +159,8 @@ static bool is_gpiochip_cdev(const char *path)
 
 out_free_sysfsp:
 	free(sysfsp);
-out_free_pathcpy:
-	free(pathcpy);
+out_free_realname:
+	free(realname);
 out:
 	return ret;
 }
