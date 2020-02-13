@@ -179,10 +179,8 @@ struct gpiod_chip *gpiod_chip_open(const char *path)
 	 * We were able to open the file but is it really a gpiochip character
 	 * device?
 	 */
-	if (!is_gpiochip_cdev(path)) {
-		close(fd);
-		return NULL;
-	}
+	if (!is_gpiochip_cdev(path))
+		goto err_close_fd;
 
 	chip = malloc(sizeof(*chip));
 	if (!chip)
