@@ -7,7 +7,7 @@
 #
 
 AM_CFLAGS = -I$(top_srcdir)/include/ -include $(top_builddir)/config.h
-AM_CFLAGS += -Wall -Wextra -g
+AM_CFLAGS += -Wall -Wextra -g -std=gnu89
 
 noinst_LTLIBRARIES = libtools-common.la
 libtools_common_la_SOURCES = tools-common.c tools-common.h
