@@ -2690,6 +2690,7 @@ static gpiod_LineObject *gpiod_Module_find_line(PyObject *Py_UNUSED(self),
 PyDoc_STRVAR(gpiod_Module_version_string_doc,
 "version_string() -> string\n"
 "\n"
+"DEPRECATED: use __version__ module attribute instead.\n"
 "Get the API version of the library as a human-readable string.");
 
 static PyObject *gpiod_Module_version_string(PyObject *Py_UNUSED(ignored0),
@@ -2933,6 +2934,11 @@ PyMODINIT_FUNC PyInit_gpiod(void)
 		if (rv < 0)
 			return NULL;
 	}
+
+	rv = PyModule_AddStringConstant(module, "__version__",
+					gpiod_version_string());
+	if (rv < 0)
+		return NULL;
 
 	return module;
 }
