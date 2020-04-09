@@ -683,6 +683,9 @@ int gpiod_chip_find_lines(struct gpiod_chip *chip, const char **names,
  *
  * @defgroup __line_bulk__ Operating on multiple lines
  * @{
+ *
+ * Convenience data structures and helper functions for storing and operating
+ * on multiple lines at once.
  */
 
 /**
@@ -791,6 +794,9 @@ gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
  *
  * @defgroup __line_info__ Line info
  * @{
+ *
+ * Definitions and functions for retrieving kernel information about both
+ * requested and free lines.
  */
 
 /**
@@ -934,6 +940,9 @@ gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API GPIOD_DEPRECATED;
  *
  * @defgroup __line_request__ Line requests
  * @{
+ *
+ * Interface for requesting GPIO lines from userspace for both values and
+ * events.
  */
 
 /**
@@ -1259,6 +1268,9 @@ bool gpiod_line_is_free(struct gpiod_line *line) GPIOD_API;
  *
  * @defgroup __line_value__ Reading & setting line values
  * @{
+ *
+ * Functions allowing to read and set GPIO line values for single lines and
+ * in bulk.
  */
 
 /**
@@ -1311,6 +1323,9 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
  *
  * @defgroup __line_config__ Setting line configuration
  * @{
+ *
+ * Functions allowing modification of config options of GPIO lines requested
+ * from user-space.
  */
 
 /**
@@ -1424,6 +1439,11 @@ int gpiod_line_set_direction_output_bulk(struct gpiod_line_bulk *bulk,
  *
  * @defgroup __line_event__ Line events handling
  * @{
+ *
+ * Structures and functions allowing to poll lines for events and read them,
+ * both for individual lines as well as in bulk. Also contains functions for
+ * retrieving the associated file descriptors and operate on them for easy
+ * integration with standard unix interfaces.
  */
 
 /**
@@ -1533,6 +1553,8 @@ int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
  *
  * @defgroup __line_misc__ Misc line functions
  * @{
+ *
+ * Functions that didn't fit anywhere else.
  */
 
 /**
