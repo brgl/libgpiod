@@ -684,7 +684,7 @@ teardown() {
 
 	test "$status" -eq "0"
 	output_regex_match \
-"event:\\s+RISING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[[0-9]+\.[0-9]+\]"
+"event:\\s+RISING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[\s*[0-9]+\.[0-9]+\]"
 }
 
 @test "gpiomon: single falling edge event" {
@@ -701,7 +701,7 @@ teardown() {
 
 	test "$status" -eq "0"
 	output_regex_match \
-"event:\\s+FALLING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[[0-9]+\.[0-9]+\]"
+"event:\\s+FALLING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[\s*[0-9]+\.[0-9]+\]"
 }
 
 @test "gpiomon: single falling edge event (pull-up)" {
@@ -719,7 +719,7 @@ teardown() {
 
 	test "$status" -eq "0"
 	output_regex_match \
-"event:\\s+FALLING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[[0-9]+\.[0-9]+\]"
+"event:\\s+FALLING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[\s*[0-9]+\.[0-9]+\]"
 }
 
 @test "gpiomon: single rising edge event (pull-down)" {
@@ -737,7 +737,7 @@ teardown() {
 
 	test "$status" -eq "0"
 	output_regex_match \
-"event:\\s+RISING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[[0-9]+\.[0-9]+\]"
+"event:\\s+RISING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[\s*[0-9]+\.[0-9]+\]"
 }
 
 @test "gpiomon: single rising edge event (active-low)" {
@@ -755,7 +755,7 @@ teardown() {
 
 	test "$status" -eq "0"
 	output_regex_match \
-"event:\\s+RISING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[[0-9]+\.[0-9]+\]"
+"event:\\s+RISING\\s+EDGE\\s+offset:\\s+4\\s+timestamp:\\s+\[\s*[0-9]+\.[0-9]+\]"
 }
 
 @test "gpiomon: single rising edge event (silent mode)" {
@@ -791,9 +791,9 @@ teardown() {
 
 	test "$status" -eq "0"
 	output_regex_match \
-"event\\:\\s+FALLING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[[0-9]+\\.[0-9]+\\]"
+"event\\:\\s+FALLING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[\s*[0-9]+\\.[0-9]+\\]"
 	output_regex_match \
-"event\\:\\s+RISING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[[0-9]+\\.[0-9]+\\]"
+"event\\:\\s+RISING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[\s*[0-9]+\\.[0-9]+\\]"
 }
 
 @test "gpiomon: exit after SIGINT" {
@@ -835,9 +835,9 @@ teardown() {
 
 	test "$status" -eq "0"
 	output_regex_match \
-"event\\:\\s+FALLING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[[0-9]+\\.[0-9]+\\]"
+"event\\:\\s+FALLING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[\s*[0-9]+\\.[0-9]+\\]"
 	output_regex_match \
-"event\\:\\s+RISING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[[0-9]+\\.[0-9]+\\]"
+"event\\:\\s+RISING\\s+EDGE\\s+offset\\:\\s+4\\s+timestamp:\\s+\\[\s*[0-9]+\\.[0-9]+\\]"
 }
 
 @test "gpiomon: watch multiple lines" {
