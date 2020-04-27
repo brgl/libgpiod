@@ -37,7 +37,51 @@ In this case however the goal is to have as few dependencies as possible. This
 is because for some small systems dbus is overkill. Since we won't be using any
 standardized protocol, it will take much more effort to implement it correctly.
 
+==========
+
+API changes for v2.0
+
+At some point in the future (probably after releasing dbus bindings) I'd like
+to rework some interfaces in a backward incompatible way. This would mean
+bumping the major version number to 2 and breaking API and ABI.
+
+At the same time I'd like to keep the changes much less invasive for a regular
+user than the previous major API change from v0.x to v1.x. Most of the changes
+would impact C++ and Python bindings, so it would be tempting to detach their
+API versions and keep the core library stable but I'd prefer to keep a common
+API version for all parts of the repository and also use this opportunity to
+remove deprecated symbols from the main header.
+
+Planned v2.x features will be listed below:
 ----------
+
+Core library:
+
+* remove all deprecated interfaces
+
+This is pretty self-explanatory. There are a couple functions marked as
+deprecated in the header. They have been this way for a while so it's time
+to finally remove them.
+
+* rethink the gpiod_line_bulk structure
+
+This structure is widely used by the library itself and always allocated on
+the stack. It contains an array of 64 pointers the size of which is 256 & 512
+bytes on 32- and 64-bit architectures respectively. This is a significant part
+of the stack limit on linux, so it's worth rethinking it. Maybe a doubly linked
+list of lines would be better (although slower to access).
+
+Bindings:
+
+* line objects should only hold weak references to their owning chip objects
+  in C++ and python bindings
+
+The way line objects in C++ and Python bindings are holding full references to
+the associated chip objects is wrong and results from me not knowing any better
+at the time I wrote it. This has the effect of forcing us to create a new
+object whenever we "get" a line from a chip - we cannot store them within the
+chip object as it would lead to circular dependencies. We should instead use
+weak references (PyWeakref in python and std::weak_ptr in C++).
 
 * re-write the python bindings to make them more 'pythonic'
 
@@ -46,8 +90,3 @@ of methods, properties should be used wherever possible (chip's name and label,
 line's direction, active-state etc.), we should probably store the line objects
 within the chip instead of creating them everytime get_line() is called and
 several more.
-
-The idea is to create a new Python module with a different name and convert
-the current gpiod module into a compatiblity layer that would simply translate
-the calls from the new interface to the old one - this way we won't break
-existing programs.
