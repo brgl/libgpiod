@@ -1490,7 +1490,7 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       struct gpiod_line_bulk *event_bulk) GPIOD_API;
 
 /**
- * @brief Read the last event from the GPIO line.
+ * @brief Read next pending event from the GPIO line.
  * @param line GPIO line object.
  * @param event Buffer to which the event data will be copied.
  * @return 0 if the event was read correctly, -1 on error.
