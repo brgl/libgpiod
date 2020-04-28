@@ -541,7 +541,6 @@ GPIOD_API line find_line(const ::std::string& name);
  */
 struct line_event
 {
-
 	/**
 	 * @brief Possible event types.
 	 */
