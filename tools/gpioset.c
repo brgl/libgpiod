@@ -10,11 +10,9 @@
 #include <getopt.h>
 #include <limits.h>
 #include <poll.h>
-#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/select.h>
-#include <sys/signalfd.h>
 #include <unistd.h>
 
 #include "tools-common.h"
@@ -109,20 +107,9 @@ static void wait_signal(void *data)
 {
 	struct callback_data *cbdata = data;
 	struct pollfd pfd;
-	sigset_t sigmask;
 	int sigfd, rv;
 
-	sigemptyset(&sigmask);
-	sigaddset(&sigmask, SIGTERM);
-	sigaddset(&sigmask, SIGINT);
-
-	rv = sigprocmask(SIG_BLOCK, &sigmask, NULL);
-	if (rv < 0)
-		die("error blocking signals: %s", strerror(errno));
-
-	sigfd = signalfd(-1, &sigmask, 0);
-	if (sigfd < 0)
-		die("error creating signalfd: %s", strerror(errno));
+	sigfd = make_signalfd();
 
 	memset(&pfd, 0, sizeof(pfd));
 	pfd.fd = sigfd;

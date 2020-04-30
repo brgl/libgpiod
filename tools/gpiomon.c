@@ -10,10 +10,8 @@
 #include <gpiod.h>
 #include <limits.h>
 #include <poll.h>
-#include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/signalfd.h>
 #include <unistd.h>
 
 #include "tools-common.h"
@@ -224,26 +222,6 @@ static int event_callback(int event_type, unsigned int line_offset,
 		return GPIOD_CTXLESS_EVENT_CB_RET_STOP;
 
 	return GPIOD_CTXLESS_EVENT_CB_RET_OK;
-}
-
-static int make_signalfd(void)
-{
-	sigset_t sigmask;
-	int sigfd, rv;
-
-	sigemptyset(&sigmask);
-	sigaddset(&sigmask, SIGTERM);
-	sigaddset(&sigmask, SIGINT);
-
-	rv = sigprocmask(SIG_BLOCK, &sigmask, NULL);
-	if (rv < 0)
-		die("error masking signals: %s", strerror(errno));
-
-	sigfd = signalfd(-1, &sigmask, 0);
-	if (sigfd < 0)
-		die("error creating signalfd: %s", strerror(errno));
-
-	return sigfd;
 }
 
 int main(int argc, char **argv)
