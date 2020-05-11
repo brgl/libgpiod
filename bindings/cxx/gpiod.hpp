@@ -19,9 +19,9 @@ namespace gpiod {
 
 class line;
 class line_bulk;
-class line_event;
 class line_iter;
 class chip_iter;
+struct line_event;
 
 /**
  * @defgroup __gpiod_cxx__ C++ bindings
