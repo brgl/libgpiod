@@ -956,11 +956,11 @@ enum {
 	GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
 	/**< Request the line(s) for setting the GPIO line state. */
 	GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE,
-	/**< Monitor both types of events. */
+	/**< Only watch falling edge events. */
 	GPIOD_LINE_REQUEST_EVENT_RISING_EDGE,
 	/**< Only watch rising edge events. */
 	GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES,
-	/**< Only watch falling edge events. */
+	/**< Monitor both types of events. */
 };
 
 /**
