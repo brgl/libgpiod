@@ -980,7 +980,6 @@ GPIOD_TEST_CASE(misc_flags_work_together, 0, { 8 })
 
 	ret = gpiod_line_get_value(line);
 	g_assert_cmpint(ret, ==, 1);
-	g_assert_cmpint(errno, ==, 0);
 
 	gpiod_line_release(line);
 
@@ -1001,7 +1000,6 @@ GPIOD_TEST_CASE(misc_flags_work_together, 0, { 8 })
 
 	ret = gpiod_line_get_value(line);
 	g_assert_cmpint(ret, ==, 0);
-	g_assert_cmpint(errno, ==, 0);
 
 	gpiod_line_release(line);
 }
