@@ -421,6 +421,116 @@ GPIOD_TEST_CASE(get_value_active_low, 0, { 8 })
 	g_assert_cmpint(ev.event_type, ==, GPIOD_LINE_EVENT_FALLING_EDGE);
 }
 
+GPIOD_TEST_CASE(get_values, 0, { 8 })
+{
+	g_autoptr(gpiod_chip_struct) chip = NULL;
+	struct gpiod_line_bulk bulk;
+	struct gpiod_line *line;
+	gint i, ret, vals[8];
+
+	chip = gpiod_chip_open(gpiod_test_chip_path(0));
+	g_assert_nonnull(chip);
+	gpiod_test_return_if_failed();
+
+	gpiod_line_bulk_init(&bulk);
+	for (i = 0; i < 8; i++) {
+		line = gpiod_chip_get_line(chip, i);
+		g_assert_nonnull(line);
+		gpiod_test_return_if_failed();
+
+		gpiod_line_bulk_add(&bulk, line);
+		gpiod_test_chip_set_pull(0, i, 1);
+	}
+
+	ret = gpiod_line_request_bulk_rising_edge_events(&bulk,
+							 GPIOD_TEST_CONSUMER);
+	g_assert_cmpint(ret, ==, 0);
+
+	memset(vals, 0, sizeof(vals));
+	ret = gpiod_line_get_value_bulk(&bulk, vals);
+	g_assert_cmpint(ret, ==, 0);
+	g_assert_cmpint(vals[0], ==, 1);
+	g_assert_cmpint(vals[1], ==, 1);
+	g_assert_cmpint(vals[2], ==, 1);
+	g_assert_cmpint(vals[3], ==, 1);
+	g_assert_cmpint(vals[4], ==, 1);
+	g_assert_cmpint(vals[5], ==, 1);
+	g_assert_cmpint(vals[6], ==, 1);
+	g_assert_cmpint(vals[7], ==, 1);
+
+	gpiod_test_chip_set_pull(0, 1, 0);
+	gpiod_test_chip_set_pull(0, 3, 0);
+	gpiod_test_chip_set_pull(0, 4, 0);
+	gpiod_test_chip_set_pull(0, 7, 0);
+
+	memset(vals, 0, sizeof(vals));
+	ret = gpiod_line_get_value_bulk(&bulk, vals);
+	g_assert_cmpint(ret, ==, 0);
+	g_assert_cmpint(vals[0], ==, 1);
+	g_assert_cmpint(vals[1], ==, 0);
+	g_assert_cmpint(vals[2], ==, 1);
+	g_assert_cmpint(vals[3], ==, 0);
+	g_assert_cmpint(vals[4], ==, 0);
+	g_assert_cmpint(vals[5], ==, 1);
+	g_assert_cmpint(vals[6], ==, 1);
+	g_assert_cmpint(vals[7], ==, 0);
+}
+
+GPIOD_TEST_CASE(get_values_active_low, 0, { 8 })
+{
+	g_autoptr(gpiod_chip_struct) chip = NULL;
+	struct gpiod_line_bulk bulk;
+	struct gpiod_line *line;
+	gint i, ret, vals[8];
+
+	chip = gpiod_chip_open(gpiod_test_chip_path(0));
+	g_assert_nonnull(chip);
+	gpiod_test_return_if_failed();
+
+	gpiod_line_bulk_init(&bulk);
+	for (i = 0; i < 8; i++) {
+		line = gpiod_chip_get_line(chip, i);
+		g_assert_nonnull(line);
+		gpiod_test_return_if_failed();
+
+		gpiod_line_bulk_add(&bulk, line);
+		gpiod_test_chip_set_pull(0, i, 0);
+	}
+
+	ret = gpiod_line_request_bulk_rising_edge_events_flags(&bulk,
+			GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
+	g_assert_cmpint(ret, ==, 0);
+
+	memset(vals, 0, sizeof(vals));
+	ret = gpiod_line_get_value_bulk(&bulk, vals);
+	g_assert_cmpint(ret, ==, 0);
+	g_assert_cmpint(vals[0], ==, 1);
+	g_assert_cmpint(vals[1], ==, 1);
+	g_assert_cmpint(vals[2], ==, 1);
+	g_assert_cmpint(vals[3], ==, 1);
+	g_assert_cmpint(vals[4], ==, 1);
+	g_assert_cmpint(vals[5], ==, 1);
+	g_assert_cmpint(vals[6], ==, 1);
+	g_assert_cmpint(vals[7], ==, 1);
+
+	gpiod_test_chip_set_pull(0, 1, 1);
+	gpiod_test_chip_set_pull(0, 3, 1);
+	gpiod_test_chip_set_pull(0, 4, 1);
+	gpiod_test_chip_set_pull(0, 7, 1);
+
+	memset(vals, 0, sizeof(vals));
+	ret = gpiod_line_get_value_bulk(&bulk, vals);
+	g_assert_cmpint(ret, ==, 0);
+	g_assert_cmpint(vals[0], ==, 1);
+	g_assert_cmpint(vals[1], ==, 0);
+	g_assert_cmpint(vals[2], ==, 1);
+	g_assert_cmpint(vals[3], ==, 0);
+	g_assert_cmpint(vals[4], ==, 0);
+	g_assert_cmpint(vals[5], ==, 1);
+	g_assert_cmpint(vals[6], ==, 1);
+	g_assert_cmpint(vals[7], ==, 0);
+}
+
 GPIOD_TEST_CASE(wait_multiple, 0, { 8 })
 {
 	g_autoptr(GpiodTestEventThread) ev_thread = NULL;
