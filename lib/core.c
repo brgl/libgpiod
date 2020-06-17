@@ -773,26 +773,41 @@ int gpiod_line_get_value(struct gpiod_line *line)
 int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 {
 	struct gpiohandle_data data;
-	struct gpiod_line *first;
+	struct gpiod_line *line;
 	unsigned int i;
 	int rv, fd;
 
 	if (!line_bulk_same_chip(bulk) || !line_bulk_all_requested(bulk))
 		return -1;
 
-	first = gpiod_line_bulk_get_line(bulk, 0);
+	line = gpiod_line_bulk_get_line(bulk, 0);
 
-	memset(&data, 0, sizeof(data));
+	if (line->state == LINE_REQUESTED_VALUES) {
+		memset(&data, 0, sizeof(data));
 
-	fd = line_get_fd(first);
+		fd = line_get_fd(line);
 
-	rv = ioctl(fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
-	if (rv < 0)
+		rv = ioctl(fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
+		if (rv < 0)
+			return -1;
+
+		for (i = 0; i < gpiod_line_bulk_num_lines(bulk); i++)
+			values[i] = data.values[i];
+
+	} else if (line->state == LINE_REQUESTED_EVENTS) {
+		for (i = 0; i < gpiod_line_bulk_num_lines(bulk); i++) {
+			line = gpiod_line_bulk_get_line(bulk, i);
+
+			fd = line_get_fd(line);
+			rv = ioctl(fd, GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
+			if (rv < 0)
+				return -1;
+			values[i] = data.values[0];
+		}
+	} else {
+		errno = EINVAL;
 		return -1;
-
-	for (i = 0; i < gpiod_line_bulk_num_lines(bulk); i++)
-		values[i] = data.values[i];
-
+	}
 	return 0;
 }
 
