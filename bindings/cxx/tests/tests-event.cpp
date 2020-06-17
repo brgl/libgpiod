@@ -193,7 +193,7 @@ TEST_CASE("Event file descriptors can be used for polling", "[event]")
 	}
 }
 
-TEST_CASE("It's possible to read values from lines requested for events", "[event][line]")
+TEST_CASE("It's possible to read a value from a line requested for events", "[event][line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
 	::gpiod::chip chip(mockup::instance().chip_name(0));
@@ -216,6 +216,40 @@ TEST_CASE("It's possible to read values from lines requested for events", "[even
 		config.flags = ::gpiod::line_request::FLAG_ACTIVE_LOW;
 		line.request(config);
 		REQUIRE(line.get_value() == 0);
+	}
+}
+
+TEST_CASE("It's possible to read values from lines requested for events", "[event][bulk]")
+{
+	mockup::probe_guard mockup_chips({ 8 });
+	::gpiod::chip chip(mockup::instance().chip_name(0));
+	auto lines = chip.get_lines({ 0, 1, 2, 3, 4 });
+	::gpiod::line_request config;
+
+	config.consumer = consumer.c_str();
+	config.request_type = ::gpiod::line_request::EVENT_BOTH_EDGES;
+
+	mockup::instance().chip_set_pull(0, 5, 1);
+
+	SECTION("active-high (default)")
+	{
+		lines.request(config);
+		REQUIRE(lines.get_values() == ::std::vector<int>({ 0, 0, 0, 0, 0 }));
+		mockup::instance().chip_set_pull(0, 1, 1);
+		mockup::instance().chip_set_pull(0, 3, 1);
+		mockup::instance().chip_set_pull(0, 4, 1);
+		REQUIRE(lines.get_values() == ::std::vector<int>({ 0, 1, 0, 1, 1 }));
+	}
+
+	SECTION("active-low")
+	{
+		config.flags = ::gpiod::line_request::FLAG_ACTIVE_LOW;
+		lines.request(config);
+		REQUIRE(lines.get_values() == ::std::vector<int>({ 1, 1, 1, 1, 1 }));
+		mockup::instance().chip_set_pull(0, 1, 1);
+		mockup::instance().chip_set_pull(0, 3, 1);
+		mockup::instance().chip_set_pull(0, 4, 1);
+		REQUIRE(lines.get_values() == ::std::vector<int>({ 1, 0, 1, 0, 0 }));
 	}
 }
 
