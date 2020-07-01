@@ -210,7 +210,7 @@ TEST_CASE("Line bulk object works correctly", "[line][bulk]")
 	SECTION("bulk iterator works")
 	{
 		auto lines = chip.get_all_lines();
-		int count = 0;
+		unsigned int count = 0;
 
 		for (auto& it: lines)
 			REQUIRE(it.offset() == count++);

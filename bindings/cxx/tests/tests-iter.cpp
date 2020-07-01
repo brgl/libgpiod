@@ -53,7 +53,7 @@ TEST_CASE("Line iterator works", "[iter][line]")
 {
 	mockup::probe_guard mockup_chips({ 4 });
 	::gpiod::chip chip(mockup::instance().chip_name(0));
-	int count = 0;
+	unsigned int count = 0;
 
 	for (auto& it: ::gpiod::line_iter(chip))
 		REQUIRE(it.offset() == count++);
