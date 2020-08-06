@@ -531,6 +531,9 @@ int gpiod_ctxless_event_monitor_multiple_ext(
  *         the line was found. In the first two cases the contents of chipname
  *         and offset remain unchanged.
  * @note The chip name is truncated if the buffer can't hold its entire size.
+ * @attention GPIO lines are not unique in the linux kernel, neither globally
+ *            nor within a single chip. This function finds the first line with
+ *            given name.
  */
 int gpiod_ctxless_find_line(const char *name, char *chipname,
 			    size_t chipname_size,
@@ -656,6 +659,9 @@ int gpiod_chip_get_all_lines(struct gpiod_chip *chip,
  *         found or an error occurred.
  * @note In case a line with given name is not associated with given chip, the
  *       function sets errno to ENOENT.
+ * @attention GPIO lines are not unique in the linux kernel, neither globally
+ *            nor within a single chip. This function finds the first line with
+ *            given name.
  */
 struct gpiod_line *
 gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
@@ -669,6 +675,9 @@ gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
  * @return 0 if all lines were located, -1 on error.
  * @note If at least one line from the list could not be found among the lines
  *       exposed by this chip, the function sets errno to ENOENT.
+ * @attention GPIO lines are not unique in the linux kernel, neither globally
+ *            nor within a single chip. This function finds the first line with
+ *            given name.
  */
 int gpiod_chip_find_lines(struct gpiod_chip *chip, const char **names,
 			  struct gpiod_line_bulk *bulk) GPIOD_API;
@@ -1577,6 +1586,9 @@ gpiod_line_get(const char *device, unsigned int offset) GPIOD_API;
  * @param name Name of the GPIO line.
  * @return Returns the GPIO line handle if the line exists in the system or
  *         NULL if it couldn't be located or an error occurred.
+ * @attention GPIO lines are not unique in the linux kernel, neither globally
+ *            nor within a single chip. This function finds the first line with
+ *            given name.
  *
  * If this routine succeeds, the user must manually close the GPIO chip owning
  * this line to avoid memory leaks. If the line could not be found, this
