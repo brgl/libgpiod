@@ -81,6 +81,13 @@ bytes on 32- and 64-bit architectures respectively. This is a significant part
 of the stack limit on linux, so it's worth rethinking it. Maybe a doubly linked
 list of lines would be better (although slower to access).
 
+* rework looking up lines by names
+
+GPIO line names in the kernel aren't unique - neither globally nor within
+a single chip. The current API doesn't take this into consideration and simply
+returns the first matching line in gpiod_line_find() and co. This needs
+addressing in future API.
+
 Bindings:
 
 * line objects should only hold weak references to their owning chip objects
