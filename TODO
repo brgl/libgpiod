@@ -49,9 +49,11 @@ standardized protocol, it will take much more effort to implement it correctly.
 
 API changes for v2.0
 
-At some point in the future (probably after releasing dbus bindings) I'd like
-to rework some interfaces in a backward incompatible way. This would mean
-bumping the major version number to 2 and breaking API and ABI.
+Once the v2 kernel uAPI is released, the plan for libgpiod is to start the
+development cycle for a new major release with backward incompatible API in
+order to support new features exposed by the GPIO character device as well as
+rework certain badly designed interfaces. This would mean bumping the major
+version number to 2 and breaking API and ABI.
 
 At the same time I'd like to keep the changes much less invasive for a regular
 user than the previous major API change from v0.x to v1.x. Most of the changes
