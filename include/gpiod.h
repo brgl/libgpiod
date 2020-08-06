@@ -347,6 +347,9 @@ typedef int (*gpiod_ctxless_event_poll_cb)(unsigned int,
  * @note The way the ctxless event loop works is described in detail in
  *       ::gpiod_ctxless_event_loop_multiple - this is just a wrapper aound
  *       this routine which calls it for a single GPIO line.
+ * @deprecated This function suffers from an issue where HW may not allow
+ *             setting up both rising and falling egde interrupts at the same
+ *             time.
  */
 int gpiod_ctxless_event_loop(const char *device, unsigned int offset,
 			     bool active_low, const char *consumer,
@@ -370,6 +373,9 @@ int gpiod_ctxless_event_loop(const char *device, unsigned int offset,
  * @return 0 no errors were encountered, -1 if an error occurred.
  * @note The poll callback can be NULL in which case the routine will fall
  *       back to a basic, ppoll() based callback.
+ * @deprecated This function suffers from an issue where HW may not allow
+ *             setting up both rising and falling egde interrupts at the same
+ *             time.
  *
  * Internally this routine opens the GPIO chip, requests the set of lines for
  * both-edges events and calls the polling callback in a loop. The role of the
@@ -939,7 +945,9 @@ int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
 /**
  * @brief Check if the line info needs to be updated.
  * @param line GPIO line object.
- * @return Deprecated and no longer functional - always returns false.
+ * @return Always returns false.
+ * @deprecated This mechanism no longer exists in the library and this function
+ *             does nothing.
  */
 bool
 gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API GPIOD_DEPRECATED;
