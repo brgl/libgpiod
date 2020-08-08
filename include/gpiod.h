@@ -17,6 +17,10 @@ extern "C" {
 #endif
 
 /**
+ * @file gpiod.h
+ */
+
+/**
  * @mainpage libgpiod public API
  *
  * This is the complete documentation of the public API made available to

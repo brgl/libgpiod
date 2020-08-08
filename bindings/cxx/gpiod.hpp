@@ -24,6 +24,10 @@ class chip_iter;
 struct line_event;
 
 /**
+ * @file gpiod.hpp
+ */
+
+/**
  * @defgroup gpiod_cxx C++ bindings
  * @{
  */
