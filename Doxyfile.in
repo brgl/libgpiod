@@ -107,4 +107,3 @@ GENERATE_XML           = YES
 TAGFILES               =
 GENERATE_TAGFILE       =
 ALLEXTERNALS           = NO
-PERL_PATH              =
