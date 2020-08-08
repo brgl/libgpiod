@@ -10,6 +10,7 @@ doc
 # autotools stuff
 .deps/
 .libs/
+Doxyfile
 Makefile
 Makefile.in
 aclocal.m4

@@ -10,6 +10,7 @@
 
 # General configuration
 PROJECT_NAME           = libgpiod
+PROJECT_NUMBER         = @VERSION_STR@
 OUTPUT_DIRECTORY       = doc
 OUTPUT_LANGUAGE        = English
 EXTRACT_ALL            = NO
@@ -48,7 +49,7 @@ WARNINGS               = YES
 WARN_IF_UNDOCUMENTED   = YES
 WARN_FORMAT            =
 WARN_LOGFILE           =
-INPUT                  = include/gpiod.h
+INPUT                  = @top_srcdir@/include/gpiod.h @top_srcdir@/bindings/cxx/gpiod.hpp
 SOURCE_BROWSER         = YES
 INLINE_SOURCES         = NO
 REFERENCED_BY_RELATION = YES

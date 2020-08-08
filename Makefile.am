@@ -28,10 +28,8 @@ SUBDIRS += bindings
 
 if HAS_DOXYGEN
 
-doc:
-	@(cat Doxyfile; \
-		echo PROJECT_NUMBER = $(VERSION_STR); \
-		echo INPUT += bindings/cxx/gpiod.hpp) | doxygen -
+doc: Doxyfile
+	@doxygen Doxyfile
 .PHONY: doc
 
 clean-local:

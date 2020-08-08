@@ -207,6 +207,7 @@ if test "x$has_doxygen" = xfalse
 then
 	AC_MSG_NOTICE([doxygen not found - documentation cannot be generated])
 fi
+AM_COND_IF([HAS_DOXYGEN], [AC_CONFIG_FILES([Doxyfile])])
 
 if test "x$cross_compiling" = xno
 then
