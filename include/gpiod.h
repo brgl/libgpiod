@@ -46,7 +46,7 @@ struct gpiod_line_iter;
 struct gpiod_line_bulk;
 
 /**
- * @defgroup __common__ Common helper macros
+ * @defgroup common Common helper macros
  * @{
  *
  * Commonly used utility macros.
@@ -77,7 +77,7 @@ struct gpiod_line_bulk;
 /**
  * @}
  *
- * @defgroup __high_level__ High-level API
+ * @defgroup high_level High-level API
  * @{
  *
  * Simple high-level routines for straightforward GPIO manipulation without
@@ -548,7 +548,7 @@ int gpiod_ctxless_find_line(const char *name, char *chipname,
 /**
  * @}
  *
- * @defgroup __chips__ GPIO chip operations
+ * @defgroup chips GPIO chip operations
  * @{
  *
  * Functions and data structures dealing with GPIO chips.
@@ -691,12 +691,12 @@ int gpiod_chip_find_lines(struct gpiod_chip *chip, const char **names,
 /**
  * @}
  *
- * @defgroup __lines__ GPIO line operations
+ * @defgroup lines GPIO line operations
  * @{
  *
  * Functions and data structures dealing with GPIO lines.
  *
- * @defgroup __line_bulk__ Operating on multiple lines
+ * @defgroup line_bulk Operating on multiple lines
  * @{
  *
  * Convenience data structures and helper functions for storing and operating
@@ -807,7 +807,7 @@ gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
 /**
  * @}
  *
- * @defgroup __line_info__ Line info
+ * @defgroup line_info Line info
  * @{
  *
  * Definitions and functions for retrieving kernel information about both
@@ -955,7 +955,7 @@ gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API GPIOD_DEPRECATED;
 /**
  * @}
  *
- * @defgroup __line_request__ Line requests
+ * @defgroup line_request Line requests
  * @{
  *
  * Interface for requesting GPIO lines from userspace for both values and
@@ -1283,7 +1283,7 @@ bool gpiod_line_is_free(struct gpiod_line *line) GPIOD_API;
 /**
  * @}
  *
- * @defgroup __line_value__ Reading & setting line values
+ * @defgroup line_value Reading & setting line values
  * @{
  *
  * Functions allowing to read and set GPIO line values for single lines and
@@ -1338,7 +1338,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
 /**
  * @}
  *
- * @defgroup __line_config__ Setting line configuration
+ * @defgroup line_config Setting line configuration
  * @{
  *
  * Functions allowing modification of config options of GPIO lines requested
@@ -1454,7 +1454,7 @@ int gpiod_line_set_direction_output_bulk(struct gpiod_line_bulk *bulk,
 /**
  * @}
  *
- * @defgroup __line_event__ Line events handling
+ * @defgroup line_event Line events handling
  * @{
  *
  * Structures and functions allowing to poll lines for events and read them,
@@ -1568,7 +1568,7 @@ int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
 /**
  * @}
  *
- * @defgroup __line_misc__ Misc line functions
+ * @defgroup line_misc Misc line functions
  * @{
  *
  * Functions that didn't fit anywhere else.
@@ -1624,7 +1624,7 @@ struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
  *
  * @}
  *
- * @defgroup __iterators__ Iterators for GPIO chips and lines
+ * @defgroup iterators Iterators for GPIO chips and lines
  * @{
  *
  * These functions and data structures allow easy iterating over GPIO
@@ -1748,7 +1748,7 @@ gpiod_line_iter_next(struct gpiod_line_iter *iter) GPIOD_API;
 /**
  * @}
  *
- * @defgroup __misc__ Stuff that didn't fit anywhere else
+ * @defgroup misc Stuff that didn't fit anywhere else
  * @{
  *
  * Various libgpiod-related functions.
