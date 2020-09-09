@@ -215,8 +215,9 @@ line_event line::make_line_event(const ::gpiod_line_event& event) const noexcept
 	else if (event.event_type == GPIOD_LINE_EVENT_FALLING_EDGE)
 		ret.event_type = line_event::FALLING_EDGE;
 
-	ret.timestamp = ::std::chrono::nanoseconds(
-				event.ts.tv_nsec + (event.ts.tv_sec * 1000000000));
+	ret.timestamp = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+				::std::chrono::seconds(event.ts.tv_sec)) +
+				::std::chrono::nanoseconds(event.ts.tv_nsec);
 
 	ret.source = *this;
 
