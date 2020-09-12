@@ -663,13 +663,76 @@ GPIOD_TEST_CASE(invalid_fd, 0, { 8 })
 	g_assert_cmpint(errno, ==, EINVAL);
 }
 
+GPIOD_TEST_CASE(read_events_individually, 0, { 8 })
+{
+	g_autoptr(gpiod_chip_struct) chip = NULL;
+	struct timespec ts = { 1, 0 };
+	struct gpiod_line_event ev;
+	struct gpiod_line *line;
+	gint ret;
+	guint i;
+
+	chip = gpiod_chip_open(gpiod_test_chip_path(0));
+	g_assert_nonnull(chip);
+	gpiod_test_return_if_failed();
+
+	line = gpiod_chip_get_line(chip, 7);
+	g_assert_nonnull(line);
+	gpiod_test_return_if_failed();
+
+	ret = gpiod_line_request_both_edges_events_flags(line,
+		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP);
+	g_assert_cmpint(ret, ==, 0);
+
+	/* generate multiple events */
+	for (i = 0; i < 3; i++) {
+		gpiod_test_chip_set_pull(0, 7, i & 1);
+		usleep(10000);
+	}
+
+	/* read them individually... */
+	ret = gpiod_line_event_wait(line, &ts);
+	g_assert_cmpint(ret, ==, 1);
+	if (!ret)
+		return;
+
+	ret = gpiod_line_event_read(line, &ev);
+	g_assert_cmpint(ret, ==, 0);
+
+	g_assert_cmpint(ev.event_type, ==, GPIOD_LINE_EVENT_FALLING_EDGE);
+
+	ret = gpiod_line_event_wait(line, &ts);
+	g_assert_cmpint(ret, ==, 1);
+	if (!ret)
+		return;
+
+	ret = gpiod_line_event_read(line, &ev);
+	g_assert_cmpint(ret, ==, 0);
+
+	g_assert_cmpint(ev.event_type, ==, GPIOD_LINE_EVENT_RISING_EDGE);
+
+	ret = gpiod_line_event_wait(line, &ts);
+	g_assert_cmpint(ret, ==, 1);
+	if (!ret)
+		return;
+
+	ret = gpiod_line_event_read(line, &ev);
+	g_assert_cmpint(ret, ==, 0);
+
+	g_assert_cmpint(ev.event_type, ==, GPIOD_LINE_EVENT_FALLING_EDGE);
+
+	ret = gpiod_line_event_wait(line, &ts);
+	g_assert_cmpint(ret, ==, 0);
+}
+
 GPIOD_TEST_CASE(read_multiple_events, 0, { 8 })
 {
 	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line_event events[3];
+	struct gpiod_line_event events[5];
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line *line;
 	gint ret;
+	guint i;
 
 	chip = gpiod_chip_open(gpiod_test_chip_path(0));
 	g_assert_nonnull(chip);
@@ -682,22 +745,25 @@ GPIOD_TEST_CASE(read_multiple_events, 0, { 8 })
 	ret = gpiod_line_request_both_edges_events(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
 
-	gpiod_test_chip_set_pull(0, 4, 1);
-	/*
-	 * We sleep for a short period of time here and in other test cases
-	 * for multiple events to let the kernel service each simulated
-	 * interrupt. Otherwise we'd risk triggering an interrupt while the
-	 * previous one is still being handled.
-	 */
-	usleep(10000);
-	gpiod_test_chip_set_pull(0, 4, 0);
-	usleep(10000);
-	gpiod_test_chip_set_pull(0, 4, 1);
-	usleep(10000);
+	/* generate multiple events */
+	for (i = 0; i < 7; i++) {
+		gpiod_test_chip_set_pull(0, 4, !(i & 1));
+		/*
+		 * We sleep for a short period of time here and in other
+		 * test cases for multiple events to let the kernel service
+		 * each simulated interrupt. Otherwise we'd risk triggering
+		 * an interrupt while the previous one is still being
+		 * handled.
+		 */
+		usleep(10000);
+	}
 
 	ret = gpiod_line_event_wait(line, &ts);
 	g_assert_cmpint(ret, ==, 1);
+	if (!ret)
+		return;
 
+	/* read a chunk */
 	ret = gpiod_line_event_read_multiple(line, events, 3);
 	g_assert_cmpint(ret, ==, 3);
 
@@ -707,15 +773,40 @@ GPIOD_TEST_CASE(read_multiple_events, 0, { 8 })
 			GPIOD_LINE_EVENT_FALLING_EDGE);
 	g_assert_cmpint(events[2].event_type, ==,
 			GPIOD_LINE_EVENT_RISING_EDGE);
+
+	ret = gpiod_line_event_wait(line, &ts);
+	g_assert_cmpint(ret, ==, 1);
+	if (!ret)
+		return;
+
+	/*
+	 * read the remainder
+	 * - note the attempt to read more than are available
+	 */
+	ret = gpiod_line_event_read_multiple(line, events, 5);
+	g_assert_cmpint(ret, ==, 4);
+
+	g_assert_cmpint(events[0].event_type, ==,
+			GPIOD_LINE_EVENT_FALLING_EDGE);
+	g_assert_cmpint(events[1].event_type, ==,
+			GPIOD_LINE_EVENT_RISING_EDGE);
+	g_assert_cmpint(events[2].event_type, ==,
+			GPIOD_LINE_EVENT_FALLING_EDGE);
+	g_assert_cmpint(events[3].event_type, ==,
+			GPIOD_LINE_EVENT_RISING_EDGE);
+
+	ret = gpiod_line_event_wait(line, &ts);
+	g_assert_cmpint(ret, ==, 0);
 }
 
 GPIOD_TEST_CASE(read_multiple_events_fd, 0, { 8 })
 {
 	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line_event events[3];
+	struct gpiod_line_event events[5];
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line *line;
 	gint ret, fd;
+	guint i;
 
 	chip = gpiod_chip_open(gpiod_test_chip_path(0));
 	g_assert_nonnull(chip);
@@ -728,19 +819,21 @@ GPIOD_TEST_CASE(read_multiple_events_fd, 0, { 8 })
 	ret = gpiod_line_request_both_edges_events(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
 
-	gpiod_test_chip_set_pull(0, 4, 1);
-	usleep(10000);
-	gpiod_test_chip_set_pull(0, 4, 0);
-	usleep(10000);
-	gpiod_test_chip_set_pull(0, 4, 1);
-	usleep(10000);
+	/* generate multiple events */
+	for (i = 0; i < 7; i++) {
+		gpiod_test_chip_set_pull(0, 4, !(i & 1));
+		usleep(10000);
+	}
 
 	ret = gpiod_line_event_wait(line, &ts);
 	g_assert_cmpint(ret, ==, 1);
+	if (!ret)
+		return;
 
 	fd = gpiod_line_event_get_fd(line);
 	g_assert_cmpint(fd, >=, 0);
 
+	/* read a chunk */
 	ret = gpiod_line_event_read_fd_multiple(fd, events, 3);
 	g_assert_cmpint(ret, ==, 3);
 
@@ -750,4 +843,28 @@ GPIOD_TEST_CASE(read_multiple_events_fd, 0, { 8 })
 			GPIOD_LINE_EVENT_FALLING_EDGE);
 	g_assert_cmpint(events[2].event_type, ==,
 			GPIOD_LINE_EVENT_RISING_EDGE);
+
+	ret = gpiod_line_event_wait(line, &ts);
+	g_assert_cmpint(ret, ==, 1);
+	if (!ret)
+		return;
+
+	/*
+	 * read the remainder
+	 * - note the attempt to read more than are available
+	 */
+	ret = gpiod_line_event_read_fd_multiple(fd, events, 5);
+	g_assert_cmpint(ret, ==, 4);
+
+	g_assert_cmpint(events[0].event_type, ==,
+			GPIOD_LINE_EVENT_FALLING_EDGE);
+	g_assert_cmpint(events[1].event_type, ==,
+			GPIOD_LINE_EVENT_RISING_EDGE);
+	g_assert_cmpint(events[2].event_type, ==,
+			GPIOD_LINE_EVENT_FALLING_EDGE);
+	g_assert_cmpint(events[3].event_type, ==,
+			GPIOD_LINE_EVENT_RISING_EDGE);
+
+	ret = gpiod_line_event_wait(line, &ts);
+	g_assert_cmpint(ret, ==, 0);
 }
