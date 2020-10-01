@@ -1,3 +1,30 @@
+libgpiod v1.6
+=============
+
+New features:
+- add a standardized '__version__' module attribute in Python bindings
+- print the bias flags info (if set) in gpioinfo
+
+Improvements:
+- remove unnecessary indirection in free_dirs() in iterator code
+- put all ABI versions next to one another in configure.ac
+- improve std namespace resolution in C++ bindings
+- add more checks for non-standard functions in configure.ac
+- various code size improvements
+- enforce gnu89 C standard in makefiles
+- many documentation improvements
+- unduplicate signalfd() handling in tools
+- fix a forward declaration for line_event in C++ bindings
+
+Bug fixes:
+- relax is_gpiochip_cdev() for symbolic links
+- make gpiod_line_get_value_bulk() work for bulks of lines requested for
+  events, not only those requested for values
+- fix regex patterns for timestamps in gpiomon test cases
+- remove leftover asserts from tests
+- fix unit conversion in event timestamp calculation in C++ bindings
+- fix reading subset of available events in core library
+
 libgpiod v1.5
 =============
 
