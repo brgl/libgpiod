@@ -472,7 +472,7 @@ static PyObject *gpiod_Line_request(gpiod_LineObject *self,
 	gpiod_LineBulkObject *bulk_obj;
 	int rv;
 
-	if (PyDict_Size(kwds) > 0) {
+	if (kwds && PyDict_Size(kwds) > 0) {
 		def_val = PyDict_GetItemString(kwds, "default_val");
 		def_vals = PyDict_GetItemString(kwds, "default_vals");
 	} else {
