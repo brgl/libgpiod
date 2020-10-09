@@ -719,6 +719,15 @@ class LineRequestBehavior(MockupTestCase):
 
             self.assertEqual(err_ctx.exception.errno, errno.EPERM)
 
+    def test_request_with_no_kwds(self):
+        with gpiod.Chip(mockup.chip_name(0)) as chip:
+            line = chip.get_line(2)
+            line.request(default_consumer)
+            self.assertTrue(line.is_requested())
+            self.assertEqual(line.direction(), gpiod.Line.DIRECTION_INPUT)
+            line.release()
+            self.assertFalse(line.is_requested())
+
 #
 # Iterator test cases
 #
