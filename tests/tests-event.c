@@ -31,6 +31,7 @@ GPIOD_TEST_CASE(rising_edge_good, 0, { 8 })
 
 	ret = gpiod_line_request_rising_edge_events(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 7, 100);
 
@@ -63,6 +64,7 @@ GPIOD_TEST_CASE(falling_edge_good, 0, { 8 })
 	ret = gpiod_line_request_falling_edge_events(line,
 						     GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 7, 100);
 
@@ -94,6 +96,7 @@ GPIOD_TEST_CASE(rising_edge_ignore_falling, 0, { 8 })
 
 	ret = gpiod_line_request_rising_edge_events(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 7, 100);
 
@@ -136,6 +139,7 @@ GPIOD_TEST_CASE(both_edges, 0, { 8 })
 
 	ret = gpiod_line_request_both_edges_events(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 7, 100);
 
@@ -176,6 +180,7 @@ GPIOD_TEST_CASE(both_edges_active_low, 0, { 8 })
 	ret = gpiod_line_request_both_edges_events_flags(line,
 		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 7, 100);
 
@@ -216,6 +221,7 @@ GPIOD_TEST_CASE(both_edges_bias_disable, 0, { 8 })
 	ret = gpiod_line_request_both_edges_events_flags(line,
 		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 7, 100);
 
@@ -256,6 +262,7 @@ GPIOD_TEST_CASE(both_edges_bias_pull_down, 0, { 8 })
 	ret = gpiod_line_request_both_edges_events_flags(line,
 		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 7, 100);
 
@@ -296,6 +303,7 @@ GPIOD_TEST_CASE(both_edges_bias_pull_up, 0, { 8 })
 	ret = gpiod_line_request_both_edges_events_flags(line,
 		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 7, 100);
 
@@ -336,6 +344,7 @@ GPIOD_TEST_CASE(falling_edge_active_low, 0, { 8 })
 	ret = gpiod_line_request_falling_edge_events_flags(line,
 		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 7, 100);
 
@@ -369,6 +378,7 @@ GPIOD_TEST_CASE(get_value, 0, { 8 })
 
 	ret = gpiod_line_request_falling_edge_events(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ret = gpiod_line_get_value(line);
 	g_assert_cmpint(ret, ==, 1);
@@ -406,6 +416,7 @@ GPIOD_TEST_CASE(get_value_active_low, 0, { 8 })
 	ret = gpiod_line_request_falling_edge_events_flags(line,
 		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ret = gpiod_line_get_value(line);
 	g_assert_cmpint(ret, ==, 0);
@@ -445,6 +456,7 @@ GPIOD_TEST_CASE(get_values, 0, { 8 })
 	ret = gpiod_line_request_bulk_rising_edge_events(&bulk,
 							 GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	memset(vals, 0, sizeof(vals));
 	ret = gpiod_line_get_value_bulk(&bulk, vals);
@@ -500,6 +512,7 @@ GPIOD_TEST_CASE(get_values_active_low, 0, { 8 })
 	ret = gpiod_line_request_bulk_rising_edge_events_flags(&bulk,
 			GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	memset(vals, 0, sizeof(vals));
 	ret = gpiod_line_get_value_bulk(&bulk, vals);
@@ -557,6 +570,7 @@ GPIOD_TEST_CASE(wait_multiple, 0, { 8 })
 	ret = gpiod_line_request_bulk_rising_edge_events(&bulk,
 							 GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 4, 100);
 
@@ -588,6 +602,7 @@ GPIOD_TEST_CASE(get_fd_when_values_requested, 0, { 8 })
 
 	ret = gpiod_line_request_input(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	fd = gpiod_line_event_get_fd(line);
 	g_assert_cmpint(fd, ==, -1);
@@ -611,6 +626,7 @@ GPIOD_TEST_CASE(request_bulk_fail, 0, { 8 })
 
 	ret = gpiod_line_request_input(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	for (i = 0; i < 8; i++) {
 		line = gpiod_chip_get_line(chip, i);
@@ -644,6 +660,7 @@ GPIOD_TEST_CASE(invalid_fd, 0, { 8 })
 
 	ret = gpiod_line_request_both_edges_events(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	fd = gpiod_line_event_get_fd(line);
 	close(fd);
@@ -683,6 +700,7 @@ GPIOD_TEST_CASE(read_events_individually, 0, { 8 })
 	ret = gpiod_line_request_both_edges_events_flags(line,
 		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	/* generate multiple events */
 	for (i = 0; i < 3; i++) {
@@ -744,6 +762,7 @@ GPIOD_TEST_CASE(read_multiple_events, 0, { 8 })
 
 	ret = gpiod_line_request_both_edges_events(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	/* generate multiple events */
 	for (i = 0; i < 7; i++) {
@@ -818,6 +837,7 @@ GPIOD_TEST_CASE(read_multiple_events_fd, 0, { 8 })
 
 	ret = gpiod_line_request_both_edges_events(line, GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	/* generate multiple events */
 	for (i = 0; i < 7; i++) {
