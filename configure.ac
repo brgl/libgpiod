@@ -6,9 +6,9 @@
 # Copyright (C) 2017-2019 Bartosz Golaszewski <bartekgola@gmail.com>
 #
 
-AC_PREREQ(2.61)
+AC_PREREQ([2.69])
 
-AC_INIT([libgpiod], 2.0)
+AC_INIT([libgpiod],[2.0])
 AC_SUBST(EXTRA_VERSION, [-devel])
 
 AC_DEFINE_UNQUOTED([GPIOD_VERSION_STR],
@@ -61,8 +61,9 @@ AC_SUBST(AR_FLAGS, [cr])
 AM_PROG_AR
 AC_PROG_CC
 AC_PROG_CXX
-AC_PROG_LIBTOOL
 AC_PROG_INSTALL
+
+LT_INIT
 
 AC_DEFUN([ERR_NOT_FOUND],
 	[AC_MSG_ERROR([$1 not found (needed to build $2)], [1])])
@@ -104,8 +105,7 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 [], [AC_MSG_ERROR(["libgpiod needs linux headers version >= v5.5.0"])])
 
 AC_ARG_ENABLE([tools],
-	[AC_HELP_STRING([--enable-tools],
-		[enable libgpiod command-line tools [default=no]])],
+	[AS_HELP_STRING([--enable-tools],[enable libgpiod command-line tools [default=no]])],
 	[if test "x$enableval" = xyes; then with_tools=true; fi],
 	[with_tools=false])
 AM_CONDITIONAL([WITH_TOOLS], [test "x$with_tools" = xtrue])
@@ -127,8 +127,7 @@ then
 fi
 
 AC_ARG_ENABLE([tests],
-	[AC_HELP_STRING([--enable-tests],
-		[enable libgpiod tests [default=no]])],
+	[AS_HELP_STRING([--enable-tests],[enable libgpiod tests [default=no]])],
 	[if test "x$enableval" = xyes; then with_tests=true; fi],
 	[with_tests=false])
 AM_CONDITIONAL([WITH_TESTS], [test "x$with_tests" = xtrue])
@@ -157,8 +156,7 @@ then
 fi
 
 AC_ARG_ENABLE([bindings-cxx],
-	[AC_HELP_STRING([--enable-bindings-cxx],
-		[enable C++ bindings [default=no]])],
+	[AS_HELP_STRING([--enable-bindings-cxx],[enable C++ bindings [default=no]])],
 	[if test "x$enableval" = xyes; then with_bindings_cxx=true; fi],
 	[with_bindings_cxx=false])
 AM_CONDITIONAL([WITH_BINDINGS_CXX], [test "x$with_bindings_cxx" = xtrue])
@@ -180,8 +178,7 @@ then
 fi
 
 AC_ARG_ENABLE([bindings-python],
-	[AC_HELP_STRING([--enable-bindings-python],
-		[enable python3 bindings [default=no]])],
+	[AS_HELP_STRING([--enable-bindings-python],[enable python3 bindings [default=no]])],
 	[if test "x$enableval" = xyes; then with_bindings_python=true; fi],
 	[with_bindings_python=false])
 AM_CONDITIONAL([WITH_BINDINGS_PYTHON], [test "x$with_bindings_python" = xtrue])
