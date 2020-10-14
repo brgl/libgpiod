@@ -1485,6 +1485,8 @@ struct gpiod_line_event {
 	/**< Best estimate of time of event occurrence. */
 	int event_type;
 	/**< Type of the event that occurred. */
+	int offset;
+	/**< Offset of line on which the event occurred. */
 };
 
 /**
