@@ -559,7 +559,7 @@ GPIOD_TEST_CASE(wait_multiple, 0, { 8 })
 	gpiod_test_return_if_failed();
 
 	gpiod_line_bulk_init(&bulk);
-	for (i = 0; i < 8; i++) {
+	for (i = 1; i < 8; i++) {
 		line = gpiod_chip_get_line(chip, i);
 		g_assert_nonnull(line);
 		gpiod_test_return_if_failed();
