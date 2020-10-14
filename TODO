@@ -67,12 +67,6 @@ Planned v2.x features will be listed below:
 
 Core library:
 
-* remove all deprecated interfaces
-
-This is pretty self-explanatory. There are a couple functions marked as
-deprecated in the header. They have been this way for a while so it's time
-to finally remove them.
-
 * rethink the gpiod_line_bulk structure
 
 This structure is widely used by the library itself and always allocated on
