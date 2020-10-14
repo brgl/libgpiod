@@ -570,6 +570,7 @@ GPIOD_TEST_CASE(wait_multiple, 0, { 8 })
 	ret = gpiod_line_event_read(line, &ev);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(ev.event_type, ==, GPIOD_LINE_EVENT_RISING_EDGE);
+	g_assert_cmpint(ev.offset, ==, 4);
 }
 
 GPIOD_TEST_CASE(get_fd_when_values_requested, 0, { 8 })
