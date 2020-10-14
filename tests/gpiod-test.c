@@ -29,7 +29,7 @@ struct gpiod_test_event_thread {
 	gboolean should_stop;
 	guint chip_index;
 	guint line_offset;
-	guint freq;
+	guint period_ms;
 };
 
 static struct {
@@ -202,7 +202,7 @@ static gpointer event_worker_func(gpointer data)
 			break;
 		}
 
-		end_time = g_get_monotonic_time() + thread->freq * 1000;
+		end_time = g_get_monotonic_time() + thread->period_ms * 1000;
 
 		signalled = g_cond_wait_until(&thread->cond,
 					      &thread->lock, end_time);
@@ -217,7 +217,7 @@ static gpointer event_worker_func(gpointer data)
 }
 
 GpiodTestEventThread *
-gpiod_test_start_event_thread(guint chip_index, guint line_offset, guint freq)
+gpiod_test_start_event_thread(guint chip_index, guint line_offset, guint period_ms)
 {
 	GpiodTestEventThread *thread = g_malloc0(sizeof(*thread));
 
@@ -226,7 +226,7 @@ gpiod_test_start_event_thread(guint chip_index, guint line_offset, guint freq)
 
 	thread->chip_index = chip_index;
 	thread->line_offset = line_offset;
-	thread->freq = freq;
+	thread->period_ms = period_ms;
 
 	thread->id = g_thread_new("event-worker", event_worker_func, thread);
 

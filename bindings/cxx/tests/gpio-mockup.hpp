@@ -61,7 +61,7 @@ public:
 	{
 	public:
 
-		event_thread(unsigned int chip_index, unsigned int line_offset, unsigned int freq);
+		event_thread(unsigned int chip_index, unsigned int line_offset, unsigned int period_ms);
 		~event_thread(void);
 
 		event_thread(const event_thread& other) = delete;
@@ -75,7 +75,7 @@ public:
 
 		unsigned int _m_chip_index;
 		unsigned int _m_line_offset;
-		unsigned int _m_freq;
+		unsigned int _m_period_ms;
 
 		bool _m_stop;
 

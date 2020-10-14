@@ -96,7 +96,7 @@ typedef struct gpiod_test_event_thread GpiodTestEventThread;
 
 GpiodTestEventThread *
 gpiod_test_start_event_thread(guint chip_index,
-			      guint line_offset, guint freq);
+			      guint line_offset, guint period_ms);
 void gpiod_test_stop_event_thread(GpiodTestEventThread *thread);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GpiodTestEventThread,

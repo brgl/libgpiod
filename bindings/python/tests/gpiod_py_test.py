@@ -34,11 +34,11 @@ class MockupTestCase(unittest.TestCase):
 
 class EventThread(threading.Thread):
 
-    def __init__(self, chip_idx, line_offset, freq):
+    def __init__(self, chip_idx, line_offset, period_ms):
         threading.Thread.__init__(self)
         self.chip_idx = chip_idx
         self.line_offset = line_offset
-        self.freq = freq
+        self.period_ms = period_ms
         self.lock = threading.Lock()
         self.cond = threading.Condition(self.lock)
         self.should_stop = False
@@ -50,7 +50,7 @@ class EventThread(threading.Thread):
                 if self.should_stop:
                     break;
 
-                if not self.cond.wait(float(self.freq) / 1000):
+                if not self.cond.wait(float(self.period_ms) / 1000):
                     mockup.chip_set_pull(self.chip_idx,
                                          self.line_offset, i % 2)
                     i += 1

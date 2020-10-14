@@ -116,10 +116,10 @@ mockup::probe_guard::~probe_guard(void)
 }
 
 mockup::event_thread::event_thread(unsigned int chip_index,
-				   unsigned int line_offset, unsigned int freq)
+				   unsigned int line_offset, unsigned int period_ms)
 	: _m_chip_index(chip_index),
 	  _m_line_offset(line_offset),
-	  _m_freq(freq),
+	  _m_period_ms(period_ms),
 	  _m_stop(false),
 	  _m_mutex(),
 	  _m_cond(),
@@ -146,7 +146,7 @@ void mockup::event_thread::event_worker(void)
 			break;
 
 		::std::cv_status status = this->_m_cond.wait_for(lock,
-						std::chrono::milliseconds(this->_m_freq));
+						std::chrono::milliseconds(this->_m_period_ms));
 		if (status == ::std::cv_status::timeout)
 			mockup::instance().chip_set_pull(this->_m_chip_index,
 							 this->_m_line_offset, i % 2);
