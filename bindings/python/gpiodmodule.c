@@ -2687,30 +2687,12 @@ static gpiod_LineObject *gpiod_Module_find_line(PyObject *Py_UNUSED(self),
 	return line_obj;
 }
 
-PyDoc_STRVAR(gpiod_Module_version_string_doc,
-"version_string() -> string\n"
-"\n"
-"DEPRECATED: use __version__ module attribute instead.\n"
-"Get the API version of the library as a human-readable string.");
-
-static PyObject *gpiod_Module_version_string(PyObject *Py_UNUSED(ignored0),
-					     PyObject *Py_UNUSED(ignored1))
-{
-	return PyUnicode_FromFormat("%s", gpiod_version_string());
-}
-
 static PyMethodDef gpiod_module_methods[] = {
 	{
 		.ml_name = "find_line",
 		.ml_meth = (PyCFunction)gpiod_Module_find_line,
 		.ml_flags = METH_VARARGS,
 		.ml_doc = gpiod_Module_find_line_doc,
-	},
-	{
-		.ml_name = "version_string",
-		.ml_meth = (PyCFunction)gpiod_Module_version_string,
-		.ml_flags = METH_NOARGS,
-		.ml_doc = gpiod_Module_version_string_doc,
 	},
 	{ }
 };
