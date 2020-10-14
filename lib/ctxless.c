@@ -242,34 +242,6 @@ static int basic_event_poll(unsigned int num_lines,
 	return ret;
 }
 
-int gpiod_ctxless_event_loop(const char *device, unsigned int offset,
-			     bool active_low, const char *consumer,
-			     const struct timespec *timeout,
-			     gpiod_ctxless_event_poll_cb poll_cb,
-			     gpiod_ctxless_event_handle_cb event_cb,
-			     void *data)
-{
-	return gpiod_ctxless_event_monitor(device,
-					   GPIOD_CTXLESS_EVENT_BOTH_EDGES,
-					   offset, active_low, consumer,
-					   timeout, poll_cb, event_cb, data);
-}
-
-int gpiod_ctxless_event_loop_multiple(const char *device,
-				      const unsigned int *offsets,
-				      unsigned int num_lines, bool active_low,
-				      const char *consumer,
-				      const struct timespec *timeout,
-				      gpiod_ctxless_event_poll_cb poll_cb,
-				      gpiod_ctxless_event_handle_cb event_cb,
-				      void *data)
-{
-	return gpiod_ctxless_event_monitor_multiple(
-				device, GPIOD_CTXLESS_EVENT_BOTH_EDGES,
-				offsets, num_lines, active_low, consumer,
-				timeout, poll_cb, event_cb, data);
-}
-
 int gpiod_ctxless_event_monitor(const char *device, int event_type,
 				unsigned int offset, bool active_low,
 				const char *consumer,

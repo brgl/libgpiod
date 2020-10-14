@@ -398,11 +398,6 @@ bool gpiod_line_is_open_source(struct gpiod_line *line)
 	return line->info_flags & GPIOLINE_FLAG_OPEN_SOURCE;
 }
 
-bool gpiod_line_needs_update(struct gpiod_line *line GPIOD_UNUSED)
-{
-	return false;
-}
-
 int gpiod_line_update(struct gpiod_line *line)
 {
 	struct gpioline_info info;

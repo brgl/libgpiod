@@ -74,11 +74,6 @@ struct gpiod_line_bulk;
 #define GPIOD_BIT(nr)		(1UL << (nr))
 
 /**
- * @brief Marks a public function as deprecated.
- */
-#define GPIOD_DEPRECATED	__attribute__((deprecated))
-
-/**
  * @}
  *
  * @defgroup high_level High-level API
@@ -336,71 +331,6 @@ struct gpiod_ctxless_event_poll_fd {
 typedef int (*gpiod_ctxless_event_poll_cb)(unsigned int,
 				struct gpiod_ctxless_event_poll_fd *,
 				const struct timespec *, void *);
-
-/**
- * @brief Wait for events on a single GPIO line.
- * @param device Name, path, number or label of the gpiochip.
- * @param offset GPIO line offset to monitor.
- * @param active_low The active state of this line - true if low.
- * @param consumer Name of the consumer.
- * @param timeout Maximum wait time for each iteration.
- * @param poll_cb Callback function to call when waiting for events.
- * @param event_cb Callback function to call for each line event.
- * @param data User data passed to the callback.
- * @return 0 if no errors were encountered, -1 if an error occurred.
- * @note The way the ctxless event loop works is described in detail in
- *       ::gpiod_ctxless_event_loop_multiple - this is just a wrapper aound
- *       this routine which calls it for a single GPIO line.
- * @deprecated This function suffers from an issue where HW may not allow
- *             setting up both rising and falling egde interrupts at the same
- *             time.
- */
-int gpiod_ctxless_event_loop(const char *device, unsigned int offset,
-			     bool active_low, const char *consumer,
-			     const struct timespec *timeout,
-			     gpiod_ctxless_event_poll_cb poll_cb,
-			     gpiod_ctxless_event_handle_cb event_cb,
-			     void *data) GPIOD_API GPIOD_DEPRECATED;
-
-/**
- * @brief Wait for events on multiple GPIO lines.
- * @param device Name, path, number or label of the gpiochip.
- * @param offsets Array of GPIO line offsets to monitor.
- * @param num_lines Number of lines to monitor.
- * @param active_low The active state of this line - true if low.
- * @param consumer Name of the consumer.
- * @param timeout Maximum wait time for each iteration.
- * @param poll_cb Callback function to call when waiting for events. Can
- *                be NULL.
- * @param event_cb Callback function to call on event occurrence.
- * @param data User data passed to the callback.
- * @return 0 no errors were encountered, -1 if an error occurred.
- * @note The poll callback can be NULL in which case the routine will fall
- *       back to a basic, ppoll() based callback.
- * @deprecated This function suffers from an issue where HW may not allow
- *             setting up both rising and falling egde interrupts at the same
- *             time.
- *
- * Internally this routine opens the GPIO chip, requests the set of lines for
- * both-edges events and calls the polling callback in a loop. The role of the
- * polling callback is to detect input events on a set of file descriptors and
- * notify the caller about the fds ready for reading.
- *
- * The ctxless event loop then reads each queued event from marked descriptors
- * and calls the event callback. Both callbacks can stop the loop at any
- * point.
- *
- * The poll_cb argument can be NULL in which case the function falls back to
- * a default, ppoll() based callback.
- */
-int gpiod_ctxless_event_loop_multiple(const char *device,
-				      const unsigned int *offsets,
-				      unsigned int num_lines, bool active_low,
-				      const char *consumer,
-				      const struct timespec *timeout,
-				      gpiod_ctxless_event_poll_cb poll_cb,
-				      gpiod_ctxless_event_handle_cb event_cb,
-				      void *data) GPIOD_API GPIOD_DEPRECATED;
 
 /**
  * @brief Wait for events on a single GPIO line.
@@ -945,16 +875,6 @@ bool gpiod_line_is_open_source(struct gpiod_line *line) GPIOD_API;
  * there's no need to call this function in that case.
  */
 int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
-
-/**
- * @brief Check if the line info needs to be updated.
- * @param line GPIO line object.
- * @return Always returns false.
- * @deprecated This mechanism no longer exists in the library and this function
- *             does nothing.
- */
-bool
-gpiod_line_needs_update(struct gpiod_line *line) GPIOD_API GPIOD_DEPRECATED;
 
 /**
  * @}
