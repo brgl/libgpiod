@@ -115,7 +115,7 @@ line_iter& line_iter::operator++(void)
 {
 	::gpiod_line* next = ::gpiod_line_iter_next(this->_m_iter.get());
 
-	this->_m_current = next ? line(next, this->_m_current._m_chip) : line();
+	this->_m_current = next ? line(next, this->_m_current._m_owner) : line();
 
 	return *this;
 }

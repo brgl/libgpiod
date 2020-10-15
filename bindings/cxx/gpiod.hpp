@@ -199,11 +199,13 @@ public:
 private:
 
 	chip(::gpiod_chip* chip);
+	chip(const ::std::weak_ptr<::gpiod_chip>& chip_ptr);
 
 	void throw_if_noref(void) const;
 
 	::std::shared_ptr<::gpiod_chip> _m_chip;
 
+	friend line;
 	friend chip_iter;
 	friend line_iter;
 };
@@ -438,10 +440,10 @@ public:
 	GPIOD_API int event_get_fd(void) const;
 
 	/**
-	 * @brief Get the reference to the parent chip.
-	 * @return Reference to the parent chip object.
+	 * @brief Get the parent chip.
+	 * @return Parent chip of this line.
 	 */
-	GPIOD_API const chip& get_chip(void) const;
+	GPIOD_API const chip get_chip(void) const;
 
 	/**
 	 * @brief Re-read the line info from the kernel.
@@ -526,7 +528,22 @@ private:
 	line_event make_line_event(const ::gpiod_line_event& event) const noexcept;
 
 	::gpiod_line* _m_line;
-	chip _m_chip;
+	::std::weak_ptr<::gpiod_chip> _m_owner;
+
+	class chip_guard
+	{
+	public:
+		chip_guard(const line& line);
+		~chip_guard(void) = default;
+
+		chip_guard(const chip_guard& other) = delete;
+		chip_guard(chip_guard&& other) = delete;
+		chip_guard& operator=(const chip_guard&& other) = delete;
+		chip_guard& operator=(chip_guard&& other) = delete;
+
+	private:
+		::std::shared_ptr<::gpiod_chip> _m_chip;
+	};
 
 	friend chip;
 	friend line_bulk;
@@ -536,9 +553,11 @@ private:
 /**
  * @brief Find a GPIO line by name. Search all GPIO chips present on the system.
  * @param name Name of the line.
- * @return Returns a line object - empty if the line was not found.
+ * @return Returns a <line, chip> pair where line is the line with given name
+ *         and chip is the line's owner. Both objects are empty if the line was
+ *         not found.
  */
-GPIOD_API line find_line(const ::std::string& name);
+GPIOD_API ::std::pair<line, chip> find_line(const ::std::string& name);
 
 /**
  * @brief Describes a single GPIO line event.

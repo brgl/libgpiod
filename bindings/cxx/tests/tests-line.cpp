@@ -24,16 +24,16 @@ TEST_CASE("Global find_line() function works", "[line]")
 
 	SECTION("line found")
 	{
-		auto line = ::gpiod::find_line("gpio-mockup-C-5");
-		REQUIRE(line.offset() == 5);
-		REQUIRE(line.name() == "gpio-mockup-C-5");
-		REQUIRE(line.get_chip().label() == "gpio-mockup-C");
+		auto ret = ::gpiod::find_line("gpio-mockup-C-5");
+		REQUIRE(ret.first.offset() == 5);
+		REQUIRE(ret.first.name() == "gpio-mockup-C-5");
+		REQUIRE(ret.second.label() == "gpio-mockup-C");
 	}
 
 	SECTION("line not found")
 	{
-		auto line = ::gpiod::find_line("nonexistent-line");
-		REQUIRE_FALSE(line);
+		auto ret = ::gpiod::find_line("nonexistent-line");
+		REQUIRE_FALSE(ret.first);
 	}
 }
 

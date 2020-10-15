@@ -24,14 +24,14 @@ const ::std::map<int, int> bias_mapping = {
 
 line::line(void)
 	: _m_line(nullptr),
-	  _m_chip()
+	  _m_owner()
 {
 
 }
 
 line::line(::gpiod_line* line, const chip& owner)
 	: _m_line(line),
-	  _m_chip(owner)
+	  _m_owner(owner._m_chip)
 {
 
 }
@@ -39,6 +39,7 @@ line::line(::gpiod_line* line, const chip& owner)
 unsigned int line::offset(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	return ::gpiod_line_offset(this->_m_line);
 }
@@ -46,6 +47,7 @@ unsigned int line::offset(void) const
 ::std::string line::name(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	const char* name = ::gpiod_line_name(this->_m_line);
 
@@ -55,6 +57,7 @@ unsigned int line::offset(void) const
 ::std::string line::consumer(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	const char* consumer = ::gpiod_line_consumer(this->_m_line);
 
@@ -64,6 +67,7 @@ unsigned int line::offset(void) const
 int line::direction(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	int dir = ::gpiod_line_direction(this->_m_line);
 
@@ -73,6 +77,7 @@ int line::direction(void) const
 int line::active_state(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	int active = ::gpiod_line_active_state(this->_m_line);
 
@@ -82,6 +87,7 @@ int line::active_state(void) const
 int line::bias(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	return bias_mapping.at(::gpiod_line_bias(this->_m_line));
 }
@@ -89,6 +95,7 @@ int line::bias(void) const
 bool line::is_used(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	return ::gpiod_line_is_used(this->_m_line);
 }
@@ -96,6 +103,7 @@ bool line::is_used(void) const
 bool line::is_open_drain(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	return ::gpiod_line_is_open_drain(this->_m_line);
 }
@@ -103,6 +111,7 @@ bool line::is_open_drain(void) const
 bool line::is_open_source(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	return ::gpiod_line_is_open_source(this->_m_line);
 }
@@ -128,6 +137,7 @@ void line::release(void) const
 bool line::is_requested(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	return ::gpiod_line_is_requested(this->_m_line);
 }
@@ -227,6 +237,7 @@ line_event line::make_line_event(const ::gpiod_line_event& event) const noexcept
 line_event line::event_read(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	::gpiod_line_event event_buf;
 	line_event event;
@@ -243,6 +254,7 @@ line_event line::event_read(void) const
 ::std::vector<line_event> line::event_read_multiple(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	/* 16 is the maximum number of events stored in the kernel FIFO. */
 	::std::array<::gpiod_line_event, 16> event_buf;
@@ -265,6 +277,7 @@ line_event line::event_read(void) const
 int line::event_get_fd(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	int ret = ::gpiod_line_event_get_fd(this->_m_line);
 
@@ -275,14 +288,15 @@ int line::event_get_fd(void) const
 	return ret;
 }
 
-const chip& line::get_chip(void) const
+const chip line::get_chip(void) const
 {
-	return this->_m_chip;
+	return chip(this->_m_owner);
 }
 
 void line::update(void) const
 {
 	this->throw_if_null();
+	line::chip_guard lock_chip(*this);
 
 	int ret = ::gpiod_line_update(this->_m_line);
 
@@ -294,7 +308,7 @@ void line::update(void) const
 void line::reset(void)
 {
 	this->_m_line = nullptr;
-	this->_m_chip.reset();
+	this->_m_owner.reset();
 }
 
 bool line::operator==(const line& rhs) const noexcept
@@ -323,14 +337,22 @@ void line::throw_if_null(void) const
 		throw ::std::logic_error("object not holding a GPIO line handle");
 }
 
-line find_line(const ::std::string& name)
+line::chip_guard::chip_guard(const line& line)
+	: _m_chip(line._m_owner)
 {
-	line ret;
+	
+}
+
+::std::pair<line, chip> find_line(const ::std::string& name)
+{
+	::std::pair<line, chip> ret;
 
 	for (auto& it: make_chip_iter()) {
-		ret = it.find_line(name);
-		if (ret)
+		ret.first = it.find_line(name);
+		if (ret.first) {
+			ret.second = it;
 			break;
+		}
 	}
 
 	return ret;

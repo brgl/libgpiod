@@ -19,11 +19,11 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	::gpiod::line line = ::gpiod::find_line(argv[1]);
-	if (!line)
+	auto ret = ::gpiod::find_line(argv[1]);
+	if (!ret.first)
 		return EXIT_FAILURE;
 
-	::std::cout << line.get_chip().name() << " " << line.offset() << ::std::endl;
+	::std::cout << ret.second.name() << " " << ret.first.offset() << ::std::endl;
 
 	return EXIT_SUCCESS;
 }

@@ -69,6 +69,12 @@ chip::chip(::gpiod_chip* chip)
 
 }
 
+chip::chip(const ::std::weak_ptr<::gpiod_chip>& chip_ptr)
+	: _m_chip(chip_ptr)
+{
+
+}
+
 void chip::open(const ::std::string& device, int how)
 {
 	auto func = open_funcs.at(how);

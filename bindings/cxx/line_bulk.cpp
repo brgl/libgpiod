@@ -101,6 +101,7 @@ void line_bulk::clear(void)
 void line_bulk::request(const line_request& config, const ::std::vector<int> default_vals) const
 {
 	this->throw_if_empty();
+	line::chip_guard lock_chip(this->_m_bulk.front());
 
 	if (!default_vals.empty() && this->size() != default_vals.size())
 		throw ::std::invalid_argument("the number of default values must correspond with the number of lines");
@@ -131,6 +132,7 @@ void line_bulk::request(const line_request& config, const ::std::vector<int> def
 void line_bulk::release(void) const
 {
 	this->throw_if_empty();
+	line::chip_guard lock_chip(this->_m_bulk.front());
 
 	::gpiod_line_bulk bulk;
 
@@ -142,6 +144,7 @@ void line_bulk::release(void) const
 ::std::vector<int> line_bulk::get_values(void) const
 {
 	this->throw_if_empty();
+	line::chip_guard lock_chip(this->_m_bulk.front());
 
 	::std::vector<int> values;
 	::gpiod_line_bulk bulk;
@@ -161,6 +164,7 @@ void line_bulk::release(void) const
 void line_bulk::set_values(const ::std::vector<int>& values) const
 {
 	this->throw_if_empty();
+	line::chip_guard lock_chip(this->_m_bulk.front());
 
 	if (values.size() != this->_m_bulk.size())
 		throw ::std::invalid_argument("the size of values array must correspond with the number of lines");
@@ -180,6 +184,7 @@ void line_bulk::set_config(int direction, ::std::bitset<32> flags,
 			   const ::std::vector<int> values) const
 {
 	this->throw_if_empty();
+	line::chip_guard lock_chip(this->_m_bulk.front());
 
 	if (!values.empty() && this->_m_bulk.size() != values.size())
 		throw ::std::invalid_argument("the number of default values must correspond with the number of lines");
@@ -206,6 +211,7 @@ void line_bulk::set_config(int direction, ::std::bitset<32> flags,
 void line_bulk::set_flags(::std::bitset<32> flags) const
 {
 	this->throw_if_empty();
+	line::chip_guard lock_chip(this->_m_bulk.front());
 
 	::gpiod_line_bulk bulk;
 	int rv, gflags;
@@ -228,6 +234,7 @@ void line_bulk::set_flags(::std::bitset<32> flags) const
 void line_bulk::set_direction_input() const
 {
 	this->throw_if_empty();
+	line::chip_guard lock_chip(this->_m_bulk.front());
 
 	::gpiod_line_bulk bulk;
 	int rv;
@@ -243,6 +250,7 @@ void line_bulk::set_direction_input() const
 void line_bulk::set_direction_output(const ::std::vector<int>& values) const
 {
 	this->throw_if_empty();
+	line::chip_guard lock_chip(this->_m_bulk.front());
 
 	if (values.size() != this->_m_bulk.size())
 		throw ::std::invalid_argument("the size of values array must correspond with the number of lines");
@@ -262,6 +270,7 @@ void line_bulk::set_direction_output(const ::std::vector<int>& values) const
 line_bulk line_bulk::event_wait(const ::std::chrono::nanoseconds& timeout) const
 {
 	this->throw_if_empty();
+	line::chip_guard lock_chip(this->_m_bulk.front());
 
 	::gpiod_line_bulk bulk, event_bulk;
 	::timespec ts;
