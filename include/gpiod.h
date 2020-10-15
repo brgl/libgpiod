@@ -1057,7 +1057,7 @@ int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
  * @param config Request options.
  * @param default_vals Initial line values - only relevant if we're setting
  *                     the direction to output.
- * @return 0 if the all lines were properly requested. In case of an error
+ * @return 0 if all lines were properly requested. In case of an error
  *         this routine returns -1 and sets the last error number.
  *
  * If this routine succeeds, the caller takes ownership of the GPIO lines
