@@ -101,3 +101,9 @@ of methods, properties should be used wherever possible (chip's name and label,
 line's direction, active-state etc.), we should probably store the line objects
 within the chip instead of creating them everytime get_line() is called and
 several more.
+
+* use ::std::chrono::time_point instead of ::std::chrono:duration in C++
+  bindings
+
+Duration is a time interval so it's not the best candidate for storing
+timestamps. Switch to using time_point where applicable.
