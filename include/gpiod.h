@@ -1061,7 +1061,7 @@ int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
  *         this routine returns -1 and sets the last error number.
  *
  * If this routine succeeds, the caller takes ownership of the GPIO lines
- * until they're released. All the requested lines must be prodivided by the
+ * until they're released. All the requested lines must be provided by the
  * same gpiochip.
  */
 int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
