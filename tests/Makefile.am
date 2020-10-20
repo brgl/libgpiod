@@ -22,6 +22,7 @@ bin_PROGRAMS = gpiod-test
 gpiod_test_SOURCES =			\
 		gpiod-test.c		\
 		gpiod-test.h		\
+		tests-bulk.c		\
 		tests-chip.c		\
 		tests-ctxless.c		\
 		tests-event.c		\

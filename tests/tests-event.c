@@ -434,8 +434,8 @@ GPIOD_TEST_CASE(get_value_active_low, 0, { 8 })
 
 GPIOD_TEST_CASE(get_values, 0, { 8 })
 {
+	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;
 	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line_bulk bulk;
 	struct gpiod_line *line;
 	gint i, ret, vals[8];
 
@@ -443,23 +443,26 @@ GPIOD_TEST_CASE(get_values, 0, { 8 })
 	g_assert_nonnull(chip);
 	gpiod_test_return_if_failed();
 
-	gpiod_line_bulk_init(&bulk);
+	bulk = gpiod_line_bulk_new(8);
+	g_assert_nonnull(bulk);
+	gpiod_test_return_if_failed();
+
 	for (i = 0; i < 8; i++) {
 		line = gpiod_chip_get_line(chip, i);
 		g_assert_nonnull(line);
 		gpiod_test_return_if_failed();
 
-		gpiod_line_bulk_add(&bulk, line);
+		gpiod_line_bulk_add_line(bulk, line);
 		gpiod_test_chip_set_pull(0, i, 1);
 	}
 
-	ret = gpiod_line_request_bulk_rising_edge_events(&bulk,
+	ret = gpiod_line_request_bulk_rising_edge_events(bulk,
 							 GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
 	gpiod_test_return_if_failed();
 
 	memset(vals, 0, sizeof(vals));
-	ret = gpiod_line_get_value_bulk(&bulk, vals);
+	ret = gpiod_line_get_value_bulk(bulk, vals);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(vals[0], ==, 1);
 	g_assert_cmpint(vals[1], ==, 1);
@@ -476,7 +479,7 @@ GPIOD_TEST_CASE(get_values, 0, { 8 })
 	gpiod_test_chip_set_pull(0, 7, 0);
 
 	memset(vals, 0, sizeof(vals));
-	ret = gpiod_line_get_value_bulk(&bulk, vals);
+	ret = gpiod_line_get_value_bulk(bulk, vals);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(vals[0], ==, 1);
 	g_assert_cmpint(vals[1], ==, 0);
@@ -490,8 +493,8 @@ GPIOD_TEST_CASE(get_values, 0, { 8 })
 
 GPIOD_TEST_CASE(get_values_active_low, 0, { 8 })
 {
+	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;
 	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line_bulk bulk;
 	struct gpiod_line *line;
 	gint i, ret, vals[8];
 
@@ -499,23 +502,26 @@ GPIOD_TEST_CASE(get_values_active_low, 0, { 8 })
 	g_assert_nonnull(chip);
 	gpiod_test_return_if_failed();
 
-	gpiod_line_bulk_init(&bulk);
+	bulk = gpiod_line_bulk_new(8);
+	g_assert_nonnull(bulk);
+	gpiod_test_return_if_failed();
+
 	for (i = 0; i < 8; i++) {
 		line = gpiod_chip_get_line(chip, i);
 		g_assert_nonnull(line);
 		gpiod_test_return_if_failed();
 
-		gpiod_line_bulk_add(&bulk, line);
+		gpiod_line_bulk_add_line(bulk, line);
 		gpiod_test_chip_set_pull(0, i, 0);
 	}
 
-	ret = gpiod_line_request_bulk_rising_edge_events_flags(&bulk,
+	ret = gpiod_line_request_bulk_rising_edge_events_flags(bulk,
 			GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
 	g_assert_cmpint(ret, ==, 0);
 	gpiod_test_return_if_failed();
 
 	memset(vals, 0, sizeof(vals));
-	ret = gpiod_line_get_value_bulk(&bulk, vals);
+	ret = gpiod_line_get_value_bulk(bulk, vals);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(vals[0], ==, 1);
 	g_assert_cmpint(vals[1], ==, 1);
@@ -532,7 +538,7 @@ GPIOD_TEST_CASE(get_values_active_low, 0, { 8 })
 	gpiod_test_chip_set_pull(0, 7, 1);
 
 	memset(vals, 0, sizeof(vals));
-	ret = gpiod_line_get_value_bulk(&bulk, vals);
+	ret = gpiod_line_get_value_bulk(bulk, vals);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(vals[0], ==, 1);
 	g_assert_cmpint(vals[1], ==, 0);
@@ -547,8 +553,9 @@ GPIOD_TEST_CASE(get_values_active_low, 0, { 8 })
 GPIOD_TEST_CASE(wait_multiple, 0, { 8 })
 {
 	g_autoptr(GpiodTestEventThread) ev_thread = NULL;
+	g_autoptr(gpiod_line_bulk_struct) ev_bulk = NULL;
+	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;
 	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line_bulk bulk, event_bulk;
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line_event ev;
 	struct gpiod_line *line;
@@ -558,27 +565,32 @@ GPIOD_TEST_CASE(wait_multiple, 0, { 8 })
 	g_assert_nonnull(chip);
 	gpiod_test_return_if_failed();
 
-	gpiod_line_bulk_init(&bulk);
+	bulk = gpiod_line_bulk_new(8);
+	ev_bulk = gpiod_line_bulk_new(8);
+	g_assert_nonnull(bulk);
+	g_assert_nonnull(ev_bulk);
+	gpiod_test_return_if_failed();
+
 	for (i = 1; i < 8; i++) {
 		line = gpiod_chip_get_line(chip, i);
 		g_assert_nonnull(line);
 		gpiod_test_return_if_failed();
 
-		gpiod_line_bulk_add(&bulk, line);
+		gpiod_line_bulk_add_line(bulk, line);
 	}
 
-	ret = gpiod_line_request_bulk_rising_edge_events(&bulk,
+	ret = gpiod_line_request_bulk_rising_edge_events(bulk,
 							 GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, 0);
 	gpiod_test_return_if_failed();
 
 	ev_thread = gpiod_test_start_event_thread(0, 4, 100);
 
-	ret = gpiod_line_event_wait_bulk(&bulk, &ts, &event_bulk);
+	ret = gpiod_line_event_wait_bulk(bulk, &ts, ev_bulk);
 	g_assert_cmpint(ret, ==, 1);
 
-	g_assert_cmpuint(gpiod_line_bulk_num_lines(&event_bulk), ==, 1);
-	line = gpiod_line_bulk_get_line(&event_bulk, 0);
+	g_assert_cmpuint(gpiod_line_bulk_num_lines(ev_bulk), ==, 1);
+	line = gpiod_line_bulk_get_line(ev_bulk, 0);
 	g_assert_cmpuint(gpiod_line_offset(line), ==, 4);
 
 	ret = gpiod_line_event_read(line, &ev);
@@ -612,8 +624,8 @@ GPIOD_TEST_CASE(get_fd_when_values_requested, 0, { 8 })
 
 GPIOD_TEST_CASE(request_bulk_fail, 0, { 8 })
 {
+	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;
 	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line_bulk bulk = GPIOD_LINE_BULK_INITIALIZER;
 	struct gpiod_line *line;
 	gint ret, i;
 
@@ -629,14 +641,18 @@ GPIOD_TEST_CASE(request_bulk_fail, 0, { 8 })
 	g_assert_cmpint(ret, ==, 0);
 	gpiod_test_return_if_failed();
 
+	bulk = gpiod_line_bulk_new(8);
+	g_assert_nonnull(bulk);
+	gpiod_test_return_if_failed();
+
 	for (i = 0; i < 8; i++) {
 		line = gpiod_chip_get_line(chip, i);
 		g_assert_nonnull(line);
 		gpiod_test_return_if_failed();
-		gpiod_line_bulk_add(&bulk, line);
+		gpiod_line_bulk_add_line(bulk, line);
 	}
 
-	ret = gpiod_line_request_bulk_both_edges_events(&bulk,
+	ret = gpiod_line_request_bulk_both_edges_events(bulk,
 							GPIOD_TEST_CONSUMER);
 	g_assert_cmpint(ret, ==, -1);
 	g_assert_cmpint(errno, ==, EBUSY);
@@ -644,9 +660,9 @@ GPIOD_TEST_CASE(request_bulk_fail, 0, { 8 })
 
 GPIOD_TEST_CASE(invalid_fd, 0, { 8 })
 {
+	g_autoptr(gpiod_line_bulk_struct) ev_bulk = NULL;
+	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;
 	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line_bulk bulk = GPIOD_LINE_BULK_INITIALIZER;
-	struct gpiod_line_bulk ev_bulk;
 	struct timespec ts = { 1, 0 };
 	struct gpiod_line *line;
 	gint ret, fd;
@@ -670,13 +686,18 @@ GPIOD_TEST_CASE(invalid_fd, 0, { 8 })
 	g_assert_cmpint(ret, ==, -1);
 	g_assert_cmpint(errno, ==, EINVAL);
 
+	bulk = gpiod_line_bulk_new(1);
+	ev_bulk = gpiod_line_bulk_new(1);
+	g_assert_nonnull(bulk);
+	g_assert_nonnull(ev_bulk);
+
 	/*
 	 * The single line variant calls gpiod_line_event_wait_bulk() with the
 	 * event_bulk argument set to NULL, so test this use case explicitly
 	 * as well.
 	 */
-	gpiod_line_bulk_add(&bulk, line);
-	ret = gpiod_line_event_wait_bulk(&bulk, &ts, &ev_bulk);
+	gpiod_line_bulk_add_line(bulk, line);
+	ret = gpiod_line_event_wait_bulk(bulk, &ts, ev_bulk);
 	g_assert_cmpint(ret, ==, -1);
 	g_assert_cmpint(errno, ==, EINVAL);
 }

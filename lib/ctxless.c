@@ -80,7 +80,7 @@ int gpiod_ctxless_get_value_multiple_ext(const char *device,
 					 bool active_low,
 					 const char *consumer, int flags)
 {
-	struct gpiod_line_bulk bulk;
+	struct gpiod_line_bulk *bulk;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	unsigned int i;
@@ -95,28 +95,35 @@ int gpiod_ctxless_get_value_multiple_ext(const char *device,
 	if (!chip)
 		return -1;
 
-	gpiod_line_bulk_init(&bulk);
+	bulk = gpiod_line_bulk_new(num_lines);
+	if (!bulk) {
+		gpiod_chip_close(chip);
+		return -1;
+	}
 
 	for (i = 0; i < num_lines; i++) {
 		line = gpiod_chip_get_line(chip, offsets[i]);
 		if (!line) {
+			gpiod_line_bulk_free(bulk);
 			gpiod_chip_close(chip);
 			return -1;
 		}
 
-		gpiod_line_bulk_add(&bulk, line);
+		gpiod_line_bulk_add_line(bulk, line);
 	}
 
 	req_flags = ctxless_flags_to_line_request_flags(active_low, flags);
-	rv = gpiod_line_request_bulk_input_flags(&bulk, consumer, req_flags);
+	rv = gpiod_line_request_bulk_input_flags(bulk, consumer, req_flags);
 	if (rv < 0) {
+		gpiod_line_bulk_free(bulk);
 		gpiod_chip_close(chip);
 		return -1;
 	}
 
 	memset(values, 0, sizeof(*values) * num_lines);
-	rv = gpiod_line_get_value_bulk(&bulk, values);
+	rv = gpiod_line_get_value_bulk(bulk, values);
 
+	gpiod_line_bulk_free(bulk);
 	gpiod_chip_close(chip);
 
 	return rv;
@@ -158,7 +165,7 @@ int gpiod_ctxless_set_value_multiple_ext(
 			bool active_low, const char *consumer,
 			gpiod_ctxless_set_value_cb cb, void *data, int flags)
 {
-	struct gpiod_line_bulk bulk;
+	struct gpiod_line_bulk *bulk;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
 	unsigned int i;
@@ -173,22 +180,28 @@ int gpiod_ctxless_set_value_multiple_ext(
 	if (!chip)
 		return -1;
 
-	gpiod_line_bulk_init(&bulk);
+	bulk = gpiod_line_bulk_new(num_lines);
+	if (!bulk) {
+		gpiod_chip_close(chip);
+		return -1;
+	}
 
 	for (i = 0; i < num_lines; i++) {
 		line = gpiod_chip_get_line(chip, offsets[i]);
 		if (!line) {
+			gpiod_line_bulk_free(bulk);
 			gpiod_chip_close(chip);
 			return -1;
 		}
 
-		gpiod_line_bulk_add(&bulk, line);
+		gpiod_line_bulk_add_line(bulk, line);
 	}
 
 	req_flags = ctxless_flags_to_line_request_flags(active_low, flags);
-	rv = gpiod_line_request_bulk_output_flags(&bulk, consumer,
+	rv = gpiod_line_request_bulk_output_flags(bulk, consumer,
 						  req_flags, values);
 	if (rv < 0) {
+		gpiod_line_bulk_free(bulk);
 		gpiod_chip_close(chip);
 		return -1;
 	}
@@ -196,6 +209,7 @@ int gpiod_ctxless_set_value_multiple_ext(
 	if (cb)
 		cb(data);
 
+	gpiod_line_bulk_free(bulk);
 	gpiod_chip_close(chip);
 
 	return 0;
@@ -297,7 +311,7 @@ int gpiod_ctxless_event_monitor_multiple_ext(
 	struct gpiod_ctxless_event_poll_fd fds[GPIOD_LINE_BULK_MAX_LINES];
 	struct gpiod_line_request_config conf;
 	struct gpiod_line_event event;
-	struct gpiod_line_bulk bulk;
+	struct gpiod_line_bulk *bulk;
 	int rv, ret, evtype, cnt;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
@@ -315,16 +329,20 @@ int gpiod_ctxless_event_monitor_multiple_ext(
 	if (!chip)
 		return -1;
 
-	gpiod_line_bulk_init(&bulk);
+	bulk = gpiod_line_bulk_new(num_lines);
+	if (!bulk) {
+		gpiod_chip_close(chip);
+		return -1;
+	}
 
 	for (i = 0; i < num_lines; i++) {
 		line = gpiod_chip_get_line(chip, offsets[i]);
 		if (!line) {
-			gpiod_chip_close(chip);
-			return -1;
+			ret = -1;
+			goto out;
 		}
 
-		gpiod_line_bulk_add(&bulk, line);
+		gpiod_line_bulk_add_line(bulk, line);
 	}
 
 	conf.flags = ctxless_flags_to_line_request_flags(active_low, flags);
@@ -342,7 +360,7 @@ int gpiod_ctxless_event_monitor_multiple_ext(
 		goto out;
 	}
 
-	rv = gpiod_line_request_bulk(&bulk, &conf, NULL);
+	rv = gpiod_line_request_bulk(bulk, &conf, NULL);
 	if (rv) {
 		ret = -1;
 		goto out;
@@ -350,7 +368,7 @@ int gpiod_ctxless_event_monitor_multiple_ext(
 
 	memset(fds, 0, sizeof(fds));
 	for (i = 0; i < num_lines; i++) {
-		line = gpiod_line_bulk_get_line(&bulk, i);
+		line = gpiod_line_bulk_get_line(bulk, i);
 		fds[i].fd = gpiod_line_event_get_fd(line);
 	}
 
@@ -381,7 +399,7 @@ int gpiod_ctxless_event_monitor_multiple_ext(
 			if (!fds[i].event)
 				continue;
 
-			line = gpiod_line_bulk_get_line(&bulk, i);
+			line = gpiod_line_bulk_get_line(bulk, i);
 			rv = gpiod_line_event_read(line, &event);
 			if (rv < 0) {
 				ret = rv;
@@ -409,6 +427,7 @@ int gpiod_ctxless_event_monitor_multiple_ext(
 	}
 
 out:
+	gpiod_line_bulk_free(bulk);
 	gpiod_chip_close(chip);
 
 	return ret;

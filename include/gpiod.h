@@ -48,6 +48,7 @@ struct gpiod_line;
 struct gpiod_chip_iter;
 struct gpiod_line_iter;
 struct gpiod_line_bulk;
+struct gpiod_line_bulk_iter;
 
 /**
  * @defgroup common Common helper macros
@@ -575,21 +576,19 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
  * @param chip The GPIO chip object.
  * @param offsets Array of offsets of lines to retrieve.
  * @param num_offsets Number of lines to retrieve.
- * @param bulk Line bulk object in which to store the line handles.
- * @return 0 on success, -1 on error.
+ * @return New line bulk object or NULL on error.
  */
-int gpiod_chip_get_lines(struct gpiod_chip *chip,
-			 unsigned int *offsets, unsigned int num_offsets,
-			 struct gpiod_line_bulk *bulk) GPIOD_API;
+struct gpiod_line_bulk *
+gpiod_chip_get_lines(struct gpiod_chip *chip, unsigned int *offsets,
+		     unsigned int num_offsets) GPIOD_API;
 
 /**
  * @brief Retrieve all lines exposed by a chip and store them in a bulk object.
  * @param chip The GPIO chip object.
- * @param bulk Line bulk object in which to store the line handles.
- * @return 0 on success, -1 on error.
+ * @return New line bulk object or NULL on error.
  */
-int gpiod_chip_get_all_lines(struct gpiod_chip *chip,
-			     struct gpiod_line_bulk *bulk) GPIOD_API;
+struct gpiod_line_bulk *
+gpiod_chip_get_all_lines(struct gpiod_chip *chip) GPIOD_API;
 
 /**
  * @brief Find a GPIO line by name among lines associated with given GPIO chip.
@@ -611,16 +610,15 @@ gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
  * @param chip The GPIO chip object.
  * @param names Array of pointers to C-strings containing the names of the
  *              lines to lookup. Must end with a NULL-pointer.
- * @param bulk Line bulk object in which the located lines will be stored.
- * @return 0 if all lines were located, -1 on error.
+ * @return New line bulk object or NULL on error.
  * @note If at least one line from the list could not be found among the lines
  *       exposed by this chip, the function sets errno to ENOENT.
  * @attention GPIO line names are not unique in the linux kernel, neither
  *            globally nor within a single chip. This function finds the first
  *            line with given name.
  */
-int gpiod_chip_find_lines(struct gpiod_chip *chip, const char **names,
-			  struct gpiod_line_bulk *bulk) GPIOD_API;
+struct gpiod_line_bulk *
+gpiod_chip_find_lines(struct gpiod_chip *chip, const char **names) GPIOD_API;
 
 /**
  * @}
@@ -638,105 +636,84 @@ int gpiod_chip_find_lines(struct gpiod_chip *chip, const char **names,
  */
 
 /**
- * @brief Maximum number of GPIO lines that can be requested at once.
+ * @brief Maximum number of GPIO lines that can be requested at once or stored
+ *        in a line bulk object at the same time.
  */
 #define GPIOD_LINE_BULK_MAX_LINES	64
 
 /**
- * @brief Helper structure for storing a set of GPIO line objects.
- *
- * This structure is used in all operations involving sets of GPIO lines. If
- * a bulk object is being passed to a function while containing zero lines,
- * the result is undefined.
+ * @brief Allocate and initialize a new line bulk object.
+ * @param max_lines Maximum number of lines this object can hold.
+ * @return New line bulk object or NULL on error.
+ * @note max_lines must not exceed ::GPIOD_LINE_BULK_MAX_LINES.
  */
-struct gpiod_line_bulk {
-	struct gpiod_line *lines[GPIOD_LINE_BULK_MAX_LINES];
-	/**< Buffer for line pointers. */
-	unsigned int num_lines;
-	/**< Number of lines currently held in this structure. */
-};
+struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines) GPIOD_API;
 
 /**
- * @brief Static initializer for GPIO bulk objects.
- *
- * This macro simply sets the internally held number of lines to 0.
+ * @brief Release all resources allocated for this bulk object.
+ * @param bulk Bulk object to free.
  */
-#define GPIOD_LINE_BULK_INITIALIZER	{ { NULL }, 0 }
-
-/**
- * @brief Initialize a GPIO bulk object.
- * @param bulk Line bulk object.
- *
- * This routine simply sets the internally held number of lines to 0.
- */
-static inline void gpiod_line_bulk_init(struct gpiod_line_bulk *bulk)
-{
-	bulk->num_lines = 0;
-}
+void gpiod_line_bulk_free(struct gpiod_line_bulk *bulk) GPIOD_API;
 
 /**
  * @brief Add a single line to a GPIO bulk object.
  * @param bulk Line bulk object.
  * @param line Line to add.
+ * @return 0 on success, -1 on error.
+ * @note The line is added at the next free bulk index.
+ *
+ * The function can fail if this bulk already holds its maximum amount of
+ * lines or if the added line is associated with a different chip than all
+ * the other lines already held by this object.
  */
-static inline void gpiod_line_bulk_add(struct gpiod_line_bulk *bulk,
-				       struct gpiod_line *line)
-{
-	bulk->lines[bulk->num_lines++] = line;
-}
+int gpiod_line_bulk_add_line(struct gpiod_line_bulk *bulk,
+			     struct gpiod_line *line) GPIOD_API;
 
 /**
- * @brief Retrieve the line handle from a line bulk object at given offset.
+ * @brief Retrieve the line handle from a line bulk object at given index.
  * @param bulk Line bulk object.
- * @param offset Line offset.
- * @return Line handle at given offset.
+ * @param index Index of the line to retrieve.
+ * @return Line handle at given index or NULL if index is greater or equal to
+ *         the number of lines this bulk can hold.
  */
-static inline struct gpiod_line *
-gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk, unsigned int offset)
-{
-	return bulk->lines[offset];
-}
+struct gpiod_line *
+gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk,
+			 unsigned int index) GPIOD_API;
 
 /**
  * @brief Retrieve the number of GPIO lines held by this line bulk object.
  * @param bulk Line bulk object.
  * @return Number of lines held by this line bulk.
  */
-static inline unsigned int
-gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
-{
-	return bulk->num_lines;
-}
+unsigned int gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk) GPIOD_API;
 
 /**
- * @brief Iterate over all line handles held by a line bulk object.
- * @param bulk Line bulk object.
- * @param line GPIO line handle. On each iteration, the subsequent line handle
- *             is assigned to this pointer.
- * @param lineptr Pointer to a GPIO line handle used to store the loop state.
+ * @brief Values returned by the callback passed to
+ *        ::gpiod_line_bulk_foreach_line.
  */
-#define gpiod_line_bulk_foreach_line(bulk, line, lineptr)		\
-	for ((lineptr) = (bulk)->lines, (line) = *(lineptr);		\
-	     (lineptr) <= (bulk)->lines + ((bulk)->num_lines - 1);	\
-	     (lineptr)++, (line) = *(lineptr))
+enum {
+	/**< Continue the loop. */
+	GPIOD_LINE_BULK_CB_NEXT = 0,
+	/**< Stop the loop. */
+	GPIOD_LINE_BULK_CB_STOP,
+};
 
 /**
- * @brief Iterate over all line handles held by a line bulk object (integer
- *        counter variant).
- * @param bulk Line bulk object.
- * @param line GPIO line handle. On each iteration, the subsequent line handle
- *             is assigned to this pointer.
- * @param offset An integer variable used to store the loop state.
+ * @brief Signature of the callback passed to ::gpiod_line_bulk_foreach_line.
  *
- * This is a variant of ::gpiod_line_bulk_foreach_line which uses an integer
- * variable (either signed or unsigned) to store the loop state. This offset
- * variable is guaranteed to correspond to the offset of the current line in
- * the bulk->lines array.
+ * Takes the current line and additional user data as arguments.
  */
-#define gpiod_line_bulk_foreach_line_off(bulk, line, offset)		\
-	for ((offset) = 0, (line) = (bulk)->lines[0];			\
-	     (offset) < (bulk)->num_lines;				\
-	     (offset)++, (line) = (bulk)->lines[(offset)])
+typedef int (*gpiod_line_bulk_foreach_cb)(struct gpiod_line *, void *);
+
+/**
+ * @brief Iterate over all lines held by this bulk object.
+ * @param bulk Bulk object to iterate over.
+ * @param func Callback to be called for each line.
+ * @param data User data pointer that is passed to the callback.
+ */
+void gpiod_line_bulk_foreach_line(struct gpiod_line_bulk *bulk,
+				  gpiod_line_bulk_foreach_cb func,
+				  void *data) GPIOD_API;
 
 /**
  * @}

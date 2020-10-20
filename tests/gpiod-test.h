@@ -24,10 +24,12 @@
  * regular 'struct typename' syntax.
  */
 typedef struct gpiod_chip gpiod_chip_struct;
+typedef struct gpiod_line_bulk gpiod_line_bulk_struct;
 typedef struct gpiod_chip_iter gpiod_chip_iter_struct;
 typedef struct gpiod_line_iter gpiod_line_iter_struct;
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(gpiod_chip_struct, gpiod_chip_close);
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(gpiod_line_bulk_struct, gpiod_line_bulk_free);
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(gpiod_chip_iter_struct, gpiod_chip_iter_free);
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(gpiod_line_iter_struct, gpiod_line_iter_free);
 

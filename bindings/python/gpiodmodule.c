@@ -1245,18 +1245,25 @@ static PyObject *gpiod_LineBulk_to_list(gpiod_LineBulkObject *self,
 	return list;
 }
 
-static void gpiod_LineBulkObjToCLineBulk(gpiod_LineBulkObject *bulk_obj,
-					 struct gpiod_line_bulk *bulk)
+static struct gpiod_line_bulk *
+gpiod_LineBulkObjToCLineBulk(gpiod_LineBulkObject *bulk_obj)
 {
+	struct gpiod_line_bulk *bulk;
 	gpiod_LineObject *line_obj;
 	Py_ssize_t i;
 
-	gpiod_line_bulk_init(bulk);
+	bulk = gpiod_line_bulk_new(bulk_obj->num_lines);
+	if (!bulk) {
+		PyErr_SetFromErrno(PyExc_OSError);
+		return NULL;
+	}
 
 	for (i = 0; i < bulk_obj->num_lines; i++) {
 		line_obj = (gpiod_LineObject *)bulk_obj->lines[i];
-		gpiod_line_bulk_add(bulk, line_obj->line);
+		gpiod_line_bulk_add_line(bulk, line_obj->line);
 	}
+
+	return bulk;
 }
 
 static void gpiod_MakeRequestConfig(struct gpiod_line_request_config *conf,
@@ -1330,7 +1337,7 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 	    default_vals[GPIOD_LINE_BULK_MAX_LINES], val;
 	PyObject *def_vals_obj = NULL, *iter, *next;
 	struct gpiod_line_request_config conf;
-	struct gpiod_line_bulk bulk;
+	struct gpiod_line_bulk *bulk;
 	Py_ssize_t num_def_vals;
 	char *consumer = NULL;
 	Py_ssize_t i;
@@ -1344,7 +1351,10 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 	if (!rv)
 		return NULL;
 
-	gpiod_LineBulkObjToCLineBulk(self, &bulk);
+	bulk = gpiod_LineBulkObjToCLineBulk(self);
+	if (!bulk)
+		return NULL;
+
 	gpiod_MakeRequestConfig(&conf, consumer, type, flags);
 
 	if (def_vals_obj) {
@@ -1379,8 +1389,13 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 		}
 	}
 
+	bulk = gpiod_LineBulkObjToCLineBulk(self);
+	if (!bulk)
+		return NULL;
+
 	Py_BEGIN_ALLOW_THREADS;
-	rv = gpiod_line_request_bulk(&bulk, &conf, default_vals);
+	rv = gpiod_line_request_bulk(bulk, &conf, default_vals);
+	gpiod_line_bulk_free(bulk);
 	Py_END_ALLOW_THREADS;
 	if (rv)
 		return PyErr_SetFromErrno(PyExc_OSError);
@@ -1399,18 +1414,21 @@ static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self,
 					   PyObject *Py_UNUSED(ignored))
 {
 	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
-	struct gpiod_line_bulk bulk;
+	struct gpiod_line_bulk *bulk;
 	PyObject *val_list, *val;
 	Py_ssize_t i;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
 		return NULL;
 
-	gpiod_LineBulkObjToCLineBulk(self, &bulk);
+	bulk = gpiod_LineBulkObjToCLineBulk(self);
+	if (!bulk)
+		return NULL;
 
 	memset(vals, 0, sizeof(vals));
 	Py_BEGIN_ALLOW_THREADS;
-	rv = gpiod_line_get_value_bulk(&bulk, vals);
+	rv = gpiod_line_get_value_bulk(bulk, vals);
+	gpiod_line_bulk_free(bulk);
 	Py_END_ALLOW_THREADS;
 	if (rv)
 		return PyErr_SetFromErrno(PyExc_OSError);
@@ -1489,13 +1507,12 @@ static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 					   PyObject *args)
 {
 	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
-	struct gpiod_line_bulk bulk;
+	struct gpiod_line_bulk *bulk;
 	PyObject *val_list;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
 		return NULL;
 
-	gpiod_LineBulkObjToCLineBulk(self, &bulk);
 	memset(vals, 0, sizeof(vals));
 
 	rv = PyArg_ParseTuple(args, "O", &val_list);
@@ -1506,8 +1523,13 @@ static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 	if (rv)
 		return NULL;
 
+	bulk = gpiod_LineBulkObjToCLineBulk(self);
+	if (!bulk)
+		return NULL;
+
 	Py_BEGIN_ALLOW_THREADS;
-	rv = gpiod_line_set_value_bulk(&bulk, vals);
+	rv = gpiod_line_set_value_bulk(bulk, vals);
+	gpiod_line_bulk_free(bulk);
 	Py_END_ALLOW_THREADS;
 	if (rv)
 		return PyErr_SetFromErrno(PyExc_OSError);
@@ -1535,15 +1557,13 @@ static PyObject *gpiod_LineBulk_set_config(gpiod_LineBulkObject *self,
 					   PyObject *args)
 {
 	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
+	struct gpiod_line_bulk *bulk;
 	PyObject *val_list;
-	struct gpiod_line_bulk bulk;
 	const int *valp;
 	int dirn, flags;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
 		return NULL;
-
-	gpiod_LineBulkObjToCLineBulk(self, &bulk);
 
 	val_list = NULL;
 	rv = PyArg_ParseTuple(args, "ii|(O)", &dirn, &flags, &val_list);
@@ -1560,8 +1580,12 @@ static PyObject *gpiod_LineBulk_set_config(gpiod_LineBulkObject *self,
 		valp = vals;
 	}
 
+	bulk = gpiod_LineBulkObjToCLineBulk(self);
+	if (!bulk)
+		return NULL;
+
 	Py_BEGIN_ALLOW_THREADS;
-	rv = gpiod_line_set_config_bulk(&bulk, dirn, flags, valp);
+	rv = gpiod_line_set_config_bulk(bulk, dirn, flags, valp);
 	Py_END_ALLOW_THREADS;
 	if (rv)
 		return PyErr_SetFromErrno(PyExc_OSError);
@@ -1580,21 +1604,23 @@ PyDoc_STRVAR(gpiod_LineBulk_set_flags_doc,
 static PyObject *gpiod_LineBulk_set_flags(gpiod_LineBulkObject *self,
 					  PyObject *args)
 {
-	int rv;
-	struct gpiod_line_bulk bulk;
-	int flags;
+	struct gpiod_line_bulk *bulk;
+	int rv, flags;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
 		return NULL;
-
-	gpiod_LineBulkObjToCLineBulk(self, &bulk);
 
 	rv = PyArg_ParseTuple(args, "i", &flags);
 	if (!rv)
 		return NULL;
 
+	bulk = gpiod_LineBulkObjToCLineBulk(self);
+	if (!bulk)
+		return NULL;
+
 	Py_BEGIN_ALLOW_THREADS;
-	rv = gpiod_line_set_flags_bulk(&bulk, flags);
+	rv = gpiod_line_set_flags_bulk(bulk, flags);
+	gpiod_line_bulk_free(bulk);
 	Py_END_ALLOW_THREADS;
 	if (rv)
 		return PyErr_SetFromErrno(PyExc_OSError);
@@ -1610,16 +1636,19 @@ PyDoc_STRVAR(gpiod_LineBulk_set_direction_input_doc,
 static PyObject *gpiod_LineBulk_set_direction_input(gpiod_LineBulkObject *self,
 						PyObject *Py_UNUSED(ignored))
 {
-	struct gpiod_line_bulk bulk;
+	struct gpiod_line_bulk *bulk;
 	int rv;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
 		return NULL;
 
-	gpiod_LineBulkObjToCLineBulk(self, &bulk);
+	bulk = gpiod_LineBulkObjToCLineBulk(self);
+	if (!bulk)
+		return NULL;
 
 	Py_BEGIN_ALLOW_THREADS;
-	rv = gpiod_line_set_direction_input_bulk(&bulk);
+	rv = gpiod_line_set_direction_input_bulk(bulk);
+	gpiod_line_bulk_free(bulk);
 	Py_END_ALLOW_THREADS;
 	if (rv)
 		return PyErr_SetFromErrno(PyExc_OSError);
@@ -1644,14 +1673,12 @@ static PyObject *gpiod_LineBulk_set_direction_output(
 				PyObject *args)
 {
 	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
+	struct gpiod_line_bulk *bulk;
 	PyObject *val_list;
-	struct gpiod_line_bulk bulk;
 	const int *valp;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
 		return NULL;
-
-	gpiod_LineBulkObjToCLineBulk(self, &bulk);
 
 	val_list = NULL;
 	rv = PyArg_ParseTuple(args, "|O", &val_list);
@@ -1668,8 +1695,13 @@ static PyObject *gpiod_LineBulk_set_direction_output(
 		valp = vals;
 	}
 
+	bulk = gpiod_LineBulkObjToCLineBulk(self);
+	if (!bulk)
+		return NULL;
+
 	Py_BEGIN_ALLOW_THREADS;
-	rv = gpiod_line_set_direction_output_bulk(&bulk, valp);
+	rv = gpiod_line_set_direction_output_bulk(bulk, valp);
+	gpiod_line_bulk_free(bulk);
 	Py_END_ALLOW_THREADS;
 	if (rv)
 		return PyErr_SetFromErrno(PyExc_OSError);
@@ -1685,13 +1717,17 @@ PyDoc_STRVAR(gpiod_LineBulk_release_doc,
 static PyObject *gpiod_LineBulk_release(gpiod_LineBulkObject *self,
 					PyObject *Py_UNUSED(ignored))
 {
-	struct gpiod_line_bulk bulk;
+	struct gpiod_line_bulk *bulk;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
 		return NULL;
 
-	gpiod_LineBulkObjToCLineBulk(self, &bulk);
-	gpiod_line_release_bulk(&bulk);
+	bulk = gpiod_LineBulkObjToCLineBulk(self);
+	if (!bulk)
+		return NULL;
+
+	gpiod_line_release_bulk(bulk);
+	gpiod_line_bulk_free(bulk);
 
 	Py_RETURN_NONE;
 }
@@ -1715,14 +1751,13 @@ static PyObject *gpiod_LineBulk_event_wait(gpiod_LineBulkObject *self,
 {
 	static char *kwlist[] = { "sec", "nsec", NULL };
 
-	struct gpiod_line_bulk bulk, ev_bulk;
-	struct gpiod_line *line, **line_ptr;
+	struct gpiod_line_bulk *bulk, *ev_bulk;
 	gpiod_LineObject *line_obj;
 	gpiod_ChipObject *owner;
 	long sec = 0, nsec = 0;
 	struct timespec ts;
 	PyObject *ret;
-	Py_ssize_t i;
+	unsigned int idx;
 	int rv;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
@@ -1736,36 +1771,53 @@ static PyObject *gpiod_LineBulk_event_wait(gpiod_LineBulkObject *self,
 	ts.tv_sec = sec;
 	ts.tv_nsec = nsec;
 
-	gpiod_LineBulkObjToCLineBulk(self, &bulk);
+	bulk = gpiod_LineBulkObjToCLineBulk(self);
+	if (!bulk)
+		return NULL;
+
+	ev_bulk = gpiod_line_bulk_new(self->num_lines);
+	if (!ev_bulk) {
+		gpiod_line_bulk_free(bulk);
+		return NULL;
+	}
 
 	Py_BEGIN_ALLOW_THREADS;
-	rv = gpiod_line_event_wait_bulk(&bulk, &ts, &ev_bulk);
+	rv = gpiod_line_event_wait_bulk(bulk, &ts, ev_bulk);
+	gpiod_line_bulk_free(bulk);
 	Py_END_ALLOW_THREADS;
-	if (rv < 0)
+	if (rv < 0) {
+		gpiod_line_bulk_free(ev_bulk);
 		return PyErr_SetFromErrno(PyExc_OSError);
-	else if (rv == 0)
+	} else if (rv == 0) {
+		gpiod_line_bulk_free(ev_bulk);
 		Py_RETURN_NONE;
+	}
 
-	ret = PyList_New(gpiod_line_bulk_num_lines(&ev_bulk));
-	if (!ret)
+	ret = PyList_New(gpiod_line_bulk_num_lines(ev_bulk));
+	if (!ret) {
+		gpiod_line_bulk_free(ev_bulk);
 		return NULL;
+	}
 
 	owner = ((gpiod_LineObject *)(self->lines[0]))->owner;
 
-	i = 0;
-	gpiod_line_bulk_foreach_line(&ev_bulk, line, line_ptr) {
-		line_obj = gpiod_MakeLineObject(owner, line);
+	for (idx = 0; idx < gpiod_line_bulk_num_lines(ev_bulk); idx++) {
+		line_obj = gpiod_MakeLineObject(owner, gpiod_line_bulk_get_line(ev_bulk, idx));
 		if (!line_obj) {
+			gpiod_line_bulk_free(ev_bulk);
 			Py_DECREF(ret);
 			return NULL;
 		}
 
-		rv = PyList_SetItem(ret, i++, (PyObject *)line_obj);
+		rv = PyList_SetItem(ret, idx, (PyObject *)line_obj);
 		if (rv < 0) {
+			gpiod_line_bulk_free(ev_bulk);
 			Py_DECREF(ret);
 			return NULL;
 		}
 	}
+
+	gpiod_line_bulk_free(ev_bulk);
 
 	return ret;
 }
@@ -2242,39 +2294,44 @@ static gpiod_LineBulkObject *
 gpiod_Chip_get_all_lines(gpiod_ChipObject *self, PyObject *Py_UNUSED(ignored))
 {
 	gpiod_LineBulkObject *bulk_obj;
-	struct gpiod_line_bulk bulk;
+	struct gpiod_line_bulk *bulk;
 	gpiod_LineObject *line_obj;
-	struct gpiod_line *line;
-	unsigned int offset;
+	unsigned int idx;
 	PyObject *list;
 	int rv;
 
 	if (gpiod_ChipIsClosed(self))
 		return NULL;
 
-	rv = gpiod_chip_get_all_lines(self->chip, &bulk);
-	if (rv)
+	bulk = gpiod_chip_get_all_lines(self->chip);
+	if (!bulk)
 		return (gpiod_LineBulkObject *)PyErr_SetFromErrno(
 							PyExc_OSError);
 
-	list = PyList_New(gpiod_line_bulk_num_lines(&bulk));
-	if (!list)
+	list = PyList_New(gpiod_line_bulk_num_lines(bulk));
+	if (!list) {
+		gpiod_line_bulk_free(bulk);
 		return NULL;
+	}
 
-	gpiod_line_bulk_foreach_line_off(&bulk, line, offset) {
-		line_obj = gpiod_MakeLineObject(self, line);
+	for (idx = 0; idx < gpiod_line_bulk_num_lines(bulk); idx++) {
+		line_obj = gpiod_MakeLineObject(self, gpiod_line_bulk_get_line(bulk, idx));
 		if (!line_obj) {
+			gpiod_line_bulk_free(bulk);
 			Py_DECREF(list);
 			return NULL;
 		}
 
-		rv = PyList_SetItem(list, offset, (PyObject *)line_obj);
+		rv = PyList_SetItem(list, idx, (PyObject *)line_obj);
 		if (rv < 0) {
+			gpiod_line_bulk_free(bulk);
 			Py_DECREF(line_obj);
 			Py_DECREF(list);
 			return NULL;
 		}
 	}
+
+	gpiod_line_bulk_free(bulk);
 
 	bulk_obj = gpiod_ListToLineBulk(list);
 	Py_DECREF(list);

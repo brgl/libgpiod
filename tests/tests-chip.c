@@ -187,10 +187,9 @@ GPIOD_TEST_CASE(get_line, 0, { 16 })
 GPIOD_TEST_CASE(get_lines, 0, { 16 })
 {
 	struct gpiod_line *line0, *line1, *line2, *line3;
+	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;
 	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line_bulk bulk;
 	guint offsets[4];
-	gint ret;
 
 	chip = gpiod_chip_open(gpiod_test_chip_path(0));
 	g_assert_nonnull(chip);
@@ -201,15 +200,16 @@ GPIOD_TEST_CASE(get_lines, 0, { 16 })
 	offsets[2] = 4;
 	offsets[3] = 7;
 
-	ret = gpiod_chip_get_lines(chip, offsets, 4, &bulk);
-	g_assert_cmpint(ret, ==, 0);
-	g_assert_cmpuint(gpiod_line_bulk_num_lines(&bulk), ==, 4);
+	bulk = gpiod_chip_get_lines(chip, offsets, 4);
+	g_assert_nonnull(bulk);
+	gpiod_test_return_if_failed();
+	g_assert_cmpuint(gpiod_line_bulk_num_lines(bulk), ==, 4);
 	gpiod_test_return_if_failed();
 
-	line0 = gpiod_line_bulk_get_line(&bulk, 0);
-	line1 = gpiod_line_bulk_get_line(&bulk, 1);
-	line2 = gpiod_line_bulk_get_line(&bulk, 2);
-	line3 = gpiod_line_bulk_get_line(&bulk, 3);
+	line0 = gpiod_line_bulk_get_line(bulk, 0);
+	line1 = gpiod_line_bulk_get_line(bulk, 1);
+	line2 = gpiod_line_bulk_get_line(bulk, 2);
+	line3 = gpiod_line_bulk_get_line(bulk, 3);
 
 	g_assert_cmpuint(gpiod_line_offset(line0), ==, 1);
 	g_assert_cmpuint(gpiod_line_offset(line1), ==, 3);
@@ -220,23 +220,23 @@ GPIOD_TEST_CASE(get_lines, 0, { 16 })
 GPIOD_TEST_CASE(get_all_lines, 0, { 4 })
 {
 	struct gpiod_line *line0, *line1, *line2, *line3;
+	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;
 	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line_bulk bulk;
-	int ret;
 
 	chip = gpiod_chip_open(gpiod_test_chip_path(0));
 	g_assert_nonnull(chip);
 	gpiod_test_return_if_failed();
 
-	ret = gpiod_chip_get_all_lines(chip, &bulk);
-	g_assert_cmpint(ret, ==, 0);
-	g_assert_cmpuint(gpiod_line_bulk_num_lines(&bulk), ==, 4);
+	bulk = gpiod_chip_get_all_lines(chip);
+	g_assert_nonnull(bulk);
+	gpiod_test_return_if_failed();
+	g_assert_cmpuint(gpiod_line_bulk_num_lines(bulk), ==, 4);
 	gpiod_test_return_if_failed();
 
-	line0 = gpiod_line_bulk_get_line(&bulk, 0);
-	line1 = gpiod_line_bulk_get_line(&bulk, 1);
-	line2 = gpiod_line_bulk_get_line(&bulk, 2);
-	line3 = gpiod_line_bulk_get_line(&bulk, 3);
+	line0 = gpiod_line_bulk_get_line(bulk, 0);
+	line1 = gpiod_line_bulk_get_line(bulk, 1);
+	line2 = gpiod_line_bulk_get_line(bulk, 2);
+	line3 = gpiod_line_bulk_get_line(bulk, 3);
 
 	g_assert_cmpuint(gpiod_line_offset(line0), ==, 0);
 	g_assert_cmpuint(gpiod_line_offset(line1), ==, 1);
@@ -281,23 +281,23 @@ GPIOD_TEST_CASE(find_lines_good, GPIOD_TEST_FLAG_NAMED_LINES, { 8, 8, 8 })
 					"gpio-mockup-B-7",
 					NULL };
 
+	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;
 	g_autoptr(gpiod_chip_struct) chip = NULL;
 	struct gpiod_line *line0, *line1, *line2;
-	struct gpiod_line_bulk bulk;
-	gint ret;
 
 	chip = gpiod_chip_open(gpiod_test_chip_path(1));
 	g_assert_nonnull(chip);
 	gpiod_test_return_if_failed();
 
-	ret = gpiod_chip_find_lines(chip, names, &bulk);
-	g_assert_cmpint(ret, ==, 0);
-	g_assert_cmpuint(gpiod_line_bulk_num_lines(&bulk), ==, 3);
+	bulk = gpiod_chip_find_lines(chip, names);
+	g_assert_nonnull(bulk);
+	gpiod_test_return_if_failed();
+	g_assert_cmpuint(gpiod_line_bulk_num_lines(bulk), ==, 3);
 	gpiod_test_return_if_failed();
 
-	line0 = gpiod_line_bulk_get_line(&bulk, 0);
-	line1 = gpiod_line_bulk_get_line(&bulk, 1);
-	line2 = gpiod_line_bulk_get_line(&bulk, 2);
+	line0 = gpiod_line_bulk_get_line(bulk, 0);
+	line1 = gpiod_line_bulk_get_line(bulk, 1);
+	line2 = gpiod_line_bulk_get_line(bulk, 2);
 
 	g_assert_cmpuint(gpiod_line_offset(line0), ==, 3);
 	g_assert_cmpuint(gpiod_line_offset(line1), ==, 6);
@@ -312,14 +312,13 @@ GPIOD_TEST_CASE(fine_lines_not_found, GPIOD_TEST_FLAG_NAMED_LINES, { 8, 8, 8 })
 					NULL };
 
 	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line_bulk bulk;
-	gint ret;
+	struct gpiod_line_bulk *bulk;
 
 	chip = gpiod_chip_open(gpiod_test_chip_path(1));
 	g_assert_nonnull(chip);
 	gpiod_test_return_if_failed();
 
-	ret = gpiod_chip_find_lines(chip, names, &bulk);
-	g_assert_cmpint(ret, ==, -1);
+	bulk = gpiod_chip_find_lines(chip, names);
+	g_assert_null(bulk);
 	g_assert_cmpint(errno, ==, ENOENT);
 }

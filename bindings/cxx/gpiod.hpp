@@ -645,18 +645,20 @@ public:
 
 	/**
 	 * @brief Get the line at given offset.
-	 * @param offset Offset of the line to get.
+	 * @param index Index of the line to get.
 	 * @return Reference to the line object.
+	 * @note This method will throw if index is equal or greater than the
+	 *       number of lines currently held by this bulk.
 	 */
-	GPIOD_API line& get(unsigned int offset);
+	GPIOD_API line& get(unsigned int index);
 
 	/**
 	 * @brief Get the line at given offset without bounds checking.
-	 * @param offset Offset of the line to get.
+	 * @param index Offset of the line to get.
 	 * @return Reference to the line object.
 	 * @note No bounds checking is performed.
 	 */
-	GPIOD_API line& operator[](unsigned int offset);
+	GPIOD_API line& operator[](unsigned int index);
 
 	/**
 	 * @brief Get the number of lines currently held by this object.
@@ -858,8 +860,16 @@ public:
 
 private:
 
+	struct line_bulk_deleter
+	{
+		void operator()(::gpiod_line_bulk *bulk);
+	};
+
 	void throw_if_empty(void) const;
-	void to_line_bulk(::gpiod_line_bulk* bulk) const;
+
+	using line_bulk_ptr = ::std::unique_ptr<::gpiod_line_bulk, line_bulk_deleter>;
+
+	line_bulk_ptr to_line_bulk(void) const;
 
 	::std::vector<line> _m_bulk;
 };

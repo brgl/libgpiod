@@ -74,6 +74,103 @@ struct gpiod_chip {
 	char label[32];
 };
 
+/*
+ * The structure is defined in a way that allows internal users to allocate
+ * bulk objects that hold a single line on the stack - that way we can reuse
+ * a lot of code between functions that take single lines and those that take
+ * bulks as arguments while not unnecessarily allocating memory dynamically.
+ */
+struct gpiod_line_bulk {
+	unsigned int num_lines;
+	unsigned int max_lines;
+	struct gpiod_line *lines[1];
+};
+
+#define BULK_SINGLE_LINE_INIT(line) \
+		{ 1, 1, { (line) } }
+
+struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines)
+{
+	struct gpiod_line_bulk *bulk;
+	size_t size;
+
+	if (max_lines < 1 || max_lines > GPIOD_LINE_BULK_MAX_LINES) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	size = sizeof(struct gpiod_line_bulk) +
+	       (max_lines - 1) * sizeof(struct gpiod_line *);
+
+	bulk = malloc(size);
+	if (!bulk)
+		return NULL;
+
+	memset(bulk, 0, size);
+	bulk->max_lines = max_lines;
+
+	return bulk;
+}
+
+void gpiod_line_bulk_free(struct gpiod_line_bulk *bulk)
+{
+	free(bulk);
+}
+
+int gpiod_line_bulk_add_line(struct gpiod_line_bulk *bulk,
+			     struct gpiod_line *line)
+{
+	if (bulk->num_lines == bulk->max_lines) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (bulk->num_lines != 0) {
+		if (bulk->lines[0]->chip != gpiod_line_get_chip(line)) {
+			errno = EINVAL;
+			return -1;
+		}
+	}
+
+	bulk->lines[bulk->num_lines++] = line;
+
+	return 0;
+}
+
+struct gpiod_line *
+gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk, unsigned int index)
+{
+	if (index >= bulk->num_lines) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	return bulk->lines[index];
+}
+
+unsigned int gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
+{
+	return bulk->num_lines;
+}
+
+void gpiod_line_bulk_foreach_line(struct gpiod_line_bulk *bulk,
+				  gpiod_line_bulk_foreach_cb func, void *data)
+{
+	unsigned int index;
+	int ret;
+
+	for (index = 0; index < bulk->num_lines; index++) {
+		ret = func(bulk->lines[index], data);
+		if (ret == GPIOD_LINE_BULK_CB_STOP)
+			return;
+	}
+}
+
+#define line_bulk_foreach_line(bulk, line, index)			\
+	for ((index) = 0, (line) = (bulk)->lines[0];			\
+	     (index) < (bulk)->num_lines;				\
+	     (index)++, (line) = (bulk)->lines[(index)])
+
 static bool is_gpiochip_cdev(const char *path)
 {
 	char *name, *realname, *sysfsp, sysfsdev[16], devstr[16];
@@ -448,36 +545,12 @@ int gpiod_line_update(struct gpiod_line *line)
 	return 0;
 }
 
-static bool line_bulk_same_chip(struct gpiod_line_bulk *bulk)
-{
-	struct gpiod_line *first_line, *line;
-	struct gpiod_chip *first_chip, *chip;
-	unsigned int i;
-
-	if (bulk->num_lines == 1)
-		return true;
-
-	first_line = gpiod_line_bulk_get_line(bulk, 0);
-	first_chip = gpiod_line_get_chip(first_line);
-
-	for (i = 1; i < bulk->num_lines; i++) {
-		line = bulk->lines[i];
-		chip = gpiod_line_get_chip(line);
-
-		if (first_chip != chip) {
-			errno = EINVAL;
-			return false;
-		}
-	}
-
-	return true;
-}
-
 static bool line_bulk_all_requested(struct gpiod_line_bulk *bulk)
 {
-	struct gpiod_line *line, **lineptr;
+	struct gpiod_line *line;
+	unsigned int idx;
 
-	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
+	line_bulk_foreach_line(bulk, line, idx) {
 		if (!gpiod_line_is_requested(line)) {
 			errno = EPERM;
 			return false;
@@ -489,9 +562,10 @@ static bool line_bulk_all_requested(struct gpiod_line_bulk *bulk)
 
 static bool line_bulk_all_requested_values(struct gpiod_line_bulk *bulk)
 {
-	struct gpiod_line *line, **lineptr;
+	struct gpiod_line *line;
+	unsigned int idx;
 
-	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
+	line_bulk_foreach_line(bulk, line, idx) {
 		if (line->state != LINE_REQUESTED_VALUES) {
 			errno = EPERM;
 			return false;
@@ -503,9 +577,10 @@ static bool line_bulk_all_requested_values(struct gpiod_line_bulk *bulk)
 
 static bool line_bulk_all_free(struct gpiod_line_bulk *bulk)
 {
-	struct gpiod_line *line, **lineptr;
+	struct gpiod_line *line;
+	unsigned int idx;
 
-	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
+	line_bulk_foreach_line(bulk, line, idx) {
 		if (!gpiod_line_is_free(line)) {
 			errno = EBUSY;
 			return false;
@@ -645,14 +720,14 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 	req.num_lines = gpiod_line_bulk_num_lines(bulk);
 	line_request_config_to_gpio_v2_line_config(config, &req.config);
 
-	gpiod_line_bulk_foreach_line_off(bulk, line, i)
+	line_bulk_foreach_line(bulk, line, i)
 		req.offsets[i] = gpiod_line_offset(line);
 
 	if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT &&
 	    vals) {
 		req.config.num_attrs = 1;
 		req.config.attrs[0].attr.id = GPIO_V2_LINE_ATTR_ID_OUTPUT_VALUES;
-		gpiod_line_bulk_foreach_line_off(bulk, line, i) {
+		line_bulk_foreach_line(bulk, line, i) {
 			lines_bitmap_assign_bit(
 				&req.config.attrs[0].mask, i, 1);
 			lines_bitmap_assign_bit(
@@ -676,7 +751,7 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 	if (!line_fd)
 		return -1;
 
-	gpiod_line_bulk_foreach_line_off(bulk, line, i) {
+	line_bulk_foreach_line(bulk, line, i) {
 		line->state = LINE_REQUESTED_VALUES;
 		line->req_flags = config->flags;
 		if (config->request_type == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT)
@@ -739,7 +814,7 @@ static int line_request_events(struct gpiod_line_bulk *bulk,
 	unsigned int off;
 	int rv, rev;
 
-	gpiod_line_bulk_foreach_line_off(bulk, line, off) {
+	line_bulk_foreach_line(bulk, line, off) {
 		rv = line_request_event_single(line, config);
 		if (rv) {
 			for (rev = off - 1; rev >= 0; rev--) {
@@ -758,10 +833,7 @@ int gpiod_line_request(struct gpiod_line *line,
 		       const struct gpiod_line_request_config *config,
 		       int default_val)
 {
-	struct gpiod_line_bulk bulk;
-
-	gpiod_line_bulk_init(&bulk);
-	gpiod_line_bulk_add(&bulk, line);
+	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	return gpiod_line_request_bulk(&bulk, config, &default_val);
 }
@@ -784,7 +856,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 			    const struct gpiod_line_request_config *config,
 			    const int *vals)
 {
-	if (!line_bulk_same_chip(bulk) || !line_bulk_all_free(bulk))
+	if (!line_bulk_all_free(bulk))
 		return -1;
 
 	if (line_request_is_direction(config->request_type))
@@ -798,19 +870,17 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 
 void gpiod_line_release(struct gpiod_line *line)
 {
-	struct gpiod_line_bulk bulk;
-
-	gpiod_line_bulk_init(&bulk);
-	gpiod_line_bulk_add(&bulk, line);
+	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	gpiod_line_release_bulk(&bulk);
 }
 
 void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 {
-	struct gpiod_line *line, **lineptr;
+	struct gpiod_line *line;
+	unsigned int idx;
 
-	gpiod_line_bulk_foreach_line(bulk, line, lineptr) {
+	line_bulk_foreach_line(bulk, line, idx) {
 		if (line->state != LINE_FREE) {
 			line_fd_decref(line);
 			line->state = LINE_FREE;
@@ -831,11 +901,8 @@ bool gpiod_line_is_free(struct gpiod_line *line)
 
 int gpiod_line_get_value(struct gpiod_line *line)
 {
-	struct gpiod_line_bulk bulk;
+	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 	int rv, value;
-
-	gpiod_line_bulk_init(&bulk);
-	gpiod_line_bulk_add(&bulk, line);
 
 	rv = gpiod_line_get_value_bulk(&bulk, &value);
 	if (rv < 0)
@@ -851,7 +918,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 	unsigned int i;
 	int rv, fd;
 
-	if (!line_bulk_same_chip(bulk) || !line_bulk_all_requested(bulk))
+	if (!line_bulk_all_requested(bulk))
 		return -1;
 
 	line = gpiod_line_bulk_get_line(bulk, 0);
@@ -891,10 +958,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 
 int gpiod_line_set_value(struct gpiod_line *line, int value)
 {
-	struct gpiod_line_bulk bulk;
-
-	gpiod_line_bulk_init(&bulk);
-	gpiod_line_bulk_add(&bulk, line);
+	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	return gpiod_line_set_value_bulk(&bulk, &value);
 }
@@ -906,7 +970,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 	unsigned int i;
 	int rv, fd;
 
-	if (!line_bulk_same_chip(bulk) || !line_bulk_all_requested(bulk))
+	if (!line_bulk_all_requested(bulk))
 		return -1;
 
 	memset(&lv, 0, sizeof(lv));
@@ -923,7 +987,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 	if (rv < 0)
 		return -1;
 
-	gpiod_line_bulk_foreach_line_off(bulk, line, i)
+	line_bulk_foreach_line(bulk, line, i)
 		line->output_value = lines_bitmap_test_bit(lv.bits, i);
 
 	return 0;
@@ -932,10 +996,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 int gpiod_line_set_config(struct gpiod_line *line, int direction,
 			  int flags, int value)
 {
-	struct gpiod_line_bulk bulk;
-
-	gpiod_line_bulk_init(&bulk);
-	gpiod_line_bulk_add(&bulk, line);
+	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	return gpiod_line_set_config_bulk(&bulk, direction, flags, &value);
 }
@@ -949,8 +1010,7 @@ int gpiod_line_set_config_bulk(struct gpiod_line_bulk *bulk,
 	unsigned int i;
 	int rv, fd;
 
-	if (!line_bulk_same_chip(bulk) ||
-	    !line_bulk_all_requested_values(bulk))
+	if (!line_bulk_all_requested_values(bulk))
 		return -1;
 
 	if (!line_request_direction_is_valid(direction))
@@ -977,7 +1037,7 @@ int gpiod_line_set_config_bulk(struct gpiod_line_bulk *bulk,
 	if (rv < 0)
 		return -1;
 
-	gpiod_line_bulk_foreach_line_off(bulk, line, i) {
+	line_bulk_foreach_line(bulk, line, i) {
 		line->req_flags = flags;
 		if (direction == GPIOD_LINE_REQUEST_DIRECTION_OUTPUT)
 			line->output_value = lines_bitmap_test_bit(
@@ -992,10 +1052,7 @@ int gpiod_line_set_config_bulk(struct gpiod_line_bulk *bulk,
 
 int gpiod_line_set_flags(struct gpiod_line *line, int flags)
 {
-	struct gpiod_line_bulk bulk;
-
-	gpiod_line_bulk_init(&bulk);
-	gpiod_line_bulk_add(&bulk, line);
+	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	return gpiod_line_set_flags_bulk(&bulk, flags);
 }
@@ -1009,7 +1066,7 @@ int gpiod_line_set_flags_bulk(struct gpiod_line_bulk *bulk, int flags)
 
 	line = gpiod_line_bulk_get_line(bulk, 0);
 	if (line->direction == GPIOD_LINE_DIRECTION_OUTPUT) {
-		gpiod_line_bulk_foreach_line_off(bulk, line, i)
+		line_bulk_foreach_line(bulk, line, i)
 			values[i] = line->output_value;
 
 		direction = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT;
@@ -1057,10 +1114,7 @@ int gpiod_line_set_direction_output_bulk(struct gpiod_line_bulk *bulk,
 int gpiod_line_event_wait(struct gpiod_line *line,
 			  const struct timespec *timeout)
 {
-	struct gpiod_line_bulk bulk;
-
-	gpiod_line_bulk_init(&bulk);
-	gpiod_line_bulk_add(&bulk, line);
+	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	return gpiod_line_event_wait_bulk(&bulk, timeout, NULL);
 }
@@ -1074,13 +1128,13 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	struct gpiod_line *line;
 	int rv;
 
-	if (!line_bulk_same_chip(bulk) || !line_bulk_all_requested(bulk))
+	if (!line_bulk_all_requested(bulk))
 		return -1;
 
 	memset(fds, 0, sizeof(fds));
 	num_lines = gpiod_line_bulk_num_lines(bulk);
 
-	gpiod_line_bulk_foreach_line_off(bulk, line, off) {
+	line_bulk_foreach_line(bulk, line, off) {
 		fds[off].fd = line_get_fd(line);
 		fds[off].events = POLLIN | POLLPRI;
 	}
@@ -1091,9 +1145,6 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	else if (rv == 0)
 		return 0;
 
-	if (event_bulk)
-		gpiod_line_bulk_init(event_bulk);
-
 	for (off = 0; off < num_lines; off++) {
 		if (fds[off].revents) {
 			if (fds[off].revents & POLLNVAL) {
@@ -1103,7 +1154,9 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 
 			if (event_bulk) {
 				line = gpiod_line_bulk_get_line(bulk, off);
-				gpiod_line_bulk_add(event_bulk, line);
+				rv = gpiod_line_bulk_add_line(event_bulk, line);
+				if (rv)
+					return -1;
 			}
 
 			if (!--rv)
