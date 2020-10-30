@@ -1,3 +1,10 @@
+libgpiod v1.6.1
+===============
+
+Bug fixes:
+- fix incorrect object size of gpiod.LineBulk in Python bindings
+- fix a crash in Line.request() when it's called without keyword arguments
+
 libgpiod v1.6
 =============
 
