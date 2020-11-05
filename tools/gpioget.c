@@ -42,10 +42,11 @@ static void print_help(void)
 
 int main(int argc, char **argv)
 {
+	struct gpiod_line_request_config config;
+	int *values, optc, opti, rv, flags = 0;
 	unsigned int *offsets, i, num_lines;
-	int *values, optc, opti, rv;
-	bool active_low = false;
-	int flags = 0;
+	struct gpiod_line_bulk *lines;
+	struct gpiod_chip *chip;
 	char *device, *end;
 
 	for (;;) {
@@ -61,10 +62,10 @@ int main(int argc, char **argv)
 			print_version();
 			return EXIT_SUCCESS;
 		case 'l':
-			active_low = true;
+			flags |= GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
 			break;
 		case 'B':
-			flags = bias_flags(optarg);
+			flags |= bias_flags(optarg);
 			break;
 		case '?':
 			die("try %s --help", get_progname());
@@ -96,9 +97,25 @@ int main(int argc, char **argv)
 			die("invalid GPIO offset: %s", argv[i + 1]);
 	}
 
-	rv = gpiod_ctxless_get_value_multiple_ext(device, offsets, values,
-						  num_lines, active_low,
-						  "gpioget", flags);
+	chip = gpiod_chip_open_lookup(device);
+	if (!chip)
+		die_perror("unable to open %s", device);
+
+	lines = gpiod_chip_get_lines(chip, offsets, num_lines);
+	if (!lines)
+		die_perror("unable to retrieve GPIO lines from chip");
+
+	memset(&config, 0, sizeof(config));
+
+	config.consumer = "gpioget";
+	config.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
+	config.flags = flags;
+
+	rv = gpiod_line_request_bulk(lines, &config, NULL);
+	if (rv)
+		die_perror("unable to request lines");
+
+	rv = gpiod_line_get_value_bulk(lines, values);
 	if (rv < 0)
 		die_perror("error reading GPIO values");
 
@@ -109,6 +126,9 @@ int main(int argc, char **argv)
 	}
 	printf("\n");
 
+	gpiod_line_release_bulk(lines);
+	gpiod_chip_close(chip);
+	gpiod_line_bulk_free(lines);
 	free(values);
 	free(offsets);
 

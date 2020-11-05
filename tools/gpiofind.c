@@ -5,6 +5,7 @@
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
  */
 
+#include <errno.h>
 #include <getopt.h>
 #include <gpiod.h>
 #include <stdio.h>
@@ -33,9 +34,9 @@ static void print_help(void)
 
 int main(int argc, char **argv)
 {
-	unsigned int offset;
-	int optc, opti, rv;
-	char chip[32];
+	int optc, opti, ret = EXIT_SUCCESS;
+	struct gpiod_chip *chip;
+	struct gpiod_line *line;
 
 	for (;;) {
 		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
@@ -62,13 +63,19 @@ int main(int argc, char **argv)
 	if (argc != 1)
 		die("exactly one GPIO line name must be specified");
 
-	rv = gpiod_ctxless_find_line(argv[0], chip, sizeof(chip), &offset);
-	if (rv < 0)
+	line = gpiod_line_find(argv[0]);
+	if (!line) {
+		if (errno == ENOENT)
+			return EXIT_FAILURE;
+
 		die_perror("error performing the line lookup");
-	else if (rv == 0)
-		return EXIT_FAILURE;
+	}
 
-	printf("%s %u\n", chip, offset);
+	chip = gpiod_line_get_chip(line);
 
-	return EXIT_SUCCESS;
+	printf("%s %u\n", gpiod_chip_name(chip), gpiod_line_offset(line));
+
+	gpiod_chip_close(chip);
+
+	return ret;
 }

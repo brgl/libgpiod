@@ -10,6 +10,7 @@
 #include <gpiod.h>
 #include <limits.h>
 #include <poll.h>
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -63,13 +64,8 @@ static void print_help(void)
 
 struct mon_ctx {
 	unsigned int offset;
-	unsigned int events_wanted;
-	unsigned int events_done;
-
 	bool silent;
 	char *fmt;
-
-	int sigfd;
 };
 
 static void event_print_custom(unsigned int offset,
@@ -96,7 +92,7 @@ static void event_print_custom(unsigned int offset,
 			printf("%u", offset);
 			break;
 		case 'e':
-			if (event_type == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE)
+			if (event_type == GPIOD_LINE_EVENT_RISING_EDGE)
 				fputc('1', stdout);
 			else
 				fputc('0', stdout);
@@ -132,7 +128,7 @@ static void event_print_human_readable(unsigned int offset,
 {
 	char *evname;
 
-	if (event_type == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE)
+	if (event_type == GPIOD_LINE_EVENT_RISING_EDGE)
 		evname = " RISING EDGE";
 	else
 		evname = "FALLING EDGE";
@@ -141,52 +137,8 @@ static void event_print_human_readable(unsigned int offset,
 	       evname, offset, ts->tv_sec, ts->tv_nsec);
 }
 
-static int poll_callback(unsigned int num_lines,
-			 struct gpiod_ctxless_event_poll_fd *fds,
-			 const struct timespec *timeout, void *data)
-{
-	struct pollfd pfds[GPIOD_LINE_BULK_MAX_LINES + 1];
-	struct mon_ctx *ctx = data;
-	int cnt, ts, rv;
-	unsigned int i;
-
-	for (i = 0; i < num_lines; i++) {
-		pfds[i].fd = fds[i].fd;
-		pfds[i].events = POLLIN | POLLPRI;
-	}
-
-	pfds[i].fd = ctx->sigfd;
-	pfds[i].events = POLLIN | POLLPRI;
-
-	ts = timeout->tv_sec * 1000 + timeout->tv_nsec / 1000000;
-
-	cnt = poll(pfds, num_lines + 1, ts);
-	if (cnt < 0)
-		return GPIOD_CTXLESS_EVENT_POLL_RET_ERR;
-	else if (cnt == 0)
-		return GPIOD_CTXLESS_EVENT_POLL_RET_TIMEOUT;
-
-	rv = cnt;
-	for (i = 0; i < num_lines; i++) {
-		if (pfds[i].revents) {
-			fds[i].event = true;
-			if (!--cnt)
-				return rv;
-		}
-	}
-
-	/*
-	 * If we're here, then there's a signal pending. No need to read it,
-	 * we know we should quit now.
-	 */
-	close(ctx->sigfd);
-
-	return GPIOD_CTXLESS_EVENT_POLL_RET_STOP;
-}
-
-static void handle_event(struct mon_ctx *ctx, int event_type,
-			 unsigned int line_offset,
-			 const struct timespec *timestamp)
+static void handle_event(unsigned int line_offset, unsigned int event_type,
+			 struct timespec *timestamp, struct mon_ctx *ctx)
 {
 	if (!ctx->silent) {
 		if (ctx->fmt)
@@ -196,43 +148,35 @@ static void handle_event(struct mon_ctx *ctx, int event_type,
 			event_print_human_readable(line_offset,
 						   timestamp, event_type);
 	}
-
-	ctx->events_done++;
 }
 
-static int event_callback(int event_type, unsigned int line_offset,
-			  const struct timespec *timestamp, void *data)
+static void handle_signal(int signum GPIOD_UNUSED)
 {
-	struct mon_ctx *ctx = data;
-
-	switch (event_type) {
-	case GPIOD_CTXLESS_EVENT_CB_RISING_EDGE:
-	case GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE:
-		handle_event(ctx, event_type, line_offset, timestamp);
-		break;
-	default:
-		/*
-		 * REVISIT: This happening would indicate a problem in the
-		 * library.
-		 */
-		return GPIOD_CTXLESS_EVENT_CB_RET_OK;
-	}
-
-	if (ctx->events_wanted && ctx->events_done >= ctx->events_wanted)
-		return GPIOD_CTXLESS_EVENT_CB_RET_STOP;
-
-	return GPIOD_CTXLESS_EVENT_CB_RET_OK;
+	exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char **argv)
 {
-	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES], num_lines = 0, offset;
-	bool active_low = false, watch_rising = false, watch_falling = false;
+	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES], num_lines = 0, offset,
+		     events_wanted = 0, events_done = 0, x;
+	bool watch_rising = false, watch_falling = false;
 	int flags = 0;
 	struct timespec timeout = { 10, 0 };
-	int optc, opti, rv, i, event_type;
+	int optc, opti, rv, i, y, event_type;
 	struct mon_ctx ctx;
+	struct gpiod_chip *chip;
+	struct gpiod_line_bulk *lines, *evlines;
 	char *end;
+	struct gpiod_line_request_config config;
+	struct gpiod_line *line;
+	struct gpiod_line_event events[16];
+
+	/*
+	 * FIXME: use signalfd once the API has been converted to using a single file
+	 * descriptor as provided by uAPI v2.
+	 */
+	signal(SIGINT, handle_signal);
+	signal(SIGTERM, handle_signal);
 
 	memset(&ctx, 0, sizeof(ctx));
 
@@ -249,13 +193,13 @@ int main(int argc, char **argv)
 			print_version();
 			return EXIT_SUCCESS;
 		case 'l':
-			active_low = true;
+			flags |= GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
 			break;
 		case 'B':
-			flags = bias_flags(optarg);
+			flags |= bias_flags(optarg);
 			break;
 		case 'n':
-			ctx.events_wanted = strtoul(optarg, &end, 10);
+			events_wanted = strtoul(optarg, &end, 10);
 			if (*end != '\0')
 				die("invalid number: %s", optarg);
 			break;
@@ -285,11 +229,11 @@ int main(int argc, char **argv)
 	argv += optind;
 
 	if (watch_rising && !watch_falling)
-		event_type = GPIOD_CTXLESS_EVENT_RISING_EDGE;
+		event_type = GPIOD_LINE_REQUEST_EVENT_RISING_EDGE;
 	else if (watch_falling && !watch_rising)
-		event_type = GPIOD_CTXLESS_EVENT_FALLING_EDGE;
+		event_type = GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE;
 	else
-		event_type = GPIOD_CTXLESS_EVENT_BOTH_EDGES;
+		event_type = GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES;
 
 	if (argc < 1)
 		die("gpiochip must be specified");
@@ -306,15 +250,64 @@ int main(int argc, char **argv)
 		num_lines++;
 	}
 
-	ctx.sigfd = make_signalfd();
+	chip = gpiod_chip_open_lookup(argv[0]);
+	if (!chip)
+		die_perror("unable to open %s", argv[0]);
 
-	rv = gpiod_ctxless_event_monitor_multiple_ext(
-				argv[0], event_type, offsets,
-				num_lines, active_low, "gpiomon",
-				&timeout, poll_callback,
-				event_callback, &ctx, flags);
+	lines = gpiod_chip_get_lines(chip, offsets, num_lines);
+	if (!lines)
+		die_perror("unable to retrieve GPIO lines from chip");
+
+	memset(&config, 0, sizeof(config));
+
+	config.consumer = "gpiomon";
+	config.request_type = event_type;
+	config.flags = flags;
+
+	rv = gpiod_line_request_bulk(lines, &config, NULL);
 	if (rv)
-		die_perror("error waiting for events");
+		die_perror("unable to request GPIO lines for events");
+
+	evlines = gpiod_line_bulk_new(num_lines);
+	if (!evlines)
+		die("out of memory");
+
+	for (;;) {
+		gpiod_line_bulk_reset(evlines);
+		rv = gpiod_line_event_wait_bulk(lines, &timeout, evlines);
+		if (rv < 0)
+			die_perror("error waiting for events");
+		if (rv == 0)
+			continue;
+
+		num_lines = gpiod_line_bulk_num_lines(evlines);
+
+		for (x = 0; x < num_lines; x++) {
+			line = gpiod_line_bulk_get_line(evlines, x);
+
+			rv = gpiod_line_event_read_multiple(line, events,
+							    ARRAY_SIZE(events));
+			if (rv < 0)
+				die_perror("error reading line events");
+
+			for (y = 0; y < rv; y++) {
+				handle_event(gpiod_line_offset(line),
+					     events[y].event_type,
+					     &events[y].ts, &ctx);
+				events_done++;
+
+				if (events_wanted &&
+				    events_done >= events_wanted)
+					goto done;
+			}
+		}
+	}
+
+done:
+	gpiod_line_release_bulk(lines);
+	gpiod_line_bulk_free(lines);
+	gpiod_line_bulk_free(evlines);
+	gpiod_chip_close(chip);
 
 	return EXIT_SUCCESS;
 }

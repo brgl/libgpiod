@@ -142,7 +142,7 @@ enum {
 struct mode_mapping {
 	int id;
 	const char *name;
-	gpiod_ctxless_set_value_cb callback;
+	void (*callback)(void *);
 };
 
 static const struct mode_mapping modes[] = {
@@ -182,9 +182,9 @@ static const struct mode_mapping *parse_mode(const char *mode)
 static int drive_flags(const char *option)
 {
 	if (strcmp(option, "open-drain") == 0)
-		return GPIOD_CTXLESS_FLAG_OPEN_DRAIN;
+		return GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN;
 	if (strcmp(option, "open-source") == 0)
-		return GPIOD_CTXLESS_FLAG_OPEN_SOURCE;
+		return GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE;
 	if (strcmp(option, "push-pull") != 0)
 		die("invalid drive: %s", option);
 	return 0;
@@ -193,10 +193,12 @@ static int drive_flags(const char *option)
 int main(int argc, char **argv)
 {
 	const struct mode_mapping *mode = &modes[MODE_EXIT];
-	unsigned int *offsets, num_lines, i;
+	struct gpiod_line_request_config config;
 	int *values, rv, optc, opti, flags = 0;
+	unsigned int *offsets, num_lines, i;
+	struct gpiod_line_bulk *lines;
 	struct callback_data cbdata;
-	bool active_low = false;
+	struct gpiod_chip *chip;
 	char *device, *end;
 
 	memset(&cbdata, 0, sizeof(cbdata));
@@ -214,7 +216,7 @@ int main(int argc, char **argv)
 			print_version();
 			return EXIT_SUCCESS;
 		case 'l':
-			active_low = true;
+			flags |= GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
 			break;
 		case 'B':
 			flags |= bias_flags(optarg);
@@ -286,13 +288,29 @@ int main(int argc, char **argv)
 			die("invalid offset: %s", argv[i + 1]);
 	}
 
-	rv = gpiod_ctxless_set_value_multiple_ext(
-				device, offsets, values,
-				num_lines, active_low, "gpioset",
-				mode->callback, &cbdata, flags);
-	if (rv < 0)
-		die_perror("error setting the GPIO line values");
+	chip = gpiod_chip_open_lookup(device);
+	if (!chip)
+		die_perror("unable to open %s", device);
 
+	lines = gpiod_chip_get_lines(chip, offsets, num_lines);
+	if (!lines)
+		die_perror("unable to retrieve GPIO lines from chip");
+
+	memset(&config, 0, sizeof(config));
+
+	config.consumer = "gpioset";
+	config.request_type = GPIOD_LINE_REQUEST_DIRECTION_OUTPUT;
+	config.flags = flags;
+
+	rv = gpiod_line_request_bulk(lines, &config, values);
+	if (rv)
+		die_perror("unable to request lines");
+
+	mode->callback(&cbdata);
+
+	gpiod_line_release_bulk(lines);
+	gpiod_chip_close(chip);
+	gpiod_line_bulk_free(lines);
 	free(offsets);
 	free(values);
 

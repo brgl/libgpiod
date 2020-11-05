@@ -63,11 +63,11 @@ void print_version(void)
 int bias_flags(const char *option)
 {
 	if (strcmp(option, "pull-down") == 0)
-		return GPIOD_CTXLESS_FLAG_BIAS_PULL_DOWN;
+		return GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN;
 	if (strcmp(option, "pull-up") == 0)
-		return GPIOD_CTXLESS_FLAG_BIAS_PULL_UP;
+		return GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP;
 	if (strcmp(option, "disable") == 0)
-		return GPIOD_CTXLESS_FLAG_BIAS_DISABLE;
+		return GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE;
 	if (strcmp(option, "as-is") != 0)
 		die("invalid bias: %s", option);
 	return 0;
