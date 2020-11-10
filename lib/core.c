@@ -106,10 +106,16 @@ struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines)
 	if (!bulk)
 		return NULL;
 
-	memset(bulk, 0, size);
 	bulk->max_lines = max_lines;
+	gpiod_line_bulk_reset(bulk);
 
 	return bulk;
+}
+
+void gpiod_line_bulk_reset(struct gpiod_line_bulk *bulk)
+{
+	bulk->num_lines = 0;
+	memset(bulk->lines, 0, bulk->max_lines * sizeof(struct line *));
 }
 
 void gpiod_line_bulk_free(struct gpiod_line_bulk *bulk)

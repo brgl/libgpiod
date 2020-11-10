@@ -650,6 +650,12 @@ gpiod_chip_find_lines(struct gpiod_chip *chip, const char **names) GPIOD_API;
 struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines) GPIOD_API;
 
 /**
+ * @brief Reset a bulk object. Remove all lines and set size to 0.
+ * @param bulk Bulk object to reset.
+ */
+void gpiod_line_bulk_reset(struct gpiod_line_bulk *bulk) GPIOD_API;
+
+/**
  * @brief Release all resources allocated for this bulk object.
  * @param bulk Bulk object to free.
  */
