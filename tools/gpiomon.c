@@ -150,7 +150,7 @@ static void handle_event(unsigned int line_offset, unsigned int event_type,
 	}
 }
 
-static void handle_signal(int signum GPIOD_UNUSED)
+static void handle_signal(int signum UNUSED)
 {
 	exit(EXIT_SUCCESS);
 }
