@@ -48,7 +48,6 @@ struct gpiod_line;
 struct gpiod_chip_iter;
 struct gpiod_line_iter;
 struct gpiod_line_bulk;
-struct gpiod_line_bulk_iter;
 
 /**
  * @defgroup common Common helper macros
