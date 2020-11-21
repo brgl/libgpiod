@@ -22,6 +22,29 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+/*
+ * These are symbols first available in linux v5.5. In order to allow to build
+ * libgpiod with kernel headers as early as v4.8 we redefine them here for pre
+ * v5.5 build environments. Certain features will not work on older kernels.
+ */
+#ifdef KERNEL_PRE_5_5
+#define GPIOLINE_FLAG_BIAS_PULL_UP		(1UL << 5)
+#define GPIOLINE_FLAG_BIAS_PULL_DOWN		(1UL << 6)
+#define GPIOLINE_FLAG_BIAS_DISABLE		(1UL << 7)
+
+#define GPIOHANDLE_REQUEST_BIAS_PULL_UP		(1UL << 5)
+#define GPIOHANDLE_REQUEST_BIAS_PULL_DOWN	(1UL << 6)
+#define GPIOHANDLE_REQUEST_BIAS_DISABLE		(1UL << 7)
+
+struct gpiohandle_config {
+	__u32 flags;
+	__u8 default_values[GPIOHANDLES_MAX];
+	__u32 padding[4]; /* padding for future use */
+};
+
+#define GPIOHANDLE_SET_CONFIG_IOCTL _IOWR(0xB4, 0x0a, struct gpiohandle_config)
+#endif /* KERNEL_PRE_5_5 */
+
 enum {
 	LINE_FREE = 0,
 	LINE_REQUESTED_VALUES,
