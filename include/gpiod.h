@@ -26,14 +26,8 @@ extern "C" {
  * This is the complete documentation of the public API made available to
  * users of libgpiod.
  *
- * <p>The public header is logically split into two high-level parts: the
- * simple API and the low-level API. The former allows users to easily
- * interact with the GPIOs in the system without dealing with the low-level
- * data structures and resource control. The latter gives the user much more
- * fine-grained control over the GPIO interface.
- *
- * <p>The low-level API is further logically split into several parts such
- * as: GPIO chip & line operators, iterators, GPIO events handling etc.
+ * <p>The API is logically split into several parts such as: GPIO chip & line
+ * operators, iterators, GPIO events handling etc.
  *
  * <p>General note on error handling: all routines exported by libgpiod  set
  * errno to one of the error values defined in errno.h upon failure. The way
