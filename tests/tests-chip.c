@@ -11,6 +11,21 @@
 
 #define GPIOD_TEST_GROUP "chip"
 
+GPIOD_TEST_CASE(is_gpiochip_good, 0, { 8 })
+{
+	g_assert_true(gpiod_is_gpiochip_device(gpiod_test_chip_path(0)));
+}
+
+GPIOD_TEST_CASE(is_gpiochip_bad, 0, { 8 })
+{
+	g_assert_false(gpiod_is_gpiochip_device("/dev/null"));
+}
+
+GPIOD_TEST_CASE(is_gpiochip_nonexistent, 0, { 8 })
+{
+	g_assert_false(gpiod_is_gpiochip_device("/dev/nonexistent_gpiochip"));
+}
+
 GPIOD_TEST_CASE(open_good, 0, { 8 })
 {
 	g_autoptr(gpiod_chip_struct) chip = NULL;

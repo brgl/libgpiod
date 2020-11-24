@@ -72,6 +72,14 @@ struct gpiod_line_bulk;
  */
 
 /**
+ * @brief Check if the file pointed to by path is a GPIO chip character device.
+ * @param path Path to check.
+ * @return True if the file exists and is a GPIO chip character device or a
+ *         symbolic link to it.
+ */
+bool gpiod_is_gpiochip_device(const char *path) GPIOD_API;
+
+/**
  * @brief Open a gpiochip by path.
  * @param path Path to the gpiochip device file.
  * @return GPIO chip handle or NULL if an error occurred.

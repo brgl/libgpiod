@@ -177,7 +177,7 @@ void gpiod_line_bulk_foreach_line(struct gpiod_line_bulk *bulk,
 	     (index) < (bulk)->num_lines;				\
 	     (index)++, (line) = (bulk)->lines[(index)])
 
-static bool is_gpiochip_cdev(const char *path)
+bool gpiod_is_gpiochip_device(const char *path)
 {
 	char *name, *realname, *sysfsp, sysfsdev[16], devstr[16];
 	struct stat statbuf;
@@ -282,7 +282,7 @@ struct gpiod_chip *gpiod_chip_open(const char *path)
 	 * We were able to open the file but is it really a gpiochip character
 	 * device?
 	 */
-	if (!is_gpiochip_cdev(path))
+	if (!gpiod_is_gpiochip_device(path))
 		goto err_close_fd;
 
 	chip = malloc(sizeof(*chip));
