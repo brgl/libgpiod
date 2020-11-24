@@ -8,6 +8,8 @@
 #include <Python.h>
 #include <gpiod.h>
 
+#define LINE_REQUEST_MAX_LINES 64
+
 typedef struct {
 	PyObject_HEAD
 	struct gpiod_chip *chip;
@@ -1138,7 +1140,7 @@ static int gpiod_LineBulk_init(gpiod_LineBulkObject *self,
 				"Argument must be a non-empty sequence");
 		return -1;
 	}
-	if (self->num_lines > GPIOD_LINE_BULK_MAX_LINES) {
+	if (self->num_lines > LINE_REQUEST_MAX_LINES) {
 		PyErr_SetString(PyExc_TypeError,
 				"Too many objects in the sequence");
 		return -1;
@@ -1334,7 +1336,7 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 				  NULL };
 
 	int rv, type = gpiod_LINE_REQ_DIR_AS_IS, flags = 0,
-	    default_vals[GPIOD_LINE_BULK_MAX_LINES], val;
+	    default_vals[LINE_REQUEST_MAX_LINES], val;
 	PyObject *def_vals_obj = NULL, *iter, *next;
 	struct gpiod_line_request_config conf;
 	struct gpiod_line_bulk *bulk;
@@ -1413,7 +1415,7 @@ PyDoc_STRVAR(gpiod_LineBulk_get_values_doc,
 static PyObject *gpiod_LineBulk_get_values(gpiod_LineBulkObject *self,
 					   PyObject *Py_UNUSED(ignored))
 {
-	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
+	int rv, vals[LINE_REQUEST_MAX_LINES];
 	struct gpiod_line_bulk *bulk;
 	PyObject *val_list, *val;
 	Py_ssize_t i;
@@ -1506,7 +1508,7 @@ PyDoc_STRVAR(gpiod_LineBulk_set_values_doc,
 static PyObject *gpiod_LineBulk_set_values(gpiod_LineBulkObject *self,
 					   PyObject *args)
 {
-	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
+	int rv, vals[LINE_REQUEST_MAX_LINES];
 	struct gpiod_line_bulk *bulk;
 	PyObject *val_list;
 
@@ -1556,7 +1558,7 @@ PyDoc_STRVAR(gpiod_LineBulk_set_config_doc,
 static PyObject *gpiod_LineBulk_set_config(gpiod_LineBulkObject *self,
 					   PyObject *args)
 {
-	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
+	int rv, vals[LINE_REQUEST_MAX_LINES];
 	struct gpiod_line_bulk *bulk;
 	PyObject *val_list;
 	const int *valp;
@@ -1672,7 +1674,7 @@ static PyObject *gpiod_LineBulk_set_direction_output(
 				gpiod_LineBulkObject *self,
 				PyObject *args)
 {
-	int rv, vals[GPIOD_LINE_BULK_MAX_LINES];
+	int rv, vals[LINE_REQUEST_MAX_LINES];
 	struct gpiod_line_bulk *bulk;
 	PyObject *val_list;
 	const int *valp;

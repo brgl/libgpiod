@@ -157,7 +157,7 @@ static void handle_signal(int signum UNUSED)
 
 int main(int argc, char **argv)
 {
-	unsigned int offsets[GPIOD_LINE_BULK_MAX_LINES], num_lines = 0, offset,
+	unsigned int offsets[64], num_lines = 0, offset,
 		     events_wanted = 0, events_done = 0, x;
 	bool watch_rising = false, watch_falling = false;
 	int flags = 0;
@@ -240,6 +240,9 @@ int main(int argc, char **argv)
 
 	if (argc < 2)
 		die("at least one GPIO line offset must be specified");
+
+	if (argc > 65)
+		die("too many offsets given");
 
 	for (i = 1; i < argc; i++) {
 		offset = strtoul(argv[i], &end, 10);

@@ -226,16 +226,9 @@ gpiod_chip_find_lines(struct gpiod_chip *chip, const char **names) GPIOD_API;
  */
 
 /**
- * @brief Maximum number of GPIO lines that can be requested at once or stored
- *        in a line bulk object at the same time.
- */
-#define GPIOD_LINE_BULK_MAX_LINES	64
-
-/**
  * @brief Allocate and initialize a new line bulk object.
  * @param max_lines Maximum number of lines this object can hold.
  * @return New line bulk object or NULL on error.
- * @note max_lines must not exceed ::GPIOD_LINE_BULK_MAX_LINES.
  */
 struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines) GPIOD_API;
 

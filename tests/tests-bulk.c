@@ -20,15 +20,6 @@ GPIOD_TEST_CASE(alloc_zero_lines, 0, { 1 })
 	g_assert_cmpint(errno, ==, EINVAL);
 }
 
-GPIOD_TEST_CASE(alloc_too_many_lines, 0, { 1 })
-{
-	struct gpiod_line_bulk *bulk;
-
-	bulk = gpiod_line_bulk_new(GPIOD_LINE_BULK_MAX_LINES + 1);
-	g_assert_null(bulk);
-	g_assert_cmpint(errno, ==, EINVAL);
-}
-
 GPIOD_TEST_CASE(add_too_many_lines, 0, { 8 })
 {
 	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;

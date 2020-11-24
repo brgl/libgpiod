@@ -48,7 +48,7 @@ const ::std::map<::std::bitset<32>, int, bitset_cmp> reqflag_mapping = {
 
 } /* namespace */
 
-const unsigned int line_bulk::MAX_LINES = GPIOD_LINE_BULK_MAX_LINES;
+const unsigned int line_bulk::MAX_LINES = 64;
 
 line_bulk::line_bulk(const ::std::vector<line>& lines)
 	: _m_bulk()

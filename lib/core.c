@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define LINE_REQUEST_MAX_LINES	64
+
 enum {
 	LINE_FREE = 0,
 	LINE_REQUESTED_VALUES,
@@ -94,7 +96,7 @@ struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines)
 	struct gpiod_line_bulk *bulk;
 	size_t size;
 
-	if (max_lines < 1 || max_lines > GPIOD_LINE_BULK_MAX_LINES) {
+	if (max_lines == 0) {
 		errno = EINVAL;
 		return NULL;
 	}
@@ -1066,7 +1068,7 @@ int gpiod_line_set_flags(struct gpiod_line *line, int flags)
 int gpiod_line_set_flags_bulk(struct gpiod_line_bulk *bulk, int flags)
 {
 	struct gpiod_line *line;
-	int values[GPIOD_LINE_BULK_MAX_LINES];
+	int values[LINE_REQUEST_MAX_LINES];
 	unsigned int i;
 	int direction;
 
@@ -1129,7 +1131,7 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       const struct timespec *timeout,
 			       struct gpiod_line_bulk *event_bulk)
 {
-	struct pollfd fds[GPIOD_LINE_BULK_MAX_LINES];
+	struct pollfd fds[LINE_REQUEST_MAX_LINES];
 	unsigned int off, num_lines;
 	struct gpiod_line *line;
 	int rv;
