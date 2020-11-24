@@ -190,8 +190,8 @@ static bool is_gpiochip_cdev(const char *path)
 		goto out;
 
 	/*
-	 * Is it a symbolic link? We have to resolve symbolic link before
-	 * checking the rest.
+	 * Is it a symbolic link? We have to resolve it before checking
+	 * the rest.
 	 */
 	realname = S_ISLNK(statbuf.st_mode) ? realpath(path, NULL)
 					    : strdup(path);
