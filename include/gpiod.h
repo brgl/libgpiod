@@ -40,7 +40,6 @@ extern "C" {
 struct gpiod_chip;
 struct gpiod_line;
 struct gpiod_chip_iter;
-struct gpiod_line_iter;
 struct gpiod_line_bulk;
 
 /**
@@ -1201,41 +1200,6 @@ gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
 	for ((chip) = gpiod_chip_iter_next_noclose(iter);		\
 	     (chip);							\
 	     (chip) = gpiod_chip_iter_next_noclose(iter))
-
-/**
- * @brief Create a new line iterator.
- * @param chip Active gpiochip handle over the lines of which we want
- *             to iterate.
- * @return New line iterator or NULL if an error occurred.
- */
-struct gpiod_line_iter *
-gpiod_line_iter_new(struct gpiod_chip *chip) GPIOD_API;
-
-/**
- * @brief Free all resources associated with a GPIO line iterator.
- * @param iter Line iterator object.
- */
-void gpiod_line_iter_free(struct gpiod_line_iter *iter) GPIOD_API;
-
-/**
- * @brief Get the next GPIO line handle.
- * @param iter The GPIO line iterator object.
- * @return Pointer to the next GPIO line handle or NULL if there are no more
- *         lines left.
- */
-struct gpiod_line *
-gpiod_line_iter_next(struct gpiod_line_iter *iter) GPIOD_API;
-
-/**
- * @brief Iterate over all GPIO lines of a single chip.
- * @param iter An initialized GPIO line iterator.
- * @param line Pointer to a GPIO line handle - on each iteration, the
- *             next GPIO line will be assigned to this argument.
- */
-#define gpiod_foreach_line(iter, line)					\
-	for ((line) = gpiod_line_iter_next(iter);			\
-	     (line);							\
-	     (line) = gpiod_line_iter_next(iter))
 
 /**
  * @}

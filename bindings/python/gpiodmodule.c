@@ -41,7 +41,7 @@ typedef struct {
 
 typedef struct {
 	PyObject_HEAD
-	struct gpiod_line_iter *iter;
+	unsigned int offset;
 	gpiod_ChipObject *owner;
 } gpiod_LineIterObject;
 
@@ -2621,14 +2621,7 @@ static int gpiod_LineIter_init(gpiod_LineIterObject *self,
 	if (gpiod_ChipIsClosed(chip_obj))
 		return -1;
 
-	Py_BEGIN_ALLOW_THREADS;
-	self->iter = gpiod_line_iter_new(chip_obj->chip);
-	Py_END_ALLOW_THREADS;
-	if (!self->iter) {
-		PyErr_SetFromErrno(PyExc_OSError);
-		return -1;
-	}
-
+	self->offset = 0;
 	self->owner = chip_obj;
 	Py_INCREF(chip_obj);
 
@@ -2637,9 +2630,6 @@ static int gpiod_LineIter_init(gpiod_LineIterObject *self,
 
 static void gpiod_LineIter_dealloc(gpiod_LineIterObject *self)
 {
-	if (self->iter)
-		gpiod_line_iter_free(self->iter);
-
 	PyObject_Del(self);
 }
 
@@ -2647,9 +2637,12 @@ static gpiod_LineObject *gpiod_LineIter_next(gpiod_LineIterObject *self)
 {
 	struct gpiod_line *line;
 
-	line = gpiod_line_iter_next(self->iter);
-	if (!line)
+	if (self->offset == gpiod_chip_num_lines(self->owner->chip))
 		return NULL; /* Last element. */
+
+	line = gpiod_chip_get_line(self->owner->chip, self->offset++);
+	if (!line)
+		return (gpiod_LineObject *)PyErr_SetFromErrno(PyExc_OSError);
 
 	return gpiod_MakeLineObject(self->owner, line);
 }

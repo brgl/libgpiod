@@ -116,22 +116,20 @@ static PRINTF(3, 4) void prinfo(bool *of,
 
 static void list_lines(struct gpiod_chip *chip)
 {
-	struct gpiod_line_iter *iter;
 	int direction, active_state;
 	const char *name, *consumer;
 	struct gpiod_line *line;
 	unsigned int i, offset;
 	bool flag_printed, of;
 
-	iter = gpiod_line_iter_new(chip);
-	if (!iter)
-		die_perror("error creating line iterator");
-
 	printf("%s - %u lines:\n",
 	       gpiod_chip_name(chip), gpiod_chip_num_lines(chip));
 
-	gpiod_foreach_line(iter, line) {
-		offset = gpiod_line_offset(line);
+	for (offset = 0; offset < gpiod_chip_num_lines(chip); offset++) {
+		line = gpiod_chip_get_line(chip, offset);
+		if (!line)
+			die_perror("unable to retrieve the line object from chip");
+
 		name = gpiod_line_name(line);
 		consumer = gpiod_line_consumer(line);
 		direction = gpiod_line_direction(line);
@@ -178,8 +176,6 @@ static void list_lines(struct gpiod_chip *chip)
 
 		printf("\n");
 	}
-
-	gpiod_line_iter_free(iter);
 }
 
 int main(int argc, char **argv)

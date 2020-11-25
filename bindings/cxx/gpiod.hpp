@@ -1083,7 +1083,6 @@ public:
 
 private:
 
-	::std::shared_ptr<::gpiod_line_iter> _m_iter;
 	line _m_current;
 };
 

@@ -98,26 +98,3 @@ GPIOD_TEST_CASE(chip_iter_break, 0, { 8, 8, 8, 8, 8 })
 
 	g_assert_cmpuint(i, ==, 3);
 }
-
-GPIOD_TEST_CASE(line_iter, 0, { 8 })
-{
-	g_autoptr(gpiod_line_iter_struct) iter = NULL;
-	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line *line;
-	guint i = 0;
-
-	chip = gpiod_chip_open(gpiod_test_chip_path(0));
-	g_assert_nonnull(chip);
-	gpiod_test_return_if_failed();
-
-	iter = gpiod_line_iter_new(chip);
-	g_assert_nonnull(iter);
-	gpiod_test_return_if_failed();
-
-	gpiod_foreach_line(iter, line) {
-		g_assert_cmpuint(i, ==, gpiod_line_offset(line));
-		i++;
-	}
-
-	g_assert_cmpuint(i, ==, 8);
-}
