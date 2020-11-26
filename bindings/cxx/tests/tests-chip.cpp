@@ -28,11 +28,6 @@ TEST_CASE("GPIO chip device can be opened in different modes", "[chip]")
 				::gpiod::chip::OPEN_BY_PATH));
 	}
 
-	SECTION("open by label")
-	{
-		REQUIRE_NOTHROW(::gpiod::chip("gpio-mockup-B", ::gpiod::chip::OPEN_BY_LABEL));
-	}
-
 	SECTION("open by number")
 	{
 		REQUIRE_NOTHROW(::gpiod::chip(::std::to_string(mockup::instance().chip_num(1)),
@@ -52,11 +47,6 @@ TEST_CASE("GPIO chip device can be opened with implicit lookup", "[chip]")
 	SECTION("lookup by path")
 	{
 		REQUIRE_NOTHROW(::gpiod::chip(mockup::instance().chip_path(1)));
-	}
-
-	SECTION("lookup by label")
-	{
-		REQUIRE_NOTHROW(::gpiod::chip("gpio-mockup-B"));
 	}
 
 	SECTION("lookup by number")
@@ -82,11 +72,6 @@ TEST_CASE("GPIO chip can be opened with the open() method in different modes", "
 	{
 		REQUIRE_NOTHROW(chip.open(mockup::instance().chip_path(1),
 					  ::gpiod::chip::OPEN_BY_PATH));
-	}
-
-	SECTION("open by label")
-	{
-		REQUIRE_NOTHROW(chip.open("gpio-mockup-B", ::gpiod::chip::OPEN_BY_LABEL));
 	}
 
 	SECTION("open by number")
@@ -124,11 +109,6 @@ TEST_CASE("GPIO chip can be opened with the open() method with implicit lookup",
 	SECTION("lookup by path")
 	{
 		REQUIRE_NOTHROW(chip.open(mockup::instance().chip_path(1)));
-	}
-
-	SECTION("lookup by label")
-	{
-		REQUIRE_NOTHROW(chip.open("gpio-mockup-B"));
 	}
 
 	SECTION("lookup by number")

@@ -190,8 +190,6 @@ public:
 		/**< Assume the string is a path to the GPIO chardev. */
 		OPEN_BY_NAME,
 		/**< Assume the string is the name of the chip */
-		OPEN_BY_LABEL,
-		/**< Assume the string is the label of the GPIO chip. */
 		OPEN_BY_NUMBER,
 		/**< Assume the string is the number of the GPIO chip. */
 	};

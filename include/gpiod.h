@@ -104,23 +104,13 @@ struct gpiod_chip *gpiod_chip_open_by_name(const char *name) GPIOD_API;
 struct gpiod_chip *gpiod_chip_open_by_number(unsigned int num) GPIOD_API;
 
 /**
- * @brief Open a gpiochip by label.
- * @param label Label of the gpiochip to open.
- * @return GPIO chip handle or NULL if the chip with given label was not found
- *         or an error occured.
- * @note If the chip cannot be found but no other error occurred, errno is set
- *       to ENOENT.
- */
-struct gpiod_chip *gpiod_chip_open_by_label(const char *label) GPIOD_API;
-
-/**
  * @brief Open a gpiochip based on the best guess what the path is.
  * @param descr String describing the gpiochip.
  * @return GPIO chip handle or NULL if an error occurred.
  *
  * This routine tries to figure out whether the user passed it the path to the
- * GPIO chip, its name, label or number as a string. Then it tries to open it
- * using one of the gpiod_chip_open** variants.
+ * GPIO chip, its name or number as a string. Then it tries to open it using
+ * one of the gpiod_chip_open** variants.
  */
 struct gpiod_chip *gpiod_chip_open_lookup(const char *descr) GPIOD_API;
 

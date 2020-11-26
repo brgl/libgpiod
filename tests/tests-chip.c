@@ -68,28 +68,8 @@ GPIOD_TEST_CASE(open_by_number_good, 0, { 8 })
 	g_assert_nonnull(chip);
 }
 
-GPIOD_TEST_CASE(open_by_label_good, 0, { 4, 4, 4, 4, 4 })
-{
-	g_autoptr(gpiod_chip_struct) chip = NULL;
-
-	chip = gpiod_chip_open_by_label("gpio-mockup-D");
-	g_assert_nonnull(chip);
-	gpiod_test_return_if_failed();
-	g_assert_cmpstr(gpiod_chip_name(chip), ==, gpiod_test_chip_name(3));
-}
-
-GPIOD_TEST_CASE(open_by_label_bad, 0, { 4, 4, 4, 4, 4 })
-{
-	struct gpiod_chip *chip;
-
-	chip = gpiod_chip_open_by_label("nonexistent_gpio_chip");
-	g_assert_null(chip);
-	g_assert_cmpint(errno, ==, ENOENT);
-}
-
 GPIOD_TEST_CASE(open_lookup_good, 0, { 8, 8, 8})
 {
-	g_autoptr(gpiod_chip_struct) chip_by_label = NULL;
 	g_autoptr(gpiod_chip_struct) chip_by_name = NULL;
 	g_autoptr(gpiod_chip_struct) chip_by_path = NULL;
 	g_autoptr(gpiod_chip_struct) chip_by_num = NULL;
@@ -99,12 +79,10 @@ GPIOD_TEST_CASE(open_lookup_good, 0, { 8, 8, 8})
 	chip_by_name = gpiod_chip_open_lookup(gpiod_test_chip_name(1));
 	chip_by_path = gpiod_chip_open_lookup(gpiod_test_chip_path(1));
 	chip_by_num = gpiod_chip_open_lookup(chip_num_str);
-	chip_by_label = gpiod_chip_open_lookup("gpio-mockup-B");
 
 	g_assert_nonnull(chip_by_name);
 	g_assert_nonnull(chip_by_path);
 	g_assert_nonnull(chip_by_num);
-	g_assert_nonnull(chip_by_label);
 	gpiod_test_return_if_failed();
 
 	g_assert_cmpstr(gpiod_chip_name(chip_by_name),
@@ -112,8 +90,6 @@ GPIOD_TEST_CASE(open_lookup_good, 0, { 8, 8, 8})
 	g_assert_cmpstr(gpiod_chip_name(chip_by_path),
 			==, gpiod_test_chip_name(1));
 	g_assert_cmpstr(gpiod_chip_name(chip_by_num),
-			==, gpiod_test_chip_name(1));
-	g_assert_cmpstr(gpiod_chip_name(chip_by_label),
 			==, gpiod_test_chip_name(1));
 }
 

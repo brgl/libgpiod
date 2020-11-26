@@ -1961,7 +1961,6 @@ enum {
 	gpiod_OPEN_LOOKUP = 1,
 	gpiod_OPEN_BY_NAME,
 	gpiod_OPEN_BY_PATH,
-	gpiod_OPEN_BY_LABEL,
 	gpiod_OPEN_BY_NUMBER,
 };
 
@@ -1986,9 +1985,6 @@ static int gpiod_Chip_init(gpiod_ChipObject *self,
 		break;
 	case gpiod_OPEN_BY_PATH:
 		self->chip = gpiod_chip_open(descr);
-		break;
-	case gpiod_OPEN_BY_LABEL:
-		self->chip = gpiod_chip_open_by_label(descr);
 		break;
 	case gpiod_OPEN_BY_NUMBER:
 		self->chip = gpiod_chip_open_by_number(atoi(descr));
@@ -2503,10 +2499,10 @@ PyDoc_STRVAR(gpiod_ChipType_doc,
 "The Chip object's constructor takes a description string as argument the\n"
 "meaning of which depends on the second, optional parameter which defines\n"
 "the way the description string should be interpreted. The available\n"
-"options are: OPEN_BY_LABEL, OPEN_BY_NAME, OPEN_BY_NUMBER, OPEN_BY_PATH,\n"
-"and OPEN_LOOKUP. The last option means that libgpiod should open the chip\n"
-"based on the best guess what the path is. This is also the default if the\n"
-"second argument is missing.\n"
+"options are: OPEN_BY_NAME, OPEN_BY_NUMBER, OPEN_BY_PATH and OPEN_LOOKUP.\n"
+"The last option means that libgpiod should open the chip based on the best\n"
+"guess what the path is. This is also the default if the second argument is\n"
+"missing.\n"
 "\n"
 "Callers must close the chip by calling the close() method when it's no\n"
 "longer used.\n"
@@ -2785,11 +2781,6 @@ static gpiod_ConstDescr gpiod_ConstList[] = {
 		.typeobj = &gpiod_ChipType,
 		.name = "OPEN_BY_NAME",
 		.val = gpiod_OPEN_BY_NAME,
-	},
-	{
-		.typeobj = &gpiod_ChipType,
-		.name = "OPEN_BY_LABEL",
-		.val = gpiod_OPEN_BY_LABEL,
 	},
 	{
 		.typeobj = &gpiod_ChipType,

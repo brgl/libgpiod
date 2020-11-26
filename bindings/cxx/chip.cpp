@@ -30,11 +30,6 @@ namespace {
 	return ::gpiod_chip_open_by_name(device.c_str());
 }
 
-::gpiod_chip* open_by_label(const ::std::string& device)
-{
-	return ::gpiod_chip_open_by_label(device.c_str());
-}
-
 ::gpiod_chip* open_by_number(const ::std::string& device)
 {
 	return ::gpiod_chip_open_by_number(::std::stoul(device));
@@ -46,7 +41,6 @@ const ::std::map<int, open_func> open_funcs = {
 	{ chip::OPEN_LOOKUP,	open_lookup,	},
 	{ chip::OPEN_BY_PATH,	open_by_path,	},
 	{ chip::OPEN_BY_NAME,	open_by_name,	},
-	{ chip::OPEN_BY_LABEL,	open_by_label,	},
 	{ chip::OPEN_BY_NUMBER,	open_by_number,	},
 };
 

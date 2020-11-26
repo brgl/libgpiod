@@ -96,10 +96,6 @@ class ChipOpen(MockupTestCase):
                         gpiod.Chip.OPEN_BY_NUMBER) as chip:
             self.assertEqual(chip.name(), mockup.chip_name(1))
 
-    def test_open_chip_by_label(self):
-        with gpiod.Chip('gpio-mockup-B', gpiod.Chip.OPEN_BY_LABEL) as chip:
-            self.assertEqual(chip.name(), mockup.chip_name(1))
-
     def test_lookup_chip_by_name(self):
         with gpiod.Chip(mockup.chip_name(1)) as chip:
             self.assertEqual(chip.name(), mockup.chip_name(1))
@@ -110,10 +106,6 @@ class ChipOpen(MockupTestCase):
 
     def test_lookup_chip_by_num(self):
         with gpiod.Chip('{}'.format(mockup.chip_num(1))) as chip:
-            self.assertEqual(chip.name(), mockup.chip_name(1))
-
-    def test_lookup_chip_by_label(self):
-        with gpiod.Chip('gpio-mockup-B') as chip:
             self.assertEqual(chip.name(), mockup.chip_name(1))
 
     def test_nonexistent_chip(self):
