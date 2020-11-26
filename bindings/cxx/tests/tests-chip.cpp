@@ -12,6 +12,26 @@
 
 using ::gpiod::test::mockup;
 
+TEST_CASE("GPIO chip device can be verified with is_gpiochip_device()", "[chip]")
+{
+	mockup::probe_guard mockup_chips({ 8 });
+
+	SECTION("good chip")
+	{
+		REQUIRE(::gpiod::is_gpiochip_device(mockup::instance().chip_path(0)));
+	}
+
+	SECTION("not a chip")
+	{
+		REQUIRE_FALSE(::gpiod::is_gpiochip_device("/dev/null"));
+	}
+
+	SECTION("nonexistent file")
+	{
+		REQUIRE_FALSE(::gpiod::is_gpiochip_device("/dev/nonexistent_device"));
+	}
+}
+
 TEST_CASE("GPIO chip device can be opened in different modes", "[chip]")
 {
 	mockup::probe_guard mockup_chips({ 8, 8, 8 });

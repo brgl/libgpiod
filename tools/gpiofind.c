@@ -5,6 +5,7 @@
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
  */
 
+#include <dirent.h>
 #include <errno.h>
 #include <getopt.h>
 #include <gpiod.h>
@@ -34,10 +35,10 @@ static void print_help(void)
 
 int main(int argc, char **argv)
 {
-	struct gpiod_chip_iter *iter;
+	int i, num_chips, optc, opti;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
-	int optc, opti;
+	struct dirent **entries;
 
 	for (;;) {
 		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
@@ -64,23 +65,27 @@ int main(int argc, char **argv)
 	if (argc != 1)
 		die("exactly one GPIO line name must be specified");
 
-	iter = gpiod_chip_iter_new();
-	if (!iter)
-		die_perror("unable to access GPIO chips");
+	num_chips = scandir("/dev/", &entries, chip_dir_filter, alphasort);
+	if (num_chips < 0)
+		die_perror("unable to scan /dev");
 
-	gpiod_foreach_chip(iter, chip) {
+	for (i = 0; i < num_chips; i++) {
+		chip = gpiod_chip_open_by_name(entries[i]->d_name);
+		if (!chip) {
+			if (errno == EACCES)
+				continue;
+
+			die_perror("unable to open %s", entries[i]->d_name);
+		}
+
 		line = gpiod_chip_find_line_unique(chip, argv[0]);
 		if (line) {
 			printf("%s %u\n",
 			       gpiod_chip_name(chip), gpiod_line_offset(line));
-			gpiod_chip_iter_free(iter);
+			gpiod_chip_close(chip);
 			return EXIT_SUCCESS;
 		}
-
-		if (errno != ENOENT)
-			die_perror("error performing the line lookup");
 	}
 
-	gpiod_chip_iter_free(iter);
 	return EXIT_FAILURE;
 }

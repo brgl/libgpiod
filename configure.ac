@@ -181,6 +181,12 @@ then
 			AC_LANG_POP([C++])
 		])
 	fi
+
+	if test "x$with_examples" = xtrue
+	then
+		# Examples use C++17 features
+		AX_CXX_COMPILE_STDCXX([17], [ext], [mandatory])
+	fi
 fi
 
 AC_ARG_ENABLE([bindings-python],

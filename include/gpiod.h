@@ -8,6 +8,7 @@
 #ifndef __LIBGPIOD_GPIOD_H__
 #define __LIBGPIOD_GPIOD_H__
 
+#include <dirent.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
@@ -27,7 +28,7 @@ extern "C" {
  * users of libgpiod.
  *
  * <p>The API is logically split into several parts such as: GPIO chip & line
- * operators, iterators, GPIO events handling etc.
+ * operators, GPIO events handling etc.
  *
  * <p>General note on error handling: all routines exported by libgpiod  set
  * errno to one of the error values defined in errno.h upon failure. The way
@@ -39,7 +40,6 @@ extern "C" {
 
 struct gpiod_chip;
 struct gpiod_line;
-struct gpiod_chip_iter;
 struct gpiod_line_bulk;
 
 /**
@@ -1053,95 +1053,6 @@ int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
 /**
  * @}
  *
- * @}
- *
- * @defgroup iterators Iterators for GPIO chips and lines
- * @{
- *
- * These functions and data structures allow easy iterating over GPIO
- * chips and lines.
- */
-
-/**
- * @brief Create a new gpiochip iterator.
- * @return Pointer to a new chip iterator object or NULL if an error occurred.
- *
- * Internally this routine scans the /dev/ directory for GPIO chip device
- * files, opens them and stores their the handles until ::gpiod_chip_iter_free
- * or ::gpiod_chip_iter_free_noclose is called.
- */
-struct gpiod_chip_iter *gpiod_chip_iter_new(void) GPIOD_API;
-
-/**
- * @brief Release all resources allocated for the gpiochip iterator and close
- *        the most recently opened gpiochip (if any).
- * @param iter The gpiochip iterator object.
- */
-void gpiod_chip_iter_free(struct gpiod_chip_iter *iter) GPIOD_API;
-
-/**
- * @brief Release all resources allocated for the gpiochip iterator but
- *        don't close the most recently opened gpiochip (if any).
- * @param iter The gpiochip iterator object.
- *
- * Users may want to break the loop when iterating over gpiochips and keep
- * the most recently opened chip active while freeing the iterator data.
- * This routine enables that.
- */
-void gpiod_chip_iter_free_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
-
-/**
- * @brief Get the next gpiochip handle.
- * @param iter The gpiochip iterator object.
- * @return Pointer to the next open gpiochip handle or NULL if no more chips
- *         are present in the system.
- * @note The previous chip handle will be closed using ::gpiod_chip_iter_free.
- */
-struct gpiod_chip *
-gpiod_chip_iter_next(struct gpiod_chip_iter *iter) GPIOD_API;
-
-/**
- * @brief Get the next gpiochip handle without closing the previous one.
- * @param iter The gpiochip iterator object.
- * @return Pointer to the next open gpiochip handle or NULL if no more chips
- *         are present in the system.
- * @note This function works just like ::gpiod_chip_iter_next but doesn't
- *       close the most recently opened chip handle.
- */
-struct gpiod_chip *
-gpiod_chip_iter_next_noclose(struct gpiod_chip_iter *iter) GPIOD_API;
-
-/**
- * @brief Iterate over all GPIO chips present in the system.
- * @param iter An initialized GPIO chip iterator.
- * @param chip Pointer to a GPIO chip handle. On each iteration the newly
- *             opened chip handle is assigned to this argument.
- *
- * The user must not close the GPIO chip manually - instead the previous chip
- * handle is closed automatically on the next iteration. The last chip to be
- * opened is closed internally by ::gpiod_chip_iter_free.
- */
-#define gpiod_foreach_chip(iter, chip)					\
-	for ((chip) = gpiod_chip_iter_next(iter);			\
-	     (chip);							\
-	     (chip) = gpiod_chip_iter_next(iter))
-
-/**
- * @brief Iterate over all chips present in the system without closing them.
- * @param iter An initialized GPIO chip iterator.
- * @param chip Pointer to a GPIO chip handle. On each iteration the newly
- *             opened chip handle is assigned to this argument.
- *
- * The user must close all the GPIO chips manually after use, until then, the
- * chips remain open. Free the iterator by calling
- * ::gpiod_chip_iter_free_noclose to avoid closing the last chip automatically.
- */
-#define gpiod_foreach_chip_noclose(iter, chip)				\
-	for ((chip) = gpiod_chip_iter_next_noclose(iter);		\
-	     (chip);							\
-	     (chip) = gpiod_chip_iter_next_noclose(iter))
-
-/**
  * @}
  *
  * @defgroup misc Stuff that didn't fit anywhere else

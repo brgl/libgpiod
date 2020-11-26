@@ -25,6 +25,5 @@ gpiod_test_SOURCES =			\
 		tests-bulk.c		\
 		tests-chip.c		\
 		tests-event.c		\
-		tests-iter.c		\
 		tests-line.c		\
 		tests-misc.c

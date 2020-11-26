@@ -101,3 +101,18 @@ int make_signalfd(void)
 
 	return sigfd;
 }
+
+int chip_dir_filter(const struct dirent *entry)
+{
+	bool is_chip;
+	char *path;
+	int ret;
+
+	ret = asprintf(&path, "/dev/%s", entry->d_name);
+	if (ret < 0)
+		return 0;
+
+	is_chip = gpiod_is_gpiochip_device(path);
+	free(path);
+	return !!is_chip;
+}

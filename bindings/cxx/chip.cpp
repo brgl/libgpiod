@@ -51,6 +51,11 @@ void chip_deleter(::gpiod_chip* chip)
 
 } /* namespace */
 
+bool is_gpiochip_device(const ::std::string& path)
+{
+	return ::gpiod_is_gpiochip_device(path.c_str());
+}
+
 chip::chip(const ::std::string& device, int how)
 	: _m_chip()
 {

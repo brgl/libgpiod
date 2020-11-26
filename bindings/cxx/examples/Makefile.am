@@ -7,8 +7,8 @@
 #
 
 AM_CPPFLAGS = -I$(top_srcdir)/bindings/cxx/ -I$(top_srcdir)/include
-AM_CPPFLAGS += -Wall -Wextra -g -std=gnu++11
-AM_LDFLAGS = -lgpiodcxx -L$(top_builddir)/bindings/cxx/
+AM_CPPFLAGS += -Wall -Wextra -g -std=gnu++17
+AM_LDFLAGS = -lgpiodcxx -L$(top_builddir)/bindings/cxx/ -lstdc++fs
 
 noinst_PROGRAMS =				\
 		gpiodetectcxx			\

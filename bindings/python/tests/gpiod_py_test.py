@@ -79,6 +79,19 @@ def check_kernel(major, minor, release):
 # Chip test cases
 #
 
+class IsGpioDevice(MockupTestCase):
+
+    chip_sizes = ( 8, )
+
+    def test_is_gpiochip_device_good(self):
+        self.assertTrue(gpiod.is_gpiochip_device(mockup.chip_path(0)))
+
+    def test_is_gpiochip_device_bad(self):
+        self.assertFalse(gpiod.is_gpiochip_device('/dev/null'))
+
+    def test_is_gpiochip_device_nonexistent(self):
+        self.assertFalse(gpiod.is_gpiochip_device('/dev/nonexistent_device'))
+
 class ChipOpen(MockupTestCase):
 
     chip_sizes = ( 8, 8, 8 )
@@ -149,8 +162,7 @@ class ChipGetLines(MockupTestCase):
 
     def test_find_single_line_by_name(self):
         with gpiod.Chip(mockup.chip_name(1)) as chip:
-            lines = chip.find_line('gpio-mockup-B-4').to_list()
-            self.assertEqual(len(lines), 1)
+            lines = chip.find_line('gpio-mockup-B-4', unique=True).to_list()
             self.assertEqual(lines[0].offset(), 4)
 
     def test_get_single_line_invalid_offset(self):
@@ -162,7 +174,7 @@ class ChipGetLines(MockupTestCase):
 
     def test_find_single_line_nonexistent(self):
         with gpiod.Chip(mockup.chip_name(1)) as chip:
-            lines = chip.find_line('nonexistent-line')
+            lines = chip.find_line('nonexistent-line', unique=True)
             self.assertEqual(lines, None)
 
     def test_get_multiple_lines_by_offsets_in_tuple(self):
@@ -674,27 +686,6 @@ class LineRequestBehavior(MockupTestCase):
 #
 # Iterator test cases
 #
-
-class ChipIterator(MockupTestCase):
-
-    chip_sizes = ( 4, 8, 16 )
-
-    def test_iterate_over_chips(self):
-        gotA = False
-        gotB = False
-        gotC = False
-
-        for chip in gpiod.ChipIter():
-            if chip.label() == 'gpio-mockup-A':
-                gotA = True
-            elif chip.label() == 'gpio-mockup-B':
-                gotB = True
-            elif chip.label() == 'gpio-mockup-C':
-                gotC = True
-
-        self.assertTrue(gotA)
-        self.assertTrue(gotB)
-        self.assertTrue(gotC)
 
 class LineIterator(MockupTestCase):
 

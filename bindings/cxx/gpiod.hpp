@@ -33,6 +33,14 @@ struct line_event;
  */
 
 /**
+ * @brief Check if the file pointed to by path is a GPIO chip character device.
+ * @param path Path to check.
+ * @return True if the file exists and is a GPIO chip character device or a
+ *         symbolic link to it.
+ */
+bool is_gpiochip_device(const ::std::string& path) GPIOD_API;
+
+/**
  * @brief Represents a GPIO chip.
  *
  * Internally this class holds a smart pointer to an open GPIO chip descriptor.
@@ -859,115 +867,6 @@ private:
 	line_bulk_ptr to_line_bulk(void) const;
 
 	::std::vector<line> _m_bulk;
-};
-
-/**
- * @brief Create a new chip_iter.
- * @return New chip iterator object pointing to the first GPIO chip on the system.
- * @note This function is needed as we already use the default constructor of
- *       gpiod::chip_iter as the return value of gpiod::end.
- */
-GPIOD_API chip_iter make_chip_iter(void);
-
-/**
- * @brief Support for range-based loops for chip iterators.
- * @param iter A chip iterator.
- * @return Iterator unchanged.
- */
-GPIOD_API chip_iter begin(chip_iter iter) noexcept;
-
-/**
- * @brief Support for range-based loops for chip iterators.
- * @param iter A chip iterator.
- * @return New end iterator.
- */
-GPIOD_API chip_iter end(const chip_iter& iter) noexcept;
-
-/**
- * @brief Allows to iterate over all GPIO chips present on the system.
- */
-class chip_iter
-{
-public:
-
-	/**
-	 * @brief Default constructor. Creates the end iterator.
-	 */
-	GPIOD_API chip_iter(void) = default;
-
-	/**
-	 * @brief Copy constructor.
-	 * @param other Other chip_iter.
-	 */
-	GPIOD_API chip_iter(const chip_iter& other) = default;
-
-	/**
-	 * @brief Move constructor.
-	 * @param other Other chip_iter.
-	 */
-	GPIOD_API chip_iter(chip_iter&& other) = default;
-
-	/**
-	 * @brief Assignment operator.
-	 * @param other Other chip_iter.
-	 * @return Reference to this iterator.
-	 */
-	GPIOD_API chip_iter& operator=(const chip_iter& other) = default;
-
-	/**
-	 * @brief Move assignment operator.
-	 * @param other Other chip_iter.
-	 * @return Reference to this iterator.
-	 */
-	GPIOD_API chip_iter& operator=(chip_iter&& other) = default;
-
-	/**
-	 * @brief Destructor.
-	 */
-	GPIOD_API ~chip_iter(void) = default;
-
-	/**
-	 * @brief Advance the iterator by one element.
-	 * @return Reference to this iterator.
-	 */
-	GPIOD_API chip_iter& operator++(void);
-
-	/**
-	 * @brief Dereference current element.
-	 * @return Current GPIO chip by reference.
-	 */
-	GPIOD_API const chip& operator*(void) const;
-
-	/**
-	 * @brief Member access operator.
-	 * @return Current GPIO chip by pointer.
-	 */
-	GPIOD_API const chip* operator->(void) const;
-
-	/**
-	 * @brief Check if this operator points to the same element.
-	 * @param rhs Right-hand side of the equation.
-	 * @return True if this iterator points to the same chip_iter,
-	 *         false otherwise.
-	 */
-	GPIOD_API bool operator==(const chip_iter& rhs) const noexcept;
-
-	/**
-	 * @brief Check if this operator doesn't point to the same element.
-	 * @param rhs Right-hand side of the equation.
-	 * @return True if this iterator doesn't point to the same chip_iter,
-	 *         false otherwise.
-	 */
-	GPIOD_API bool operator!=(const chip_iter& rhs) const noexcept;
-
-private:
-
-	chip_iter(::gpiod_chip_iter* iter);
-
-	::std::shared_ptr<::gpiod_chip_iter> _m_iter;
-	chip _m_current;
-
-	friend chip_iter make_chip_iter(void);
 };
 
 /**

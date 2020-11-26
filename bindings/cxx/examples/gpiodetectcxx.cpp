@@ -10,6 +10,7 @@
 #include <gpiod.hpp>
 
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 
 int main(int argc, char **argv)
@@ -19,10 +20,14 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	for (auto& it: ::gpiod::make_chip_iter()) {
-	        ::std::cout << it.name() << " ["
-			  << it.label() << "] ("
-			  << it.num_lines() << " lines)" << ::std::endl;
+	for (const auto& entry: ::std::filesystem::directory_iterator("/dev/")) {
+		if (::gpiod::is_gpiochip_device(entry.path())) {
+			::gpiod::chip chip(entry.path());
+
+			::std::cout << chip.name() << " ["
+				    << chip.label() << "] ("
+				    << chip.num_lines() << " lines)" << ::std::endl;
+		}
 	}
 
 	return EXIT_SUCCESS;

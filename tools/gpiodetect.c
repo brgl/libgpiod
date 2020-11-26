@@ -5,6 +5,8 @@
  * Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
  */
 
+#include <dirent.h>
+#include <errno.h>
 #include <getopt.h>
 #include <gpiod.h>
 #include <stdio.h>
@@ -33,9 +35,9 @@ static void print_help(void)
 
 int main(int argc, char **argv)
 {
-	struct gpiod_chip_iter *iter;
+	int optc, opti, num_chips, i;
 	struct gpiod_chip *chip;
-	int optc, opti;
+	struct dirent **entries;
 
 	for (;;) {
 		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
@@ -62,18 +64,31 @@ int main(int argc, char **argv)
 	if (argc > 0)
 		die("unrecognized argument: %s", argv[0]);
 
-	iter = gpiod_chip_iter_new();
-	if (!iter)
-		die_perror("unable to access GPIO chips");
+	num_chips = scandir("/dev/", &entries, chip_dir_filter, alphasort);
+	if (num_chips < 0)
+		die_perror("unable to scan /dev");
 
-	gpiod_foreach_chip(iter, chip) {
+	for (i = 0; i < num_chips; i++) {
+		chip = gpiod_chip_open_by_name(entries[i]->d_name);
+		if (!chip) {
+			if (errno == EACCES)
+				printf("%s Permission denied\n",
+				       entries[i]->d_name);
+			else
+				die_perror("unable to open %s",
+					   entries[i]->d_name);
+		}
+
 		printf("%s [%s] (%u lines)\n",
 		       gpiod_chip_name(chip),
 		       gpiod_chip_label(chip),
 		       gpiod_chip_num_lines(chip));
+
+		gpiod_chip_close(chip);
+		free(entries[i]);
 	}
 
-	gpiod_chip_iter_free(iter);
+	free(entries);
 
 	return EXIT_SUCCESS;
 }

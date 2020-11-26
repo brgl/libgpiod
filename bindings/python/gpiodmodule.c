@@ -36,11 +36,6 @@ typedef struct {
 
 typedef struct {
 	PyObject_HEAD
-	struct gpiod_chip_iter *iter;
-} gpiod_ChipIterObject;
-
-typedef struct {
-	PyObject_HEAD
 	unsigned int offset;
 	gpiod_ChipObject *owner;
 } gpiod_LineIterObject;
@@ -2220,7 +2215,7 @@ PyDoc_STRVAR(gpiod_Chip_find_line_doc,
 static gpiod_LineBulkObject *
 gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args, PyObject *kwds)
 {
-	static char *kwlist[] = { "unique", NULL };
+	static char *kwlist[] = { "", "unique", NULL };
 
 	gpiod_LineBulkObject *bulk_obj;
 	struct gpiod_line_bulk *bulk;
@@ -2469,76 +2464,6 @@ static PyTypeObject gpiod_ChipType = {
 	.tp_methods = gpiod_Chip_methods,
 };
 
-static int gpiod_ChipIter_init(gpiod_ChipIterObject *self,
-			       PyObject *Py_UNUSED(ignored0),
-			       PyObject *Py_UNUSED(ignored1))
-{
-	self->iter = gpiod_chip_iter_new();
-	if (!self->iter) {
-		PyErr_SetFromErrno(PyExc_OSError);
-		return -1;
-	}
-
-	return 0;
-}
-
-static void gpiod_ChipIter_dealloc(gpiod_ChipIterObject *self)
-{
-	if (self->iter)
-		gpiod_chip_iter_free_noclose(self->iter);
-
-	PyObject_Del(self);
-}
-
-static gpiod_ChipObject *gpiod_ChipIter_next(gpiod_ChipIterObject *self)
-{
-	gpiod_ChipObject *chip_obj;
-	struct gpiod_chip *chip;
-
-	Py_BEGIN_ALLOW_THREADS;
-	chip = gpiod_chip_iter_next_noclose(self->iter);
-	Py_END_ALLOW_THREADS;
-	if (!chip)
-		return NULL; /* Last element. */
-
-	chip_obj = PyObject_New(gpiod_ChipObject, &gpiod_ChipType);
-	if (!chip_obj) {
-		gpiod_chip_close(chip);
-		return NULL;
-	}
-
-	chip_obj->chip = chip;
-
-	return chip_obj;
-}
-
-PyDoc_STRVAR(gpiod_ChipIterType_doc,
-"Allows to iterate over all GPIO chips in the system.\n"
-"\n"
-"The ChipIter's constructor takes no arguments.\n"
-"\n"
-"Each iteration yields the next open GPIO chip handle. The caller is\n"
-"responsible for closing each chip\n"
-"\n"
-"Example:\n"
-"\n"
-"    for chip in gpiod.ChipIter():\n"
-"        do_something_with_chip(chip)\n"
-"        chip.close()");
-
-static PyTypeObject gpiod_ChipIterType = {
-	PyVarObject_HEAD_INIT(NULL, 0)
-	.tp_name = "gpiod.ChipIter",
-	.tp_basicsize = sizeof(gpiod_ChipIterObject),
-	.tp_flags = Py_TPFLAGS_DEFAULT,
-	.tp_doc = gpiod_ChipIterType_doc,
-	.tp_new = PyType_GenericNew,
-	.tp_init = (initproc)gpiod_ChipIter_init,
-	.tp_dealloc = (destructor)gpiod_ChipIter_dealloc,
-	.tp_iter = PyObject_SelfIter,
-	.tp_iternext = (iternextfunc)gpiod_ChipIter_next,
-};
-
 static int gpiod_LineIter_init(gpiod_LineIterObject *self,
 			       PyObject *args, PyObject *Py_UNUSED(ignored))
 {
@@ -2618,7 +2543,6 @@ static gpiod_PyType gpiod_PyType_list[] = {
 	{ .name = "LineEvent",	.typeobj = &gpiod_LineEventType,	},
 	{ .name = "LineBulk",	.typeobj = &gpiod_LineBulkType,		},
 	{ .name = "LineIter",	.typeobj = &gpiod_LineIterType,		},
-	{ .name = "ChipIter",	.typeobj = &gpiod_ChipIterType		},
 	{ }
 };
 
@@ -2702,6 +2626,41 @@ static gpiod_ConstDescr gpiod_ConstList[] = {
 	{ }
 };
 
+PyDoc_STRVAR(gpiod_Module_is_gpiochip_device_doc,
+"is_gpiochip_device(path) -> boolean\n"
+"\n"
+"Check if the file pointed to by path is a GPIO chip character device.\n"
+"Returns true if so, False otherwise.\n"
+"\n"
+"  path\n"
+"    Path to the file that should be checked.\n");
+
+static PyObject *
+gpiod_Module_is_gpiochip_device(PyObject *Py_UNUSED(self), PyObject *args)
+{
+	const char *path;
+	int ret;
+
+	ret = PyArg_ParseTuple(args, "s", &path);
+	if (!ret)
+		return NULL;
+
+	if (gpiod_is_gpiochip_device(path))
+		Py_RETURN_TRUE;
+
+	Py_RETURN_FALSE;
+}
+
+static PyMethodDef gpiod_module_methods[] = {
+	{
+		.ml_name = "is_gpiochip_device",
+		.ml_meth = (PyCFunction)gpiod_Module_is_gpiochip_device,
+		.ml_flags = METH_VARARGS,
+		.ml_doc = gpiod_Module_is_gpiochip_device_doc,
+	},
+	{ }
+};
+
 PyDoc_STRVAR(gpiod_Module_doc,
 "Python bindings for libgpiod.\n\
 \n\
@@ -2712,6 +2671,7 @@ static PyModuleDef gpiod_Module = {
 	.m_name = "gpiod",
 	.m_doc = gpiod_Module_doc,
 	.m_size = -1,
+	.m_methods = gpiod_module_methods,
 };
 
 typedef struct {

@@ -10,10 +10,12 @@
 '''Reimplementation of the gpiodetect tool in Python.'''
 
 import gpiod
+import os
 
 if __name__ == '__main__':
-    for chip in gpiod.ChipIter():
-        print('{} [{}] ({} lines)'.format(chip.name(),
-                                          chip.label(),
-                                          chip.num_lines()))
-        chip.close()
+    for entry in os.scandir('/dev/'):
+        if gpiod.is_gpiochip_device(entry.path):
+            with gpiod.Chip(entry.path) as chip:
+                print('{} [{}] ({} lines)'.format(chip.name(),
+                                                  chip.label(),
+                                                  chip.num_lines()))

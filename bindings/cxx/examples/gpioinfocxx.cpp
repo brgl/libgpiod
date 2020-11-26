@@ -10,6 +10,7 @@
 #include <gpiod.hpp>
 
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 
 int main(int argc, char **argv)
@@ -19,31 +20,35 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	for (auto& cit: ::gpiod::make_chip_iter()) {
-		::std::cout << cit.name() << " - " << cit.num_lines() << " lines:" << ::std::endl;
+	for (const auto& entry: ::std::filesystem::directory_iterator("/dev/")) {
+		if (::gpiod::is_gpiochip_device(entry.path())) {
+			::gpiod::chip chip(entry.path());
 
-		for (auto& lit: ::gpiod::line_iter(cit)) {
-			::std::cout << "\tline ";
-			::std::cout.width(3);
-			::std::cout << lit.offset() << ": ";
+			::std::cout << chip.name() << " - " << chip.num_lines() << " lines:" << ::std::endl;
 
-			::std::cout.width(12);
-			::std::cout << (lit.name().empty() ? "unnamed" : lit.name());
-			::std::cout << " ";
+			for (auto& lit: ::gpiod::line_iter(chip)) {
+				::std::cout << "\tline ";
+				::std::cout.width(3);
+				::std::cout << lit.offset() << ": ";
 
-			::std::cout.width(12);
-			::std::cout << (lit.consumer().empty() ? "unused" : lit.consumer());
-			::std::cout << " ";
+				::std::cout.width(12);
+				::std::cout << (lit.name().empty() ? "unnamed" : lit.name());
+				::std::cout << " ";
 
-			::std::cout.width(8);
-			::std::cout << (lit.direction() == ::gpiod::line::DIRECTION_INPUT ? "input" : "output");
-			::std::cout << " ";
+				::std::cout.width(12);
+				::std::cout << (lit.consumer().empty() ? "unused" : lit.consumer());
+				::std::cout << " ";
 
-			::std::cout.width(10);
-			::std::cout << (lit.active_state() == ::gpiod::line::ACTIVE_LOW
-								? "active-low" : "active-high");
+				::std::cout.width(8);
+				::std::cout << (lit.direction() == ::gpiod::line::DIRECTION_INPUT ? "input" : "output");
+				::std::cout << " ";
 
-			::std::cout << ::std::endl;
+				::std::cout.width(10);
+				::std::cout << (lit.active_state() == ::gpiod::line::ACTIVE_LOW
+									? "active-low" : "active-high");
+
+				::std::cout << ::std::endl;
+			}
 		}
 	}
 

@@ -8,6 +8,8 @@
 #ifndef __GPIOD_TOOLS_COMMON_H__
 #define __GPIOD_TOOLS_COMMON_H__
 
+#include <dirent.h>
+
 /*
  * Various helpers for the GPIO tools.
  *
@@ -29,5 +31,6 @@ void print_version(void);
 int bias_flags(const char *option);
 void print_bias_help(void);
 int make_signalfd(void);
+int chip_dir_filter(const struct dirent *entry);
 
 #endif /* __GPIOD_TOOLS_COMMON_H__ */
