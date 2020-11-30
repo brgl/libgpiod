@@ -1,3 +1,9 @@
+libgpiod v1.6.2
+===============
+
+Improvements:
+- allow to build the library with pre linux v5.5 kernel headers
+
 libgpiod v1.6.1
 ===============
 
