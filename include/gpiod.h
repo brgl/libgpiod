@@ -432,6 +432,13 @@ bool gpiod_line_is_open_source(struct gpiod_line *line) GPIOD_API;
 int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
 
 /**
+ * @brief Get the handle to the GPIO chip controlling this line.
+ * @param line The GPIO line object.
+ * @return Pointer to the GPIO chip handle controlling this line.
+ */
+struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
+
+/**
  * @}
  *
  * @defgroup line_request Line requests
@@ -1092,13 +1099,6 @@ struct gpiod_line *gpiod_line_find(const char *name) GPIOD_API;
  * After this function returns, the line must no longer be used.
  */
 void gpiod_line_close_chip(struct gpiod_line *line) GPIOD_API;
-
-/**
- * @brief Get the handle to the GPIO chip controlling this line.
- * @param line The GPIO line object.
- * @return Pointer to the GPIO chip handle controlling this line.
- */
-struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @}
