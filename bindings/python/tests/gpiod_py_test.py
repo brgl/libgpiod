@@ -182,44 +182,12 @@ class ChipGetLines(MockupTestCase):
             self.assertEqual(lines[2].name(), 'gpio-mockup-B-6')
             self.assertEqual(lines[3].name(), 'gpio-mockup-B-7')
 
-    def test_find_multiple_lines_by_names_in_tuple(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
-            lines = chip.find_lines(( 'gpio-mockup-B-0',
-                                      'gpio-mockup-B-3',
-                                      'gpio-mockup-B-4',
-                                      'gpio-mockup-B-6' )).to_list()
-            self.assertEqual(len(lines), 4)
-            self.assertEqual(lines[0].offset(), 0)
-            self.assertEqual(lines[1].offset(), 3)
-            self.assertEqual(lines[2].offset(), 4)
-            self.assertEqual(lines[3].offset(), 6)
-
-    def test_find_multiple_lines_by_names_in_list(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
-            lines = chip.find_lines([ 'gpio-mockup-B-0',
-                                      'gpio-mockup-B-3',
-                                      'gpio-mockup-B-4',
-                                      'gpio-mockup-B-6' ]).to_list()
-            self.assertEqual(len(lines), 4)
-            self.assertEqual(lines[0].offset(), 0)
-            self.assertEqual(lines[1].offset(), 3)
-            self.assertEqual(lines[2].offset(), 4)
-            self.assertEqual(lines[3].offset(), 6)
-
     def test_get_multiple_lines_invalid_offset(self):
         with gpiod.Chip(mockup.chip_name(1)) as chip:
             with self.assertRaises(OSError) as err_ctx:
                 line = chip.get_lines(( 1, 3, 11, 7 ))
 
             self.assertEqual(err_ctx.exception.errno, errno.EINVAL)
-
-    def test_find_multiple_lines_nonexistent(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
-            with self.assertRaises(TypeError):
-                lines = chip.find_lines(( 'gpio-mockup-B-0',
-                                          'nonexistent-line',
-                                          'gpio-mockup-B-4',
-                                          'gpio-mockup-B-6' )).to_list()
 
     def test_get_all_lines(self):
         with gpiod.Chip(mockup.chip_name(2)) as chip:

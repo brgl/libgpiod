@@ -185,21 +185,6 @@ struct gpiod_line *
 gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
 
 /**
- * @brief Find a set of GPIO lines by names among lines exposed by this chip.
- * @param chip The GPIO chip object.
- * @param names Array of pointers to C-strings containing the names of the
- *              lines to lookup. Must end with a NULL-pointer.
- * @return New line bulk object or NULL on error.
- * @note If at least one line from the list could not be found among the lines
- *       exposed by this chip, the function sets errno to ENOENT.
- * @attention GPIO line names are not unique in the linux kernel, neither
- *            globally nor within a single chip. This function finds the first
- *            line with given name.
- */
-struct gpiod_line_bulk *
-gpiod_chip_find_lines(struct gpiod_chip *chip, const char **names) GPIOD_API;
-
-/**
  * @}
  *
  * @defgroup lines GPIO line operations

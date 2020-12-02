@@ -2339,86 +2339,6 @@ gpiod_Chip_get_all_lines(gpiod_ChipObject *self, PyObject *Py_UNUSED(ignored))
 	return bulk_obj;
 }
 
-PyDoc_STRVAR(gpiod_Chip_find_lines_doc,
-"find_lines(names) -> gpiod.LineBulk object\n"
-"\n"
-"Look up a set of lines by their names.\n"
-"\n"
-"  names\n"
-"    Sequence of line names.\n"
-"\n"
-"Unlike find_line(), this method raises an exception if at least one line\n"
-"from the list doesn't exist.");
-
-static gpiod_LineBulkObject *
-gpiod_Chip_find_lines(gpiod_ChipObject *self, PyObject *args)
-{
-	PyObject *names, *lines, *iter, *next, *arg;
-	gpiod_LineBulkObject *bulk;
-	Py_ssize_t num_names, i;
-	gpiod_LineObject *line;
-	int rv;
-
-	rv = PyArg_ParseTuple(args, "O", &names);
-	if (!rv)
-		return NULL;
-
-	num_names = PyObject_Size(names);
-	if (num_names < 1) {
-		PyErr_SetString(PyExc_TypeError,
-				"Argument must be a non-empty sequence of names");
-		return NULL;
-	}
-
-	lines = PyList_New(num_names);
-	if (!lines)
-		return NULL;
-
-	iter = PyObject_GetIter(names);
-	if (!iter) {
-		Py_DECREF(lines);
-		return NULL;
-	}
-
-	for (i = 0;;) {
-		next = PyIter_Next(iter);
-		if (!next) {
-			Py_DECREF(iter);
-			break;
-		}
-
-		arg = PyTuple_Pack(1, next);
-		if (!arg) {
-			Py_DECREF(iter);
-			Py_DECREF(lines);
-			return NULL;
-		}
-
-		line = gpiod_Chip_find_line(self, arg);
-		Py_DECREF(arg);
-		if (!line || (PyObject *)line == Py_None) {
-			Py_DECREF(iter);
-			Py_DECREF(lines);
-			if ((PyObject *)line == Py_None)
-				PyErr_SetString(PyExc_TypeError,
-						"Unable to find all lines from the list");
-			return NULL;
-		}
-
-		rv = PyList_SetItem(lines, i++, (PyObject *)line);
-		if (rv < 0) {
-			Py_DECREF(line);
-			Py_DECREF(iter);
-			Py_DECREF(lines);
-			return NULL;
-		}
-	}
-
-	bulk = gpiod_ListToLineBulk(lines);
-	Py_DECREF(lines);
-	return bulk;
-}
-
 static PyMethodDef gpiod_Chip_methods[] = {
 	{
 		.ml_name = "close",
@@ -2479,12 +2399,6 @@ static PyMethodDef gpiod_Chip_methods[] = {
 		.ml_meth = (PyCFunction)gpiod_Chip_get_all_lines,
 		.ml_flags = METH_NOARGS,
 		.ml_doc = gpiod_Chip_get_all_lines_doc,
-	},
-	{
-		.ml_name = "find_lines",
-		.ml_meth = (PyCFunction)gpiod_Chip_find_lines,
-		.ml_flags = METH_VARARGS,
-		.ml_doc = gpiod_Chip_find_lines_doc,
 	},
 	{ }
 };

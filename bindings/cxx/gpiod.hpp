@@ -147,13 +147,6 @@ public:
 	GPIOD_API line_bulk get_all_lines(void) const;
 
 	/**
-	 * @brief Get a set of lines exposed by this chip by their names.
-	 * @param names Vector of line names.
-	 * @return Set of lines held by a line_bulk object.
-	 */
-	GPIOD_API line_bulk find_lines(const ::std::vector<::std::string>& names) const;
-
-	/**
 	 * @brief Equality operator.
 	 * @param rhs Right-hand side of the equation.
 	 * @return True if rhs references the same chip. False otherwise.

@@ -191,17 +191,6 @@ TEST_CASE("Lines can be retrieved from chip objects", "[chip]")
 		REQUIRE(lines.get(2).name() == "gpio-mockup-B-3");
 		REQUIRE(lines.get(3).name() == "gpio-mockup-B-2");
 	}
-
-	SECTION("find multiple lines by names")
-	{
-		auto lines = chip.find_lines({ "gpio-mockup-B-2",
-					       "gpio-mockup-B-5",
-					       "gpio-mockup-B-6"});
-		REQUIRE(lines.size() == 3);
-		REQUIRE(lines.get(0).offset() == 2);
-		REQUIRE(lines.get(1).offset() == 5);
-		REQUIRE(lines.get(2).offset() == 6);
-	}
 }
 
 TEST_CASE("All lines can be retrieved from a chip at once", "[chip]")
@@ -235,12 +224,5 @@ TEST_CASE("Errors occurring when retrieving lines are correctly reported", "[chi
 	SECTION("line not found by name")
 	{
 		REQUIRE_FALSE(chip.find_line("nonexistent-line"));
-	}
-
-	SECTION("line not found by name (multiple lines)")
-	{
-		REQUIRE_FALSE(chip.find_lines({ "gpio-mockup-B-2",
-						"nonexistent-line",
-						"gpio-mockup-B-6"}));
 	}
 }

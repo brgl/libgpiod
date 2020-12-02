@@ -142,34 +142,6 @@ gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
 	return NULL;
 }
 
-struct gpiod_line_bulk *
-gpiod_chip_find_lines(struct gpiod_chip *chip, const char **names)
-{
-	struct gpiod_line_bulk *bulk;
-	struct gpiod_line *line;
-	unsigned int num_names;
-	int i;
-
-	for (i = 0; names[i]; i++);
-	num_names = i;
-
-	bulk = gpiod_line_bulk_new(num_names);
-	if (!bulk)
-		return NULL;
-
-	for (i = 0; names[i]; i++) {
-		line = gpiod_chip_find_line(chip, names[i]);
-		if (!line) {
-			gpiod_line_bulk_free(bulk);
-			return NULL;
-		}
-
-		gpiod_line_bulk_add_line(bulk, line);
-	}
-
-	return bulk;
-}
-
 int gpiod_line_request_input(struct gpiod_line *line, const char *consumer)
 {
 	struct gpiod_line_request_config config = {

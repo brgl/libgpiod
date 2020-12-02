@@ -154,24 +154,6 @@ line_bulk chip::get_all_lines(void) const
 	return lines;
 }
 
-line_bulk chip::find_lines(const ::std::vector<::std::string>& names) const
-{
-	line_bulk lines;
-	line line;
-
-	for (auto& it: names) {
-		line = this->find_line(it);
-		if (!line) {
-			lines.clear();
-			return lines;
-		}
-
-		lines.append(line);
-	}
-
-	return lines;
-}
-
 bool chip::operator==(const chip& rhs) const noexcept
 {
 	return this->_m_chip.get() == rhs._m_chip.get();
