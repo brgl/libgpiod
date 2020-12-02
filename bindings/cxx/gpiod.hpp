@@ -549,15 +549,6 @@ private:
 };
 
 /**
- * @brief Find a GPIO line by name. Search all GPIO chips present on the system.
- * @param name Name of the line.
- * @return Returns a <line, chip> pair where line is the line with given name
- *         and chip is the line's owner. Both objects are empty if the line was
- *         not found.
- */
-GPIOD_API ::std::pair<line, chip> find_line(const ::std::string& name);
-
-/**
  * @brief Describes a single GPIO line event.
  */
 struct line_event

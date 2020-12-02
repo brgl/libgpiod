@@ -18,25 +18,6 @@ const ::std::string consumer = "line-test";
 
 } /* namespace */
 
-TEST_CASE("Global find_line() function works", "[line]")
-{
-	mockup::probe_guard mockup_chips({ 8, 8, 8, 8, 8 }, mockup::FLAG_NAMED_LINES);
-
-	SECTION("line found")
-	{
-		auto ret = ::gpiod::find_line("gpio-mockup-C-5");
-		REQUIRE(ret.first.offset() == 5);
-		REQUIRE(ret.first.name() == "gpio-mockup-C-5");
-		REQUIRE(ret.second.label() == "gpio-mockup-C");
-	}
-
-	SECTION("line not found")
-	{
-		auto ret = ::gpiod::find_line("nonexistent-line");
-		REQUIRE_FALSE(ret.first);
-	}
-}
-
 TEST_CASE("Line information can be correctly retrieved", "[line]")
 {
 	mockup::probe_guard mockup_chips({ 8 }, mockup::FLAG_NAMED_LINES);

@@ -1056,30 +1056,6 @@ int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
 /**
  * @}
  *
- * @defgroup line_misc Misc line functions
- * @{
- *
- * Functions that didn't fit anywhere else.
- */
-
-/**
- * @brief Find a GPIO line by its name.
- * @param name Name of the GPIO line.
- * @return Returns the GPIO line handle if the line exists in the system or
- *         NULL if it couldn't be located or an error occurred.
- * @attention GPIO lines are not unique in the linux kernel, neither globally
- *            nor within a single chip. This function finds the first line with
- *            given name.
- *
- * If this routine succeeds, the user must manually close the GPIO chip owning
- * this line to avoid memory leaks. If the line could not be found, this
- * functions sets errno to ENOENT.
- */
-struct gpiod_line *gpiod_line_find(const char *name) GPIOD_API;
-
-/**
- * @}
- *
  * @}
  *
  * @defgroup iterators Iterators for GPIO chips and lines

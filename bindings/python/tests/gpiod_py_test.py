@@ -234,24 +234,6 @@ class ChipGetLines(MockupTestCase):
 # Line test cases
 #
 
-class LineGlobalFindLine(MockupTestCase):
-
-    chip_sizes = ( 4, 8, 16 )
-    flags = gpiomockup.Mockup.FLAG_NAMED_LINES
-
-    def test_global_find_line_function(self):
-        line = gpiod.find_line('gpio-mockup-B-4')
-        self.assertNotEqual(line, None)
-        try:
-            self.assertEqual(line.owner().label(), 'gpio-mockup-B')
-            self.assertEqual(line.offset(), 4)
-        finally:
-            line.owner().close()
-
-    def test_global_find_line_function_nonexistent(self):
-        line = gpiod.find_line('nonexistent-line')
-        self.assertEqual(line, None)
-
 class LineInfo(MockupTestCase):
 
     chip_sizes = ( 8, )

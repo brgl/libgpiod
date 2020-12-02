@@ -2671,80 +2671,6 @@ static PyTypeObject gpiod_LineIterType = {
 	.tp_iternext = (iternextfunc)gpiod_LineIter_next,
 };
 
-PyDoc_STRVAR(gpiod_Module_find_line_doc,
-"find_line(name) -> gpiod.Line object or None\n"
-"\n"
-"Lookup a GPIO line by name. Search all gpiochips. Returns a gpiod.Line\n"
-"or None if a line with given name doesn't exist in the system.\n"
-"\n"
-"NOTE: the gpiod.Chip object owning the returned line must be closed\n"
-"by the caller.\n"
-"\n"
-"  name\n"
-"    Name of the line to find (string).");
-
-static gpiod_LineObject *gpiod_Module_find_line(PyObject *Py_UNUSED(self),
-						PyObject *args)
-{
-	gpiod_LineObject *line_obj;
-	gpiod_ChipObject *chip_obj;
-	struct gpiod_chip *chip;
-	struct gpiod_line *line;
-	const char *name;
-	int rv;
-
-	rv = PyArg_ParseTuple(args, "s", &name);
-	if (!rv)
-		return NULL;
-
-	Py_BEGIN_ALLOW_THREADS;
-	line = gpiod_line_find(name);
-	Py_END_ALLOW_THREADS;
-	if (!line) {
-		if (errno == ENOENT) {
-			Py_INCREF(Py_None);
-			return (gpiod_LineObject *)Py_None;
-		}
-
-		return (gpiod_LineObject *)PyErr_SetFromErrno(PyExc_OSError);
-	}
-
-	chip = gpiod_line_get_chip(line);
-
-	chip_obj = PyObject_New(gpiod_ChipObject, &gpiod_ChipType);
-	if (!chip_obj) {
-		gpiod_chip_close(chip);
-		return NULL;
-	}
-
-	chip_obj->chip = chip;
-
-	line_obj = gpiod_MakeLineObject(chip_obj, line);
-	if (!line_obj)
-		return NULL;
-
-	/*
-	 * PyObject_New() set the reference count for the chip object at 1 and
-	 * the call to gpiod_MakeLineObject() increased it to 2. However when
-	 * we return the object to the line object to the python interpreter,
-	 * there'll be only a single reference holder to the chip - the line
-	 * object itself. Decrease the chip reference here manually.
-	 */
-	Py_DECREF(line_obj->owner);
-
-	return line_obj;
-}
-
-static PyMethodDef gpiod_module_methods[] = {
-	{
-		.ml_name = "find_line",
-		.ml_meth = (PyCFunction)gpiod_Module_find_line,
-		.ml_flags = METH_VARARGS,
-		.ml_doc = gpiod_Module_find_line_doc,
-	},
-	{ }
-};
-
 typedef struct {
 	const char *name;
 	PyTypeObject *typeobj;
@@ -2850,7 +2776,6 @@ static PyModuleDef gpiod_Module = {
 	.m_name = "gpiod",
 	.m_doc = gpiod_Module_doc,
 	.m_size = -1,
-	.m_methods = gpiod_module_methods,
 };
 
 typedef struct {

@@ -343,19 +343,4 @@ line::chip_guard::chip_guard(const line& line)
 	
 }
 
-::std::pair<line, chip> find_line(const ::std::string& name)
-{
-	::std::pair<line, chip> ret;
-
-	for (auto& it: make_chip_iter()) {
-		ret.first = it.find_line(name);
-		if (ret.first) {
-			ret.second = it;
-			break;
-		}
-	}
-
-	return ret;
-}
-
 } /* namespace gpiod */

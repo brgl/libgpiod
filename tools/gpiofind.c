@@ -34,9 +34,10 @@ static void print_help(void)
 
 int main(int argc, char **argv)
 {
-	int optc, opti, ret = EXIT_SUCCESS;
+	struct gpiod_chip_iter *iter;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
+	int optc, opti;
 
 	for (;;) {
 		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
@@ -63,19 +64,23 @@ int main(int argc, char **argv)
 	if (argc != 1)
 		die("exactly one GPIO line name must be specified");
 
-	line = gpiod_line_find(argv[0]);
-	if (!line) {
-		if (errno == ENOENT)
-			return EXIT_FAILURE;
+	iter = gpiod_chip_iter_new();
+	if (!iter)
+		die_perror("unable to access GPIO chips");
 
-		die_perror("error performing the line lookup");
+	gpiod_foreach_chip(iter, chip) {
+		line = gpiod_chip_find_line(chip, argv[0]);
+		if (line) {
+			printf("%s %u\n",
+			       gpiod_chip_name(chip), gpiod_line_offset(line));
+			gpiod_chip_iter_free(iter);
+			return EXIT_SUCCESS;
+		}
+
+		if (errno != ENOENT)
+			die_perror("error performing the line lookup");
 	}
 
-	chip = gpiod_line_get_chip(line);
-
-	printf("%s %u\n", gpiod_chip_name(chip), gpiod_line_offset(line));
-
-	gpiod_chip_close(chip);
-
-	return ret;
+	gpiod_chip_iter_free(iter);
+	return EXIT_FAILURE;
 }

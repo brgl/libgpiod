@@ -377,32 +377,3 @@ int gpiod_line_request_bulk_both_edges_events_flags(
 	return line_event_request_type_bulk(bulk, consumer, flags,
 					GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
-
-struct gpiod_line *gpiod_line_find(const char *name)
-{
-	struct gpiod_chip_iter *iter;
-	struct gpiod_chip *chip;
-	struct gpiod_line *line;
-
-	iter = gpiod_chip_iter_new();
-	if (!iter)
-		return NULL;
-
-	gpiod_foreach_chip(iter, chip) {
-		line = gpiod_chip_find_line(chip, name);
-		if (line) {
-			gpiod_chip_iter_free_noclose(iter);
-			return line;
-		}
-
-		if (errno != ENOENT)
-			goto out;
-	}
-
-	errno = ENOENT;
-
-out:
-	gpiod_chip_iter_free(iter);
-
-	return NULL;
-}
