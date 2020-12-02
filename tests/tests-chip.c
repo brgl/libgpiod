@@ -235,7 +235,7 @@ GPIOD_TEST_CASE(get_all_lines, 0, { 4 })
 	g_assert_cmpuint(gpiod_line_offset(line3), ==, 3);
 }
 
-GPIOD_TEST_CASE(find_line_good, GPIOD_TEST_FLAG_NAMED_LINES, { 8, 8, 8 })
+GPIOD_TEST_CASE(find_line_good_unique, GPIOD_TEST_FLAG_NAMED_LINES, { 8, 8, 8 })
 {
 	g_autoptr(gpiod_chip_struct) chip = NULL;
 	struct gpiod_line *line;
@@ -244,14 +244,15 @@ GPIOD_TEST_CASE(find_line_good, GPIOD_TEST_FLAG_NAMED_LINES, { 8, 8, 8 })
 	g_assert_nonnull(chip);
 	gpiod_test_return_if_failed();
 
-	line = gpiod_chip_find_line(chip, "gpio-mockup-B-4");
+	line = gpiod_chip_find_line_unique(chip, "gpio-mockup-B-4");
 	g_assert_nonnull(line);
 	gpiod_test_return_if_failed();
 	g_assert_cmpuint(gpiod_line_offset(line), ==, 4);
 	g_assert_cmpstr(gpiod_line_name(line), ==, "gpio-mockup-B-4");
 }
 
-GPIOD_TEST_CASE(find_line_not_found, GPIOD_TEST_FLAG_NAMED_LINES, { 8, 8, 8 })
+GPIOD_TEST_CASE(find_line_unique_not_found,
+		GPIOD_TEST_FLAG_NAMED_LINES, { 8, 8, 8 })
 {
 	g_autoptr(gpiod_chip_struct) chip = NULL;
 	struct gpiod_line *line;
@@ -260,7 +261,7 @@ GPIOD_TEST_CASE(find_line_not_found, GPIOD_TEST_FLAG_NAMED_LINES, { 8, 8, 8 })
 	g_assert_nonnull(chip);
 	gpiod_test_return_if_failed();
 
-	line = gpiod_chip_find_line(chip, "nonexistent");
+	line = gpiod_chip_find_line_unique(chip, "nonexistent");
 	g_assert_null(line);
 	g_assert_cmpint(errno, ==, ENOENT);
 }

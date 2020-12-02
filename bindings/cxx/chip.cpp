@@ -122,16 +122,22 @@ line chip::get_line(unsigned int offset) const
 	return line(line_handle, *this);
 }
 
-line chip::find_line(const ::std::string& name) const
+::std::vector<line> chip::find_line(const ::std::string& name, bool unique) const
 {
 	this->throw_if_noref();
 
-	::gpiod_line* handle = ::gpiod_chip_find_line(this->_m_chip.get(), name.c_str());
-	if (!handle && errno != ENOENT)
-		throw ::std::system_error(errno, ::std::system_category(),
-					  "error looking up GPIO line by name");
+	::std::vector<line> lines;
 
-	return handle ? line(handle, *this) : line();
+	for (auto& line: ::gpiod::line_iter(*this)) {
+		if (line.name() == name)
+			lines.push_back(line);
+	}
+
+	if (unique && lines.size() > 1)
+		throw ::std::system_error(ERANGE, ::std::system_category(),
+					  "multiple lines with the same name found");
+
+	return lines;
 }
 
 line_bulk chip::get_lines(const ::std::vector<unsigned int>& offsets) const

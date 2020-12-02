@@ -120,11 +120,48 @@ struct gpiod_line_bulk *gpiod_chip_get_all_lines(struct gpiod_chip *chip)
 	return bulk;
 }
 
-struct gpiod_line *
+struct gpiod_line_bulk *
 gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
 {
+	struct gpiod_line_bulk *bulk = NULL;
+	unsigned int offset, num_lines;
 	struct gpiod_line *line;
-	unsigned int offset;
+	const char *tmp;
+
+	num_lines = gpiod_chip_num_lines(chip);
+
+	for (offset = 0; offset < num_lines; offset++) {
+		line = gpiod_chip_get_line(chip, offset);
+		if (!line) {
+			if (bulk)
+				gpiod_line_bulk_free(bulk);
+
+			return NULL;
+		}
+
+		tmp = gpiod_line_name(line);
+		if (tmp && strcmp(tmp, name) == 0) {
+			if (!bulk) {
+				bulk = gpiod_line_bulk_new(num_lines);
+				if (!bulk)
+					return NULL;
+			}
+
+			gpiod_line_bulk_add_line(bulk, line);
+		}
+	}
+
+	if (!bulk)
+		errno = ENOENT;
+
+	return bulk;
+}
+
+struct gpiod_line *
+gpiod_chip_find_line_unique(struct gpiod_chip *chip, const char *name)
+{
+	struct gpiod_line *line, *matching = NULL;
+	unsigned int offset, num_found = 0;
 	const char *tmp;
 
 	for (offset = 0; offset < gpiod_chip_num_lines(chip); offset++) {
@@ -133,12 +170,22 @@ gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
 			return NULL;
 
 		tmp = gpiod_line_name(line);
-		if (tmp && strcmp(tmp, name) == 0)
-			return line;
+		if (tmp && strcmp(tmp, name) == 0) {
+			matching = line;
+			num_found++;
+		}
+	}
+
+	if (matching) {
+		if (num_found > 1) {
+			errno = ERANGE;
+			return NULL;
+		}
+
+		return matching;
 	}
 
 	errno = ENOENT;
-
 	return NULL;
 }
 

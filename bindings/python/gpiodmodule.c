@@ -2148,46 +2148,6 @@ gpiod_Chip_get_line(gpiod_ChipObject *self, PyObject *args)
 	return gpiod_MakeLineObject(self, line);
 }
 
-PyDoc_STRVAR(gpiod_Chip_find_line_doc,
-"find_line(name) -> gpiod.Line object or None\n"
-"\n"
-"Get the GPIO line by name.\n"
-"\n"
-"  name\n"
-"    Line name (string)\n"
-"\n"
-"Returns a gpiod.Line object or None if line with given name is not\n"
-"associated with this chip.");
-
-static gpiod_LineObject *
-gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args)
-{
-	struct gpiod_line *line;
-	const char *name;
-	int rv;
-
-	if (gpiod_ChipIsClosed(self))
-		return NULL;
-
-	rv = PyArg_ParseTuple(args, "s", &name);
-	if (!rv)
-		return NULL;
-
-	Py_BEGIN_ALLOW_THREADS;
-	line = gpiod_chip_find_line(self->chip, name);
-	Py_END_ALLOW_THREADS;
-	if (!line) {
-		if (errno == ENOENT) {
-			Py_INCREF(Py_None);
-			return (gpiod_LineObject *)Py_None;
-		}
-
-		return (gpiod_LineObject *)PyErr_SetFromErrno(PyExc_OSError);
-	}
-
-	return gpiod_MakeLineObject(self, line);
-}
-
 static gpiod_LineBulkObject *gpiod_ListToLineBulk(PyObject *lines)
 {
 	gpiod_LineBulkObject *bulk;
@@ -2203,6 +2163,100 @@ static gpiod_LineBulkObject *gpiod_ListToLineBulk(PyObject *lines)
 	Py_DECREF(arg);
 
 	return bulk;
+}
+
+static gpiod_LineBulkObject *
+gpiod_LineBulkObjectFromBulk(gpiod_ChipObject *chip, struct gpiod_line_bulk *bulk)
+{
+	gpiod_LineBulkObject *bulk_obj;
+	gpiod_LineObject *line_obj;
+	struct gpiod_line *line;
+	unsigned int idx;
+	PyObject *list;
+	int rv;
+
+	list = PyList_New(gpiod_line_bulk_num_lines(bulk));
+	if (!list)
+		return NULL;
+
+	for (idx = 0; idx < gpiod_line_bulk_num_lines(bulk); idx++) {
+		line = gpiod_line_bulk_get_line(bulk, idx);
+		line_obj = gpiod_MakeLineObject(chip, line);
+		if (!line_obj) {
+			Py_DECREF(list);
+			return NULL;
+		}
+
+		rv = PyList_SetItem(list, idx, (PyObject *)line_obj);
+		if (rv < 0) {
+			Py_DECREF(line_obj);
+			Py_DECREF(list);
+			return NULL;
+		}
+	}
+
+	bulk_obj = gpiod_ListToLineBulk(list);
+	Py_DECREF(list);
+	if (!bulk_obj)
+		return NULL;
+
+	return bulk_obj;
+}
+
+PyDoc_STRVAR(gpiod_Chip_find_line_doc,
+"find_line(name) -> gpiod.LineBulk object or None\n"
+"\n"
+"Find all GPIO lines by name among lines exposed by this GPIO chip..\n"
+"\n"
+"  name\n"
+"    Line name (string)\n"
+"  unique\n"
+"    Indicates whether an exception should be raised if more than one lines\n"
+"    matches the name\n"
+"\n"
+"Returns a gpiod.LineBulk object containing all matching lines or None if\n"
+"line with given name is not associated with this chip.");
+
+static gpiod_LineBulkObject *
+gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args, PyObject *kwds)
+{
+	static char *kwlist[] = { "unique", NULL };
+
+	gpiod_LineBulkObject *bulk_obj;
+	struct gpiod_line_bulk *bulk;
+	int rv, unique = 0;
+	const char *name;
+
+	if (gpiod_ChipIsClosed(self))
+		return NULL;
+
+	rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|p",
+					 kwlist, &name, &unique);
+	if (!rv)
+		return NULL;
+
+	Py_BEGIN_ALLOW_THREADS;
+	bulk = gpiod_chip_find_line(self->chip, name);
+	Py_END_ALLOW_THREADS;
+	if (!bulk) {
+		if (errno == ENOENT) {
+			Py_INCREF(Py_None);
+			return (gpiod_LineBulkObject *)Py_None;
+		}
+
+		return (gpiod_LineBulkObject *)PyErr_SetFromErrno(
+							PyExc_OSError);
+	}
+
+	if (unique && gpiod_line_bulk_num_lines(bulk) > 1) {
+		gpiod_line_bulk_free(bulk);
+		PyErr_SetString(PyExc_RuntimeError, "line not unique");
+		return NULL;
+	}
+
+	bulk_obj = gpiod_LineBulkObjectFromBulk(self, bulk);
+	gpiod_line_bulk_free(bulk);
+	return bulk_obj;
 }
 
 PyDoc_STRVAR(gpiod_Chip_get_lines_doc,
@@ -2293,10 +2347,6 @@ gpiod_Chip_get_all_lines(gpiod_ChipObject *self, PyObject *Py_UNUSED(ignored))
 {
 	gpiod_LineBulkObject *bulk_obj;
 	struct gpiod_line_bulk *bulk;
-	gpiod_LineObject *line_obj;
-	unsigned int idx;
-	PyObject *list;
-	int rv;
 
 	if (gpiod_ChipIsClosed(self))
 		return NULL;
@@ -2306,36 +2356,8 @@ gpiod_Chip_get_all_lines(gpiod_ChipObject *self, PyObject *Py_UNUSED(ignored))
 		return (gpiod_LineBulkObject *)PyErr_SetFromErrno(
 							PyExc_OSError);
 
-	list = PyList_New(gpiod_line_bulk_num_lines(bulk));
-	if (!list) {
-		gpiod_line_bulk_free(bulk);
-		return NULL;
-	}
-
-	for (idx = 0; idx < gpiod_line_bulk_num_lines(bulk); idx++) {
-		line_obj = gpiod_MakeLineObject(self, gpiod_line_bulk_get_line(bulk, idx));
-		if (!line_obj) {
-			gpiod_line_bulk_free(bulk);
-			Py_DECREF(list);
-			return NULL;
-		}
-
-		rv = PyList_SetItem(list, idx, (PyObject *)line_obj);
-		if (rv < 0) {
-			gpiod_line_bulk_free(bulk);
-			Py_DECREF(line_obj);
-			Py_DECREF(list);
-			return NULL;
-		}
-	}
-
+	bulk_obj = gpiod_LineBulkObjectFromBulk(self, bulk);
 	gpiod_line_bulk_free(bulk);
-
-	bulk_obj = gpiod_ListToLineBulk(list);
-	Py_DECREF(list);
-	if (!bulk_obj)
-		return NULL;
-
 	return bulk_obj;
 }
 
@@ -2384,8 +2406,8 @@ static PyMethodDef gpiod_Chip_methods[] = {
 	},
 	{
 		.ml_name = "find_line",
-		.ml_meth = (PyCFunction)gpiod_Chip_find_line,
-		.ml_flags = METH_VARARGS,
+		.ml_meth = (PyCFunction)(void (*)(void))gpiod_Chip_find_line,
+		.ml_flags = METH_VARARGS | METH_KEYWORDS,
 		.ml_doc = gpiod_Chip_find_line_doc,
 	},
 	{

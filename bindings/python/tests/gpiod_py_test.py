@@ -149,8 +149,9 @@ class ChipGetLines(MockupTestCase):
 
     def test_find_single_line_by_name(self):
         with gpiod.Chip(mockup.chip_name(1)) as chip:
-            line = chip.find_line('gpio-mockup-B-4')
-            self.assertEqual(line.offset(), 4)
+            lines = chip.find_line('gpio-mockup-B-4').to_list()
+            self.assertEqual(len(lines), 1)
+            self.assertEqual(lines[0].offset(), 4)
 
     def test_get_single_line_invalid_offset(self):
         with gpiod.Chip(mockup.chip_name(1)) as chip:
@@ -161,8 +162,8 @@ class ChipGetLines(MockupTestCase):
 
     def test_find_single_line_nonexistent(self):
         with gpiod.Chip(mockup.chip_name(1)) as chip:
-            line = chip.find_line('nonexistent-line')
-            self.assertEqual(line, None)
+            lines = chip.find_line('nonexistent-line')
+            self.assertEqual(lines, None)
 
     def test_get_multiple_lines_by_offsets_in_tuple(self):
         with gpiod.Chip(mockup.chip_name(1)) as chip:

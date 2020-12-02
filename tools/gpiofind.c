@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 		die_perror("unable to access GPIO chips");
 
 	gpiod_foreach_chip(iter, chip) {
-		line = gpiod_chip_find_line(chip, argv[0]);
+		line = gpiod_chip_find_line_unique(chip, argv[0]);
 		if (line) {
 			printf("%s %u\n",
 			       gpiod_chip_name(chip), gpiod_line_offset(line));

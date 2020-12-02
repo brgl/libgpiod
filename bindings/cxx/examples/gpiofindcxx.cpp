@@ -20,9 +20,9 @@ int main(int argc, char **argv)
 	}
 
 	for (auto& chip: ::gpiod::make_chip_iter()) {
-		auto line = chip.find_line(argv[1]);
-		if (line) {
-			::std::cout << line.name() << " " << line.offset() << ::std::endl;
+		auto lines = chip.find_line(argv[1], true);
+		if (!lines.empty()) {
+			::std::cout << lines.front().name() << " " << lines.front().offset() << ::std::endl;
 			return EXIT_SUCCESS;
 		}
 	}
