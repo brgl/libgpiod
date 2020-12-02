@@ -716,27 +716,6 @@ GPIOD_TEST_CASE(output_value_caching, 0, { 8 })
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 2), ==, 0);
 }
 
-GPIOD_TEST_CASE(get_line_helper, 0, { 16, 16, 32, 16 })
-{
-	g_autoptr(gpiod_chip_struct) chip = NULL;
-	struct gpiod_line *line;
-
-	line = gpiod_line_get(gpiod_test_chip_name(2), 18);
-	g_assert_nonnull(line);
-	gpiod_test_return_if_failed();
-	chip = gpiod_line_get_chip(line);
-	g_assert_cmpint(gpiod_line_offset(line), ==, 18);
-}
-
-GPIOD_TEST_CASE(get_line_helper_invalid_offset, 0, { 16, 16, 32, 16 })
-{
-	struct gpiod_line *line;
-
-	line = gpiod_line_get(gpiod_test_chip_name(3), 18);
-	g_assert_null(line);
-	g_assert_cmpint(errno, ==, EINVAL);
-}
-
 GPIOD_TEST_CASE(find_good, GPIOD_TEST_FLAG_NAMED_LINES, { 16, 16, 32, 16 })
 {
 	g_autoptr(gpiod_chip_struct) chip = NULL;

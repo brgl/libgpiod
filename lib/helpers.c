@@ -378,24 +378,6 @@ int gpiod_line_request_bulk_both_edges_events_flags(
 					GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
 
-struct gpiod_line *gpiod_line_get(const char *device, unsigned int offset)
-{
-	struct gpiod_chip *chip;
-	struct gpiod_line *line;
-
-	chip = gpiod_chip_open_lookup(device);
-	if (!chip)
-		return NULL;
-
-	line = gpiod_chip_get_line(chip, offset);
-	if (!line) {
-		gpiod_chip_close(chip);
-		return NULL;
-	}
-
-	return line;
-}
-
 struct gpiod_line *gpiod_line_find(const char *name)
 {
 	struct gpiod_chip_iter *iter;
