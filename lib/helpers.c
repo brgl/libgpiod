@@ -424,10 +424,3 @@ out:
 
 	return NULL;
 }
-
-void gpiod_line_close_chip(struct gpiod_line *line)
-{
-	struct gpiod_chip *chip = gpiod_line_get_chip(line);
-
-	gpiod_chip_close(chip);
-}

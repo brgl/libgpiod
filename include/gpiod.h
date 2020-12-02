@@ -1093,14 +1093,6 @@ gpiod_line_get(const char *device, unsigned int offset) GPIOD_API;
 struct gpiod_line *gpiod_line_find(const char *name) GPIOD_API;
 
 /**
- * @brief Close a GPIO chip owning this line and release all resources.
- * @param line GPIO line object
- *
- * After this function returns, the line must no longer be used.
- */
-void gpiod_line_close_chip(struct gpiod_line *line) GPIOD_API;
-
-/**
  * @}
  *
  * @}
