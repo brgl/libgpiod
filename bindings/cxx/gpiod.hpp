@@ -869,6 +869,7 @@ private:
 
 	using line_bulk_ptr = ::std::unique_ptr<::gpiod_line_bulk, line_bulk_deleter>;
 
+	line_bulk_ptr make_line_bulk_ptr(void) const;
 	line_bulk_ptr to_line_bulk(void) const;
 
 	::std::vector<line> _m_bulk;

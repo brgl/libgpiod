@@ -256,8 +256,7 @@ line_bulk line_bulk::event_wait(const ::std::chrono::nanoseconds& timeout) const
 	this->throw_if_empty();
 	line::chip_guard lock_chip(this->_m_bulk.front());
 
-	auto ev_bulk = ::gpiod_line_bulk_new(this->size());
-	line_bulk_ptr ev_bulk_deleter(ev_bulk);
+	auto ev_bulk = this->make_line_bulk_ptr();
 	auto bulk = this->to_line_bulk();
 	::timespec ts;
 	line_bulk ret;
@@ -266,16 +265,16 @@ line_bulk line_bulk::event_wait(const ::std::chrono::nanoseconds& timeout) const
 	ts.tv_sec = timeout.count() / 1000000000ULL;
 	ts.tv_nsec = timeout.count() % 1000000000ULL;
 
-	rv = ::gpiod_line_event_wait_bulk(bulk.get(), ::std::addressof(ts), ev_bulk);
+	rv = ::gpiod_line_event_wait_bulk(bulk.get(), ::std::addressof(ts), ev_bulk.get());
 	if (rv < 0) {
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "error polling for events");
 	} else if (rv > 0) {
 		auto chip = this->_m_bulk[0].get_chip();
-		auto num_lines = ::gpiod_line_bulk_num_lines(ev_bulk);
+		auto num_lines = ::gpiod_line_bulk_num_lines(ev_bulk.get());
 
 		for (unsigned int i = 0; i < num_lines; i++)
-			ret.append(line(::gpiod_line_bulk_get_line(ev_bulk, i), chip));
+			ret.append(line(::gpiod_line_bulk_get_line(ev_bulk.get(), i), chip));
 	}
 
 	return ret;
@@ -340,9 +339,20 @@ void line_bulk::throw_if_empty(void) const
 		throw ::std::logic_error("line_bulk not holding any GPIO lines");
 }
 
-line_bulk::line_bulk_ptr line_bulk::to_line_bulk(void) const
+line_bulk::line_bulk_ptr line_bulk::make_line_bulk_ptr(void) const
 {
 	line_bulk_ptr bulk(::gpiod_line_bulk_new(this->size()));
+
+	if (!bulk)
+		throw ::std::system_error(errno, ::std::system_category(),
+					  "unable to allocate new bulk object");
+
+	return bulk;
+}
+
+line_bulk::line_bulk_ptr line_bulk::to_line_bulk(void) const
+{
+	line_bulk_ptr bulk = this->make_line_bulk_ptr();
 
 	for (auto& it: this->_m_bulk)
 		::gpiod_line_bulk_add_line(bulk.get(), it._m_line);
