@@ -155,6 +155,12 @@ then
 	fi
 fi
 
+AC_ARG_ENABLE([examples],
+	[AS_HELP_STRING([--enable-examples], [enable building code examples[default=no]])],
+	[if test "x$enableval" = xyes; then with_examples=true; fi],
+	[with_examples=false])
+AM_CONDITIONAL([WITH_EXAMPLES], [test "x$with_examples" = xtrue])
+
 AC_ARG_ENABLE([bindings-cxx],
 	[AS_HELP_STRING([--enable-bindings-cxx],[enable C++ bindings [default=no]])],
 	[if test "x$enableval" = xyes; then with_bindings_cxx=true; fi],

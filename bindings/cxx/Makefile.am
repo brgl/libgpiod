@@ -18,10 +18,16 @@ include_HEADERS = gpiod.hpp
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgpiodcxx.pc
 
-SUBDIRS = . examples
+SUBDIRS = .
 
 if WITH_TESTS
 
 SUBDIRS += tests
+
+endif
+
+if WITH_EXAMPLES
+
+SUBDIRS += examples
 
 endif
