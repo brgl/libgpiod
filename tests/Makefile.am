@@ -28,15 +28,3 @@ gpiod_test_SOURCES =			\
 		tests-iter.c		\
 		tests-line.c		\
 		tests-misc.c
-
-all-local: gpiod-test
-	@echo " ********************************************************"
-	@echo " * Core tests have been built as tests/gpiod-test.      *"
-	@echo " *                                                      *"
-	@echo " * They require a recent linux kernel version and the   *"
-	@echo " * gpio-mockup module (must not be built-in).           *"
-	@echo " *                                                      *"
-	@echo " * Run the test executable with superuser privileges or *"
-	@echo " * make sure /dev/gpiochipX files are readable and      *"
-	@echo " * writable by normal users.                            *"
-	@echo " ********************************************************"
