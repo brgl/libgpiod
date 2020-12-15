@@ -85,35 +85,6 @@ bool gpiod_is_gpiochip_device(const char *path) GPIOD_API;
 struct gpiod_chip *gpiod_chip_open(const char *path) GPIOD_API;
 
 /**
- * @brief Open a gpiochip by name.
- * @param name Name of the gpiochip to open.
- * @return GPIO chip handle or NULL if an error occurred.
- *
- * This routine appends name to '/dev/' to create the path.
- */
-struct gpiod_chip *gpiod_chip_open_by_name(const char *name) GPIOD_API;
-
-/**
- * @brief Open a gpiochip by number.
- * @param num Number of the gpiochip.
- * @return GPIO chip handle or NULL if an error occurred.
- *
- * This routine appends num to '/dev/gpiochip' to create the path.
- */
-struct gpiod_chip *gpiod_chip_open_by_number(unsigned int num) GPIOD_API;
-
-/**
- * @brief Open a gpiochip based on the best guess what the path is.
- * @param descr String describing the gpiochip.
- * @return GPIO chip handle or NULL if an error occurred.
- *
- * This routine tries to figure out whether the user passed it the path to the
- * GPIO chip, its name or number as a string. Then it tries to open it using
- * one of the gpiod_chip_open** variants.
- */
-struct gpiod_chip *gpiod_chip_open_lookup(const char *descr) GPIOD_API;
-
-/**
  * @brief Close a GPIO chip handle and release all allocated resources.
  * @param chip The GPIO chip object.
  */

@@ -10,67 +10,10 @@
  * access to neither the internal library data structures nor the kernel UAPI.
  */
 
-#include <ctype.h>
 #include <errno.h>
 #include <gpiod.h>
 #include <stdio.h>
 #include <string.h>
-
-static bool isuint(const char *str)
-{
-	for (; *str && isdigit(*str); str++)
-		;
-
-	return *str == '\0';
-}
-
-struct gpiod_chip *gpiod_chip_open_by_name(const char *name)
-{
-	struct gpiod_chip *chip;
-	char *path;
-	int rv;
-
-	rv = asprintf(&path, "/dev/%s", name);
-	if (rv < 0)
-		return NULL;
-
-	chip = gpiod_chip_open(path);
-	free(path);
-
-	return chip;
-}
-
-struct gpiod_chip *gpiod_chip_open_by_number(unsigned int num)
-{
-	struct gpiod_chip *chip;
-	char *path;
-	int rv;
-
-	rv = asprintf(&path, "/dev/gpiochip%u", num);
-	if (!rv)
-		return NULL;
-
-	chip = gpiod_chip_open(path);
-	free(path);
-
-	return chip;
-}
-
-struct gpiod_chip *gpiod_chip_open_lookup(const char *descr)
-{
-	struct gpiod_chip *chip;
-
-	if (isuint(descr)) {
-		chip = gpiod_chip_open_by_number(strtoul(descr, NULL, 10));
-	} else {
-		if (strncmp(descr, "/dev/", 5))
-			chip = gpiod_chip_open_by_name(descr);
-		else
-			chip = gpiod_chip_open(descr);
-	}
-
-	return chip;
-}
 
 struct gpiod_line_bulk *
 gpiod_chip_get_lines(struct gpiod_chip *chip,

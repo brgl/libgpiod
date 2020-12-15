@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 		die_perror("unable to scan /dev");
 
 	for (i = 0; i < num_chips; i++) {
-		chip = gpiod_chip_open_by_name(entries[i]->d_name);
+		chip = chip_open_by_name(entries[i]->d_name);
 		if (!chip) {
 			if (errno == EACCES)
 				printf("%s Permission denied\n",

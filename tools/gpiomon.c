@@ -253,7 +253,7 @@ int main(int argc, char **argv)
 		num_lines++;
 	}
 
-	chip = gpiod_chip_open_lookup(argv[0]);
+	chip = chip_open_lookup(argv[0]);
 	if (!chip)
 		die_perror("unable to open %s", argv[0]);
 

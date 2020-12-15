@@ -58,10 +58,9 @@ public:
 
 	/**
 	 * @brief Constructor. Opens the chip using chip::open.
-	 * @param device String describing the GPIO chip.
-	 * @param how Indicates how the chip should be opened.
+	 * @param path Path to the GPIO chip device.
 	 */
-	GPIOD_API chip(const ::std::string& device, int how = OPEN_LOOKUP);
+	GPIOD_API chip(const ::std::string& path);
 
 	/**
 	 * @brief Copy constructor. References the object held by other.
@@ -96,13 +95,12 @@ public:
 
 	/**
 	 * @brief Open a GPIO chip.
-	 * @param device String describing the GPIO chip.
-	 * @param how Indicates how the chip should be opened.
+	 * @param path Path to the GPIO chip device.
 	 *
 	 * If the object already holds a reference to an open chip, it will be
 	 * closed and the reference reset.
 	 */
-	GPIOD_API void open(const ::std::string &device, int how = OPEN_LOOKUP);
+	GPIOD_API void open(const ::std::string &path);
 
 	/**
 	 * @brief Reset the internal smart pointer owned by this object.
@@ -183,21 +181,6 @@ public:
 	 * @return False if this object references a GPIO chip, true otherwise.
 	 */
 	GPIOD_API bool operator!(void) const noexcept;
-
-	/**
-	 * @brief Affect the way in which chip::chip and chip::open will try
-	 *        to open a GPIO chip character device.
-	 */
-	enum : int {
-		OPEN_LOOKUP = 1,
-		/**< Open based on the best guess what the supplied string is. */
-		OPEN_BY_PATH,
-		/**< Assume the string is a path to the GPIO chardev. */
-		OPEN_BY_NAME,
-		/**< Assume the string is the name of the chip */
-		OPEN_BY_NUMBER,
-		/**< Assume the string is the number of the GPIO chip. */
-	};
 
 private:
 

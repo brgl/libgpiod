@@ -1952,44 +1952,19 @@ static gpiod_LineBulkObject *gpiod_LineToLineBulk(gpiod_LineObject *line)
 	return ret;
 }
 
-enum {
-	gpiod_OPEN_LOOKUP = 1,
-	gpiod_OPEN_BY_NAME,
-	gpiod_OPEN_BY_PATH,
-	gpiod_OPEN_BY_NUMBER,
-};
-
 static int gpiod_Chip_init(gpiod_ChipObject *self,
 			   PyObject *args, PyObject *Py_UNUSED(ignored))
 {
-	int rv, how = gpiod_OPEN_LOOKUP;
-	PyThreadState *thread;
-	char *descr;
+	char *path;
+	int rv;
 
-	rv = PyArg_ParseTuple(args, "s|i", &descr, &how);
+	rv = PyArg_ParseTuple(args, "s", &path);
 	if (!rv)
 		return -1;
 
-	thread = PyEval_SaveThread();
-	switch (how) {
-	case gpiod_OPEN_LOOKUP:
-		self->chip = gpiod_chip_open_lookup(descr);
-		break;
-	case gpiod_OPEN_BY_NAME:
-		self->chip = gpiod_chip_open_by_name(descr);
-		break;
-	case gpiod_OPEN_BY_PATH:
-		self->chip = gpiod_chip_open(descr);
-		break;
-	case gpiod_OPEN_BY_NUMBER:
-		self->chip = gpiod_chip_open_by_number(atoi(descr));
-		break;
-	default:
-		PyEval_RestoreThread(thread);
-		PyErr_BadArgument();
-		return -1;
-	}
-	PyEval_RestoreThread(thread);
+	Py_BEGIN_ALLOW_THREADS;
+	self->chip = gpiod_chip_open(path);
+	Py_END_ALLOW_THREADS;
 	if (!self->chip) {
 		PyErr_SetFromErrno(PyExc_OSError);
 		return -1;
@@ -2553,26 +2528,6 @@ typedef struct {
 } gpiod_ConstDescr;
 
 static gpiod_ConstDescr gpiod_ConstList[] = {
-	{
-		.typeobj = &gpiod_ChipType,
-		.name = "OPEN_LOOKUP",
-		.val = gpiod_OPEN_LOOKUP,
-	},
-	{
-		.typeobj = &gpiod_ChipType,
-		.name = "OPEN_BY_PATH",
-		.val = gpiod_OPEN_BY_PATH,
-	},
-	{
-		.typeobj = &gpiod_ChipType,
-		.name = "OPEN_BY_NAME",
-		.val = gpiod_OPEN_BY_NAME,
-	},
-	{
-		.typeobj = &gpiod_ChipType,
-		.name = "OPEN_BY_NUMBER",
-		.val = gpiod_OPEN_BY_NUMBER,
-	},
 	{
 		.typeobj = &gpiod_LineType,
 		.name = "DIRECTION_INPUT",

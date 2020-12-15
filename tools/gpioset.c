@@ -288,7 +288,7 @@ int main(int argc, char **argv)
 			die("invalid offset: %s", argv[i + 1]);
 	}
 
-	chip = gpiod_chip_open_lookup(device);
+	chip = chip_open_lookup(device);
 	if (!chip)
 		die_perror("unable to open %s", device);
 

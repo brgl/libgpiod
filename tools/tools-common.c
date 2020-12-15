@@ -7,6 +7,7 @@
 
 /* Common code for GPIO tools. */
 
+#include <ctype.h>
 #include <errno.h>
 #include <gpiod.h>
 #include <libgen.h>
@@ -115,4 +116,60 @@ int chip_dir_filter(const struct dirent *entry)
 	is_chip = gpiod_is_gpiochip_device(path);
 	free(path);
 	return !!is_chip;
+}
+
+struct gpiod_chip *chip_open_by_name(const char *name)
+{
+	struct gpiod_chip *chip;
+	char *path;
+	int ret;
+
+	ret = asprintf(&path, "/dev/%s", name);
+	if (ret < 0)
+		return NULL;
+
+	chip = gpiod_chip_open(path);
+	free(path);
+
+	return chip;
+}
+
+static struct gpiod_chip *chip_open_by_number(unsigned int num)
+{
+	struct gpiod_chip *chip;
+	char *path;
+	int ret;
+
+	ret = asprintf(&path, "/dev/gpiochip%u", num);
+	if (!ret)
+		return NULL;
+
+	chip = gpiod_chip_open(path);
+	free(path);
+
+	return chip;
+}
+
+static bool isuint(const char *str)
+{
+	for (; *str && isdigit(*str); str++)
+		;
+
+	return *str == '\0';
+}
+
+struct gpiod_chip *chip_open_lookup(const char *device)
+{
+	struct gpiod_chip *chip;
+
+	if (isuint(device)) {
+		chip = chip_open_by_number(strtoul(device, NULL, 10));
+	} else {
+		if (strncmp(device, "/dev/", 5))
+			chip = chip_open_by_name(device);
+		else
+			chip = gpiod_chip_open(device);
+	}
+
+	return chip;
 }

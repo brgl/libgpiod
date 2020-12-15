@@ -96,29 +96,8 @@ class ChipOpen(MockupTestCase):
 
     chip_sizes = ( 8, 8, 8 )
 
-    def test_open_chip_by_name(self):
-        with gpiod.Chip(mockup.chip_name(1), gpiod.Chip.OPEN_BY_NAME) as chip:
-            self.assertEqual(chip.name(), mockup.chip_name(1))
-
-    def test_open_chip_by_path(self):
-        with gpiod.Chip(mockup.chip_path(1), gpiod.Chip.OPEN_BY_PATH) as chip:
-            self.assertEqual(chip.name(), mockup.chip_name(1))
-
-    def test_open_chip_by_num(self):
-        with gpiod.Chip('{}'.format(mockup.chip_num(1)),
-                        gpiod.Chip.OPEN_BY_NUMBER) as chip:
-            self.assertEqual(chip.name(), mockup.chip_name(1))
-
-    def test_lookup_chip_by_name(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
-            self.assertEqual(chip.name(), mockup.chip_name(1))
-
-    def test_lookup_chip_by_path(self):
+    def test_open_good(self):
         with gpiod.Chip(mockup.chip_path(1)) as chip:
-            self.assertEqual(chip.name(), mockup.chip_name(1))
-
-    def test_lookup_chip_by_num(self):
-        with gpiod.Chip('{}'.format(mockup.chip_num(1))) as chip:
             self.assertEqual(chip.name(), mockup.chip_name(1))
 
     def test_nonexistent_chip(self):
@@ -134,7 +113,7 @@ class ChipClose(MockupTestCase):
     chip_sizes = ( 8, )
 
     def test_use_chip_after_close(self):
-        chip = gpiod.Chip(mockup.chip_name(0))
+        chip = gpiod.Chip(mockup.chip_path(0))
         self.assertEqual(chip.name(), mockup.chip_name(0))
         chip.close()
         with self.assertRaises(ValueError):
@@ -145,7 +124,7 @@ class ChipInfo(MockupTestCase):
     chip_sizes = ( 16, )
 
     def test_chip_get_info(self):
-        chip = gpiod.Chip(mockup.chip_name(0))
+        chip = gpiod.Chip(mockup.chip_path(0))
         self.assertEqual(chip.name(), mockup.chip_name(0))
         self.assertEqual(chip.label(), 'gpio-mockup-A')
         self.assertEqual(chip.num_lines(), 16)
@@ -156,29 +135,29 @@ class ChipGetLines(MockupTestCase):
     flags = gpiomockup.Mockup.FLAG_NAMED_LINES
 
     def test_get_single_line_by_offset(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
+        with gpiod.Chip(mockup.chip_path(1)) as chip:
             line = chip.get_line(4)
             self.assertEqual(line.name(), 'gpio-mockup-B-4')
 
     def test_find_single_line_by_name(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
+        with gpiod.Chip(mockup.chip_path(1)) as chip:
             lines = chip.find_line('gpio-mockup-B-4', unique=True).to_list()
             self.assertEqual(lines[0].offset(), 4)
 
     def test_get_single_line_invalid_offset(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
+        with gpiod.Chip(mockup.chip_path(1)) as chip:
             with self.assertRaises(OSError) as err_ctx:
                 line = chip.get_line(11)
 
             self.assertEqual(err_ctx.exception.errno, errno.EINVAL)
 
     def test_find_single_line_nonexistent(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
+        with gpiod.Chip(mockup.chip_path(1)) as chip:
             lines = chip.find_line('nonexistent-line', unique=True)
             self.assertEqual(lines, None)
 
     def test_get_multiple_lines_by_offsets_in_tuple(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
+        with gpiod.Chip(mockup.chip_path(1)) as chip:
             lines = chip.get_lines(( 1, 3, 6, 7 )).to_list()
             self.assertEqual(len(lines), 4)
             self.assertEqual(lines[0].name(), 'gpio-mockup-B-1')
@@ -187,7 +166,7 @@ class ChipGetLines(MockupTestCase):
             self.assertEqual(lines[3].name(), 'gpio-mockup-B-7')
 
     def test_get_multiple_lines_by_offsets_in_list(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
+        with gpiod.Chip(mockup.chip_path(1)) as chip:
             lines = chip.get_lines([ 1, 3, 6, 7 ]).to_list()
             self.assertEqual(len(lines), 4)
             self.assertEqual(lines[0].name(), 'gpio-mockup-B-1')
@@ -196,14 +175,14 @@ class ChipGetLines(MockupTestCase):
             self.assertEqual(lines[3].name(), 'gpio-mockup-B-7')
 
     def test_get_multiple_lines_invalid_offset(self):
-        with gpiod.Chip(mockup.chip_name(1)) as chip:
+        with gpiod.Chip(mockup.chip_path(1)) as chip:
             with self.assertRaises(OSError) as err_ctx:
                 line = chip.get_lines(( 1, 3, 11, 7 ))
 
             self.assertEqual(err_ctx.exception.errno, errno.EINVAL)
 
     def test_get_all_lines(self):
-        with gpiod.Chip(mockup.chip_name(2)) as chip:
+        with gpiod.Chip(mockup.chip_path(2)) as chip:
             lines = chip.get_all_lines().to_list()
             self.assertEqual(len(lines), 4)
             self.assertEqual(lines[0].name(), 'gpio-mockup-C-0')
@@ -221,7 +200,7 @@ class LineInfo(MockupTestCase):
     flags = gpiomockup.Mockup.FLAG_NAMED_LINES
 
     def test_unexported_line(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(4)
             self.assertEqual(line.offset(), 4)
             self.assertEqual(line.name(), 'gpio-mockup-A-4')
@@ -232,7 +211,7 @@ class LineInfo(MockupTestCase):
             self.assertFalse(line.is_requested())
 
     def test_exported_line(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(4)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_OUT,
@@ -246,7 +225,7 @@ class LineInfo(MockupTestCase):
             self.assertTrue(line.is_requested())
 
     def test_exported_line_with_flags(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(4)
             flags = (gpiod.LINE_REQ_FLAG_ACTIVE_LOW |
                      gpiod.LINE_REQ_FLAG_OPEN_DRAIN)
@@ -265,7 +244,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.bias(), gpiod.Line.BIAS_AS_IS)
 
     def test_exported_open_drain_line(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(4)
             flags = gpiod.LINE_REQ_FLAG_OPEN_DRAIN
             line.request(consumer=default_consumer,
@@ -283,7 +262,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.bias(), gpiod.Line.BIAS_AS_IS)
 
     def test_exported_open_source_line(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(4)
             flags = gpiod.LINE_REQ_FLAG_OPEN_SOURCE
             line.request(consumer=default_consumer,
@@ -301,7 +280,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.bias(), gpiod.Line.BIAS_AS_IS)
 
     def test_exported_bias_disable_line(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(4)
             flags = gpiod.LINE_REQ_FLAG_BIAS_DISABLE
             line.request(consumer=default_consumer,
@@ -319,7 +298,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.bias(), gpiod.Line.BIAS_DISABLE)
 
     def test_exported_bias_pull_down_line(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(4)
             flags = gpiod.LINE_REQ_FLAG_BIAS_PULL_DOWN
             line.request(consumer=default_consumer,
@@ -337,7 +316,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.bias(), gpiod.Line.BIAS_PULL_DOWN)
 
     def test_exported_bias_pull_up_line(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(4)
             flags = gpiod.LINE_REQ_FLAG_BIAS_PULL_UP
             line.request(consumer=default_consumer,
@@ -355,7 +334,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.bias(), gpiod.Line.BIAS_PULL_UP)
 
     def test_update_line_info(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.update()
 
@@ -364,7 +343,7 @@ class LineValues(MockupTestCase):
     chip_sizes = ( 8, )
 
     def test_get_value_single_line(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_IN)
@@ -373,7 +352,7 @@ class LineValues(MockupTestCase):
             self.assertEqual(line.get_value(), 1)
 
     def test_set_value_single_line(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_OUT)
@@ -383,7 +362,7 @@ class LineValues(MockupTestCase):
             self.assertEqual(mockup.chip_get_value(0, 3), 0)
 
     def test_set_value_with_default_value_argument(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_OUT,
@@ -391,7 +370,7 @@ class LineValues(MockupTestCase):
             self.assertEqual(mockup.chip_get_value(0, 3), 1)
 
     def test_get_value_multiple_lines(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             lines = chip.get_lines(( 0, 3, 4, 6 ))
             lines.request(consumer=default_consumer,
                           type=gpiod.LINE_REQ_DIR_IN)
@@ -402,7 +381,7 @@ class LineValues(MockupTestCase):
             self.assertEqual(lines.get_values(), [ 1, 0, 1, 1 ])
 
     def test_set_value_multiple_lines(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             lines = chip.get_lines(( 0, 3, 4, 6 ))
             lines.request(consumer=default_consumer,
                           type=gpiod.LINE_REQ_DIR_OUT)
@@ -418,7 +397,7 @@ class LineValues(MockupTestCase):
             self.assertEqual(mockup.chip_get_value(0, 6), 0)
 
     def test_set_multiple_values_with_default_vals_argument(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             lines = chip.get_lines(( 0, 3, 4, 6 ))
             lines.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_OUT,
@@ -429,7 +408,7 @@ class LineValues(MockupTestCase):
             self.assertEqual(mockup.chip_get_value(0, 6), 1)
 
     def test_get_value_active_low(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_IN,
@@ -439,7 +418,7 @@ class LineValues(MockupTestCase):
             self.assertEqual(line.get_value(), 0)
 
     def test_set_value_active_low(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_OUT,
@@ -454,7 +433,7 @@ class LineConfig(MockupTestCase):
     chip_sizes = ( 8, )
 
     def test_set_config_direction(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_IN)
@@ -465,7 +444,7 @@ class LineConfig(MockupTestCase):
             self.assertEqual(line.direction(), gpiod.Line.DIRECTION_OUTPUT)
 
     def test_set_config_flags(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_OUT)
@@ -476,7 +455,7 @@ class LineConfig(MockupTestCase):
             self.assertEqual(mockup.chip_get_value(0, 3), 0)
 
     def test_set_config_output_value(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_IN)
@@ -486,7 +465,7 @@ class LineConfig(MockupTestCase):
             self.assertEqual(mockup.chip_get_value(0, 3), 0)
 
     def test_set_config_output_no_value(self):
-         with gpiod.Chip(mockup.chip_name(0)) as chip:
+         with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_OUT,
@@ -496,7 +475,7 @@ class LineConfig(MockupTestCase):
             self.assertEqual(mockup.chip_get_value(0, 3), 0)
 
     def test_set_config_bulk_output_no_values(self):
-         with gpiod.Chip(mockup.chip_name(0)) as chip:
+         with gpiod.Chip(mockup.chip_path(0)) as chip:
             lines = chip.get_lines(( 0, 3, 4, 6 ))
             lines.request(consumer=default_consumer,
                           type=gpiod.LINE_REQ_DIR_OUT,
@@ -516,7 +495,7 @@ class LineFlags(MockupTestCase):
     chip_sizes = ( 8, )
 
     def test_set_flags(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_OUT,
@@ -528,7 +507,7 @@ class LineFlags(MockupTestCase):
             self.assertEqual(mockup.chip_get_value(0, 3), 1)
 
     def test_set_flags_bulk(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             lines = chip.get_lines(( 0, 3, 4, 6 ))
             lines.request(consumer=default_consumer,
                           type=gpiod.LINE_REQ_DIR_OUT,
@@ -553,7 +532,7 @@ class LineDirection(MockupTestCase):
     chip_sizes = ( 8, )
 
     def test_set_direction(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_OUT)
@@ -571,7 +550,7 @@ class LineDirection(MockupTestCase):
             self.assertEqual(mockup.chip_get_value(0, 3), 0)
 
     def test_set_direction_bulk(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             lines = chip.get_lines(( 0, 3, 4, 6 ))
             lines.request(consumer=default_consumer,
                           type=gpiod.LINE_REQ_DIR_OUT)
@@ -637,7 +616,7 @@ class LineRequestBehavior(MockupTestCase):
     chip_sizes = ( 8, )
 
     def test_line_export_release(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_IN)
@@ -647,7 +626,7 @@ class LineRequestBehavior(MockupTestCase):
             self.assertFalse(line.is_requested())
 
     def test_line_request_twice_two_calls(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_IN)
@@ -658,7 +637,7 @@ class LineRequestBehavior(MockupTestCase):
             self.assertEqual(err_ctx.exception.errno, errno.EBUSY)
 
     def test_line_request_twice_in_bulk(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             lines = chip.get_lines(( 2, 3, 6, 6 ))
             with self.assertRaises(OSError) as err_ctx:
                 lines.request(consumer=default_consumer,
@@ -667,7 +646,7 @@ class LineRequestBehavior(MockupTestCase):
             self.assertEqual(err_ctx.exception.errno, errno.EBUSY)
 
     def test_use_value_unrequested(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             with self.assertRaises(OSError) as err_ctx:
                 line.get_value()
@@ -675,7 +654,7 @@ class LineRequestBehavior(MockupTestCase):
             self.assertEqual(err_ctx.exception.errno, errno.EPERM)
 
     def test_request_with_no_kwds(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(2)
             line.request(default_consumer)
             self.assertTrue(line.is_requested())
@@ -692,7 +671,7 @@ class LineIterator(MockupTestCase):
     chip_sizes = ( 4, )
 
     def test_iterate_over_lines(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             count = 0
 
             for line in gpiod.LineIter(chip):
@@ -706,7 +685,7 @@ class LineBulkIter(MockupTestCase):
     chip_sizes = ( 4, )
 
     def test_line_bulk_iterator(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             lines = chip.get_all_lines()
             count = 0
 
@@ -726,7 +705,7 @@ class EventSingleLine(MockupTestCase):
 
     def test_single_line_rising_edge_event(self):
         with EventThread(0, 4, 200):
-            with gpiod.Chip(mockup.chip_name(0)) as chip:
+            with gpiod.Chip(mockup.chip_path(0)) as chip:
                 line = chip.get_line(4)
                 line.request(consumer=default_consumer,
                              type=gpiod.LINE_REQ_EV_RISING_EDGE)
@@ -737,7 +716,7 @@ class EventSingleLine(MockupTestCase):
 
     def test_single_line_falling_edge_event(self):
         with EventThread(0, 4, 200):
-            with gpiod.Chip(mockup.chip_name(0)) as chip:
+            with gpiod.Chip(mockup.chip_path(0)) as chip:
                 line = chip.get_line(4)
                 line.request(consumer=default_consumer,
                              type=gpiod.LINE_REQ_EV_FALLING_EDGE)
@@ -748,7 +727,7 @@ class EventSingleLine(MockupTestCase):
 
     def test_single_line_both_edges_events(self):
         with EventThread(0, 4, 200):
-            with gpiod.Chip(mockup.chip_name(0)) as chip:
+            with gpiod.Chip(mockup.chip_path(0)) as chip:
                 line = chip.get_line(4)
                 line.request(consumer=default_consumer,
                              type=gpiod.LINE_REQ_EV_BOTH_EDGES)
@@ -763,7 +742,7 @@ class EventSingleLine(MockupTestCase):
 
     def test_single_line_both_edges_events_active_low(self):
         with EventThread(0, 4, 200):
-            with gpiod.Chip(mockup.chip_name(0)) as chip:
+            with gpiod.Chip(mockup.chip_path(0)) as chip:
                 line = chip.get_line(4)
                 line.request(consumer=default_consumer,
                              type=gpiod.LINE_REQ_EV_BOTH_EDGES,
@@ -778,7 +757,7 @@ class EventSingleLine(MockupTestCase):
                 self.assertEqual(event.source.offset(), 4)
 
     def test_single_line_read_multiple_events(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(4)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_EV_BOTH_EDGES)
@@ -804,7 +783,7 @@ class EventBulk(MockupTestCase):
 
     def test_watch_multiple_lines_for_events(self):
         with EventThread(0, 2, 200):
-            with gpiod.Chip(mockup.chip_name(0)) as chip:
+            with gpiod.Chip(mockup.chip_path(0)) as chip:
                 lines = chip.get_lines(( 0, 1, 2, 3, 4 ))
                 lines.request(consumer=default_consumer,
                               type=gpiod.LINE_REQ_EV_BOTH_EDGES)
@@ -826,7 +805,7 @@ class EventValues(MockupTestCase):
     chip_sizes = ( 8, )
 
     def test_request_for_events_get_value(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_EV_BOTH_EDGES)
@@ -835,7 +814,7 @@ class EventValues(MockupTestCase):
             self.assertEqual(line.get_value(), 1)
 
     def test_request_for_events_get_value_active_low(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_EV_BOTH_EDGES,
@@ -849,7 +828,7 @@ class EventFileDescriptor(MockupTestCase):
     chip_sizes = ( 8, )
 
     def test_event_get_fd(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_EV_BOTH_EDGES)
@@ -857,7 +836,7 @@ class EventFileDescriptor(MockupTestCase):
             self.assertGreaterEqual(fd, 0)
 
     def test_event_get_fd_not_requested(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             with self.assertRaises(OSError) as err_ctx:
                 fd = line.event_get_fd();
@@ -865,7 +844,7 @@ class EventFileDescriptor(MockupTestCase):
             self.assertEqual(err_ctx.exception.errno, errno.EPERM)
 
     def test_event_get_fd_requested_for_values(self):
-        with gpiod.Chip(mockup.chip_name(0)) as chip:
+        with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_IN)
@@ -876,7 +855,7 @@ class EventFileDescriptor(MockupTestCase):
 
     def test_event_fd_polling(self):
         with EventThread(0, 2, 200):
-            with gpiod.Chip(mockup.chip_name(0)) as chip:
+            with gpiod.Chip(mockup.chip_path(0)) as chip:
                 lines = chip.get_lines(( 0, 1, 2, 3, 4, 5, 6 ))
                 lines.request(consumer=default_consumer,
                               type=gpiod.LINE_REQ_EV_BOTH_EDGES)

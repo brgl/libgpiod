@@ -52,47 +52,6 @@ GPIOD_TEST_CASE(open_notty, 0, { 8 })
 	g_assert_cmpint(errno, ==, ENOTTY);
 }
 
-GPIOD_TEST_CASE(open_by_name_good, 0, { 8 })
-{
-	g_autoptr(gpiod_chip_struct) chip = NULL;
-
-	chip = gpiod_chip_open_by_name(gpiod_test_chip_name(0));
-	g_assert_nonnull(chip);
-}
-
-GPIOD_TEST_CASE(open_by_number_good, 0, { 8 })
-{
-	g_autoptr(gpiod_chip_struct) chip = NULL;
-
-	chip = gpiod_chip_open_by_number(gpiod_test_chip_num(0));
-	g_assert_nonnull(chip);
-}
-
-GPIOD_TEST_CASE(open_lookup_good, 0, { 8, 8, 8})
-{
-	g_autoptr(gpiod_chip_struct) chip_by_name = NULL;
-	g_autoptr(gpiod_chip_struct) chip_by_path = NULL;
-	g_autoptr(gpiod_chip_struct) chip_by_num = NULL;
-	g_autofree gchar *chip_num_str = g_strdup_printf(
-						"%u", gpiod_test_chip_num(1));
-
-	chip_by_name = gpiod_chip_open_lookup(gpiod_test_chip_name(1));
-	chip_by_path = gpiod_chip_open_lookup(gpiod_test_chip_path(1));
-	chip_by_num = gpiod_chip_open_lookup(chip_num_str);
-
-	g_assert_nonnull(chip_by_name);
-	g_assert_nonnull(chip_by_path);
-	g_assert_nonnull(chip_by_num);
-	gpiod_test_return_if_failed();
-
-	g_assert_cmpstr(gpiod_chip_name(chip_by_name),
-			==, gpiod_test_chip_name(1));
-	g_assert_cmpstr(gpiod_chip_name(chip_by_path),
-			==, gpiod_test_chip_name(1));
-	g_assert_cmpstr(gpiod_chip_name(chip_by_num),
-			==, gpiod_test_chip_name(1));
-}
-
 GPIOD_TEST_CASE(get_name, 0, { 8, 8, 8})
 {
 	g_autoptr(gpiod_chip_struct) chip0 = NULL;

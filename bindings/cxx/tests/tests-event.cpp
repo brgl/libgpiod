@@ -24,7 +24,7 @@ TEST_CASE("Line events can be detected", "[event][line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
 	mockup::event_thread events(0, 4, 200);
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto line = chip.get_line(4);
 	::gpiod::line_request config;
 
@@ -105,7 +105,7 @@ TEST_CASE("Watching line_bulk objects for events works", "[event][bulk]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
 	mockup::event_thread events(0, 2, 200);
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto lines = chip.get_lines({ 0, 1, 2, 3 });
 	::gpiod::line_request config;
 
@@ -133,7 +133,7 @@ TEST_CASE("Watching line_bulk objects for events works", "[event][bulk]")
 TEST_CASE("It's possible to retrieve the event file descriptor", "[event][line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto line = chip.get_line(4);
 	::gpiod::line_request config;
 
@@ -165,7 +165,7 @@ TEST_CASE("Event file descriptors can be used for polling", "[event]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
 	mockup::event_thread events(0, 3, 200);
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto lines = chip.get_lines({ 0, 1, 2, 3, 4, 5 });
 
 	::gpiod::line_request config;
@@ -196,7 +196,7 @@ TEST_CASE("Event file descriptors can be used for polling", "[event]")
 TEST_CASE("It's possible to read a value from a line requested for events", "[event][line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto line = chip.get_line(4);
 	::gpiod::line_request config;
 
@@ -222,7 +222,7 @@ TEST_CASE("It's possible to read a value from a line requested for events", "[ev
 TEST_CASE("It's possible to read values from lines requested for events", "[event][bulk]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto lines = chip.get_lines({ 0, 1, 2, 3, 4 });
 	::gpiod::line_request config;
 
@@ -256,7 +256,7 @@ TEST_CASE("It's possible to read values from lines requested for events", "[even
 TEST_CASE("It's possible to read more than one line event", "[event][line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto line = chip.get_line(4);
 	::gpiod::line_request config;
 

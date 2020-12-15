@@ -15,35 +15,6 @@ namespace gpiod {
 
 namespace {
 
-::gpiod_chip* open_lookup(const ::std::string& device)
-{
-	return ::gpiod_chip_open_lookup(device.c_str());
-}
-
-::gpiod_chip* open_by_path(const ::std::string& device)
-{
-	return ::gpiod_chip_open(device.c_str());
-}
-
-::gpiod_chip* open_by_name(const ::std::string& device)
-{
-	return ::gpiod_chip_open_by_name(device.c_str());
-}
-
-::gpiod_chip* open_by_number(const ::std::string& device)
-{
-	return ::gpiod_chip_open_by_number(::std::stoul(device));
-}
-
-using open_func = ::std::function<::gpiod_chip* (const ::std::string&)>;
-
-const ::std::map<int, open_func> open_funcs = {
-	{ chip::OPEN_LOOKUP,	open_lookup,	},
-	{ chip::OPEN_BY_PATH,	open_by_path,	},
-	{ chip::OPEN_BY_NAME,	open_by_name,	},
-	{ chip::OPEN_BY_NUMBER,	open_by_number,	},
-};
-
 void chip_deleter(::gpiod_chip* chip)
 {
 	::gpiod_chip_close(chip);
@@ -56,10 +27,10 @@ bool is_gpiochip_device(const ::std::string& path)
 	return ::gpiod_is_gpiochip_device(path.c_str());
 }
 
-chip::chip(const ::std::string& device, int how)
+chip::chip(const ::std::string& path)
 	: _m_chip()
 {
-	this->open(device, how);
+	this->open(path);
 }
 
 chip::chip(::gpiod_chip* chip)
@@ -74,14 +45,12 @@ chip::chip(const ::std::weak_ptr<::gpiod_chip>& chip_ptr)
 
 }
 
-void chip::open(const ::std::string& device, int how)
+void chip::open(const ::std::string& path)
 {
-	auto func = open_funcs.at(how);
-
-	::gpiod_chip *chip = func(device);
+	::gpiod_chip *chip = ::gpiod_chip_open(path.c_str());
 	if (!chip)
 		throw ::std::system_error(errno, ::std::system_category(),
-					  "cannot open GPIO device " + device);
+					  "cannot open GPIO device " + path);
 
 	this->_m_chip.reset(chip, chip_deleter);
 }

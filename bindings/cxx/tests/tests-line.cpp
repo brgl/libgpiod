@@ -21,7 +21,7 @@ const ::std::string consumer = "line-test";
 TEST_CASE("Line information can be correctly retrieved", "[line]")
 {
 	mockup::probe_guard mockup_chips({ 8 }, mockup::FLAG_NAMED_LINES);
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto line = chip.get_line(4);
 
 	SECTION("unexported line")
@@ -167,7 +167,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 TEST_CASE("Line bulk object works correctly", "[line][bulk]")
 {
 	mockup::probe_guard mockup_chips({ 8 }, mockup::FLAG_NAMED_LINES);
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 
 	SECTION("lines can be added, accessed and cleared")
 	{
@@ -210,7 +210,7 @@ TEST_CASE("Line bulk object works correctly", "[line][bulk]")
 TEST_CASE("Line values can be set and read", "[line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	::gpiod::line_request config;
 
 	config.consumer = consumer.c_str();
@@ -308,7 +308,7 @@ TEST_CASE("Line values can be set and read", "[line]")
 TEST_CASE("Line can be reconfigured", "[line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	::gpiod::line_request config;
 
 	config.consumer = consumer.c_str();
@@ -436,7 +436,7 @@ TEST_CASE("Line can be reconfigured", "[line]")
 TEST_CASE("Exported line can be released", "[line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto line = chip.get_line(4);
 	::gpiod::line_request config;
 
@@ -487,7 +487,7 @@ TEST_CASE("Uninitialized GPIO line_bulk behaves correctly", "[line][bulk]")
 TEST_CASE("Cannot request the same line twice", "[line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	::gpiod::line_request config;
 
 	config.consumer = consumer.c_str();
@@ -516,7 +516,7 @@ TEST_CASE("Cannot request the same line twice", "[line]")
 TEST_CASE("Cannot get/set values of unrequested lines", "[line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto line = chip.get_line(3);
 
 	SECTION("get value")
@@ -533,7 +533,7 @@ TEST_CASE("Cannot get/set values of unrequested lines", "[line]")
 TEST_CASE("Line objects can be compared")
 {
 	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	auto line1 = chip.get_line(3);
 	auto line2 = chip.get_line(3);
 	auto line3 = chip.get_line(4);

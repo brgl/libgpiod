@@ -9,6 +9,7 @@
 #define __GPIOD_TOOLS_COMMON_H__
 
 #include <dirent.h>
+#include <gpiod.h>
 
 /*
  * Various helpers for the GPIO tools.
@@ -32,5 +33,7 @@ int bias_flags(const char *option);
 void print_bias_help(void);
 int make_signalfd(void);
 int chip_dir_filter(const struct dirent *entry);
+struct gpiod_chip *chip_open_by_name(const char *name);
+struct gpiod_chip *chip_open_lookup(const char *device);
 
 #endif /* __GPIOD_TOOLS_COMMON_H__ */

@@ -32,72 +32,22 @@ TEST_CASE("GPIO chip device can be verified with is_gpiochip_device()", "[chip]"
 	}
 }
 
-TEST_CASE("GPIO chip device can be opened in different modes", "[chip]")
+TEST_CASE("GPIO chip device can be opened", "[chip]")
 {
 	mockup::probe_guard mockup_chips({ 8, 8, 8 });
 
-	SECTION("open by name")
-	{
-		REQUIRE_NOTHROW(::gpiod::chip(mockup::instance().chip_name(1),
-				::gpiod::chip::OPEN_BY_NAME));
-	}
-
-	SECTION("open by path")
-	{
-		REQUIRE_NOTHROW(::gpiod::chip(mockup::instance().chip_path(1),
-				::gpiod::chip::OPEN_BY_PATH));
-	}
-
-	SECTION("open by number")
-	{
-		REQUIRE_NOTHROW(::gpiod::chip(::std::to_string(mockup::instance().chip_num(1)),
-				::gpiod::chip::OPEN_BY_NUMBER));
-	}
-}
-
-TEST_CASE("GPIO chip device can be opened with implicit lookup", "[chip]")
-{
-	mockup::probe_guard mockup_chips({ 8, 8, 8 });
-
-	SECTION("lookup by name")
-	{
-		REQUIRE_NOTHROW(::gpiod::chip(mockup::instance().chip_name(1)));
-	}
-
-	SECTION("lookup by path")
+	SECTION("open from constructor")
 	{
 		REQUIRE_NOTHROW(::gpiod::chip(mockup::instance().chip_path(1)));
 	}
 
-	SECTION("lookup by number")
+	SECTION("open from open() method")
 	{
-		REQUIRE_NOTHROW(::gpiod::chip(::std::to_string(mockup::instance().chip_num(1))));
-	}
-}
+		::gpiod::chip chip;
 
-TEST_CASE("GPIO chip can be opened with the open() method in different modes", "[chip]")
-{
-	mockup::probe_guard mockup_chips({ 8, 8, 8 });
-	::gpiod::chip chip;
+		REQUIRE_FALSE(!!chip);
 
-	REQUIRE_FALSE(!!chip);
-
-	SECTION("open by name")
-	{
-		REQUIRE_NOTHROW(chip.open(mockup::instance().chip_name(1),
-					  ::gpiod::chip::OPEN_BY_NAME));
-	}
-
-	SECTION("open by path")
-	{
-		REQUIRE_NOTHROW(chip.open(mockup::instance().chip_path(1),
-					  ::gpiod::chip::OPEN_BY_PATH));
-	}
-
-	SECTION("open by number")
-	{
-		REQUIRE_NOTHROW(chip.open(::std::to_string(mockup::instance().chip_num(1)),
-					  ::gpiod::chip::OPEN_BY_NUMBER));
+		REQUIRE_NOTHROW(chip.open(mockup::instance().chip_path(1)));
 	}
 }
 
@@ -116,27 +66,6 @@ TEST_CASE("Uninitialized GPIO chip behaves correctly", "[chip]")
 	}
 }
 
-TEST_CASE("GPIO chip can be opened with the open() method with implicit lookup", "[chip]")
-{
-	mockup::probe_guard mockup_chips({ 8, 8, 8 });
-	::gpiod::chip chip;
-
-	SECTION("lookup by name")
-	{
-		REQUIRE_NOTHROW(chip.open(mockup::instance().chip_name(1)));
-	}
-
-	SECTION("lookup by path")
-	{
-		REQUIRE_NOTHROW(chip.open(mockup::instance().chip_path(1)));
-	}
-
-	SECTION("lookup by number")
-	{
-		REQUIRE_NOTHROW(chip.open(::std::to_string(mockup::instance().chip_num(1))));
-	}
-}
-
 TEST_CASE("Trying to open a nonexistent chip throws system_error", "[chip]")
 {
 	REQUIRE_THROWS_AS(::gpiod::chip("nonexistent-chip"), ::std::system_error);
@@ -146,7 +75,7 @@ TEST_CASE("Chip object can be reset", "[chip]")
 {
 	mockup::probe_guard mockup_chips({ 8 });
 
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 	REQUIRE(chip);
 	chip.reset();
 	REQUIRE_FALSE(!!chip);
@@ -156,7 +85,7 @@ TEST_CASE("Chip info can be correctly retrieved", "[chip]")
 {
 	mockup::probe_guard mockup_chips({ 8, 16, 8 });
 
-	::gpiod::chip chip(mockup::instance().chip_name(1));
+	::gpiod::chip chip(mockup::instance().chip_path(1));
 	REQUIRE(chip.name() == mockup::instance().chip_name(1));
 	REQUIRE(chip.label() == "gpio-mockup-B");
 	REQUIRE(chip.num_lines() == 16);
@@ -166,11 +95,11 @@ TEST_CASE("Chip object can be copied and compared", "[chip]")
 {
 	mockup::probe_guard mockup_chips({ 8, 8 });
 
-	::gpiod::chip chip1(mockup::instance().chip_name(0));
+	::gpiod::chip chip1(mockup::instance().chip_path(0));
 	auto chip2 = chip1;
 	REQUIRE(chip1 == chip2);
 	REQUIRE_FALSE(chip1 != chip2);
-	::gpiod::chip chip3(mockup::instance().chip_name(1));
+	::gpiod::chip chip3(mockup::instance().chip_path(1));
 	REQUIRE(chip1 != chip3);
 	REQUIRE_FALSE(chip2 == chip3);
 }
@@ -178,7 +107,7 @@ TEST_CASE("Chip object can be copied and compared", "[chip]")
 TEST_CASE("Lines can be retrieved from chip objects", "[chip]")
 {
 	mockup::probe_guard mockup_chips({ 8, 8, 8 }, mockup::FLAG_NAMED_LINES);
-	::gpiod::chip chip(mockup::instance().chip_name(1));
+	::gpiod::chip chip(mockup::instance().chip_path(1));
 
 	SECTION("get single line by offset")
 	{
@@ -216,7 +145,7 @@ TEST_CASE("Lines can be retrieved from chip objects", "[chip]")
 TEST_CASE("All lines can be retrieved from a chip at once", "[chip]")
 {
 	mockup::probe_guard mockup_chips({ 4 });
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 
 	auto lines = chip.get_all_lines();
 	REQUIRE(lines.size() == 4);
@@ -229,7 +158,7 @@ TEST_CASE("All lines can be retrieved from a chip at once", "[chip]")
 TEST_CASE("Errors occurring when retrieving lines are correctly reported", "[chip]")
 {
 	mockup::probe_guard mockup_chips({ 8 }, mockup::FLAG_NAMED_LINES);
-	::gpiod::chip chip(mockup::instance().chip_name(0));
+	::gpiod::chip chip(mockup::instance().chip_path(0));
 
 	SECTION("invalid offset (single line)")
 	{
