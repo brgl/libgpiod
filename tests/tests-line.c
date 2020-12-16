@@ -187,50 +187,6 @@ GPIOD_TEST_CASE(request_bulk_output, 0, { 8, 8 })
 	g_assert_cmpint(gpiod_test_chip_get_value(1, 3), ==, 1);
 }
 
-GPIOD_TEST_CASE(request_bulk_different_chips, 0, { 8, 8 })
-{
-	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;
-	g_autoptr(gpiod_chip_struct) chipA = NULL;
-	g_autoptr(gpiod_chip_struct) chipB = NULL;
-	struct gpiod_line *lineA0, *lineA1, *lineB0, *lineB1;
-	struct gpiod_line_request_config req;
-	gint ret;
-
-	chipA = gpiod_chip_open(gpiod_test_chip_path(0));
-	chipB = gpiod_chip_open(gpiod_test_chip_path(1));
-	g_assert_nonnull(chipA);
-	g_assert_nonnull(chipB);
-	gpiod_test_return_if_failed();
-
-	lineA0 = gpiod_chip_get_line(chipA, 0);
-	lineA1 = gpiod_chip_get_line(chipA, 1);
-	lineB0 = gpiod_chip_get_line(chipB, 0);
-	lineB1 = gpiod_chip_get_line(chipB, 1);
-
-	g_assert_nonnull(lineA0);
-	g_assert_nonnull(lineA1);
-	g_assert_nonnull(lineB0);
-	g_assert_nonnull(lineB1);
-	gpiod_test_return_if_failed();
-
-	bulk = gpiod_line_bulk_new(4);
-	g_assert_nonnull(bulk);
-	gpiod_test_return_if_failed();
-
-	gpiod_line_bulk_add_line(bulk, lineA0);
-	gpiod_line_bulk_add_line(bulk, lineA1);
-	gpiod_line_bulk_add_line(bulk, lineB0);
-	gpiod_line_bulk_add_line(bulk, lineB1);
-
-	req.consumer = GPIOD_TEST_CONSUMER;
-	req.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
-	req.flags = GPIOD_LINE_ACTIVE_STATE_HIGH;
-
-	ret = gpiod_line_request_bulk(bulk, &req, NULL);
-	g_assert_cmpint(ret, ==, -1);
-	g_assert_cmpint(errno, ==, EINVAL);
-}
-
 GPIOD_TEST_CASE(request_null_default_vals_for_output, 0, { 8 })
 {
 	g_autoptr(gpiod_line_bulk_struct) bulk = NULL;
