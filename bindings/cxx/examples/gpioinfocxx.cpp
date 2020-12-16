@@ -44,8 +44,7 @@ int main(int argc, char **argv)
 				::std::cout << " ";
 
 				::std::cout.width(10);
-				::std::cout << (lit.active_state() == ::gpiod::line::ACTIVE_LOW
-									? "active-low" : "active-high");
+				::std::cout << (lit.is_active_low() ? "active-low" : "active-high");
 
 				::std::cout << ::std::endl;
 			}

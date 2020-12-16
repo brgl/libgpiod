@@ -117,11 +117,11 @@ static PRINTF(3, 4) void prinfo(bool *of,
 
 static void list_lines(struct gpiod_chip *chip)
 {
-	int direction, active_state;
+	bool flag_printed, of, active_low;
 	const char *name, *consumer;
 	struct gpiod_line *line;
 	unsigned int i, offset;
-	bool flag_printed, of;
+	int direction;
 
 	printf("%s - %u lines:\n",
 	       gpiod_chip_name(chip), gpiod_chip_num_lines(chip));
@@ -134,7 +134,7 @@ static void list_lines(struct gpiod_chip *chip)
 		name = gpiod_line_name(line);
 		consumer = gpiod_line_consumer(line);
 		direction = gpiod_line_direction(line);
-		active_state = gpiod_line_active_state(line);
+		active_low = gpiod_line_is_active_low(line);
 
 		of = false;
 
@@ -157,9 +157,7 @@ static void list_lines(struct gpiod_chip *chip)
 		prinfo(&of, 8, "%s ", direction == GPIOD_LINE_DIRECTION_INPUT
 							? "input" : "output");
 		prinfo(&of, 13, "%s ",
-		       active_state == GPIOD_LINE_ACTIVE_STATE_LOW
-							? "active-low"
-							: "active-high");
+		       active_low ? "active-low" : "active-high");
 
 		flag_printed = false;
 		for (i = 0; i < ARRAY_SIZE(flags); i++) {

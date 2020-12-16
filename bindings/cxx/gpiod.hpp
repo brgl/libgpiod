@@ -313,10 +313,10 @@ public:
 	GPIOD_API int direction(void) const;
 
 	/**
-	 * @brief Get current active state of this line.
-	 * @return Current active state setting.
+	 * @brief Check if this line's signal is inverted.
+	 * @return True if this line is "active-low", false otherwise.
 	 */
-	GPIOD_API int active_state(void) const;
+	GPIOD_API bool is_active_low(void) const;
 
 	/**
 	 * @brief Get current bias of this line.
@@ -480,16 +480,6 @@ public:
 		/**< Line's direction setting is input. */
 		DIRECTION_OUTPUT,
 		/**< Line's direction setting is output. */
-	};
-
-	/**
-	 * @brief Possible active state settings.
-	 */
-	enum : int {
-		ACTIVE_LOW = 1,
-		/**< Line's active state is low. */
-		ACTIVE_HIGH,
-		/**< Line's active state is high. */
 	};
 
 	/**

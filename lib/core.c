@@ -41,8 +41,8 @@ struct gpiod_line {
 	/* The direction of the GPIO line. */
 	int direction;
 
-	/* The active-state configuration. */
-	int active_state;
+	/* Is this line active-low?. */
+	bool active_low;
 
 	/* The logical value last written to the line. */
 	int output_value;
@@ -471,9 +471,9 @@ int gpiod_line_direction(struct gpiod_line *line)
 	return line->direction;
 }
 
-int gpiod_line_active_state(struct gpiod_line *line)
+bool gpiod_line_is_active_low(struct gpiod_line *line)
 {
-	return line->active_state;
+	return line->active_low;
 }
 
 int gpiod_line_bias(struct gpiod_line *line)
@@ -541,9 +541,7 @@ int gpiod_line_update(struct gpiod_line *line)
 						? GPIOD_LINE_DIRECTION_OUTPUT
 						: GPIOD_LINE_DIRECTION_INPUT;
 
-	line->active_state = info.flags & GPIO_V2_LINE_FLAG_ACTIVE_LOW
-						? GPIOD_LINE_ACTIVE_STATE_LOW
-						: GPIOD_LINE_ACTIVE_STATE_HIGH;
+	line->active_low = !!(info.flags & GPIO_V2_LINE_FLAG_ACTIVE_LOW);
 
 	line->info_flags = line_info_v2_to_info_flags(&info);
 

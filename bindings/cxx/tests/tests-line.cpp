@@ -29,7 +29,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.offset() == 4);
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_INPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE_FALSE(line.is_active_low());
 		REQUIRE(line.consumer().empty());
 		REQUIRE_FALSE(line.is_requested());
 		REQUIRE_FALSE(line.is_used());
@@ -49,7 +49,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.offset() == 4);
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE_FALSE(line.is_active_low());
 		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE_FALSE(line.is_open_drain());
@@ -70,7 +70,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.offset() == 4);
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_LOW);
+		REQUIRE(line.is_active_low());
 		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE(line.is_open_drain());
@@ -90,7 +90,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.offset() == 4);
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE_FALSE(line.is_active_low());
 		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE_FALSE(line.is_open_drain());
@@ -110,7 +110,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.offset() == 4);
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE_FALSE(line.is_active_low());
 		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE_FALSE(line.is_open_drain());
@@ -130,7 +130,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.offset() == 4);
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE_FALSE(line.is_active_low());;
 		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE_FALSE(line.is_open_drain());
@@ -150,7 +150,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.offset() == 4);
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE_FALSE(line.is_active_low());
 		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE_FALSE(line.is_open_drain());
@@ -320,19 +320,19 @@ TEST_CASE("Line can be reconfigured", "[line]")
 		config.flags = 0;
 		line.request(config);
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_INPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE_FALSE(line.is_active_low());
 
 		line.set_config(::gpiod::line_request::DIRECTION_OUTPUT,
 			::gpiod::line_request::FLAG_ACTIVE_LOW,1);
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_LOW);
+		REQUIRE(line.is_active_low());
 		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
 		line.set_value(0);
 		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
 
 		line.set_config(::gpiod::line_request::DIRECTION_OUTPUT, 0);
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE_FALSE(line.is_active_low());
 		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
 		line.set_value(1);
 		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
@@ -348,12 +348,12 @@ TEST_CASE("Line can be reconfigured", "[line]")
 
 		line.set_flags(::gpiod::line_request::FLAG_ACTIVE_LOW);
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_LOW);
+		REQUIRE(line.is_active_low());
 		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
 
 		line.set_flags(0);
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.active_state() == ::gpiod::line::ACTIVE_HIGH);
+		REQUIRE_FALSE(line.is_active_low());
 		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
 	}
 

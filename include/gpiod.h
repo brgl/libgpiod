@@ -281,16 +281,6 @@ enum {
 };
 
 /**
- * @brief Possible active state settings.
- */
-enum {
-	GPIOD_LINE_ACTIVE_STATE_HIGH = 1,
-	/**< The active state of a GPIO is active-high. */
-	GPIOD_LINE_ACTIVE_STATE_LOW,
-	/**< The active state of a GPIO is active-low. */
-};
-
-/**
  * @brief Possible internal bias settings.
  */
 enum {
@@ -337,11 +327,11 @@ const char *gpiod_line_consumer(struct gpiod_line *line) GPIOD_API;
 int gpiod_line_direction(struct gpiod_line *line) GPIOD_API;
 
 /**
- * @brief Read the GPIO line active state setting.
+ * @brief Check if the signal of this line is inverted.
  * @param line GPIO line object.
- * @return Returns GPIOD_LINE_ACTIVE_STATE_HIGH or GPIOD_LINE_ACTIVE_STATE_LOW.
+ * @return True if this line is "active-low", false otherwise.
  */
-int gpiod_line_active_state(struct gpiod_line *line) GPIOD_API;
+bool gpiod_line_is_active_low(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Read the GPIO line bias setting.

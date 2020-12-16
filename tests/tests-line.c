@@ -340,12 +340,10 @@ GPIOD_TEST_CASE(set_config_bulk_null_values, 0, { 8 })
 	ret = gpiod_line_request_bulk_output(bulk, GPIOD_TEST_CONSUMER, 0);
 	g_assert_cmpint(ret, ==, 0);
 	gpiod_test_return_if_failed();
-	g_assert_cmpint(gpiod_line_active_state(line0), ==,
-			GPIOD_LINE_ACTIVE_STATE_HIGH);
-	g_assert_cmpint(gpiod_line_active_state(line1), ==,
-			GPIOD_LINE_ACTIVE_STATE_HIGH);
-	g_assert_cmpint(gpiod_line_active_state(line2), ==,
-			GPIOD_LINE_ACTIVE_STATE_HIGH);
+	g_assert_false(gpiod_line_is_active_low(line0));
+	g_assert_false(gpiod_line_is_active_low(line1));
+	g_assert_false(gpiod_line_is_active_low(line2));
+
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 0), ==, 0);
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 1), ==, 0);
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 2), ==, 0);
@@ -354,12 +352,9 @@ GPIOD_TEST_CASE(set_config_bulk_null_values, 0, { 8 })
 			GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
 			GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW, NULL);
 	g_assert_cmpint(ret, ==, 0);
-	g_assert_cmpint(gpiod_line_active_state(line0), ==,
-			GPIOD_LINE_ACTIVE_STATE_LOW);
-	g_assert_cmpint(gpiod_line_active_state(line1), ==,
-			GPIOD_LINE_ACTIVE_STATE_LOW);
-	g_assert_cmpint(gpiod_line_active_state(line2), ==,
-			GPIOD_LINE_ACTIVE_STATE_LOW);
+	g_assert_true(gpiod_line_is_active_low(line0));
+	g_assert_true(gpiod_line_is_active_low(line1));
+	g_assert_true(gpiod_line_is_active_low(line2));
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 0), ==, 1);
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 1), ==, 1);
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 2), ==, 1);
@@ -367,12 +362,9 @@ GPIOD_TEST_CASE(set_config_bulk_null_values, 0, { 8 })
 	ret = gpiod_line_set_config_bulk(bulk,
 			GPIOD_LINE_REQUEST_DIRECTION_OUTPUT, 0, NULL);
 	g_assert_cmpint(ret, ==, 0);
-	g_assert_cmpint(gpiod_line_active_state(line0), ==,
-			GPIOD_LINE_ACTIVE_STATE_HIGH);
-	g_assert_cmpint(gpiod_line_active_state(line1), ==,
-			GPIOD_LINE_ACTIVE_STATE_HIGH);
-	g_assert_cmpint(gpiod_line_active_state(line2), ==,
-			GPIOD_LINE_ACTIVE_STATE_HIGH);
+	g_assert_false(gpiod_line_is_active_low(line0));
+	g_assert_false(gpiod_line_is_active_low(line1));
+	g_assert_false(gpiod_line_is_active_low(line2));
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 0), ==, 0);
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 1), ==, 0);
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 2), ==, 0);
@@ -395,20 +387,17 @@ GPIOD_TEST_CASE(set_flags_active_state, 0, { 8 })
 	ret = gpiod_line_request_output(line, GPIOD_TEST_CONSUMER, 1);
 	g_assert_cmpint(ret, ==, 0);
 	gpiod_test_return_if_failed();
-	g_assert_cmpint(gpiod_line_active_state(line), ==,
-			GPIOD_LINE_ACTIVE_STATE_HIGH);
+	g_assert_false(gpiod_line_is_active_low(line));
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 2), ==, 1);
 
 	ret = gpiod_line_set_flags(line, GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW);
 	g_assert_cmpint(ret, ==, 0);
-	g_assert_cmpint(gpiod_line_active_state(line), ==,
-			GPIOD_LINE_ACTIVE_STATE_LOW);
+	g_assert_true(gpiod_line_is_active_low(line));
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 2), ==, 0);
 
 	ret = gpiod_line_set_flags(line, 0);
 	g_assert_cmpint(ret, ==, 0);
-	g_assert_cmpint(gpiod_line_active_state(line), ==,
-			GPIOD_LINE_ACTIVE_STATE_HIGH);
+	g_assert_false(gpiod_line_is_active_low(line));
 	g_assert_cmpint(gpiod_test_chip_get_value(0, 2), ==, 1);
 }
 
@@ -719,8 +708,7 @@ GPIOD_TEST_CASE(active_state, 0, { 8 })
 	g_assert_cmpint(ret, ==, 0);
 	gpiod_test_return_if_failed();
 
-	g_assert_cmpint(gpiod_line_active_state(line), ==,
-			GPIOD_LINE_ACTIVE_STATE_HIGH);
+	g_assert_false(gpiod_line_is_active_low(line));
 
 	gpiod_line_release(line);
 
@@ -842,8 +830,7 @@ GPIOD_TEST_CASE(misc_flags_work_together, 0, { 8 })
 	g_assert_true(gpiod_line_is_open_drain(line));
 	g_assert_false(gpiod_line_is_open_source(line));
 	g_assert_cmpint(gpiod_line_bias(line), ==, GPIOD_LINE_BIAS_AS_IS);
-	g_assert_cmpint(gpiod_line_active_state(line), ==,
-			GPIOD_LINE_ACTIVE_STATE_LOW);
+	g_assert_true(gpiod_line_is_active_low(line));
 	g_assert_cmpint(gpiod_line_direction(line), ==,
 			GPIOD_LINE_DIRECTION_OUTPUT);
 
@@ -860,8 +847,7 @@ GPIOD_TEST_CASE(misc_flags_work_together, 0, { 8 })
 	g_assert_false(gpiod_line_is_open_drain(line));
 	g_assert_true(gpiod_line_is_open_source(line));
 	g_assert_cmpint(gpiod_line_bias(line), ==, GPIOD_LINE_BIAS_AS_IS);
-	g_assert_cmpint(gpiod_line_active_state(line), ==,
-			GPIOD_LINE_ACTIVE_STATE_LOW);
+	g_assert_true(gpiod_line_is_active_low(line));
 
 	gpiod_line_release(line);
 
@@ -882,8 +868,7 @@ GPIOD_TEST_CASE(misc_flags_work_together, 0, { 8 })
 	g_assert_false(gpiod_line_is_open_drain(line));
 	g_assert_false(gpiod_line_is_open_source(line));
 	g_assert_cmpint(gpiod_line_bias(line), ==, GPIOD_LINE_BIAS_PULL_DOWN);
-	g_assert_cmpint(gpiod_line_active_state(line), ==,
-			GPIOD_LINE_ACTIVE_STATE_LOW);
+	g_assert_true(gpiod_line_is_active_low(line));
 	g_assert_cmpint(gpiod_line_direction(line), ==,
 			GPIOD_LINE_DIRECTION_INPUT);
 
@@ -903,8 +888,7 @@ GPIOD_TEST_CASE(misc_flags_work_together, 0, { 8 })
 	g_assert_false(gpiod_line_is_open_drain(line));
 	g_assert_false(gpiod_line_is_open_source(line));
 	g_assert_cmpint(gpiod_line_bias(line), ==, GPIOD_LINE_BIAS_PULL_UP);
-	g_assert_cmpint(gpiod_line_active_state(line), ==,
-			GPIOD_LINE_ACTIVE_STATE_LOW);
+	g_assert_true(gpiod_line_is_active_low(line));
 	g_assert_cmpint(gpiod_line_direction(line), ==,
 			GPIOD_LINE_DIRECTION_INPUT);
 

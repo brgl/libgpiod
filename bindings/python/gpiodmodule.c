@@ -68,11 +68,6 @@ enum {
 };
 
 enum {
-	gpiod_ACTIVE_HIGH = 1,
-	gpiod_ACTIVE_LOW,
-};
-
-enum {
 	gpiod_BIAS_AS_IS = 1,
 	gpiod_BIAS_DISABLE,
 	gpiod_BIAS_PULL_UP,
@@ -341,28 +336,20 @@ static PyObject *gpiod_Line_direction(gpiod_LineObject *self,
 	return ret;
 }
 
-PyDoc_STRVAR(gpiod_Line_active_state_doc,
-"active_state() -> integer\n"
+PyDoc_STRVAR(gpiod_Line_is_active_low_doc,
+"is_active_low() -> boolean\n"
 "\n"
-"Get the active state setting of this GPIO line.");
+"Check if this line's signal is inverted");
 
-static PyObject *gpiod_Line_active_state(gpiod_LineObject *self,
-					 PyObject *Py_UNUSED(ignored))
+static PyObject *gpiod_Line_is_active_low(gpiod_LineObject *self,
+					  PyObject *Py_UNUSED(ignored))
 {
-	PyObject *ret;
-	int active;
-
 	if (gpiod_ChipIsClosed(self->owner))
 		return NULL;
 
-	active = gpiod_line_active_state(self->line);
-
-	if (active == GPIOD_LINE_ACTIVE_STATE_HIGH)
-		ret = Py_BuildValue("I", gpiod_ACTIVE_HIGH);
-	else
-		ret = Py_BuildValue("I", gpiod_ACTIVE_LOW);
-
-	return ret;
+	if (gpiod_line_is_active_low(self->line))
+		Py_RETURN_TRUE;
+	Py_RETURN_FALSE;
 }
 
 PyDoc_STRVAR(gpiod_Line_bias_doc,
@@ -973,10 +960,10 @@ static PyMethodDef gpiod_Line_methods[] = {
 		.ml_doc = gpiod_Line_direction_doc,
 	},
 	{
-		.ml_name = "active_state",
-		.ml_meth = (PyCFunction)gpiod_Line_active_state,
+		.ml_name = "is_active_low",
+		.ml_meth = (PyCFunction)gpiod_Line_is_active_low,
 		.ml_flags = METH_NOARGS,
-		.ml_doc = gpiod_Line_active_state_doc,
+		.ml_doc = gpiod_Line_is_active_low_doc,
 	},
 	{
 		.ml_name = "bias",
@@ -2537,16 +2524,6 @@ static gpiod_ConstDescr gpiod_ConstList[] = {
 		.typeobj = &gpiod_LineType,
 		.name = "DIRECTION_OUTPUT",
 		.val = gpiod_DIRECTION_OUTPUT,
-	},
-	{
-		.typeobj = &gpiod_LineType,
-		.name = "ACTIVE_HIGH",
-		.val = gpiod_ACTIVE_HIGH,
-	},
-	{
-		.typeobj = &gpiod_LineType,
-		.name = "ACTIVE_LOW",
-		.val = gpiod_ACTIVE_LOW,
 	},
 	{
 		.typeobj = &gpiod_LineType,

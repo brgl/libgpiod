@@ -74,14 +74,12 @@ int line::direction(void) const
 	return dir == GPIOD_LINE_DIRECTION_INPUT ? DIRECTION_INPUT : DIRECTION_OUTPUT;
 }
 
-int line::active_state(void) const
+bool line::is_active_low(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
 
-	int active = ::gpiod_line_active_state(this->_m_line);
-
-	return active == GPIOD_LINE_ACTIVE_STATE_HIGH ? ACTIVE_HIGH : ACTIVE_LOW;
+	return ::gpiod_line_is_active_low(this->_m_line);
 }
 
 int line::bias(void) const
