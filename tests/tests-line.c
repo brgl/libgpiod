@@ -210,7 +210,7 @@ GPIOD_TEST_CASE(request_bulk_different_chips, 0, { 8, 8 })
 
 	req.consumer = GPIOD_TEST_CONSUMER;
 	req.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
-	req.flags = GPIOD_LINE_ACTIVE_STATE_HIGH;
+	req.flags = GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
 
 	ret = gpiod_line_request_bulk(&bulk, &req, NULL);
 	g_assert_cmpint(ret, ==, -1);
