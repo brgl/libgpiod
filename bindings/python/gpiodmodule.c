@@ -68,6 +68,12 @@ enum {
 };
 
 enum {
+	gpiod_DRIVE_PUSH_PULL,
+	gpiod_DRIVE_OPEN_DRAIN,
+	gpiod_DRIVE_OPEN_SOURCE,
+};
+
+enum {
 	gpiod_BIAS_UNKNOWN = 1,
 	gpiod_BIAS_DISABLED,
 	gpiod_BIAS_PULL_UP,
@@ -397,38 +403,30 @@ static PyObject *gpiod_Line_is_used(gpiod_LineObject *self,
 	Py_RETURN_FALSE;
 }
 
-PyDoc_STRVAR(gpiod_Line_is_open_drain_doc,
-"is_open_drain() -> boolean\n"
+PyDoc_STRVAR(gpiod_Line_drive_doc,
+"drive() -> integer\n"
 "\n"
-"Check if this line represents an open-drain GPIO.");
+"Get the current drive setting of this GPIO line.");
 
-static PyObject *gpiod_Line_is_open_drain(gpiod_LineObject *self,
-					  PyObject *Py_UNUSED(ignored))
+static PyObject *gpiod_Line_drive(gpiod_LineObject *self,
+				  PyObject *Py_UNUSED(ignored))
 {
+	int drive;
+
 	if (gpiod_ChipIsClosed(self->owner))
 		return NULL;
 
-	if (gpiod_line_is_open_drain(self->line))
-		Py_RETURN_TRUE;
+	drive = gpiod_line_drive(self->line);
 
-	Py_RETURN_FALSE;
-}
-
-PyDoc_STRVAR(gpiod_Line_is_open_source_doc,
-"is_open_source() -> boolean\n"
-"\n"
-"Check if this line represents an open-source GPIO.");
-
-static PyObject *gpiod_Line_is_open_source(gpiod_LineObject *self,
-					   PyObject *Py_UNUSED(ignored))
-{
-	if (gpiod_ChipIsClosed(self->owner))
-		return NULL;
-
-	if (gpiod_line_is_open_source(self->line))
-		Py_RETURN_TRUE;
-
-	Py_RETURN_FALSE;
+	switch (drive) {
+	case GPIOD_LINE_DRIVE_OPEN_DRAIN:
+		return Py_BuildValue("I", gpiod_DRIVE_OPEN_DRAIN);
+	case GPIOD_LINE_DRIVE_OPEN_SOURCE:
+		return Py_BuildValue("I", gpiod_DRIVE_OPEN_SOURCE);
+	case GPIOD_LINE_DRIVE_PUSH_PULL:
+	default:
+		return Py_BuildValue("I", gpiod_DRIVE_PUSH_PULL);
+	}
 }
 
 PyDoc_STRVAR(gpiod_Line_request_doc,
@@ -978,16 +976,10 @@ static PyMethodDef gpiod_Line_methods[] = {
 		.ml_doc = gpiod_Line_is_used_doc,
 	},
 	{
-		.ml_name = "is_open_drain",
-		.ml_meth = (PyCFunction)gpiod_Line_is_open_drain,
+		.ml_name = "drive",
+		.ml_meth = (PyCFunction)gpiod_Line_drive,
 		.ml_flags = METH_NOARGS,
-		.ml_doc = gpiod_Line_is_open_drain_doc,
-	},
-	{
-		.ml_name = "is_open_source",
-		.ml_meth = (PyCFunction)gpiod_Line_is_open_source,
-		.ml_flags = METH_NOARGS,
-		.ml_doc = gpiod_Line_is_open_source_doc,
+		.ml_doc = gpiod_Line_drive_doc,
 	},
 	{
 		.ml_name = "request",
@@ -2524,6 +2516,21 @@ static gpiod_ConstDescr gpiod_ConstList[] = {
 		.typeobj = &gpiod_LineType,
 		.name = "DIRECTION_OUTPUT",
 		.val = gpiod_DIRECTION_OUTPUT,
+	},
+	{
+		.typeobj = &gpiod_LineType,
+		.name = "DRIVE_PUSH_PULL",
+		.val = gpiod_DRIVE_PUSH_PULL,
+	},
+	{
+		.typeobj = &gpiod_LineType,
+		.name = "DRIVE_OPEN_DRAIN",
+		.val = gpiod_DRIVE_OPEN_DRAIN,
+	},
+	{
+		.typeobj = &gpiod_LineType,
+		.name = "DRIVE_OPEN_SOURCE",
+		.val = gpiod_DRIVE_OPEN_SOURCE,
 	},
 	{
 		.typeobj = &gpiod_LineType,

@@ -37,6 +37,16 @@ static bool line_bias_is_disabled(struct gpiod_line *line)
 	return gpiod_line_bias(line) == GPIOD_LINE_BIAS_DISABLED;
 }
 
+static bool line_drive_is_open_drain(struct gpiod_line *line)
+{
+	return gpiod_line_drive(line) == GPIOD_LINE_DRIVE_OPEN_DRAIN;
+}
+
+static bool line_drive_is_open_source(struct gpiod_line *line)
+{
+	return gpiod_line_drive(line) == GPIOD_LINE_DRIVE_OPEN_SOURCE;
+}
+
 static const struct flag flags[] = {
 	{
 		.name = "used",
@@ -44,11 +54,11 @@ static const struct flag flags[] = {
 	},
 	{
 		.name = "open-drain",
-		.is_set = gpiod_line_is_open_drain,
+		.is_set = line_drive_is_open_drain,
 	},
 	{
 		.name = "open-source",
-		.is_set = gpiod_line_is_open_source,
+		.is_set = line_drive_is_open_source,
 	},
 	{
 		.name = "pull-up",

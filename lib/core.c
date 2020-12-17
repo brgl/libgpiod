@@ -493,14 +493,14 @@ bool gpiod_line_is_used(struct gpiod_line *line)
 	return line->info_flags & GPIOLINE_FLAG_KERNEL;
 }
 
-bool gpiod_line_is_open_drain(struct gpiod_line *line)
+int gpiod_line_drive(struct gpiod_line *line)
 {
-	return line->info_flags & GPIOLINE_FLAG_OPEN_DRAIN;
-}
+	if (line->info_flags & GPIOLINE_FLAG_OPEN_DRAIN)
+		return GPIOD_LINE_DRIVE_OPEN_DRAIN;
+	if (line->info_flags & GPIOLINE_FLAG_OPEN_SOURCE)
+		return GPIOD_LINE_DRIVE_OPEN_SOURCE;
 
-bool gpiod_line_is_open_source(struct gpiod_line *line)
-{
-	return line->info_flags & GPIOLINE_FLAG_OPEN_SOURCE;
+	return GPIOD_LINE_DRIVE_PUSH_PULL;
 }
 
 static int line_info_v2_to_info_flags(struct gpio_v2_line_info *info)

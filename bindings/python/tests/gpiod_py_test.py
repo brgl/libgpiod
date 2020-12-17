@@ -239,8 +239,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
             self.assertTrue(line.is_requested())
-            self.assertTrue(line.is_open_drain())
-            self.assertFalse(line.is_open_source())
+            self.assertEqual(line.drive(), gpiod.Line.DRIVE_OPEN_DRAIN)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_UNKNOWN)
 
     def test_exported_open_drain_line(self):
@@ -257,8 +256,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
             self.assertTrue(line.is_requested())
-            self.assertTrue(line.is_open_drain())
-            self.assertFalse(line.is_open_source())
+            self.assertEqual(line.drive(), gpiod.Line.DRIVE_OPEN_DRAIN)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_UNKNOWN)
 
     def test_exported_open_source_line(self):
@@ -275,8 +273,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
             self.assertTrue(line.is_requested())
-            self.assertFalse(line.is_open_drain())
-            self.assertTrue(line.is_open_source())
+            self.assertEqual(line.drive(), gpiod.Line.DRIVE_OPEN_SOURCE)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_UNKNOWN)
 
     def test_exported_bias_disable_line(self):
@@ -293,8 +290,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
             self.assertTrue(line.is_requested())
-            self.assertFalse(line.is_open_drain())
-            self.assertFalse(line.is_open_source())
+            self.assertEqual(line.drive(), gpiod.Line.DRIVE_PUSH_PULL)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_DISABLED)
 
     def test_exported_bias_pull_down_line(self):
@@ -311,8 +307,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
             self.assertTrue(line.is_requested())
-            self.assertFalse(line.is_open_drain())
-            self.assertFalse(line.is_open_source())
+            self.assertEqual(line.drive(), gpiod.Line.DRIVE_PUSH_PULL)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_PULL_DOWN)
 
     def test_exported_bias_pull_up_line(self):
@@ -329,8 +324,7 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
             self.assertTrue(line.is_requested())
-            self.assertFalse(line.is_open_drain())
-            self.assertFalse(line.is_open_source())
+            self.assertEqual(line.drive(), gpiod.Line.DRIVE_PUSH_PULL)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_PULL_UP)
 
     def test_update_line_info(self):

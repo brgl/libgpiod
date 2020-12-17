@@ -281,6 +281,18 @@ enum {
 };
 
 /**
+ * @brief Possible drive settings.
+ */
+enum {
+	GPIOD_LINE_DRIVE_PUSH_PULL = 1,
+	/**< Drive setting is push-pull. */
+	GPIOD_LINE_DRIVE_OPEN_DRAIN,
+	/**< Line output is open-drain. */
+	GPIOD_LINE_DRIVE_OPEN_SOURCE,
+	/**< Line output is open-source. */
+};
+
+/**
  * @brief Possible internal bias settings.
  */
 enum {
@@ -353,18 +365,12 @@ int gpiod_line_bias(struct gpiod_line *line) GPIOD_API;
 bool gpiod_line_is_used(struct gpiod_line *line) GPIOD_API;
 
 /**
- * @brief Check if the line is an open-drain GPIO.
+ * @brief Read the GPIO line drive setting.
  * @param line GPIO line object.
- * @return True if the line is an open-drain GPIO, false otherwise.
+ * @return Returns GPIOD_LINE_DRIVE_PUSH_PULL, GPIOD_LINE_DRIVE_OPEN_DRAIN or
+ *         GPIOD_LINE_DRIVE_OPEN_SOURCE.
  */
-bool gpiod_line_is_open_drain(struct gpiod_line *line) GPIOD_API;
-
-/**
- * @brief Check if the line is an open-source GPIO.
- * @param line GPIO line object.
- * @return True if the line is an open-source GPIO, false otherwise.
- */
-bool gpiod_line_is_open_source(struct gpiod_line *line) GPIOD_API;
+int gpiod_line_drive(struct gpiod_line *line) GPIOD_API;
 
 /**
  * @brief Re-read the line info.

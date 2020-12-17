@@ -13,6 +13,12 @@ namespace gpiod {
 
 namespace {
 
+const ::std::map<int, int> drive_mapping = {
+	{ GPIOD_LINE_DRIVE_PUSH_PULL,	line::DRIVE_PUSH_PULL, },
+	{ GPIOD_LINE_DRIVE_OPEN_DRAIN,	line::DRIVE_OPEN_DRAIN, },
+	{ GPIOD_LINE_DRIVE_OPEN_SOURCE,	line::DRIVE_OPEN_SOURCE, },
+};
+
 const ::std::map<int, int> bias_mapping = {
 	{ GPIOD_LINE_BIAS_PULL_UP,	line::BIAS_PULL_UP, },
 	{ GPIOD_LINE_BIAS_PULL_DOWN,	line::BIAS_PULL_DOWN, },
@@ -98,20 +104,12 @@ bool line::is_used(void) const
 	return ::gpiod_line_is_used(this->_m_line);
 }
 
-bool line::is_open_drain(void) const
+int line::drive(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
 
-	return ::gpiod_line_is_open_drain(this->_m_line);
-}
-
-bool line::is_open_source(void) const
-{
-	this->throw_if_null();
-	line::chip_guard lock_chip(*this);
-
-	return ::gpiod_line_is_open_source(this->_m_line);
+	return drive_mapping.at(::gpiod_line_drive(this->_m_line));
 }
 
 void line::request(const line_request& config, int default_val) const

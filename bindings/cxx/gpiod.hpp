@@ -332,16 +332,10 @@ public:
 	GPIOD_API bool is_used(void) const;
 
 	/**
-	 * @brief Check if this line represents an open-drain GPIO.
-	 * @return True if the line is an open-drain GPIO, false otherwise.
+	 * @brief Get current drive setting of this line.
+	 * @return Current drive setting.
 	 */
-	GPIOD_API bool is_open_drain(void) const;
-
-	/**
-	 * @brief Check if this line represents an open-source GPIO.
-	 * @return True if the line is an open-source GPIO, false otherwise.
-	 */
-	GPIOD_API bool is_open_source(void) const;
+	GPIOD_API int drive(void) const;
 
 	/**
 	 * @brief Request this line.
@@ -480,6 +474,18 @@ public:
 		/**< Line's direction setting is input. */
 		DIRECTION_OUTPUT,
 		/**< Line's direction setting is output. */
+	};
+
+	/**
+	 * @brief Possible drive settings.
+	 */
+	enum : int {
+		DRIVE_PUSH_PULL = 1,
+		/**< Drive setting is unknown. */
+		DRIVE_OPEN_DRAIN,
+		/**< Line output is open-drain. */
+		DRIVE_OPEN_SOURCE,
+		/**< Line output is open-source. */
 	};
 
 	/**
