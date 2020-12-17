@@ -485,7 +485,7 @@ int gpiod_line_bias(struct gpiod_line *line)
 	if (line->info_flags & GPIOLINE_FLAG_BIAS_PULL_DOWN)
 		return GPIOD_LINE_BIAS_PULL_DOWN;
 
-	return GPIOD_LINE_BIAS_AS_IS;
+	return GPIOD_LINE_BIAS_UNKNOWN;
 }
 
 bool gpiod_line_is_used(struct gpiod_line *line)

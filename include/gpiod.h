@@ -284,7 +284,7 @@ enum {
  * @brief Possible internal bias settings.
  */
 enum {
-	GPIOD_LINE_BIAS_AS_IS = 1,
+	GPIOD_LINE_BIAS_UNKNOWN = 1,
 	/**< The internal bias state is unknown. */
 	GPIOD_LINE_BIAS_DISABLE,
 	/**< The internal bias is disabled. */
@@ -337,7 +337,7 @@ bool gpiod_line_is_active_low(struct gpiod_line *line) GPIOD_API;
  * @brief Read the GPIO line bias setting.
  * @param line GPIO line object.
  * @return Returns GPIOD_LINE_BIAS_PULL_UP, GPIOD_LINE_BIAS_PULL_DOWN,
- *         GPIOD_LINE_BIAS_DISABLE or GPIOD_LINE_BIAS_AS_IS.
+ *         GPIOD_LINE_BIAS_DISABLE or GPIOD_LINE_BIAS_UNKNOWN.
  */
 int gpiod_line_bias(struct gpiod_line *line) GPIOD_API;
 

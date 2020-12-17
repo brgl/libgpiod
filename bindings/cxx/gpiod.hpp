@@ -486,7 +486,7 @@ public:
 	 * @brief Possible bias settings.
 	 */
 	enum : int {
-		BIAS_AS_IS = 1,
+		BIAS_UNKNOWN = 1,
 		/**< Line's bias state is unknown. */
 		BIAS_DISABLE,
 		/**< Line's internal bias is disabled. */

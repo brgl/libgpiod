@@ -35,7 +35,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE_FALSE(line.is_used());
 		REQUIRE_FALSE(line.is_open_drain());
 		REQUIRE_FALSE(line.is_open_source());
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_AS_IS);
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
 	}
 
 	SECTION("exported line")
@@ -54,7 +54,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.is_used());
 		REQUIRE_FALSE(line.is_open_drain());
 		REQUIRE_FALSE(line.is_open_source());
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_AS_IS);
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
 	}
 
 	SECTION("exported line with flags")
@@ -75,7 +75,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.is_used());
 		REQUIRE(line.is_open_drain());
 		REQUIRE_FALSE(line.is_open_source());
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_AS_IS);
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
 	}
 
 	SECTION("exported open source line")
@@ -95,7 +95,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.is_used());
 		REQUIRE_FALSE(line.is_open_drain());
 		REQUIRE(line.is_open_source());
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_AS_IS);
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
 	}
 
 	SECTION("exported bias disable line")

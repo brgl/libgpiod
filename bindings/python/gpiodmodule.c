@@ -68,7 +68,7 @@ enum {
 };
 
 enum {
-	gpiod_BIAS_AS_IS = 1,
+	gpiod_BIAS_UNKNOWN = 1,
 	gpiod_BIAS_DISABLE,
 	gpiod_BIAS_PULL_UP,
 	gpiod_BIAS_PULL_DOWN,
@@ -374,9 +374,9 @@ static PyObject *gpiod_Line_bias(gpiod_LineObject *self,
 		return Py_BuildValue("I", gpiod_BIAS_PULL_DOWN);
 	case GPIOD_LINE_BIAS_DISABLE:
 		return Py_BuildValue("I", gpiod_BIAS_DISABLE);
-	case GPIOD_LINE_BIAS_AS_IS:
+	case GPIOD_LINE_BIAS_UNKNOWN:
 	default:
-		return Py_BuildValue("I", gpiod_BIAS_AS_IS);
+		return Py_BuildValue("I", gpiod_BIAS_UNKNOWN);
 	}
 }
 
@@ -2527,8 +2527,8 @@ static gpiod_ConstDescr gpiod_ConstList[] = {
 	},
 	{
 		.typeobj = &gpiod_LineType,
-		.name = "BIAS_AS_IS",
-		.val = gpiod_BIAS_AS_IS,
+		.name = "BIAS_UNKNOWN",
+		.val = gpiod_BIAS_UNKNOWN,
 	},
 	{
 		.typeobj = &gpiod_LineType,

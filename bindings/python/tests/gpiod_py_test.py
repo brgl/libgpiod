@@ -241,7 +241,7 @@ class LineInfo(MockupTestCase):
             self.assertTrue(line.is_requested())
             self.assertTrue(line.is_open_drain())
             self.assertFalse(line.is_open_source())
-            self.assertEqual(line.bias(), gpiod.Line.BIAS_AS_IS)
+            self.assertEqual(line.bias(), gpiod.Line.BIAS_UNKNOWN)
 
     def test_exported_open_drain_line(self):
         with gpiod.Chip(mockup.chip_path(0)) as chip:
@@ -259,7 +259,7 @@ class LineInfo(MockupTestCase):
             self.assertTrue(line.is_requested())
             self.assertTrue(line.is_open_drain())
             self.assertFalse(line.is_open_source())
-            self.assertEqual(line.bias(), gpiod.Line.BIAS_AS_IS)
+            self.assertEqual(line.bias(), gpiod.Line.BIAS_UNKNOWN)
 
     def test_exported_open_source_line(self):
         with gpiod.Chip(mockup.chip_path(0)) as chip:
@@ -277,7 +277,7 @@ class LineInfo(MockupTestCase):
             self.assertTrue(line.is_requested())
             self.assertFalse(line.is_open_drain())
             self.assertTrue(line.is_open_source())
-            self.assertEqual(line.bias(), gpiod.Line.BIAS_AS_IS)
+            self.assertEqual(line.bias(), gpiod.Line.BIAS_UNKNOWN)
 
     def test_exported_bias_disable_line(self):
         with gpiod.Chip(mockup.chip_path(0)) as chip:
