@@ -8,7 +8,6 @@
 #ifndef __LIBGPIOD_GPIOD_H__
 #define __LIBGPIOD_GPIOD_H__
 
-#include <dirent.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
