@@ -20,10 +20,10 @@ const ::std::map<int, int> drive_mapping = {
 };
 
 const ::std::map<int, int> bias_mapping = {
+	{ GPIOD_LINE_BIAS_UNKNOWN,	line::BIAS_UNKNOWN, },
+	{ GPIOD_LINE_BIAS_DISABLED,	line::BIAS_DISABLED, },
 	{ GPIOD_LINE_BIAS_PULL_UP,	line::BIAS_PULL_UP, },
 	{ GPIOD_LINE_BIAS_PULL_DOWN,	line::BIAS_PULL_DOWN, },
-	{ GPIOD_LINE_BIAS_DISABLED,	line::BIAS_DISABLED, },
-	{ GPIOD_LINE_BIAS_UNKNOWN,	line::BIAS_UNKNOWN, },
 };
 
 } /* namespace */
