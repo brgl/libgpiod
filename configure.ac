@@ -93,16 +93,10 @@ AC_CHECK_HEADERS([getopt.h], [], [HEADER_NOT_FOUND_LIB([getopt.h])])
 AC_CHECK_HEADERS([dirent.h], [], [HEADER_NOT_FOUND_LIB([dirent.h])])
 AC_CHECK_HEADERS([sys/poll.h], [], [HEADER_NOT_FOUND_LIB([sys/poll.h])])
 AC_CHECK_HEADERS([sys/sysmacros.h], [], [HEADER_NOT_FOUND_LIB([sys/sysmacros.h])])
-AC_CHECK_HEADERS([linux/gpio.h], [], [HEADER_NOT_FOUND_LIB([linux/gpio.h])])
 AC_CHECK_HEADERS([linux/version.h], [], [HEADER_NOT_FOUND_LIB([linux/version.h])])
-
-AC_COMPILE_IFELSE([AC_LANG_SOURCE(
-#include <linux/version.h>
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0)
-#error
-#endif
-)],
-[], [AC_MSG_ERROR(["libgpiod needs linux headers version >= v5.10.0"])])
+AC_CHECK_HEADERS([linux/const.h], [], [HEADER_NOT_FOUND_LIB([linux/const.h])])
+AC_CHECK_HEADERS([linux/ioctl.h], [], [HEADER_NOT_FOUND_LIB([linux/ioctl.h])])
+AC_CHECK_HEADERS([linux/types.h], [], [HEADER_NOT_FOUND_LIB([linux/types.h])])
 
 AC_ARG_ENABLE([tools],
 	[AS_HELP_STRING([--enable-tools],[enable libgpiod command-line tools [default=no]])],

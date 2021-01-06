@@ -11,7 +11,6 @@
 #include <fcntl.h>
 #include <gpiod.h>
 #include <limits.h>
-#include <linux/gpio.h>
 #include <poll.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -21,6 +20,8 @@
 #include <sys/sysmacros.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include "uapi/gpio.h"
 
 #define LINE_REQUEST_MAX_LINES	64
 
