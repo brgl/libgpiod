@@ -219,7 +219,7 @@ GPIOD_TEST_CASE(both_edges_bias_disable, 0, { 8 })
 	gpiod_test_return_if_failed();
 
 	ret = gpiod_line_request_both_edges_events_flags(line,
-		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE);
+		GPIOD_TEST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED);
 	g_assert_cmpint(ret, ==, 0);
 	gpiod_test_return_if_failed();
 

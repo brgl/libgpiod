@@ -104,7 +104,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 
 		config.consumer = consumer.c_str();
 		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = ::gpiod::line_request::FLAG_BIAS_DISABLE;
+		config.flags = ::gpiod::line_request::FLAG_BIAS_DISABLED;
 		line.request(config);
 
 		REQUIRE(line.offset() == 4);
@@ -115,7 +115,7 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.is_used());
 		REQUIRE_FALSE(line.is_open_drain());
 		REQUIRE_FALSE(line.is_open_source());
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_DISABLE);
+		REQUIRE(line.bias() == ::gpiod::line::BIAS_DISABLED);
 	}
 
 	SECTION("exported pull-down line")

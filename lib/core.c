@@ -479,7 +479,7 @@ bool gpiod_line_is_active_low(struct gpiod_line *line)
 int gpiod_line_bias(struct gpiod_line *line)
 {
 	if (line->info_flags & GPIOLINE_FLAG_BIAS_DISABLE)
-		return GPIOD_LINE_BIAS_DISABLE;
+		return GPIOD_LINE_BIAS_DISABLED;
 	if (line->info_flags & GPIOLINE_FLAG_BIAS_PULL_UP)
 		return GPIOD_LINE_BIAS_PULL_UP;
 	if (line->info_flags & GPIOLINE_FLAG_BIAS_PULL_DOWN)
@@ -639,7 +639,7 @@ static void line_request_flag_to_gpio_v2_line_config(int flags,
 	else if (flags & GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE)
 		config->flags |= GPIO_V2_LINE_FLAG_OPEN_SOURCE;
 
-	if (flags & GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE)
+	if (flags & GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED)
 		config->flags |= GPIO_V2_LINE_FLAG_BIAS_DISABLED;
 	else if (flags & GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN)
 		config->flags |= GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN;
@@ -671,7 +671,7 @@ static bool line_request_config_validate(
 		return false;
 	}
 
-	if (config->flags & GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE)
+	if (config->flags & GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED)
 		bias_flags++;
 	if (config->flags & GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP)
 		bias_flags++;

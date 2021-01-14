@@ -57,7 +57,7 @@ enum {
 	gpiod_LINE_REQ_FLAG_OPEN_DRAIN		= GPIOD_BIT(0),
 	gpiod_LINE_REQ_FLAG_OPEN_SOURCE		= GPIOD_BIT(1),
 	gpiod_LINE_REQ_FLAG_ACTIVE_LOW		= GPIOD_BIT(2),
-	gpiod_LINE_REQ_FLAG_BIAS_DISABLE	= GPIOD_BIT(3),
+	gpiod_LINE_REQ_FLAG_BIAS_DISABLED	= GPIOD_BIT(3),
 	gpiod_LINE_REQ_FLAG_BIAS_PULL_DOWN	= GPIOD_BIT(4),
 	gpiod_LINE_REQ_FLAG_BIAS_PULL_UP	= GPIOD_BIT(5),
 };
@@ -69,7 +69,7 @@ enum {
 
 enum {
 	gpiod_BIAS_UNKNOWN = 1,
-	gpiod_BIAS_DISABLE,
+	gpiod_BIAS_DISABLED,
 	gpiod_BIAS_PULL_UP,
 	gpiod_BIAS_PULL_DOWN,
 };
@@ -372,8 +372,8 @@ static PyObject *gpiod_Line_bias(gpiod_LineObject *self,
 		return Py_BuildValue("I", gpiod_BIAS_PULL_UP);
 	case GPIOD_LINE_BIAS_PULL_DOWN:
 		return Py_BuildValue("I", gpiod_BIAS_PULL_DOWN);
-	case GPIOD_LINE_BIAS_DISABLE:
-		return Py_BuildValue("I", gpiod_BIAS_DISABLE);
+	case GPIOD_LINE_BIAS_DISABLED:
+		return Py_BuildValue("I", gpiod_BIAS_DISABLED);
 	case GPIOD_LINE_BIAS_UNKNOWN:
 	default:
 		return Py_BuildValue("I", gpiod_BIAS_UNKNOWN);
@@ -1286,8 +1286,8 @@ static void gpiod_MakeRequestConfig(struct gpiod_line_request_config *conf,
 		conf->flags |= GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE;
 	if (flags & gpiod_LINE_REQ_FLAG_ACTIVE_LOW)
 		conf->flags |= GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
-	if (flags & gpiod_LINE_REQ_FLAG_BIAS_DISABLE)
-		conf->flags |= GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE;
+	if (flags & gpiod_LINE_REQ_FLAG_BIAS_DISABLED)
+		conf->flags |= GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED;
 	if (flags & gpiod_LINE_REQ_FLAG_BIAS_PULL_DOWN)
 		conf->flags |= GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN;
 	if (flags & gpiod_LINE_REQ_FLAG_BIAS_PULL_UP)
@@ -2532,8 +2532,8 @@ static gpiod_ConstDescr gpiod_ConstList[] = {
 	},
 	{
 		.typeobj = &gpiod_LineType,
-		.name = "BIAS_DISABLE",
-		.val = gpiod_BIAS_DISABLE,
+		.name = "BIAS_DISABLED",
+		.val = gpiod_BIAS_DISABLED,
 	},
 	{
 		.typeobj = &gpiod_LineType,
@@ -2649,8 +2649,8 @@ static gpiod_ModuleConst gpiod_ModuleConsts[] = {
 		.value = gpiod_LINE_REQ_FLAG_ACTIVE_LOW,
 	},
 	{
-		.name = "LINE_REQ_FLAG_BIAS_DISABLE",
-		.value = gpiod_LINE_REQ_FLAG_BIAS_DISABLE,
+		.name = "LINE_REQ_FLAG_BIAS_DISABLED",
+		.value = gpiod_LINE_REQ_FLAG_BIAS_DISABLED,
 	},
 	{
 		.name = "LINE_REQ_FLAG_BIAS_PULL_DOWN",

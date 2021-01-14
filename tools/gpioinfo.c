@@ -34,7 +34,7 @@ static bool line_bias_is_pulldown(struct gpiod_line *line)
 
 static bool line_bias_is_disabled(struct gpiod_line *line)
 {
-	return gpiod_line_bias(line) == GPIOD_LINE_BIAS_DISABLE;
+	return gpiod_line_bias(line) == GPIOD_LINE_BIAS_DISABLED;
 }
 
 static const struct flag flags[] = {

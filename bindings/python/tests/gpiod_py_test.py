@@ -282,7 +282,7 @@ class LineInfo(MockupTestCase):
     def test_exported_bias_disable_line(self):
         with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(4)
-            flags = gpiod.LINE_REQ_FLAG_BIAS_DISABLE
+            flags = gpiod.LINE_REQ_FLAG_BIAS_DISABLED
             line.request(consumer=default_consumer,
                          type=gpiod.LINE_REQ_DIR_OUT,
                          flags=flags)
@@ -295,7 +295,7 @@ class LineInfo(MockupTestCase):
             self.assertTrue(line.is_requested())
             self.assertFalse(line.is_open_drain())
             self.assertFalse(line.is_open_source())
-            self.assertEqual(line.bias(), gpiod.Line.BIAS_DISABLE)
+            self.assertEqual(line.bias(), gpiod.Line.BIAS_DISABLED)
 
     def test_exported_bias_pull_down_line(self):
         with gpiod.Chip(mockup.chip_path(0)) as chip:

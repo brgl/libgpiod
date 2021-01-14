@@ -225,7 +225,7 @@ struct line_request
 	/**< The line is an open-source port. */
 	GPIOD_API static const ::std::bitset<32> FLAG_OPEN_DRAIN;
 	/**< The line is an open-drain port. */
-	GPIOD_API static const ::std::bitset<32> FLAG_BIAS_DISABLE;
+	GPIOD_API static const ::std::bitset<32> FLAG_BIAS_DISABLED;
 	/**< The line has neither pull-up nor pull-down resistor enabled. */
 	GPIOD_API static const ::std::bitset<32> FLAG_BIAS_PULL_DOWN;
 	/**< The line has a configurable pull-down resistor enabled. */
@@ -488,7 +488,7 @@ public:
 	enum : int {
 		BIAS_UNKNOWN = 1,
 		/**< Line's bias state is unknown. */
-		BIAS_DISABLE,
+		BIAS_DISABLED,
 		/**< Line's internal bias is disabled. */
 		BIAS_PULL_UP,
 		/**< Line's internal pull-up bias is enabled. */

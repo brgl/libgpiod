@@ -68,7 +68,7 @@ int bias_flags(const char *option)
 	if (strcmp(option, "pull-up") == 0)
 		return GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP;
 	if (strcmp(option, "disable") == 0)
-		return GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE;
+		return GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED;
 	if (strcmp(option, "as-is") != 0)
 		die("invalid bias: %s", option);
 	return 0;

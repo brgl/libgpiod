@@ -421,9 +421,9 @@ GPIOD_TEST_CASE(set_flags_bias, 0, { 8 })
 	g_assert_cmpint(gpiod_line_bias(line), ==, GPIOD_LINE_BIAS_UNKNOWN);
 
 	ret = gpiod_line_set_flags(line,
-		GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE);
+		GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED);
 	g_assert_cmpint(ret, ==, 0);
-	g_assert_cmpint(gpiod_line_bias(line), ==, GPIOD_LINE_BIAS_DISABLE);
+	g_assert_cmpint(gpiod_line_bias(line), ==, GPIOD_LINE_BIAS_DISABLED);
 
 	ret = gpiod_line_set_flags(line,
 		GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP);
@@ -959,13 +959,13 @@ GPIOD_TEST_CASE(multiple_bias_flags, 0, { 8 })
 	gpiod_test_return_if_failed();
 
 	ret = gpiod_line_request_input_flags(line, GPIOD_TEST_CONSUMER,
-					GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE |
+					GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED |
 					GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN);
 	g_assert_cmpint(ret, ==, -1);
 	g_assert_cmpint(errno, ==, EINVAL);
 
 	ret = gpiod_line_request_input_flags(line, GPIOD_TEST_CONSUMER,
-					GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE |
+					GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED |
 					GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP);
 	g_assert_cmpint(ret, ==, -1);
 	g_assert_cmpint(errno, ==, EINVAL);
@@ -977,7 +977,7 @@ GPIOD_TEST_CASE(multiple_bias_flags, 0, { 8 })
 	g_assert_cmpint(errno, ==, EINVAL);
 
 	ret = gpiod_line_request_input_flags(line, GPIOD_TEST_CONSUMER,
-					GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE |
+					GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED |
 					GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN |
 					GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP);
 	g_assert_cmpint(ret, ==, -1);

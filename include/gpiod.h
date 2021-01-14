@@ -286,7 +286,7 @@ enum {
 enum {
 	GPIOD_LINE_BIAS_UNKNOWN = 1,
 	/**< The internal bias state is unknown. */
-	GPIOD_LINE_BIAS_DISABLE,
+	GPIOD_LINE_BIAS_DISABLED,
 	/**< The internal bias is disabled. */
 	GPIOD_LINE_BIAS_PULL_UP,
 	/**< The internal pull-up bias is enabled. */
@@ -433,7 +433,7 @@ enum {
 	/**< The line is an open-source port. */
 	GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW	= GPIOD_BIT(2),
 	/**< The active state of the line is low (high is the default). */
-	GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLE	= GPIOD_BIT(3),
+	GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED	= GPIOD_BIT(3),
 	/**< The line has neither either pull-up nor pull-down resistor. */
 	GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN	= GPIOD_BIT(4),
 	/**< The line has pull-down resistor enabled. */
