@@ -92,22 +92,18 @@ line chip::get_line(unsigned int offset) const
 	return line(line_handle, *this);
 }
 
-::std::vector<line> chip::find_line(const ::std::string& name, bool unique) const
+int chip::find_line(const ::std::string& name) const
 {
 	this->throw_if_noref();
 
-	::std::vector<line> lines;
+	for (unsigned int offset = 0; offset < this->num_lines(); offset++) {
+		auto line = this->get_line(offset);
 
-	for (auto& line: ::gpiod::line_iter(*this)) {
 		if (line.name() == name)
-			lines.push_back(line);
+			return offset;
 	}
 
-	if (unique && lines.size() > 1)
-		throw ::std::system_error(ERANGE, ::std::system_category(),
-					  "multiple lines with the same name found");
-
-	return lines;
+	return -1;
 }
 
 line_bulk chip::get_lines(const ::std::vector<unsigned int>& offsets) const

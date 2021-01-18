@@ -136,31 +136,13 @@ struct gpiod_line_bulk *
 gpiod_chip_get_all_lines(struct gpiod_chip *chip) GPIOD_API;
 
 /**
- * @brief Find all GPIO lines by name among lines exposed by this GPIO chip.
+ * @brief Map a GPIO line's name to its offset within the chip.
  * @param chip The GPIO chip object.
- * @param name GPIO line name to look for.
- * @return New line bulk object containing all matching lines or NULL on error.
- *
- * If no line with given name is associated with this chip, the function sets
- * errno to ENOENT.
+ * @param name Name of the GPIO line to map.
+ * @return Offset of the line within the chip or -1 if a line with given name
+ *         is not exposed by the chip.
  */
-struct gpiod_line_bulk *
-gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
-
-/**
- * @brief Find a unique line by name among lines exposed by this GPIO chip.
- * @param chip The GPIO chip object.
- * @param name Name of the GPIO line.
- * @return Pointer to the GPIO line handle or NULL if the line could not be
- *         found or an error occurred.
- *
- * If no line with given name is associated with this chip, the function sets
- * errno to ENOENT. If more than one line with given name is associated with
- * this chip, the function sets errno to ERANGE.
- */
-struct gpiod_line *
-gpiod_chip_find_line_unique(struct gpiod_chip *chip,
-			    const char *name) GPIOD_API;
+int gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
 
 /**
  * @}

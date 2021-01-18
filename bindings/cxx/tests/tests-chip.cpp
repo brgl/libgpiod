@@ -113,8 +113,8 @@ TEST_CASE("Lines can be retrieved from chip objects", "[chip]")
 
 	SECTION("find single line by name")
 	{
-		auto line = chip.find_line("gpio-mockup-B-3", true).front();
-		REQUIRE(line.offset() == 3);
+		auto offset = chip.find_line("gpio-mockup-B-3");
+		REQUIRE(offset == 3);
 	}
 
 	SECTION("get multiple lines by offsets")
@@ -168,6 +168,6 @@ TEST_CASE("Errors occurring when retrieving lines are correctly reported", "[chi
 
 	SECTION("line not found by name")
 	{
-		REQUIRE(chip.find_line("nonexistent-line").empty());
+		REQUIRE(chip.find_line("nonexistent-line") == -1);
 	}
 }

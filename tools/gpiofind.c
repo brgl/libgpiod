@@ -31,9 +31,8 @@ static void print_help(void)
 
 int main(int argc, char **argv)
 {
-	int i, num_chips, optc, opti;
+	int i, num_chips, optc, opti, offset;
 	struct gpiod_chip *chip;
-	struct gpiod_line *line;
 	struct dirent **entries;
 
 	for (;;) {
@@ -74,10 +73,10 @@ int main(int argc, char **argv)
 			die_perror("unable to open %s", entries[i]->d_name);
 		}
 
-		line = gpiod_chip_find_line_unique(chip, argv[0]);
-		if (line) {
+		offset = gpiod_chip_find_line(chip, argv[0]);
+		if (offset >= 0) {
 			printf("%s %u\n",
-			       gpiod_chip_name(chip), gpiod_line_offset(line));
+			       gpiod_chip_name(chip), offset);
 			gpiod_chip_close(chip);
 			return EXIT_SUCCESS;
 		}

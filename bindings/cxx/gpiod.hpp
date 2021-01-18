@@ -129,15 +129,12 @@ public:
 	GPIOD_API line get_line(unsigned int offset) const;
 
 	/**
-	 * @brief Find all GPIO lines by name among lines exposed by this GPIO
-	 *        chip.
-	 * @param name Line name.
-	 * @param unique If set to true: throw an error if multiple lines match
-	 *               the name.
-	 * @return Vector of all matching lines.
+	 * @brief Map a GPIO line's name to its offset within the chip.
+	 * @param name Name of the GPIO line to map.
+	 * @return Offset of the line within the chip or -1 if a line with
+	 *         given name is not exposed by the chip.
 	 */
-	GPIOD_API ::std::vector<line> find_line(const ::std::string& name,
-						bool unique = false) const;
+	GPIOD_API int find_line(const ::std::string& name) const;
 
 	/**
 	 * @brief Get a set of lines exposed by this chip at given offsets.

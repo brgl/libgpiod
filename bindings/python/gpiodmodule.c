@@ -2151,59 +2151,40 @@ gpiod_LineBulkObjectFromBulk(gpiod_ChipObject *chip, struct gpiod_line_bulk *bul
 }
 
 PyDoc_STRVAR(gpiod_Chip_find_line_doc,
-"find_line(name) -> gpiod.LineBulk object or None\n"
+"find_line(name) -> integer or None\n"
 "\n"
-"Find all GPIO lines by name among lines exposed by this GPIO chip..\n"
+"Find the offset of the line with given name among lines exposed by this\n"
+"GPIO chip.\n"
 "\n"
 "  name\n"
 "    Line name (string)\n"
-"  unique\n"
-"    Indicates whether an exception should be raised if more than one lines\n"
-"    matches the name\n"
 "\n"
-"Returns a gpiod.LineBulk object containing all matching lines or None if\n"
-"line with given name is not associated with this chip.");
+"Returns the offset of the line with given name or None if it is not\n"
+"associated with this chip.");
 
-static gpiod_LineBulkObject *
-gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args, PyObject *kwds)
+static PyObject *gpiod_Chip_find_line(gpiod_ChipObject *self, PyObject *args)
 {
-	static char *kwlist[] = { "", "unique", NULL };
-
-	gpiod_LineBulkObject *bulk_obj;
-	struct gpiod_line_bulk *bulk;
-	int rv, unique = 0;
 	const char *name;
+	int rv, offset;
 
 	if (gpiod_ChipIsClosed(self))
 		return NULL;
 
-	rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|p",
-					 kwlist, &name, &unique);
+	rv = PyArg_ParseTuple(args, "s", &name);
 	if (!rv)
 		return NULL;
 
 	Py_BEGIN_ALLOW_THREADS;
-	bulk = gpiod_chip_find_line(self->chip, name);
+	offset = gpiod_chip_find_line(self->chip, name);
 	Py_END_ALLOW_THREADS;
-	if (!bulk) {
-		if (errno == ENOENT) {
-			Py_INCREF(Py_None);
-			return (gpiod_LineBulkObject *)Py_None;
-		}
+	if (offset < 0) {
+		if (errno == ENOENT)
+			Py_RETURN_NONE;
 
-		return (gpiod_LineBulkObject *)PyErr_SetFromErrno(
-							PyExc_OSError);
+		return PyErr_SetFromErrno(PyExc_OSError);
 	}
 
-	if (unique && gpiod_line_bulk_num_lines(bulk) > 1) {
-		gpiod_line_bulk_free(bulk);
-		PyErr_SetString(PyExc_RuntimeError, "line not unique");
-		return NULL;
-	}
-
-	bulk_obj = gpiod_LineBulkObjectFromBulk(self, bulk);
-	gpiod_line_bulk_free(bulk);
-	return bulk_obj;
+	return Py_BuildValue("i", offset);
 }
 
 PyDoc_STRVAR(gpiod_Chip_get_lines_doc,
@@ -2353,8 +2334,8 @@ static PyMethodDef gpiod_Chip_methods[] = {
 	},
 	{
 		.ml_name = "find_line",
-		.ml_meth = (PyCFunction)(void (*)(void))gpiod_Chip_find_line,
-		.ml_flags = METH_VARARGS | METH_KEYWORDS,
+		.ml_meth = (PyCFunction)gpiod_Chip_find_line,
+		.ml_flags = METH_VARARGS,
 		.ml_doc = gpiod_Chip_find_line_doc,
 	},
 	{
