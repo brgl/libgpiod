@@ -153,49 +153,6 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 	}
 }
 
-TEST_CASE("Line bulk object works correctly", "[line][bulk]")
-{
-	mockup::probe_guard mockup_chips({ 8 }, mockup::FLAG_NAMED_LINES);
-	::gpiod::chip chip(mockup::instance().chip_path(0));
-
-	SECTION("lines can be added, accessed and cleared")
-	{
-		::gpiod::line_bulk lines;
-
-		REQUIRE(lines.empty());
-
-		lines.append(chip.get_line(0));
-		lines.append(chip.get_line(1));
-		lines.append(chip.get_line(2));
-
-		REQUIRE(lines.size() == 3);
-		REQUIRE(lines.get(1).name() == "gpio-mockup-A-1");
-		REQUIRE(lines[2].name() == "gpio-mockup-A-2");
-
-		lines.clear();
-
-		REQUIRE(lines.empty());
-	}
-
-	SECTION("bulk iterator works")
-	{
-		auto lines = chip.get_all_lines();
-		unsigned int count = 0;
-
-		for (auto& it: lines)
-			REQUIRE(it.offset() == count++);
-
-		REQUIRE(count == chip.num_lines());
-	}
-
-	SECTION("accessing lines out of range throws exception")
-	{
-		auto lines = chip.get_all_lines();
-
-		REQUIRE_THROWS_AS(lines.get(11), ::std::out_of_range);
-	}
-}
-
 TEST_CASE("Line values can be set and read", "[line]")
 {
 	mockup::probe_guard mockup_chips({ 8 });

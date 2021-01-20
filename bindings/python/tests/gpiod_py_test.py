@@ -670,21 +670,6 @@ class LineIterator(MockupTestCase):
 
             self.assertEqual(count, chip.num_lines())
 
-class LineBulkIter(MockupTestCase):
-
-    chip_sizes = ( 4, )
-
-    def test_line_bulk_iterator(self):
-        with gpiod.Chip(mockup.chip_path(0)) as chip:
-            lines = chip.get_all_lines()
-            count = 0
-
-            for line in lines:
-                self.assertEqual(line.offset(), count)
-                count += 1
-
-            self.assertEqual(count, chip.num_lines())
-
 #
 # Event test cases
 #
