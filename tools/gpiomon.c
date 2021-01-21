@@ -306,7 +306,7 @@ done:
 	gpiod_line_release_bulk(lines);
 	gpiod_line_bulk_free(lines);
 	gpiod_line_bulk_free(evlines);
-	gpiod_chip_close(chip);
+	gpiod_chip_unref(chip);
 
 	return EXIT_SUCCESS;
 }

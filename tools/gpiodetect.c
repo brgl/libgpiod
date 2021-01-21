@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 		       gpiod_chip_label(chip),
 		       gpiod_chip_num_lines(chip));
 
-		gpiod_chip_close(chip);
+		gpiod_chip_unref(chip);
 		free(entries[i]);
 	}
 

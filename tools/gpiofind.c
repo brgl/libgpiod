@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 		if (offset >= 0) {
 			printf("%s %u\n",
 			       gpiod_chip_name(chip), offset);
-			gpiod_chip_close(chip);
+			gpiod_chip_unref(chip);
 			return EXIT_SUCCESS;
 		}
 	}

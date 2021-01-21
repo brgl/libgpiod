@@ -81,10 +81,18 @@ bool gpiod_is_gpiochip_device(const char *path) GPIOD_API;
 struct gpiod_chip *gpiod_chip_open(const char *path) GPIOD_API;
 
 /**
- * @brief Close a GPIO chip handle and release all allocated resources.
+ * @brief Increase the refcount on this GPIO object.
+ * @param chip The GPIO chip object.
+ * @return Passed reference to the GPIO chip.
+ */
+struct gpiod_chip *gpiod_chip_ref(struct gpiod_chip *chip) GPIOD_API;
+
+/**
+ * @brief Decrease the refcount on this GPIO object. If the refcount reaches 0,
+ *        close the chip device and free all associated resources.
  * @param chip The GPIO chip object.
  */
-void gpiod_chip_close(struct gpiod_chip *chip) GPIOD_API;
+void gpiod_chip_unref(struct gpiod_chip *chip) GPIOD_API;
 
 /**
  * @brief Get the GPIO chip name as represented in the kernel.

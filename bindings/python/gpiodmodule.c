@@ -1953,7 +1953,7 @@ static int gpiod_Chip_init(gpiod_ChipObject *self,
 static void gpiod_Chip_dealloc(gpiod_ChipObject *self)
 {
 	if (self->chip)
-		gpiod_chip_close(self->chip);
+		gpiod_chip_unref(self->chip);
 
 	PyObject_Del(self);
 }
@@ -1981,7 +1981,7 @@ static PyObject *gpiod_Chip_close(gpiod_ChipObject *self,
 	if (gpiod_ChipIsClosed(self))
 		return NULL;
 
-	gpiod_chip_close(self->chip);
+	gpiod_chip_unref(self->chip);
 	self->chip = NULL;
 
 	Py_RETURN_NONE;

@@ -64,6 +64,8 @@ struct gpiod_line {
 };
 
 struct gpiod_chip {
+	int refcount;
+
 	struct gpiod_line **lines;
 	unsigned int num_lines;
 
@@ -297,6 +299,7 @@ struct gpiod_chip *gpiod_chip_open(const char *path)
 
 	chip->fd = fd;
 	chip->num_lines = info.lines;
+	chip->refcount = 1;
 
 	/*
 	 * GPIO device must have a name - don't bother checking this field. In
@@ -324,10 +327,20 @@ err_close_fd:
 	return NULL;
 }
 
-void gpiod_chip_close(struct gpiod_chip *chip)
+struct gpiod_chip *gpiod_chip_ref(struct gpiod_chip *chip)
+{
+	chip->refcount++;
+	return chip;
+}
+
+void gpiod_chip_unref(struct gpiod_chip *chip)
 {
 	struct gpiod_line *line;
 	unsigned int i;
+
+	chip->refcount--;
+	if (chip->refcount > 0)
+		return;
 
 	if (chip->lines) {
 		for (i = 0; i < chip->num_lines; i++) {

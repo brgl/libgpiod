@@ -305,7 +305,7 @@ int main(int argc, char **argv)
 	mode->callback(&cbdata);
 
 	gpiod_line_release_bulk(lines);
-	gpiod_chip_close(chip);
+	gpiod_chip_unref(chip);
 	gpiod_line_bulk_free(lines);
 	free(offsets);
 	free(values);

@@ -13,7 +13,7 @@ namespace {
 
 void chip_deleter(::gpiod_chip* chip)
 {
-	::gpiod_chip_close(chip);
+	::gpiod_chip_unref(chip);
 }
 
 } /* namespace */

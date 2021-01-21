@@ -230,7 +230,7 @@ int main(int argc, char **argv)
 
 			list_lines(chip);
 
-			gpiod_chip_close(chip);
+			gpiod_chip_unref(chip);
 		}
 	} else {
 		for (i = 0; i < argc; i++) {
@@ -240,7 +240,7 @@ int main(int argc, char **argv)
 
 			list_lines(chip);
 
-			gpiod_chip_close(chip);
+			gpiod_chip_unref(chip);
 		}
 	}
 
