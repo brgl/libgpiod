@@ -6,6 +6,7 @@
  */
 
 #include <gpiod.hpp>
+#include <array>
 #include <map>
 #include <system_error>
 
