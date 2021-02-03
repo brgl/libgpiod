@@ -1,14 +1,15 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
-
-#
-# This file is part of libgpiod.
-#
-# Copyright (C) 2017-2019 Bartosz Golaszewski <bartekgola@gmail.com>
-#
+# SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
 SUBDIRS = include lib
+
+EXTRA_DIST = \
+	LICENSES/CC-BY-SA-4.0.txt \
+	LICENSES/GPL-2.0-only.txt \
+	LICENSES/LGPL-2.1-or-later.txt \
+	LICENSES/Linux-syscall-note.txt
 
 if WITH_TOOLS
 
@@ -35,6 +36,6 @@ doc: Doxyfile
 clean-local:
 	rm -rf doc
 
-EXTRA_DIST = Doxyfile
+EXTRA_DIST += Doxyfile
 
 endif

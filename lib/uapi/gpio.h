@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+/* SPDX-License-Identifier: GPL-2.0-only WITH Linux-syscall-note */
 /*
  * <linux/gpio.h> - userspace ABI for the GPIO character devices
  *
@@ -8,8 +8,8 @@
  * under the terms of the GNU General Public License version 2 as published by
  * the Free Software Foundation.
  */
-#ifndef _GPIO_H_
-#define _GPIO_H_
+#ifndef _UAPI_GPIO_H_
+#define _UAPI_GPIO_H_
 
 #include <linux/const.h>
 #include <linux/ioctl.h>
@@ -65,6 +65,7 @@ struct gpiochip_info {
  * @GPIO_V2_LINE_FLAG_BIAS_PULL_UP: line has pull-up bias enabled
  * @GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN: line has pull-down bias enabled
  * @GPIO_V2_LINE_FLAG_BIAS_DISABLED: line has bias disabled
+ * @GPIO_V2_LINE_FLAG_EVENT_CLOCK_REALTIME: line events contain REALTIME timestamps
  */
 enum gpio_v2_line_flag {
 	GPIO_V2_LINE_FLAG_USED			= _BITULL(0),
@@ -78,6 +79,7 @@ enum gpio_v2_line_flag {
 	GPIO_V2_LINE_FLAG_BIAS_PULL_UP		= _BITULL(8),
 	GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN	= _BITULL(9),
 	GPIO_V2_LINE_FLAG_BIAS_DISABLED		= _BITULL(10),
+	GPIO_V2_LINE_FLAG_EVENT_CLOCK_REALTIME	= _BITULL(11),
 };
 
 /**
@@ -210,7 +212,7 @@ struct gpio_v2_line_request {
  * @offset: the local offset on this GPIO chip, fill this in when
  * requesting the line information from the kernel
  * @num_attrs: the number of attributes in @attrs
- * @flags: flags for the GPIO lines, with values from &enum
+ * @flags: flags for this GPIO line, with values from &enum
  * gpio_v2_line_flag, such as %GPIO_V2_LINE_FLAG_ACTIVE_LOW,
  * %GPIO_V2_LINE_FLAG_OUTPUT etc, added together.
  * @attrs: the configuration attributes associated with the line
@@ -270,9 +272,6 @@ enum gpio_v2_line_event_id {
 /**
  * struct gpio_v2_line_event - The actual event being pushed to userspace
  * @timestamp_ns: best estimate of time of event occurrence, in nanoseconds.
- * The @timestamp_ns is read from %CLOCK_MONOTONIC and is intended to allow
- * the accurate measurement of the time between events. It does not provide
- * the wall-clock time.
  * @id: event identifier with value from &enum gpio_v2_line_event_id
  * @offset: the offset of the line that triggered the event
  * @seqno: the sequence number for this event in the sequence of events for
@@ -280,6 +279,13 @@ enum gpio_v2_line_event_id {
  * @line_seqno: the sequence number for this event in the sequence of
  * events on this particular line
  * @padding: reserved for future use
+ *
+ * By default the @timestamp_ns is read from %CLOCK_MONOTONIC and is
+ * intended to allow the accurate measurement of the time between events.
+ * It does not provide the wall-clock time.
+ *
+ * If the %GPIO_V2_LINE_FLAG_EVENT_CLOCK_REALTIME flag is set then the
+ * @timestamp_ns is read from %CLOCK_REALTIME.
  */
 struct gpio_v2_line_event {
 	__aligned_u64 timestamp_ns;
@@ -519,4 +525,4 @@ struct gpioevent_data {
 #define GPIOHANDLE_SET_CONFIG_IOCTL _IOWR(0xB4, 0x0A, struct gpiohandle_config)
 #define GPIO_GET_LINEINFO_WATCH_IOCTL _IOWR(0xB4, 0x0B, struct gpioline_info)
 
-#endif /* _GPIO_H_ */
+#endif /* _UAPI_GPIO_H_ */

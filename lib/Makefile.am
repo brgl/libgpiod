@@ -1,10 +1,5 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
-
-#
-# This file is part of libgpiod.
-#
-# Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
-#
+# SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 
 lib_LTLIBRARIES = libgpiod.la
 libgpiod_la_SOURCES = core.c helpers.c misc.c uapi/gpio.h

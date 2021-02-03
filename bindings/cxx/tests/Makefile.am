@@ -1,10 +1,5 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
-
-#
-# This file is part of libgpiod.
-#
-# Copyright (C) 2017-2018 Bartosz Golaszewski <bartekgola@gmail.com>
-#
+# SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 
 AM_CPPFLAGS = -I$(top_srcdir)/bindings/cxx/ -I$(top_srcdir)/include
 AM_CPPFLAGS += -I$(top_srcdir)/tests/mockup/
