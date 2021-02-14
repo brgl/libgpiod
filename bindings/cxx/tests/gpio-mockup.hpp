@@ -88,7 +88,7 @@ private:
 
 	mockup(void);
 	~mockup(void);
-	
+
 	::gpio_mockup *_m_mockup;
 };
 
