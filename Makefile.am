@@ -10,6 +10,7 @@ EXTRA_DIST = \
 	LICENSES/GPL-2.0-only.txt \
 	LICENSES/GPL-2.0-or-later.txt \
 	LICENSES/LGPL-2.1-or-later.txt \
+	LICENSES/LGPL-3.0-or-later.txt \
 	LICENSES/Linux-syscall-note.txt
 
 if WITH_TOOLS
