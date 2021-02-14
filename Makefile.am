@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
+# SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 
 ACLOCAL_AMFLAGS = -I m4
@@ -8,6 +8,7 @@ SUBDIRS = include lib
 EXTRA_DIST = \
 	LICENSES/CC-BY-SA-4.0.txt \
 	LICENSES/GPL-2.0-only.txt \
+	LICENSES/GPL-2.0-or-later.txt \
 	LICENSES/LGPL-2.1-or-later.txt \
 	LICENSES/Linux-syscall-note.txt
 
