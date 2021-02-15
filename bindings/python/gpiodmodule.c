@@ -1327,12 +1327,13 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 				  NULL };
 
 	int rv, type = gpiod_LINE_REQ_DIR_AS_IS, flags = 0,
-	    default_vals[GPIOD_LINE_BULK_MAX_LINES], val;
+	    vals[GPIOD_LINE_BULK_MAX_LINES], val;
 	PyObject *def_vals_obj = NULL, *iter, *next;
 	struct gpiod_line_request_config conf;
 	struct gpiod_line_bulk bulk;
 	Py_ssize_t num_def_vals;
 	char *consumer = NULL;
+	const int *default_vals = NULL;
 	Py_ssize_t i;
 
 	if (gpiod_LineBulkOwnerIsClosed(self))
@@ -1348,7 +1349,7 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 	gpiod_MakeRequestConfig(&conf, consumer, type, flags);
 
 	if (def_vals_obj) {
-		memset(default_vals, 0, sizeof(default_vals));
+		memset(vals, 0, sizeof(vals));
 
 		num_def_vals = PyObject_Size(def_vals_obj);
 		if (num_def_vals != self->num_lines) {
@@ -1375,8 +1376,9 @@ static PyObject *gpiod_LineBulk_request(gpiod_LineBulkObject *self,
 				return NULL;
 			}
 
-			default_vals[i] = !!val;
+			vals[i] = !!val;
 		}
+		default_vals = vals;
 	}
 
 	Py_BEGIN_ALLOW_THREADS;
