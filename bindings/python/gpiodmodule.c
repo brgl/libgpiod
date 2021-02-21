@@ -721,23 +721,6 @@ static PyObject *gpiod_Line_release(gpiod_LineObject *self,
 	return ret;
 }
 
-PyDoc_STRVAR(gpiod_Line_update_doc,
-"update() -> None\n"
-"\n"
-"Re-read the line information from the kernel.");
-
-static PyObject *gpiod_Line_update(gpiod_LineObject *self,
-				   PyObject *Py_UNUSED(ignored))
-{
-	int ret;
-
-	ret = gpiod_line_update(self->line);
-	if (ret)
-		return PyErr_SetFromErrno(PyExc_OSError);
-
-	Py_RETURN_NONE;
-}
-
 PyDoc_STRVAR(gpiod_Line_event_wait_doc,
 "event_wait([sec[ ,nsec]]) -> boolean\n"
 "\n"
@@ -1007,12 +990,6 @@ static PyMethodDef gpiod_Line_methods[] = {
 		.ml_meth = (PyCFunction)gpiod_Line_release,
 		.ml_flags = METH_NOARGS,
 		.ml_doc = gpiod_Line_release_doc,
-	},
-	{
-		.ml_name = "update",
-		.ml_meth = (PyCFunction)gpiod_Line_update,
-		.ml_flags = METH_NOARGS,
-		.ml_doc = gpiod_Line_update_doc,
 	},
 	{
 		.ml_name = "event_wait",

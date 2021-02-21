@@ -315,11 +315,6 @@ class LineInfo(MockupTestCase):
             self.assertEqual(line.drive(), gpiod.Line.DRIVE_PUSH_PULL)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_PULL_UP)
 
-    def test_update_line_info(self):
-        with gpiod.Chip(mockup.chip_path(0)) as chip:
-            line = chip.get_line(3)
-            line.update()
-
 class LineValues(MockupTestCase):
 
     chip_sizes = ( 8, )

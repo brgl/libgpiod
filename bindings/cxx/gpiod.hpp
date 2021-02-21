@@ -413,11 +413,6 @@ public:
 	GPIOD_API const chip get_chip(void) const;
 
 	/**
-	 * @brief Re-read the line info from the kernel.
-	 */
-	GPIOD_API void update(void) const;
-
-	/**
 	 * @brief Reset the state of this object.
 	 *
 	 * This is useful when the user needs to e.g. keep the line_event object

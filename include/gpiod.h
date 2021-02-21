@@ -359,28 +359,6 @@ bool gpiod_line_is_used(struct gpiod_line *line) GPIOD_API;
 int gpiod_line_drive(struct gpiod_line *line) GPIOD_API;
 
 /**
- * @brief Re-read the line info.
- * @param line GPIO line object.
- * @return 0 if the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
- *
- * The line info is initially retrieved from the kernel by
- * gpiod_chip_get_line() and is later re-read after every successful request.
- * Users can use this function to manually re-read the line info when needed.
- *
- * We currently have no mechanism provided by the kernel for keeping the line
- * info synchronized and for the sake of speed and simplicity of this low-level
- * library we don't want to re-read the line info automatically everytime
- * a property is retrieved. Any daemon using this library must track the state
- * of lines on its own and call this routine if needed.
- *
- * The state of requested lines is kept synchronized (or rather cannot be
- * changed by external agents while the ownership of the line is taken) so
- * there's no need to call this function in that case.
- */
-int gpiod_line_update(struct gpiod_line *line) GPIOD_API;
-
-/**
  * @brief Get the handle to the GPIO chip controlling this line.
  * @param line The GPIO line object.
  * @return Pointer to the GPIO chip handle controlling this line.

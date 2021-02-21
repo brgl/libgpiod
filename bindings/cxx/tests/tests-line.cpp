@@ -139,11 +139,6 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
 		REQUIRE(line.bias() == ::gpiod::line::BIAS_PULL_UP);
 	}
-
-	SECTION("update line info")
-	{
-		REQUIRE_NOTHROW(line.update());
-	}
 }
 
 TEST_CASE("Line values can be set and read", "[line]")

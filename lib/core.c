@@ -373,6 +373,8 @@ unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip)
 	return chip->num_lines;
 }
 
+static int line_update(struct gpiod_line *line);
+
 struct gpiod_line *
 gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 {
@@ -406,7 +408,7 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 		line = chip->lines[offset];
 	}
 
-	rv = gpiod_line_update(line);
+	rv = line_update(line);
 	if (rv < 0)
 		return NULL;
 
@@ -535,7 +537,7 @@ static int line_info_v2_to_info_flags(struct gpio_v2_line_info *info)
 	return iflags;
 }
 
-int gpiod_line_update(struct gpiod_line *line)
+static int line_update(struct gpiod_line *line)
 {
 	struct gpio_v2_line_info info;
 	int rv;
@@ -766,7 +768,7 @@ static int line_request_values(struct gpiod_line_bulk *bulk,
 				req.config.attrs[0].attr.values, i);
 		line_set_fd(line, line_fd);
 
-		rv = gpiod_line_update(line);
+		rv = line_update(line);
 		if (rv) {
 			gpiod_line_release_bulk(bulk);
 			return rv;
@@ -805,7 +807,7 @@ static int line_request_event_single(struct gpiod_line *line,
 	line->req_flags = config->flags;
 	line_set_fd(line, line_fd);
 
-	rv = gpiod_line_update(line);
+	rv = line_update(line);
 	if (rv) {
 		gpiod_line_release(line);
 		return rv;
@@ -1036,7 +1038,7 @@ int gpiod_line_set_config_bulk(struct gpiod_line_bulk *bulk,
 			line->output_value = lines_bitmap_test_bit(
 				hcfg.attrs[0].attr.values, i);
 
-		rv = gpiod_line_update(line);
+		rv = line_update(line);
 		if (rv < 0)
 			return rv;
 	}

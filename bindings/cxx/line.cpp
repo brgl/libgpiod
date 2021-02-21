@@ -278,18 +278,6 @@ const chip line::get_chip(void) const
 	return chip(this->_m_owner);
 }
 
-void line::update(void) const
-{
-	this->throw_if_null();
-	line::chip_guard lock_chip(*this);
-
-	int ret = ::gpiod_line_update(this->_m_line);
-
-	if (ret < 0)
-		throw ::std::system_error(errno, ::std::system_category(),
-					  "unable to update the line info");
-}
-
 void line::reset(void)
 {
 	this->_m_line = nullptr;
