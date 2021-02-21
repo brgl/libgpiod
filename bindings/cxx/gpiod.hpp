@@ -343,12 +343,6 @@ public:
 	GPIOD_API void release(void) const;
 
 	/**
-	 * @brief Check if this user has ownership of this line.
-	 * @return True if the user has ownership of this line, false otherwise.
-	 */
-	GPIOD_API bool is_requested(void) const;
-
-	/**
 	 * @brief Read the line value.
 	 * @return Current value (0 or 1).
 	 */

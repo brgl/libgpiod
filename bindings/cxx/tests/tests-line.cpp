@@ -27,7 +27,6 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_INPUT);
 		REQUIRE_FALSE(line.is_active_low());
 		REQUIRE(line.consumer().empty());
-		REQUIRE_FALSE(line.is_requested());
 		REQUIRE_FALSE(line.is_used());
 		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
 		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
@@ -45,7 +44,6 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
 		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
 		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
@@ -65,7 +63,6 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
 		REQUIRE(line.is_active_low());
-		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE(line.drive() == ::gpiod::line::DRIVE_OPEN_DRAIN);
 		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
@@ -84,7 +81,6 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
 		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE(line.drive() == ::gpiod::line::DRIVE_OPEN_SOURCE);
 		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
@@ -103,7 +99,6 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
 		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
 		REQUIRE(line.bias() == ::gpiod::line::BIAS_DISABLED);
@@ -122,7 +117,6 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
 		REQUIRE_FALSE(line.is_active_low());;
-		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
 		REQUIRE(line.bias() == ::gpiod::line::BIAS_PULL_DOWN);
@@ -141,7 +135,6 @@ TEST_CASE("Line information can be correctly retrieved", "[line]")
 		REQUIRE(line.name() == "gpio-mockup-A-4");
 		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
 		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(line.is_requested());
 		REQUIRE(line.is_used());
 		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
 		REQUIRE(line.bias() == ::gpiod::line::BIAS_PULL_UP);
@@ -383,12 +376,10 @@ TEST_CASE("Exported line can be released", "[line]")
 
 	line.request(config);
 
-	REQUIRE(line.is_requested());
 	REQUIRE(line.get_value() == 0);
 
 	line.release();
 
-	REQUIRE_FALSE(line.is_requested());
 	REQUIRE_THROWS_AS(line.get_value(), ::std::system_error);
 }
 

@@ -561,13 +561,19 @@ int gpiod_line_update(struct gpiod_line *line)
 	return 0;
 }
 
+static bool line_is_requested(struct gpiod_line *line)
+{
+	return (line->state == LINE_REQUESTED_VALUES ||
+		line->state == LINE_REQUESTED_EVENTS);
+}
+
 static bool line_bulk_all_requested(struct gpiod_line_bulk *bulk)
 {
 	struct gpiod_line *line;
 	unsigned int idx;
 
 	line_bulk_foreach_line(bulk, line, idx) {
-		if (!gpiod_line_is_requested(line)) {
+		if (!line_is_requested(line)) {
 			errno = EPERM;
 			return false;
 		}
@@ -584,21 +590,6 @@ static bool line_bulk_all_requested_values(struct gpiod_line_bulk *bulk)
 	line_bulk_foreach_line(bulk, line, idx) {
 		if (line->state != LINE_REQUESTED_VALUES) {
 			errno = EPERM;
-			return false;
-		}
-	}
-
-	return true;
-}
-
-static bool line_bulk_all_free(struct gpiod_line_bulk *bulk)
-{
-	struct gpiod_line *line;
-	unsigned int idx;
-
-	line_bulk_foreach_line(bulk, line, idx) {
-		if (!gpiod_line_is_free(line)) {
-			errno = EBUSY;
 			return false;
 		}
 	}
@@ -872,9 +863,6 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 			    const struct gpiod_line_request_config *config,
 			    const int *vals)
 {
-	if (!line_bulk_all_free(bulk))
-		return -1;
-
 	if (line_request_is_direction(config->request_type))
 		return line_request_values(bulk, config, vals);
 	else if (line_request_is_events(config->request_type))
@@ -902,17 +890,6 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 			line->state = LINE_FREE;
 		}
 	}
-}
-
-bool gpiod_line_is_requested(struct gpiod_line *line)
-{
-	return (line->state == LINE_REQUESTED_VALUES ||
-		line->state == LINE_REQUESTED_EVENTS);
-}
-
-bool gpiod_line_is_free(struct gpiod_line *line)
-{
-	return line->state == LINE_FREE;
 }
 
 int gpiod_line_get_value(struct gpiod_line *line)

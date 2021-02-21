@@ -127,14 +127,6 @@ void line::release(void) const
 	bulk.release();
 }
 
-bool line::is_requested(void) const
-{
-	this->throw_if_null();
-	line::chip_guard lock_chip(*this);
-
-	return ::gpiod_line_is_requested(this->_m_line);
-}
-
 /*
  * REVISIT: Check the performance of get/set_value & event_wait compared to
  * the C API. Creating a line_bulk object involves a memory allocation every

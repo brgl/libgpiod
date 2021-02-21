@@ -204,7 +204,6 @@ class LineInfo(MockupTestCase):
             self.assertFalse(line.is_active_low())
             self.assertEqual(line.consumer(), None)
             self.assertFalse(line.is_used())
-            self.assertFalse(line.is_requested())
 
     def test_exported_line(self):
         with gpiod.Chip(mockup.chip_path(0)) as chip:
@@ -218,7 +217,6 @@ class LineInfo(MockupTestCase):
             self.assertTrue(line.is_active_low())
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
-            self.assertTrue(line.is_requested())
 
     def test_exported_line_with_flags(self):
         with gpiod.Chip(mockup.chip_path(0)) as chip:
@@ -234,7 +232,6 @@ class LineInfo(MockupTestCase):
             self.assertTrue(line.is_active_low())
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
-            self.assertTrue(line.is_requested())
             self.assertEqual(line.drive(), gpiod.Line.DRIVE_OPEN_DRAIN)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_UNKNOWN)
 
@@ -251,7 +248,6 @@ class LineInfo(MockupTestCase):
             self.assertFalse(line.is_active_low())
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
-            self.assertTrue(line.is_requested())
             self.assertEqual(line.drive(), gpiod.Line.DRIVE_OPEN_DRAIN)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_UNKNOWN)
 
@@ -268,7 +264,6 @@ class LineInfo(MockupTestCase):
             self.assertFalse(line.is_active_low())
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
-            self.assertTrue(line.is_requested())
             self.assertEqual(line.drive(), gpiod.Line.DRIVE_OPEN_SOURCE)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_UNKNOWN)
 
@@ -285,7 +280,6 @@ class LineInfo(MockupTestCase):
             self.assertFalse(line.is_active_low())
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
-            self.assertTrue(line.is_requested())
             self.assertEqual(line.drive(), gpiod.Line.DRIVE_PUSH_PULL)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_DISABLED)
 
@@ -302,7 +296,6 @@ class LineInfo(MockupTestCase):
             self.assertFalse(line.is_active_low())
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
-            self.assertTrue(line.is_requested())
             self.assertEqual(line.drive(), gpiod.Line.DRIVE_PUSH_PULL)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_PULL_DOWN)
 
@@ -319,7 +312,6 @@ class LineInfo(MockupTestCase):
             self.assertFalse(line.is_active_low())
             self.assertEqual(line.consumer(), default_consumer)
             self.assertTrue(line.is_used())
-            self.assertTrue(line.is_requested())
             self.assertEqual(line.drive(), gpiod.Line.DRIVE_PUSH_PULL)
             self.assertEqual(line.bias(), gpiod.Line.BIAS_PULL_UP)
 
@@ -605,16 +597,6 @@ class LineRequestBehavior(MockupTestCase):
 
     chip_sizes = ( 8, )
 
-    def test_line_export_release(self):
-        with gpiod.Chip(mockup.chip_path(0)) as chip:
-            line = chip.get_line(3)
-            line.request(consumer=default_consumer,
-                         type=gpiod.LINE_REQ_DIR_IN)
-            self.assertTrue(line.is_requested())
-            self.assertEqual(line.get_value(), 0)
-            line.release()
-            self.assertFalse(line.is_requested())
-
     def test_line_request_twice_two_calls(self):
         with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(3)
@@ -647,10 +629,8 @@ class LineRequestBehavior(MockupTestCase):
         with gpiod.Chip(mockup.chip_path(0)) as chip:
             line = chip.get_line(2)
             line.request(default_consumer)
-            self.assertTrue(line.is_requested())
             self.assertEqual(line.direction(), gpiod.Line.DIRECTION_INPUT)
             line.release()
-            self.assertFalse(line.is_requested())
 
 #
 # Iterator test cases

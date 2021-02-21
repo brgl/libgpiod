@@ -701,21 +701,6 @@ void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
 void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk) GPIOD_API;
 
 /**
- * @brief Check if the calling user has ownership of this line.
- * @param line GPIO line object.
- * @return True if given line was requested, false otherwise.
- */
-bool gpiod_line_is_requested(struct gpiod_line *line) GPIOD_API;
-
-/**
- * @brief Check if the calling user has neither requested ownership of this
- *        line nor configured any event notifications.
- * @param line GPIO line object.
- * @return True if given line is free, false otherwise.
- */
-bool gpiod_line_is_free(struct gpiod_line *line) GPIOD_API;
-
-/**
  * @}
  *
  * @defgroup line_value Reading & setting line values
