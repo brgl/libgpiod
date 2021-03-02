@@ -7,31 +7,31 @@
 #define LINE_REQUEST_MAX_LINES 64
 
 typedef struct {
-	PyObject_HEAD
+	PyObject_HEAD;
 	struct gpiod_chip *chip;
 } gpiod_ChipObject;
 
 typedef struct {
-	PyObject_HEAD
+	PyObject_HEAD;
 	struct gpiod_line *line;
 	gpiod_ChipObject *owner;
 } gpiod_LineObject;
 
 typedef struct {
-	PyObject_HEAD
+	PyObject_HEAD;
 	struct gpiod_line_event event;
 	gpiod_LineObject *source;
 } gpiod_LineEventObject;
 
 typedef struct {
-	PyObject_HEAD
+	PyObject_HEAD;
 	PyObject **lines;
 	Py_ssize_t num_lines;
 	Py_ssize_t iter_idx;
 } gpiod_LineBulkObject;
 
 typedef struct {
-	PyObject_HEAD
+	PyObject_HEAD;
 	unsigned int offset;
 	gpiod_ChipObject *owner;
 } gpiod_LineIterObject;
