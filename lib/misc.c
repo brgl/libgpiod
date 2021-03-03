@@ -5,7 +5,9 @@
 
 #include <gpiod.h>
 
-const char *gpiod_version_string(void)
+#include "internal.h"
+
+GPIOD_API const char *gpiod_version_string(void)
 {
 	return GPIOD_VERSION_STR;
 }

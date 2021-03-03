@@ -11,7 +11,9 @@
 #include <stdio.h>
 #include <string.h>
 
-struct gpiod_line_bulk *
+#include "internal.h"
+
+GPIOD_API struct gpiod_line_bulk *
 gpiod_chip_get_lines(struct gpiod_chip *chip,
 		     unsigned int *offsets, unsigned int num_offsets)
 {
@@ -36,7 +38,8 @@ gpiod_chip_get_lines(struct gpiod_chip *chip,
 	return bulk;
 }
 
-struct gpiod_line_bulk *gpiod_chip_get_all_lines(struct gpiod_chip *chip)
+GPIOD_API struct gpiod_line_bulk *
+gpiod_chip_get_all_lines(struct gpiod_chip *chip)
 {
 	struct gpiod_line_bulk *bulk;
 	struct gpiod_line *line;
@@ -59,7 +62,7 @@ struct gpiod_line_bulk *gpiod_chip_get_all_lines(struct gpiod_chip *chip)
 	return bulk;
 }
 
-int gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
+GPIOD_API int gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
 {
 	unsigned int offset, num_lines;
 	struct gpiod_line *line;
@@ -81,7 +84,8 @@ int gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
 	return -1;
 }
 
-int gpiod_line_request_input(struct gpiod_line *line, const char *consumer)
+GPIOD_API int gpiod_line_request_input(struct gpiod_line *line,
+				       const char *consumer)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
@@ -91,8 +95,8 @@ int gpiod_line_request_input(struct gpiod_line *line, const char *consumer)
 	return gpiod_line_request(line, &config, 0);
 }
 
-int gpiod_line_request_output(struct gpiod_line *line,
-			      const char *consumer, int default_val)
+GPIOD_API int gpiod_line_request_output(struct gpiod_line *line,
+					const char *consumer, int default_val)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
@@ -102,8 +106,8 @@ int gpiod_line_request_output(struct gpiod_line *line,
 	return gpiod_line_request(line, &config, default_val);
 }
 
-int gpiod_line_request_input_flags(struct gpiod_line *line,
-				   const char *consumer, int flags)
+GPIOD_API int gpiod_line_request_input_flags(struct gpiod_line *line,
+					     const char *consumer, int flags)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
@@ -114,9 +118,9 @@ int gpiod_line_request_input_flags(struct gpiod_line *line,
 	return gpiod_line_request(line, &config, 0);
 }
 
-int gpiod_line_request_output_flags(struct gpiod_line *line,
-				    const char *consumer, int flags,
-				    int default_val)
+GPIOD_API int gpiod_line_request_output_flags(struct gpiod_line *line,
+					      const char *consumer, int flags,
+					      int default_val)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
@@ -139,52 +143,55 @@ static int line_event_request_type(struct gpiod_line *line,
 	return gpiod_line_request(line, &config, 0);
 }
 
-int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
-					  const char *consumer)
+GPIOD_API int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
+						    const char *consumer)
 {
 	return line_event_request_type(line, consumer, 0,
 				       GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
 }
 
-int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
-					   const char *consumer)
+GPIOD_API int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
+						     const char *consumer)
 {
 	return line_event_request_type(line, consumer, 0,
 				       GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
 }
 
-int gpiod_line_request_both_edges_events(struct gpiod_line *line,
-					 const char *consumer)
+GPIOD_API int gpiod_line_request_both_edges_events(struct gpiod_line *line,
+						   const char *consumer)
 {
 	return line_event_request_type(line, consumer, 0,
 				       GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
 
-int gpiod_line_request_rising_edge_events_flags(struct gpiod_line *line,
-						const char *consumer,
-						int flags)
+GPIOD_API int
+gpiod_line_request_rising_edge_events_flags(struct gpiod_line *line,
+					    const char *consumer,
+					    int flags)
 {
 	return line_event_request_type(line, consumer, flags,
 				       GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
 }
 
-int gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
-						 const char *consumer,
-						 int flags)
+GPIOD_API int
+gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
+					     const char *consumer,
+					     int flags)
 {
 	return line_event_request_type(line, consumer, flags,
 				       GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
 }
 
-int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
-					       const char *consumer, int flags)
+GPIOD_API int
+gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
+					   const char *consumer, int flags)
 {
 	return line_event_request_type(line, consumer, flags,
 				       GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
 
-int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
-				  const char *consumer)
+GPIOD_API int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
+					    const char *consumer)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
@@ -194,9 +201,9 @@ int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
 	return gpiod_line_request_bulk(bulk, &config, 0);
 }
 
-int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
-				   const char *consumer,
-				   const int *default_vals)
+GPIOD_API int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
+					     const char *consumer,
+					     const int *default_vals)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
@@ -219,29 +226,33 @@ static int line_event_request_type_bulk(struct gpiod_line_bulk *bulk,
 	return gpiod_line_request_bulk(bulk, &config, 0);
 }
 
-int gpiod_line_request_bulk_rising_edge_events(struct gpiod_line_bulk *bulk,
-					       const char *consumer)
+GPIOD_API int
+gpiod_line_request_bulk_rising_edge_events(struct gpiod_line_bulk *bulk,
+					   const char *consumer)
 {
 	return line_event_request_type_bulk(bulk, consumer, 0,
 					GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
 }
 
-int gpiod_line_request_bulk_falling_edge_events(struct gpiod_line_bulk *bulk,
-						const char *consumer)
+GPIOD_API int
+gpiod_line_request_bulk_falling_edge_events(struct gpiod_line_bulk *bulk,
+					    const char *consumer)
 {
 	return line_event_request_type_bulk(bulk, consumer, 0,
 					GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
 }
 
-int gpiod_line_request_bulk_both_edges_events(struct gpiod_line_bulk *bulk,
-					      const char *consumer)
+GPIOD_API int
+gpiod_line_request_bulk_both_edges_events(struct gpiod_line_bulk *bulk,
+					  const char *consumer)
 {
 	return line_event_request_type_bulk(bulk, consumer, 0,
 					GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES);
 }
 
-int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
-					const char *consumer, int flags)
+GPIOD_API int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
+						  const char *consumer,
+						  int flags)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
@@ -252,9 +263,10 @@ int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
 	return gpiod_line_request_bulk(bulk, &config, 0);
 }
 
-int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
-					 const char *consumer, int flags,
-					 const int *default_vals)
+GPIOD_API int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
+						   const char *consumer,
+						   int flags,
+						   const int *default_vals)
 {
 	struct gpiod_line_request_config config = {
 		.consumer = consumer,
@@ -265,7 +277,7 @@ int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
 	return gpiod_line_request_bulk(bulk, &config, default_vals);
 }
 
-int gpiod_line_request_bulk_rising_edge_events_flags(
+GPIOD_API int gpiod_line_request_bulk_rising_edge_events_flags(
 					struct gpiod_line_bulk *bulk,
 					const char *consumer, int flags)
 {
@@ -273,7 +285,7 @@ int gpiod_line_request_bulk_rising_edge_events_flags(
 					GPIOD_LINE_REQUEST_EVENT_RISING_EDGE);
 }
 
-int gpiod_line_request_bulk_falling_edge_events_flags(
+GPIOD_API int gpiod_line_request_bulk_falling_edge_events_flags(
 					struct gpiod_line_bulk *bulk,
 					const char *consumer, int flags)
 {
@@ -281,7 +293,7 @@ int gpiod_line_request_bulk_falling_edge_events_flags(
 					GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE);
 }
 
-int gpiod_line_request_bulk_both_edges_events_flags(
+GPIOD_API int gpiod_line_request_bulk_both_edges_events_flags(
 					struct gpiod_line_bulk *bulk,
 					const char *consumer, int flags)
 {

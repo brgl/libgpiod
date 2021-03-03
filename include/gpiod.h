@@ -45,11 +45,6 @@ struct gpiod_line_bulk;
  */
 
 /**
- * @brief Makes symbol visible.
- */
-#define GPIOD_API		__attribute__((visibility("default")))
-
-/**
  * @brief Shift 1 by given offset.
  * @param nr Bit position.
  * @return 1 shifted by nr.
@@ -71,49 +66,49 @@ struct gpiod_line_bulk;
  * @return True if the file exists and is a GPIO chip character device or a
  *         symbolic link to it.
  */
-bool gpiod_is_gpiochip_device(const char *path) GPIOD_API;
+bool gpiod_is_gpiochip_device(const char *path);
 
 /**
  * @brief Open a gpiochip by path.
  * @param path Path to the gpiochip device file.
  * @return GPIO chip handle or NULL if an error occurred.
  */
-struct gpiod_chip *gpiod_chip_open(const char *path) GPIOD_API;
+struct gpiod_chip *gpiod_chip_open(const char *path);
 
 /**
  * @brief Increase the refcount on this GPIO object.
  * @param chip The GPIO chip object.
  * @return Passed reference to the GPIO chip.
  */
-struct gpiod_chip *gpiod_chip_ref(struct gpiod_chip *chip) GPIOD_API;
+struct gpiod_chip *gpiod_chip_ref(struct gpiod_chip *chip);
 
 /**
  * @brief Decrease the refcount on this GPIO object. If the refcount reaches 0,
  *        close the chip device and free all associated resources.
  * @param chip The GPIO chip object.
  */
-void gpiod_chip_unref(struct gpiod_chip *chip) GPIOD_API;
+void gpiod_chip_unref(struct gpiod_chip *chip);
 
 /**
  * @brief Get the GPIO chip name as represented in the kernel.
  * @param chip The GPIO chip object.
  * @return Pointer to a human-readable string containing the chip name.
  */
-const char *gpiod_chip_name(struct gpiod_chip *chip) GPIOD_API;
+const char *gpiod_chip_name(struct gpiod_chip *chip);
 
 /**
  * @brief Get the GPIO chip label as represented in the kernel.
  * @param chip The GPIO chip object.
  * @return Pointer to a human-readable string containing the chip label.
  */
-const char *gpiod_chip_label(struct gpiod_chip *chip) GPIOD_API;
+const char *gpiod_chip_label(struct gpiod_chip *chip);
 
 /**
  * @brief Get the number of GPIO lines exposed by this chip.
  * @param chip The GPIO chip object.
  * @return Number of GPIO lines.
  */
-unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip) GPIOD_API;
+unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip);
 
 /**
  * @brief Get the handle to the GPIO line at given offset.
@@ -122,7 +117,7 @@ unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip) GPIOD_API;
  * @return Pointer to the GPIO line handle or NULL if an error occured.
  */
 struct gpiod_line *
-gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
+gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset);
 
 /**
  * @brief Retrieve a set of lines and store them in a line bulk object.
@@ -133,7 +128,7 @@ gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset) GPIOD_API;
  */
 struct gpiod_line_bulk *
 gpiod_chip_get_lines(struct gpiod_chip *chip, unsigned int *offsets,
-		     unsigned int num_offsets) GPIOD_API;
+		     unsigned int num_offsets);
 
 /**
  * @brief Retrieve all lines exposed by a chip and store them in a bulk object.
@@ -141,7 +136,7 @@ gpiod_chip_get_lines(struct gpiod_chip *chip, unsigned int *offsets,
  * @return New line bulk object or NULL on error.
  */
 struct gpiod_line_bulk *
-gpiod_chip_get_all_lines(struct gpiod_chip *chip) GPIOD_API;
+gpiod_chip_get_all_lines(struct gpiod_chip *chip);
 
 /**
  * @brief Map a GPIO line's name to its offset within the chip.
@@ -150,7 +145,7 @@ gpiod_chip_get_all_lines(struct gpiod_chip *chip) GPIOD_API;
  * @return Offset of the line within the chip or -1 if a line with given name
  *         is not exposed by the chip.
  */
-int gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
+int gpiod_chip_find_line(struct gpiod_chip *chip, const char *name);
 
 /**
  * @}
@@ -172,19 +167,19 @@ int gpiod_chip_find_line(struct gpiod_chip *chip, const char *name) GPIOD_API;
  * @param max_lines Maximum number of lines this object can hold.
  * @return New line bulk object or NULL on error.
  */
-struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines) GPIOD_API;
+struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines);
 
 /**
  * @brief Reset a bulk object. Remove all lines and set size to 0.
  * @param bulk Bulk object to reset.
  */
-void gpiod_line_bulk_reset(struct gpiod_line_bulk *bulk) GPIOD_API;
+void gpiod_line_bulk_reset(struct gpiod_line_bulk *bulk);
 
 /**
  * @brief Release all resources allocated for this bulk object.
  * @param bulk Bulk object to free.
  */
-void gpiod_line_bulk_free(struct gpiod_line_bulk *bulk) GPIOD_API;
+void gpiod_line_bulk_free(struct gpiod_line_bulk *bulk);
 
 /**
  * @brief Add a single line to a GPIO bulk object.
@@ -198,7 +193,7 @@ void gpiod_line_bulk_free(struct gpiod_line_bulk *bulk) GPIOD_API;
  * the other lines already held by this object.
  */
 int gpiod_line_bulk_add_line(struct gpiod_line_bulk *bulk,
-			     struct gpiod_line *line) GPIOD_API;
+			     struct gpiod_line *line);
 
 /**
  * @brief Retrieve the line handle from a line bulk object at given index.
@@ -208,15 +203,14 @@ int gpiod_line_bulk_add_line(struct gpiod_line_bulk *bulk,
  *         the number of lines this bulk can hold.
  */
 struct gpiod_line *
-gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk,
-			 unsigned int index) GPIOD_API;
+gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk, unsigned int index);
 
 /**
  * @brief Retrieve the number of GPIO lines held by this line bulk object.
  * @param bulk Line bulk object.
  * @return Number of lines held by this line bulk.
  */
-unsigned int gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk) GPIOD_API;
+unsigned int gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk);
 
 /**
  * @brief Values returned by the callback passed to
@@ -244,7 +238,7 @@ typedef int (*gpiod_line_bulk_foreach_cb)(struct gpiod_line *, void *);
  */
 void gpiod_line_bulk_foreach_line(struct gpiod_line_bulk *bulk,
 				  gpiod_line_bulk_foreach_cb func,
-				  void *data) GPIOD_API;
+				  void *data);
 
 /**
  * @}
@@ -297,7 +291,7 @@ enum {
  * @param line GPIO line object.
  * @return Line offset.
  */
-unsigned int gpiod_line_offset(struct gpiod_line *line) GPIOD_API;
+unsigned int gpiod_line_offset(struct gpiod_line *line);
 
 /**
  * @brief Read the GPIO line name.
@@ -306,7 +300,7 @@ unsigned int gpiod_line_offset(struct gpiod_line *line) GPIOD_API;
  *         routine returns a pointer to a null-terminated string or NULL if
  *         the line is unnamed.
  */
-const char *gpiod_line_name(struct gpiod_line *line) GPIOD_API;
+const char *gpiod_line_name(struct gpiod_line *line);
 
 /**
  * @brief Read the GPIO line consumer name.
@@ -315,21 +309,21 @@ const char *gpiod_line_name(struct gpiod_line *line) GPIOD_API;
  *         kernel. This routine returns a pointer to a null-terminated string
  *         or NULL if the line is not used.
  */
-const char *gpiod_line_consumer(struct gpiod_line *line) GPIOD_API;
+const char *gpiod_line_consumer(struct gpiod_line *line);
 
 /**
  * @brief Read the GPIO line direction setting.
  * @param line GPIO line object.
  * @return Returns GPIOD_LINE_DIRECTION_INPUT or GPIOD_LINE_DIRECTION_OUTPUT.
  */
-int gpiod_line_direction(struct gpiod_line *line) GPIOD_API;
+int gpiod_line_direction(struct gpiod_line *line);
 
 /**
  * @brief Check if the signal of this line is inverted.
  * @param line GPIO line object.
  * @return True if this line is "active-low", false otherwise.
  */
-bool gpiod_line_is_active_low(struct gpiod_line *line) GPIOD_API;
+bool gpiod_line_is_active_low(struct gpiod_line *line);
 
 /**
  * @brief Read the GPIO line bias setting.
@@ -337,7 +331,7 @@ bool gpiod_line_is_active_low(struct gpiod_line *line) GPIOD_API;
  * @return Returns GPIOD_LINE_BIAS_PULL_UP, GPIOD_LINE_BIAS_PULL_DOWN,
  *         GPIOD_LINE_BIAS_DISABLE or GPIOD_LINE_BIAS_UNKNOWN.
  */
-int gpiod_line_bias(struct gpiod_line *line) GPIOD_API;
+int gpiod_line_bias(struct gpiod_line *line);
 
 /**
  * @brief Check if the line is currently in use.
@@ -348,7 +342,7 @@ int gpiod_line_bias(struct gpiod_line *line) GPIOD_API;
  * requested by another process or hogged by the kernel. It only matters that
  * the line is used and we can't request it.
  */
-bool gpiod_line_is_used(struct gpiod_line *line) GPIOD_API;
+bool gpiod_line_is_used(struct gpiod_line *line);
 
 /**
  * @brief Read the GPIO line drive setting.
@@ -356,14 +350,14 @@ bool gpiod_line_is_used(struct gpiod_line *line) GPIOD_API;
  * @return Returns GPIOD_LINE_DRIVE_PUSH_PULL, GPIOD_LINE_DRIVE_OPEN_DRAIN or
  *         GPIOD_LINE_DRIVE_OPEN_SOURCE.
  */
-int gpiod_line_drive(struct gpiod_line *line) GPIOD_API;
+int gpiod_line_drive(struct gpiod_line *line);
 
 /**
  * @brief Get the handle to the GPIO chip controlling this line.
  * @param line The GPIO line object.
  * @return Pointer to the GPIO chip handle controlling this line.
  */
-struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line) GPIOD_API;
+struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line);
 
 /**
  * @}
@@ -437,7 +431,7 @@ struct gpiod_line_request_config {
  */
 int gpiod_line_request(struct gpiod_line *line,
 		       const struct gpiod_line_request_config *config,
-		       int default_val) GPIOD_API;
+		       int default_val);
 
 /**
  * @brief Reserve a single line, set the direction to input.
@@ -445,8 +439,7 @@ int gpiod_line_request(struct gpiod_line *line,
  * @param consumer Name of the consumer.
  * @return 0 if the line was properly reserved, -1 on failure.
  */
-int gpiod_line_request_input(struct gpiod_line *line,
-			     const char *consumer) GPIOD_API;
+int gpiod_line_request_input(struct gpiod_line *line, const char *consumer);
 
 /**
  * @brief Reserve a single line, set the direction to output.
@@ -456,7 +449,7 @@ int gpiod_line_request_input(struct gpiod_line *line,
  * @return 0 if the line was properly reserved, -1 on failure.
  */
 int gpiod_line_request_output(struct gpiod_line *line,
-			      const char *consumer, int default_val) GPIOD_API;
+			      const char *consumer, int default_val);
 
 /**
  * @brief Request rising edge event notifications on a single line.
@@ -465,7 +458,7 @@ int gpiod_line_request_output(struct gpiod_line *line,
  * @return 0 if the operation succeeds, -1 on failure.
  */
 int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
-					  const char *consumer) GPIOD_API;
+					  const char *consumer);
 
 /**
  * @brief Request falling edge event notifications on a single line.
@@ -474,7 +467,7 @@ int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
  * @return 0 if the operation succeeds, -1 on failure.
  */
 int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
-					   const char *consumer) GPIOD_API;
+					   const char *consumer);
 
 /**
  * @brief Request all event type notifications on a single line.
@@ -483,7 +476,7 @@ int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
  * @return 0 if the operation succeeds, -1 on failure.
  */
 int gpiod_line_request_both_edges_events(struct gpiod_line *line,
-					 const char *consumer) GPIOD_API;
+					 const char *consumer);
 
 /**
  * @brief Reserve a single line, set the direction to input.
@@ -493,7 +486,7 @@ int gpiod_line_request_both_edges_events(struct gpiod_line *line,
  * @return 0 if the line was properly reserved, -1 on failure.
  */
 int gpiod_line_request_input_flags(struct gpiod_line *line,
-				   const char *consumer, int flags) GPIOD_API;
+				   const char *consumer, int flags);
 
 /**
  * @brief Reserve a single line, set the direction to output.
@@ -505,7 +498,7 @@ int gpiod_line_request_input_flags(struct gpiod_line *line,
  */
 int gpiod_line_request_output_flags(struct gpiod_line *line,
 				    const char *consumer, int flags,
-				    int default_val) GPIOD_API;
+				    int default_val);
 
 /**
  * @brief Request rising edge event notifications on a single line.
@@ -516,7 +509,7 @@ int gpiod_line_request_output_flags(struct gpiod_line *line,
  */
 int gpiod_line_request_rising_edge_events_flags(struct gpiod_line *line,
 						const char *consumer,
-						int flags) GPIOD_API;
+						int flags);
 
 /**
  * @brief Request falling edge event notifications on a single line.
@@ -527,7 +520,7 @@ int gpiod_line_request_rising_edge_events_flags(struct gpiod_line *line,
  */
 int gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
 						 const char *consumer,
-						 int flags) GPIOD_API;
+						 int flags);
 
 /**
  * @brief Request all event type notifications on a single line.
@@ -538,7 +531,7 @@ int gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
  */
 int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
 					       const char *consumer,
-					       int flags) GPIOD_API;
+					       int flags);
 
 /**
  * @brief Reserve a set of GPIO lines.
@@ -555,7 +548,7 @@ int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
  */
 int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 			    const struct gpiod_line_request_config *config,
-			    const int *default_vals) GPIOD_API;
+			    const int *default_vals);
 
 /**
  * @brief Reserve a set of GPIO lines, set the direction to input.
@@ -564,7 +557,7 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
  * @return 0 if the lines were properly reserved, -1 on failure.
  */
 int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
-				  const char *consumer) GPIOD_API;
+				  const char *consumer);
 
 /**
  * @brief Reserve a set of GPIO lines, set the direction to output.
@@ -575,7 +568,7 @@ int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
  */
 int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
 				   const char *consumer,
-				   const int *default_vals) GPIOD_API;
+				   const int *default_vals);
 
 /**
  * @brief Request rising edge event notifications on a set of lines.
@@ -584,7 +577,7 @@ int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
  * @return 0 if the operation succeeds, -1 on failure.
  */
 int gpiod_line_request_bulk_rising_edge_events(struct gpiod_line_bulk *bulk,
-					       const char *consumer) GPIOD_API;
+					       const char *consumer);
 
 /**
  * @brief Request falling edge event notifications on a set of lines.
@@ -593,7 +586,7 @@ int gpiod_line_request_bulk_rising_edge_events(struct gpiod_line_bulk *bulk,
  * @return 0 if the operation succeeds, -1 on failure.
  */
 int gpiod_line_request_bulk_falling_edge_events(struct gpiod_line_bulk *bulk,
-						const char *consumer) GPIOD_API;
+						const char *consumer);
 
 /**
  * @brief Request all event type notifications on a set of lines.
@@ -602,7 +595,7 @@ int gpiod_line_request_bulk_falling_edge_events(struct gpiod_line_bulk *bulk,
  * @return 0 if the operation succeeds, -1 on failure.
  */
 int gpiod_line_request_bulk_both_edges_events(struct gpiod_line_bulk *bulk,
-					      const char *consumer) GPIOD_API;
+					      const char *consumer);
 
 /**
  * @brief Reserve a set of GPIO lines, set the direction to input.
@@ -612,8 +605,7 @@ int gpiod_line_request_bulk_both_edges_events(struct gpiod_line_bulk *bulk,
  * @return 0 if the lines were properly reserved, -1 on failure.
  */
 int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
-					const char *consumer,
-					int flags) GPIOD_API;
+					const char *consumer, int flags);
 
 /**
  * @brief Reserve a set of GPIO lines, set the direction to output.
@@ -625,7 +617,7 @@ int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
  */
 int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
 					 const char *consumer, int flags,
-					 const int *default_vals) GPIOD_API;
+					 const int *default_vals);
 
 /**
  * @brief Request rising edge event notifications on a set of lines.
@@ -636,8 +628,7 @@ int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
  */
 int gpiod_line_request_bulk_rising_edge_events_flags(
 					struct gpiod_line_bulk *bulk,
-					const char *consumer,
-					int flags) GPIOD_API;
+					const char *consumer, int flags);
 
 /**
  * @brief Request falling edge event notifications on a set of lines.
@@ -648,8 +639,7 @@ int gpiod_line_request_bulk_rising_edge_events_flags(
  */
 int gpiod_line_request_bulk_falling_edge_events_flags(
 					struct gpiod_line_bulk *bulk,
-					const char *consumer,
-					int flags) GPIOD_API;
+					const char *consumer, int flags);
 
 /**
  * @brief Request all event type notifications on a set of lines.
@@ -660,14 +650,13 @@ int gpiod_line_request_bulk_falling_edge_events_flags(
  */
 int gpiod_line_request_bulk_both_edges_events_flags(
 					struct gpiod_line_bulk *bulk,
-					const char *consumer,
-					int flags) GPIOD_API;
+					const char *consumer, int flags);
 
 /**
  * @brief Release a previously reserved line.
  * @param line GPIO line object.
  */
-void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
+void gpiod_line_release(struct gpiod_line *line);
 
 /**
  * @brief Release a set of previously reserved lines.
@@ -676,7 +665,7 @@ void gpiod_line_release(struct gpiod_line *line) GPIOD_API;
  * If the lines were not previously requested together, the behavior is
  * undefined.
  */
-void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk) GPIOD_API;
+void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk);
 
 /**
  * @}
@@ -694,7 +683,7 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk) GPIOD_API;
  * @return 0 or 1 if the operation succeeds. On error this routine returns -1
  *         and sets the last error number.
  */
-int gpiod_line_get_value(struct gpiod_line *line) GPIOD_API;
+int gpiod_line_get_value(struct gpiod_line *line);
 
 /**
  * @brief Read current values of a set of GPIO lines.
@@ -707,8 +696,7 @@ int gpiod_line_get_value(struct gpiod_line *line) GPIOD_API;
  * the same order, the lines are added to line_bulk. If the lines were not
  * previously requested together, the behavior is undefined.
  */
-int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk,
-			      int *values) GPIOD_API;
+int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values);
 
 /**
  * @brief Set the value of a single GPIO line.
@@ -717,7 +705,7 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk,
  * @return 0 is the operation succeeds. In case of an error this routine
  *         returns -1 and sets the last error number.
  */
-int gpiod_line_set_value(struct gpiod_line *line, int value) GPIOD_API;
+int gpiod_line_set_value(struct gpiod_line *line, int value);
 
 /**
  * @brief Set the values of a set of GPIO lines.
@@ -730,8 +718,7 @@ int gpiod_line_set_value(struct gpiod_line *line, int value) GPIOD_API;
  * If the lines were not previously requested together, the behavior is
  * undefined.
  */
-int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
-			      const int *values) GPIOD_API;
+int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values);
 
 /**
  * @}
@@ -757,7 +744,7 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
  *         returns -1 and sets the last error number.
  */
 int gpiod_line_set_config(struct gpiod_line *line, int direction,
-			  int flags, int value) GPIOD_API;
+			  int flags, int value);
 
 /**
  * @brief Update the configuration of a set of GPIO lines.
@@ -778,8 +765,7 @@ int gpiod_line_set_config(struct gpiod_line *line, int direction,
  * undefined.
  */
 int gpiod_line_set_config_bulk(struct gpiod_line_bulk *bulk,
-			       int direction, int flags,
-			       const int *values) GPIOD_API;
+			       int direction, int flags, const int *values);
 
 
 /**
@@ -789,7 +775,7 @@ int gpiod_line_set_config_bulk(struct gpiod_line_bulk *bulk,
  * @return 0 is the operation succeeds. In case of an error this routine
  *         returns -1 and sets the last error number.
  */
-int gpiod_line_set_flags(struct gpiod_line *line, int flags) GPIOD_API;
+int gpiod_line_set_flags(struct gpiod_line *line, int flags);
 
 /**
  * @brief Update the configuration flags of a set of GPIO lines.
@@ -801,8 +787,7 @@ int gpiod_line_set_flags(struct gpiod_line *line, int flags) GPIOD_API;
  * If the lines were not previously requested together, the behavior is
  * undefined.
  */
-int gpiod_line_set_flags_bulk(struct gpiod_line_bulk *bulk,
-			      int flags) GPIOD_API;
+int gpiod_line_set_flags_bulk(struct gpiod_line_bulk *bulk, int flags);
 
 /**
  * @brief Set the direction of a single GPIO line to input.
@@ -810,7 +795,7 @@ int gpiod_line_set_flags_bulk(struct gpiod_line_bulk *bulk,
  * @return 0 is the operation succeeds. In case of an error this routine
  *         returns -1 and sets the last error number.
  */
-int gpiod_line_set_direction_input(struct gpiod_line *line) GPIOD_API;
+int gpiod_line_set_direction_input(struct gpiod_line *line);
 
 /**
  * @brief Set the direction of a set of GPIO lines to input.
@@ -822,7 +807,7 @@ int gpiod_line_set_direction_input(struct gpiod_line *line) GPIOD_API;
  * undefined.
  */
 int
-gpiod_line_set_direction_input_bulk(struct gpiod_line_bulk *bulk) GPIOD_API;
+gpiod_line_set_direction_input_bulk(struct gpiod_line_bulk *bulk);
 
 /**
  * @brief Set the direction of a single GPIO line to output.
@@ -831,8 +816,7 @@ gpiod_line_set_direction_input_bulk(struct gpiod_line_bulk *bulk) GPIOD_API;
  * @return 0 is the operation succeeds. In case of an error this routine
  *         returns -1 and sets the last error number.
  */
-int gpiod_line_set_direction_output(struct gpiod_line *line,
-				    int value) GPIOD_API;
+int gpiod_line_set_direction_output(struct gpiod_line *line, int value);
 
 /**
  * @brief Set the direction of a set of GPIO lines to output.
@@ -847,7 +831,7 @@ int gpiod_line_set_direction_output(struct gpiod_line *line,
  * undefined.
  */
 int gpiod_line_set_direction_output_bulk(struct gpiod_line_bulk *bulk,
-					 const int *values) GPIOD_API;
+					 const int *values);
 
 /**
  * @}
@@ -891,7 +875,7 @@ struct gpiod_line_event {
  *         occurred.
  */
 int gpiod_line_event_wait(struct gpiod_line *line,
-			  const struct timespec *timeout) GPIOD_API;
+			  const struct timespec *timeout);
 
 /**
  * @brief Wait for events on a set of lines.
@@ -904,7 +888,7 @@ int gpiod_line_event_wait(struct gpiod_line *line,
  */
 int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 			       const struct timespec *timeout,
-			       struct gpiod_line_bulk *event_bulk) GPIOD_API;
+			       struct gpiod_line_bulk *event_bulk);
 
 /**
  * @brief Read next pending event from the GPIO line.
@@ -914,7 +898,7 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
  * @note This function will block if no event was queued for this line.
  */
 int gpiod_line_event_read(struct gpiod_line *line,
-			  struct gpiod_line_event *event) GPIOD_API;
+			  struct gpiod_line_event *event);
 
 /**
  * @brief Read up to a certain number of events from the GPIO line.
@@ -927,7 +911,7 @@ int gpiod_line_event_read(struct gpiod_line *line,
  */
 int gpiod_line_event_read_multiple(struct gpiod_line *line,
 				   struct gpiod_line_event *events,
-				   unsigned int num_events) GPIOD_API;
+				   unsigned int num_events);
 
 /**
  * @brief Get the event file descriptor.
@@ -939,7 +923,7 @@ int gpiod_line_event_read_multiple(struct gpiod_line *line,
  * Users may want to poll the event file descriptor on their own. This routine
  * allows to access it.
  */
-int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
+int gpiod_line_event_get_fd(struct gpiod_line *line);
 
 /**
  * @brief Read the last GPIO event directly from a file descriptor.
@@ -951,7 +935,7 @@ int gpiod_line_event_get_fd(struct gpiod_line *line) GPIOD_API;
  * directly read the event data from it using this routine. This function
  * translates the kernel representation of the event to the libgpiod format.
  */
-int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event) GPIOD_API;
+int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event);
 
 /**
  * @brief Read up to a certain number of events directly from a file descriptor.
@@ -963,7 +947,7 @@ int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event) GPIOD_API;
  *         failure -1 is returned.
  */
 int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
-				      unsigned int num_events) GPIOD_API;
+				      unsigned int num_events);
 
 /**
  * @}
@@ -980,7 +964,7 @@ int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
  * @brief Get the API version of the library as a human-readable string.
  * @return Human-readable string containing the library version.
  */
-const char *gpiod_version_string(void) GPIOD_API;
+const char *gpiod_version_string(void);
 
 /**
  * @}

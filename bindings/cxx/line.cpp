@@ -6,6 +6,8 @@
 #include <map>
 #include <system_error>
 
+#include "internal.hpp"
+
 namespace gpiod {
 
 namespace {
@@ -25,21 +27,21 @@ const ::std::map<int, int> bias_mapping = {
 
 } /* namespace */
 
-line::line(void)
+GPIOD_CXX_API line::line(void)
 	: _m_line(nullptr),
 	  _m_owner()
 {
 
 }
 
-line::line(::gpiod_line* line, const chip& owner)
+GPIOD_CXX_API line::line(::gpiod_line* line, const chip& owner)
 	: _m_line(line),
 	  _m_owner(owner._m_chip)
 {
 
 }
 
-unsigned int line::offset(void) const
+GPIOD_CXX_API unsigned int line::offset(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -47,7 +49,7 @@ unsigned int line::offset(void) const
 	return ::gpiod_line_offset(this->_m_line);
 }
 
-::std::string line::name(void) const
+GPIOD_CXX_API ::std::string line::name(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -57,7 +59,7 @@ unsigned int line::offset(void) const
 	return name ? ::std::string(name) : ::std::string();
 }
 
-::std::string line::consumer(void) const
+GPIOD_CXX_API ::std::string line::consumer(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -67,7 +69,7 @@ unsigned int line::offset(void) const
 	return consumer ? ::std::string(consumer) : ::std::string();
 }
 
-int line::direction(void) const
+GPIOD_CXX_API int line::direction(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -77,7 +79,7 @@ int line::direction(void) const
 	return dir == GPIOD_LINE_DIRECTION_INPUT ? DIRECTION_INPUT : DIRECTION_OUTPUT;
 }
 
-bool line::is_active_low(void) const
+GPIOD_CXX_API bool line::is_active_low(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -85,7 +87,7 @@ bool line::is_active_low(void) const
 	return ::gpiod_line_is_active_low(this->_m_line);
 }
 
-int line::bias(void) const
+GPIOD_CXX_API int line::bias(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -93,7 +95,7 @@ int line::bias(void) const
 	return bias_mapping.at(::gpiod_line_bias(this->_m_line));
 }
 
-bool line::is_used(void) const
+GPIOD_CXX_API bool line::is_used(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -101,7 +103,7 @@ bool line::is_used(void) const
 	return ::gpiod_line_is_used(this->_m_line);
 }
 
-int line::drive(void) const
+GPIOD_CXX_API int line::drive(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -109,7 +111,7 @@ int line::drive(void) const
 	return drive_mapping.at(::gpiod_line_drive(this->_m_line));
 }
 
-void line::request(const line_request& config, int default_val) const
+GPIOD_CXX_API void line::request(const line_request& config, int default_val) const
 {
 	this->throw_if_null();
 
@@ -118,7 +120,7 @@ void line::request(const line_request& config, int default_val) const
 	bulk.request(config, { default_val });
 }
 
-void line::release(void) const
+GPIOD_CXX_API void line::release(void) const
 {
 	this->throw_if_null();
 
@@ -135,7 +137,7 @@ void line::release(void) const
  * polling for events on single lines directly.
  */
 
-int line::get_value(void) const
+GPIOD_CXX_API int line::get_value(void) const
 {
 	this->throw_if_null();
 
@@ -144,7 +146,7 @@ int line::get_value(void) const
 	return bulk.get_values()[0];
 }
 
-void line::set_value(int val) const
+GPIOD_CXX_API void line::set_value(int val) const
 {
 	this->throw_if_null();
 
@@ -153,8 +155,8 @@ void line::set_value(int val) const
 	bulk.set_values({ val });
 }
 
-void line::set_config(int direction, ::std::bitset<32> flags,
-			int value) const
+GPIOD_CXX_API void line::set_config(int direction, ::std::bitset<32> flags,
+				    int value) const
 {
 	this->throw_if_null();
 
@@ -163,7 +165,7 @@ void line::set_config(int direction, ::std::bitset<32> flags,
 	bulk.set_config(direction, flags, { value });
 }
 
-void line::set_flags(::std::bitset<32> flags) const
+GPIOD_CXX_API void line::set_flags(::std::bitset<32> flags) const
 {
 	this->throw_if_null();
 
@@ -172,7 +174,7 @@ void line::set_flags(::std::bitset<32> flags) const
 	bulk.set_flags(flags);
 }
 
-void line::set_direction_input() const
+GPIOD_CXX_API void line::set_direction_input() const
 {
 	this->throw_if_null();
 
@@ -181,7 +183,7 @@ void line::set_direction_input() const
 	bulk.set_direction_input();
 }
 
-void line::set_direction_output(int value) const
+GPIOD_CXX_API void line::set_direction_output(int value) const
 {
 	this->throw_if_null();
 
@@ -190,7 +192,7 @@ void line::set_direction_output(int value) const
 	bulk.set_direction_output({ value });
 }
 
-bool line::event_wait(const ::std::chrono::nanoseconds& timeout) const
+GPIOD_CXX_API bool line::event_wait(const ::std::chrono::nanoseconds& timeout) const
 {
 	this->throw_if_null();
 
@@ -201,7 +203,7 @@ bool line::event_wait(const ::std::chrono::nanoseconds& timeout) const
 	return !!event_bulk;
 }
 
-line_event line::make_line_event(const ::gpiod_line_event& event) const noexcept
+GPIOD_CXX_API line_event line::make_line_event(const ::gpiod_line_event& event) const noexcept
 {
 	line_event ret;
 
@@ -219,7 +221,7 @@ line_event line::make_line_event(const ::gpiod_line_event& event) const noexcept
 	return ret;
 }
 
-line_event line::event_read(void) const
+GPIOD_CXX_API line_event line::event_read(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -236,7 +238,7 @@ line_event line::event_read(void) const
 	return this->make_line_event(event_buf);
 }
 
-::std::vector<line_event> line::event_read_multiple(void) const
+GPIOD_CXX_API ::std::vector<line_event> line::event_read_multiple(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -259,7 +261,7 @@ line_event line::event_read(void) const
 	return events;
 }
 
-int line::event_get_fd(void) const
+GPIOD_CXX_API int line::event_get_fd(void) const
 {
 	this->throw_if_null();
 	line::chip_guard lock_chip(*this);
@@ -273,44 +275,44 @@ int line::event_get_fd(void) const
 	return ret;
 }
 
-const chip line::get_chip(void) const
+GPIOD_CXX_API const chip line::get_chip(void) const
 {
 	return chip(this->_m_owner);
 }
 
-void line::reset(void)
+GPIOD_CXX_API void line::reset(void)
 {
 	this->_m_line = nullptr;
 	this->_m_owner.reset();
 }
 
-bool line::operator==(const line& rhs) const noexcept
+GPIOD_CXX_API bool line::operator==(const line& rhs) const noexcept
 {
 	return this->_m_line == rhs._m_line;
 }
 
-bool line::operator!=(const line& rhs) const noexcept
+GPIOD_CXX_API bool line::operator!=(const line& rhs) const noexcept
 {
 	return this->_m_line != rhs._m_line;
 }
 
-line::operator bool(void) const noexcept
+GPIOD_CXX_API line::operator bool(void) const noexcept
 {
 	return this->_m_line != nullptr;
 }
 
-bool line::operator!(void) const noexcept
+GPIOD_CXX_API bool line::operator!(void) const noexcept
 {
 	return this->_m_line == nullptr;
 }
 
-void line::throw_if_null(void) const
+GPIOD_CXX_API void line::throw_if_null(void) const
 {
 	if (!this->_m_line)
 		throw ::std::logic_error("object not holding a GPIO line handle");
 }
 
-line::chip_guard::chip_guard(const line& line)
+GPIOD_CXX_API line::chip_guard::chip_guard(const line& line)
 	: _m_chip(line._m_owner)
 {
 

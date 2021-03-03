@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "internal.h"
 #include "uapi/gpio.h"
 
 #define LINE_REQUEST_MAX_LINES	64
@@ -90,7 +91,7 @@ struct gpiod_line_bulk {
 #define BULK_SINGLE_LINE_INIT(line) \
 		{ 1, 1, { (line) } }
 
-struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines)
+GPIOD_API struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines)
 {
 	struct gpiod_line_bulk *bulk;
 	size_t size;
@@ -113,19 +114,19 @@ struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines)
 	return bulk;
 }
 
-void gpiod_line_bulk_reset(struct gpiod_line_bulk *bulk)
+GPIOD_API void gpiod_line_bulk_reset(struct gpiod_line_bulk *bulk)
 {
 	bulk->num_lines = 0;
 	memset(bulk->lines, 0, bulk->max_lines * sizeof(struct line *));
 }
 
-void gpiod_line_bulk_free(struct gpiod_line_bulk *bulk)
+GPIOD_API void gpiod_line_bulk_free(struct gpiod_line_bulk *bulk)
 {
 	free(bulk);
 }
 
-int gpiod_line_bulk_add_line(struct gpiod_line_bulk *bulk,
-			     struct gpiod_line *line)
+GPIOD_API int gpiod_line_bulk_add_line(struct gpiod_line_bulk *bulk,
+				       struct gpiod_line *line)
 {
 	if (bulk->num_lines == bulk->max_lines) {
 		errno = EINVAL;
@@ -144,7 +145,7 @@ int gpiod_line_bulk_add_line(struct gpiod_line_bulk *bulk,
 	return 0;
 }
 
-struct gpiod_line *
+GPIOD_API struct gpiod_line *
 gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk, unsigned int index)
 {
 	if (index >= bulk->num_lines) {
@@ -155,13 +156,14 @@ gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk, unsigned int index)
 	return bulk->lines[index];
 }
 
-unsigned int gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
+GPIOD_API unsigned int gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk)
 {
 	return bulk->num_lines;
 }
 
-void gpiod_line_bulk_foreach_line(struct gpiod_line_bulk *bulk,
-				  gpiod_line_bulk_foreach_cb func, void *data)
+GPIOD_API void gpiod_line_bulk_foreach_line(struct gpiod_line_bulk *bulk,
+					    gpiod_line_bulk_foreach_cb func,
+					    void *data)
 {
 	unsigned int index;
 	int ret;
@@ -178,7 +180,7 @@ void gpiod_line_bulk_foreach_line(struct gpiod_line_bulk *bulk,
 	     (index) < (bulk)->num_lines;				\
 	     (index)++, (line) = (bulk)->lines[(index)])
 
-bool gpiod_is_gpiochip_device(const char *path)
+GPIOD_API bool gpiod_is_gpiochip_device(const char *path)
 {
 	char *name, *realname, *sysfsp, sysfsdev[16], devstr[16];
 	struct stat statbuf;
@@ -269,7 +271,7 @@ out:
 	return ret;
 }
 
-struct gpiod_chip *gpiod_chip_open(const char *path)
+GPIOD_API struct gpiod_chip *gpiod_chip_open(const char *path)
 {
 	struct gpiochip_info info;
 	struct gpiod_chip *chip;
@@ -327,13 +329,13 @@ err_close_fd:
 	return NULL;
 }
 
-struct gpiod_chip *gpiod_chip_ref(struct gpiod_chip *chip)
+GPIOD_API struct gpiod_chip *gpiod_chip_ref(struct gpiod_chip *chip)
 {
 	chip->refcount++;
 	return chip;
 }
 
-void gpiod_chip_unref(struct gpiod_chip *chip)
+GPIOD_API void gpiod_chip_unref(struct gpiod_chip *chip)
 {
 	struct gpiod_line *line;
 	unsigned int i;
@@ -358,24 +360,24 @@ void gpiod_chip_unref(struct gpiod_chip *chip)
 	free(chip);
 }
 
-const char *gpiod_chip_name(struct gpiod_chip *chip)
+GPIOD_API const char *gpiod_chip_name(struct gpiod_chip *chip)
 {
 	return chip->name;
 }
 
-const char *gpiod_chip_label(struct gpiod_chip *chip)
+GPIOD_API const char *gpiod_chip_label(struct gpiod_chip *chip)
 {
 	return chip->label;
 }
 
-unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip)
+GPIOD_API unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip)
 {
 	return chip->num_lines;
 }
 
 static int line_update(struct gpiod_line *line);
 
-struct gpiod_line *
+GPIOD_API struct gpiod_line *
 gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset)
 {
 	struct gpiod_line *line;
@@ -458,37 +460,37 @@ static int line_get_fd(struct gpiod_line *line)
 	return line->fd_handle->fd;
 }
 
-struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line)
+GPIOD_API struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line)
 {
 	return line->chip;
 }
 
-unsigned int gpiod_line_offset(struct gpiod_line *line)
+GPIOD_API unsigned int gpiod_line_offset(struct gpiod_line *line)
 {
 	return line->offset;
 }
 
-const char *gpiod_line_name(struct gpiod_line *line)
+GPIOD_API const char *gpiod_line_name(struct gpiod_line *line)
 {
 	return line->name[0] == '\0' ? NULL : line->name;
 }
 
-const char *gpiod_line_consumer(struct gpiod_line *line)
+GPIOD_API const char *gpiod_line_consumer(struct gpiod_line *line)
 {
 	return line->consumer[0] == '\0' ? NULL : line->consumer;
 }
 
-int gpiod_line_direction(struct gpiod_line *line)
+GPIOD_API int gpiod_line_direction(struct gpiod_line *line)
 {
 	return line->direction;
 }
 
-bool gpiod_line_is_active_low(struct gpiod_line *line)
+GPIOD_API bool gpiod_line_is_active_low(struct gpiod_line *line)
 {
 	return line->active_low;
 }
 
-int gpiod_line_bias(struct gpiod_line *line)
+GPIOD_API int gpiod_line_bias(struct gpiod_line *line)
 {
 	if (line->info_flags & GPIOLINE_FLAG_BIAS_DISABLE)
 		return GPIOD_LINE_BIAS_DISABLED;
@@ -500,12 +502,12 @@ int gpiod_line_bias(struct gpiod_line *line)
 	return GPIOD_LINE_BIAS_UNKNOWN;
 }
 
-bool gpiod_line_is_used(struct gpiod_line *line)
+GPIOD_API bool gpiod_line_is_used(struct gpiod_line *line)
 {
 	return line->info_flags & GPIOLINE_FLAG_KERNEL;
 }
 
-int gpiod_line_drive(struct gpiod_line *line)
+GPIOD_API int gpiod_line_drive(struct gpiod_line *line)
 {
 	if (line->info_flags & GPIOLINE_FLAG_OPEN_DRAIN)
 		return GPIOD_LINE_DRIVE_OPEN_DRAIN;
@@ -838,9 +840,9 @@ static int line_request_events(struct gpiod_line_bulk *bulk,
 	return 0;
 }
 
-int gpiod_line_request(struct gpiod_line *line,
-		       const struct gpiod_line_request_config *config,
-		       int default_val)
+GPIOD_API int gpiod_line_request(struct gpiod_line *line,
+				 const struct gpiod_line_request_config *config,
+				 int default_val)
 {
 	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
@@ -861,9 +863,10 @@ static bool line_request_is_events(int request)
 	       request == GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES;
 }
 
-int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
-			    const struct gpiod_line_request_config *config,
-			    const int *vals)
+GPIOD_API int
+gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
+			const struct gpiod_line_request_config *config,
+			const int *vals)
 {
 	if (line_request_is_direction(config->request_type))
 		return line_request_values(bulk, config, vals);
@@ -874,14 +877,14 @@ int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
 	return -1;
 }
 
-void gpiod_line_release(struct gpiod_line *line)
+GPIOD_API void gpiod_line_release(struct gpiod_line *line)
 {
 	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	gpiod_line_release_bulk(&bulk);
 }
 
-void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
+GPIOD_API void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 {
 	struct gpiod_line *line;
 	unsigned int idx;
@@ -894,7 +897,7 @@ void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk)
 	}
 }
 
-int gpiod_line_get_value(struct gpiod_line *line)
+GPIOD_API int gpiod_line_get_value(struct gpiod_line *line)
 {
 	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 	int rv, value;
@@ -906,7 +909,8 @@ int gpiod_line_get_value(struct gpiod_line *line)
 	return value;
 }
 
-int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
+GPIOD_API int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk,
+					int *values)
 {
 	struct gpio_v2_line_values lv;
 	struct gpiod_line *line;
@@ -951,14 +955,15 @@ int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values)
 	return 0;
 }
 
-int gpiod_line_set_value(struct gpiod_line *line, int value)
+GPIOD_API int gpiod_line_set_value(struct gpiod_line *line, int value)
 {
 	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	return gpiod_line_set_value_bulk(&bulk, &value);
 }
 
-int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
+GPIOD_API int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk,
+					const int *values)
 {
 	struct gpio_v2_line_values lv;
 	struct gpiod_line *line;
@@ -988,17 +993,17 @@ int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values)
 	return 0;
 }
 
-int gpiod_line_set_config(struct gpiod_line *line, int direction,
-			  int flags, int value)
+GPIOD_API int gpiod_line_set_config(struct gpiod_line *line, int direction,
+				    int flags, int value)
 {
 	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	return gpiod_line_set_config_bulk(&bulk, direction, flags, &value);
 }
 
-int gpiod_line_set_config_bulk(struct gpiod_line_bulk *bulk,
-			       int direction, int flags,
-			       const int *values)
+GPIOD_API int gpiod_line_set_config_bulk(struct gpiod_line_bulk *bulk,
+					 int direction, int flags,
+					 const int *values)
 {
 	struct gpio_v2_line_config hcfg;
 	struct gpiod_line *line;
@@ -1045,14 +1050,14 @@ int gpiod_line_set_config_bulk(struct gpiod_line_bulk *bulk,
 	return 0;
 }
 
-int gpiod_line_set_flags(struct gpiod_line *line, int flags)
+GPIOD_API int gpiod_line_set_flags(struct gpiod_line *line, int flags)
 {
 	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	return gpiod_line_set_flags_bulk(&bulk, flags);
 }
 
-int gpiod_line_set_flags_bulk(struct gpiod_line_bulk *bulk, int flags)
+GPIOD_API int gpiod_line_set_flags_bulk(struct gpiod_line_bulk *bulk, int flags)
 {
 	struct gpiod_line *line;
 	int values[LINE_REQUEST_MAX_LINES];
@@ -1073,13 +1078,13 @@ int gpiod_line_set_flags_bulk(struct gpiod_line_bulk *bulk, int flags)
 					  flags, values);
 }
 
-int gpiod_line_set_direction_input(struct gpiod_line *line)
+GPIOD_API int gpiod_line_set_direction_input(struct gpiod_line *line)
 {
 	return gpiod_line_set_config(line, GPIOD_LINE_REQUEST_DIRECTION_INPUT,
 				     line->req_flags, 0);
 }
 
-int gpiod_line_set_direction_input_bulk(struct gpiod_line_bulk *bulk)
+GPIOD_API int gpiod_line_set_direction_input_bulk(struct gpiod_line_bulk *bulk)
 {
 	struct gpiod_line *line;
 
@@ -1089,14 +1094,15 @@ int gpiod_line_set_direction_input_bulk(struct gpiod_line_bulk *bulk)
 					  line->req_flags, NULL);
 }
 
-int gpiod_line_set_direction_output(struct gpiod_line *line, int value)
+GPIOD_API int gpiod_line_set_direction_output(struct gpiod_line *line,
+					      int value)
 {
 	return gpiod_line_set_config(line, GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
 				     line->req_flags, value);
 }
 
-int gpiod_line_set_direction_output_bulk(struct gpiod_line_bulk *bulk,
-					 const int *values)
+GPIOD_API int gpiod_line_set_direction_output_bulk(struct gpiod_line_bulk *bulk,
+						   const int *values)
 {
 	struct gpiod_line *line;
 
@@ -1106,17 +1112,17 @@ int gpiod_line_set_direction_output_bulk(struct gpiod_line_bulk *bulk,
 					  line->req_flags, values);
 }
 
-int gpiod_line_event_wait(struct gpiod_line *line,
-			  const struct timespec *timeout)
+GPIOD_API int gpiod_line_event_wait(struct gpiod_line *line,
+				    const struct timespec *timeout)
 {
 	struct gpiod_line_bulk bulk = BULK_SINGLE_LINE_INIT(line);
 
 	return gpiod_line_event_wait_bulk(&bulk, timeout, NULL);
 }
 
-int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
-			       const struct timespec *timeout,
-			       struct gpiod_line_bulk *event_bulk)
+GPIOD_API int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
+					 const struct timespec *timeout,
+					 struct gpiod_line_bulk *event_bulk)
 {
 	struct pollfd fds[LINE_REQUEST_MAX_LINES];
 	unsigned int off, num_lines;
@@ -1162,8 +1168,8 @@ int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
 	return 1;
 }
 
-int gpiod_line_event_read(struct gpiod_line *line,
-			  struct gpiod_line_event *event)
+GPIOD_API int gpiod_line_event_read(struct gpiod_line *line,
+				    struct gpiod_line_event *event)
 {
 	int ret;
 
@@ -1174,9 +1180,9 @@ int gpiod_line_event_read(struct gpiod_line *line,
 	return 0;
 }
 
-int gpiod_line_event_read_multiple(struct gpiod_line *line,
-				   struct gpiod_line_event *events,
-				   unsigned int num_events)
+GPIOD_API int gpiod_line_event_read_multiple(struct gpiod_line *line,
+					     struct gpiod_line_event *events,
+					     unsigned int num_events)
 {
 	int fd;
 
@@ -1187,7 +1193,7 @@ int gpiod_line_event_read_multiple(struct gpiod_line *line,
 	return gpiod_line_event_read_fd_multiple(fd, events, num_events);
 }
 
-int gpiod_line_event_get_fd(struct gpiod_line *line)
+GPIOD_API int gpiod_line_event_get_fd(struct gpiod_line *line)
 {
 	if (line->state != LINE_REQUESTED_EVENTS) {
 		errno = EPERM;
@@ -1197,7 +1203,7 @@ int gpiod_line_event_get_fd(struct gpiod_line *line)
 	return line_get_fd(line);
 }
 
-int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
+GPIOD_API int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
 {
 	int ret;
 
@@ -1208,8 +1214,9 @@ int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event)
 	return 0;
 }
 
-int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
-				      unsigned int num_events)
+GPIOD_API int gpiod_line_event_read_fd_multiple(int fd,
+						struct gpiod_line_event *events,
+						unsigned int num_events)
 {
 	/*
 	 * 16 is the maximum number of events the kernel can store in the FIFO

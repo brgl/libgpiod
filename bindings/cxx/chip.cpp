@@ -7,41 +7,43 @@
 #include <system_error>
 #include <utility>
 
+#include "internal.hpp"
+
 namespace gpiod {
 
 namespace {
 
-void chip_deleter(::gpiod_chip* chip)
+GPIOD_CXX_API void chip_deleter(::gpiod_chip* chip)
 {
 	::gpiod_chip_unref(chip);
 }
 
 } /* namespace */
 
-bool is_gpiochip_device(const ::std::string& path)
+GPIOD_CXX_API bool is_gpiochip_device(const ::std::string& path)
 {
 	return ::gpiod_is_gpiochip_device(path.c_str());
 }
 
-chip::chip(const ::std::string& path)
+GPIOD_CXX_API chip::chip(const ::std::string& path)
 	: _m_chip()
 {
 	this->open(path);
 }
 
-chip::chip(::gpiod_chip* chip)
+GPIOD_CXX_API chip::chip(::gpiod_chip* chip)
 	: _m_chip(chip, chip_deleter)
 {
 
 }
 
-chip::chip(const ::std::weak_ptr<::gpiod_chip>& chip_ptr)
+GPIOD_CXX_API chip::chip(const ::std::weak_ptr<::gpiod_chip>& chip_ptr)
 	: _m_chip(chip_ptr)
 {
 
 }
 
-void chip::open(const ::std::string& path)
+GPIOD_CXX_API void chip::open(const ::std::string& path)
 {
 	::gpiod_chip *chip = ::gpiod_chip_open(path.c_str());
 	if (!chip)
@@ -51,33 +53,33 @@ void chip::open(const ::std::string& path)
 	this->_m_chip.reset(chip, chip_deleter);
 }
 
-void chip::reset(void) noexcept
+GPIOD_CXX_API void chip::reset(void) noexcept
 {
 	this->_m_chip.reset();
 }
 
-::std::string chip::name(void) const
+GPIOD_CXX_API ::std::string chip::name(void) const
 {
 	this->throw_if_noref();
 
 	return ::std::string(::gpiod_chip_name(this->_m_chip.get()));
 }
 
-::std::string chip::label(void) const
+GPIOD_CXX_API ::std::string chip::label(void) const
 {
 	this->throw_if_noref();
 
 	return ::std::string(::gpiod_chip_label(this->_m_chip.get()));
 }
 
-unsigned int chip::num_lines(void) const
+GPIOD_CXX_API unsigned int chip::num_lines(void) const
 {
 	this->throw_if_noref();
 
 	return ::gpiod_chip_num_lines(this->_m_chip.get());
 }
 
-line chip::get_line(unsigned int offset) const
+GPIOD_CXX_API line chip::get_line(unsigned int offset) const
 {
 	this->throw_if_noref();
 
@@ -92,7 +94,7 @@ line chip::get_line(unsigned int offset) const
 	return line(line_handle, *this);
 }
 
-int chip::find_line(const ::std::string& name) const
+GPIOD_CXX_API int chip::find_line(const ::std::string& name) const
 {
 	this->throw_if_noref();
 
@@ -106,7 +108,7 @@ int chip::find_line(const ::std::string& name) const
 	return -1;
 }
 
-line_bulk chip::get_lines(const ::std::vector<unsigned int>& offsets) const
+GPIOD_CXX_API line_bulk chip::get_lines(const ::std::vector<unsigned int>& offsets) const
 {
 	line_bulk lines;
 
@@ -116,7 +118,7 @@ line_bulk chip::get_lines(const ::std::vector<unsigned int>& offsets) const
 	return lines;
 }
 
-line_bulk chip::get_all_lines(void) const
+GPIOD_CXX_API line_bulk chip::get_all_lines(void) const
 {
 	line_bulk lines;
 
@@ -126,27 +128,27 @@ line_bulk chip::get_all_lines(void) const
 	return lines;
 }
 
-bool chip::operator==(const chip& rhs) const noexcept
+GPIOD_CXX_API bool chip::operator==(const chip& rhs) const noexcept
 {
 	return this->_m_chip.get() == rhs._m_chip.get();
 }
 
-bool chip::operator!=(const chip& rhs) const noexcept
+GPIOD_CXX_API bool chip::operator!=(const chip& rhs) const noexcept
 {
 	return this->_m_chip.get() != rhs._m_chip.get();
 }
 
-chip::operator bool(void) const noexcept
+GPIOD_CXX_API chip::operator bool(void) const noexcept
 {
 	return this->_m_chip.get() != nullptr;
 }
 
-bool chip::operator!(void) const noexcept
+GPIOD_CXX_API bool chip::operator!(void) const noexcept
 {
 	return this->_m_chip.get() == nullptr;
 }
 
-void chip::throw_if_noref(void) const
+GPIOD_CXX_API void chip::throw_if_noref(void) const
 {
 	if (!this->_m_chip.get())
 		throw ::std::logic_error("object not associated with an open GPIO chip");

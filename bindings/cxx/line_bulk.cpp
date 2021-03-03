@@ -5,14 +5,16 @@
 #include <map>
 #include <system_error>
 
+#include "internal.hpp"
+
 namespace gpiod {
 
-const ::std::bitset<32> line_request::FLAG_ACTIVE_LOW(GPIOD_BIT(0));
-const ::std::bitset<32> line_request::FLAG_OPEN_SOURCE(GPIOD_BIT(1));
-const ::std::bitset<32> line_request::FLAG_OPEN_DRAIN(GPIOD_BIT(2));
-const ::std::bitset<32> line_request::FLAG_BIAS_DISABLED(GPIOD_BIT(3));
-const ::std::bitset<32> line_request::FLAG_BIAS_PULL_DOWN(GPIOD_BIT(4));
-const ::std::bitset<32> line_request::FLAG_BIAS_PULL_UP(GPIOD_BIT(5));
+GPIOD_CXX_API const ::std::bitset<32> line_request::FLAG_ACTIVE_LOW(GPIOD_BIT(0));
+GPIOD_CXX_API const ::std::bitset<32> line_request::FLAG_OPEN_SOURCE(GPIOD_BIT(1));
+GPIOD_CXX_API const ::std::bitset<32> line_request::FLAG_OPEN_DRAIN(GPIOD_BIT(2));
+GPIOD_CXX_API const ::std::bitset<32> line_request::FLAG_BIAS_DISABLED(GPIOD_BIT(3));
+GPIOD_CXX_API const ::std::bitset<32> line_request::FLAG_BIAS_PULL_DOWN(GPIOD_BIT(4));
+GPIOD_CXX_API const ::std::bitset<32> line_request::FLAG_BIAS_PULL_UP(GPIOD_BIT(5));
 
 namespace {
 
@@ -44,9 +46,9 @@ const ::std::map<::std::bitset<32>, int, bitset_cmp> reqflag_mapping = {
 
 } /* namespace */
 
-const unsigned int line_bulk::MAX_LINES = 64;
+GPIOD_CXX_API const unsigned int line_bulk::MAX_LINES = 64;
 
-line_bulk::line_bulk(const ::std::vector<line>& lines)
+GPIOD_CXX_API line_bulk::line_bulk(const ::std::vector<line>& lines)
 	: _m_bulk()
 {
 	this->_m_bulk.reserve(lines.size());
@@ -55,7 +57,7 @@ line_bulk::line_bulk(const ::std::vector<line>& lines)
 		this->append(it);
 }
 
-void line_bulk::append(const line& new_line)
+GPIOD_CXX_API void line_bulk::append(const line& new_line)
 {
 	if (!new_line)
 		throw ::std::logic_error("line_bulk cannot hold empty line objects");
@@ -69,32 +71,32 @@ void line_bulk::append(const line& new_line)
 	this->_m_bulk.push_back(new_line);
 }
 
-line& line_bulk::get(unsigned int index)
+GPIOD_CXX_API line& line_bulk::get(unsigned int index)
 {
 	return this->_m_bulk.at(index);
 }
 
-line& line_bulk::operator[](unsigned int index)
+GPIOD_CXX_API line& line_bulk::operator[](unsigned int index)
 {
 	return this->_m_bulk[index];
 }
 
-unsigned int line_bulk::size(void) const noexcept
+GPIOD_CXX_API unsigned int line_bulk::size(void) const noexcept
 {
 	return this->_m_bulk.size();
 }
 
-bool line_bulk::empty(void) const noexcept
+GPIOD_CXX_API bool line_bulk::empty(void) const noexcept
 {
 	return this->_m_bulk.empty();
 }
 
-void line_bulk::clear(void)
+GPIOD_CXX_API void line_bulk::clear(void)
 {
 	this->_m_bulk.clear();
 }
 
-void line_bulk::request(const line_request& config, const ::std::vector<int> default_vals) const
+GPIOD_CXX_API void line_bulk::request(const line_request& config, const ::std::vector<int> default_vals) const
 {
 	this->throw_if_empty();
 	line::chip_guard lock_chip(this->_m_bulk.front());
@@ -123,7 +125,7 @@ void line_bulk::request(const line_request& config, const ::std::vector<int> def
 					  "error requesting GPIO lines");
 }
 
-void line_bulk::release(void) const
+GPIOD_CXX_API void line_bulk::release(void) const
 {
 	this->throw_if_empty();
 	line::chip_guard lock_chip(this->_m_bulk.front());
@@ -133,7 +135,7 @@ void line_bulk::release(void) const
 	::gpiod_line_release_bulk(bulk.get());
 }
 
-::std::vector<int> line_bulk::get_values(void) const
+GPIOD_CXX_API ::std::vector<int> line_bulk::get_values(void) const
 {
 	this->throw_if_empty();
 	line::chip_guard lock_chip(this->_m_bulk.front());
@@ -152,7 +154,7 @@ void line_bulk::release(void) const
 	return values;
 }
 
-void line_bulk::set_values(const ::std::vector<int>& values) const
+GPIOD_CXX_API void line_bulk::set_values(const ::std::vector<int>& values) const
 {
 	this->throw_if_empty();
 	line::chip_guard lock_chip(this->_m_bulk.front());
@@ -169,8 +171,8 @@ void line_bulk::set_values(const ::std::vector<int>& values) const
 					  "error setting GPIO line values");
 }
 
-void line_bulk::set_config(int direction, ::std::bitset<32> flags,
-			   const ::std::vector<int> values) const
+GPIOD_CXX_API void line_bulk::set_config(int direction, ::std::bitset<32> flags,
+					 const ::std::vector<int> values) const
 {
 	this->throw_if_empty();
 	line::chip_guard lock_chip(this->_m_bulk.front());
@@ -195,7 +197,7 @@ void line_bulk::set_config(int direction, ::std::bitset<32> flags,
 					  "error setting GPIO line config");
 }
 
-void line_bulk::set_flags(::std::bitset<32> flags) const
+GPIOD_CXX_API void line_bulk::set_flags(::std::bitset<32> flags) const
 {
 	this->throw_if_empty();
 	line::chip_guard lock_chip(this->_m_bulk.front());
@@ -216,7 +218,7 @@ void line_bulk::set_flags(::std::bitset<32> flags) const
 					  "error setting GPIO line flags");
 }
 
-void line_bulk::set_direction_input() const
+GPIOD_CXX_API void line_bulk::set_direction_input() const
 {
 	this->throw_if_empty();
 	line::chip_guard lock_chip(this->_m_bulk.front());
@@ -230,7 +232,7 @@ void line_bulk::set_direction_input() const
 			"error setting GPIO line direction to input");
 }
 
-void line_bulk::set_direction_output(const ::std::vector<int>& values) const
+GPIOD_CXX_API void line_bulk::set_direction_output(const ::std::vector<int>& values) const
 {
 	this->throw_if_empty();
 	line::chip_guard lock_chip(this->_m_bulk.front());
@@ -247,7 +249,7 @@ void line_bulk::set_direction_output(const ::std::vector<int>& values) const
 			"error setting GPIO line direction to output");
 }
 
-line_bulk line_bulk::event_wait(const ::std::chrono::nanoseconds& timeout) const
+GPIOD_CXX_API line_bulk line_bulk::event_wait(const ::std::chrono::nanoseconds& timeout) const
 {
 	this->throw_if_empty();
 	line::chip_guard lock_chip(this->_m_bulk.front());
@@ -276,66 +278,66 @@ line_bulk line_bulk::event_wait(const ::std::chrono::nanoseconds& timeout) const
 	return ret;
 }
 
-line_bulk::operator bool(void) const noexcept
+GPIOD_CXX_API line_bulk::operator bool(void) const noexcept
 {
 	return !this->_m_bulk.empty();
 }
 
-bool line_bulk::operator!(void) const noexcept
+GPIOD_CXX_API bool line_bulk::operator!(void) const noexcept
 {
 	return this->_m_bulk.empty();
 }
 
-line_bulk::iterator::iterator(const ::std::vector<line>::iterator& it)
+GPIOD_CXX_API line_bulk::iterator::iterator(const ::std::vector<line>::iterator& it)
 	: _m_iter(it)
 {
 
 }
 
-line_bulk::iterator& line_bulk::iterator::operator++(void)
+GPIOD_CXX_API line_bulk::iterator& line_bulk::iterator::operator++(void)
 {
 	this->_m_iter++;
 
 	return *this;
 }
 
-const line& line_bulk::iterator::operator*(void) const
+GPIOD_CXX_API const line& line_bulk::iterator::operator*(void) const
 {
 	return *this->_m_iter;
 }
 
-const line* line_bulk::iterator::operator->(void) const
+GPIOD_CXX_API const line* line_bulk::iterator::operator->(void) const
 {
 	return this->_m_iter.operator->();
 }
 
-bool line_bulk::iterator::operator==(const iterator& rhs) const noexcept
+GPIOD_CXX_API bool line_bulk::iterator::operator==(const iterator& rhs) const noexcept
 {
 	return this->_m_iter == rhs._m_iter;
 }
 
-bool line_bulk::iterator::operator!=(const iterator& rhs) const noexcept
+GPIOD_CXX_API bool line_bulk::iterator::operator!=(const iterator& rhs) const noexcept
 {
 	return this->_m_iter != rhs._m_iter;
 }
 
-line_bulk::iterator line_bulk::begin(void) noexcept
+GPIOD_CXX_API line_bulk::iterator line_bulk::begin(void) noexcept
 {
 	return line_bulk::iterator(this->_m_bulk.begin());
 }
 
-line_bulk::iterator line_bulk::end(void) noexcept
+GPIOD_CXX_API line_bulk::iterator line_bulk::end(void) noexcept
 {
 	return line_bulk::iterator(this->_m_bulk.end());
 }
 
-void line_bulk::throw_if_empty(void) const
+GPIOD_CXX_API void line_bulk::throw_if_empty(void) const
 {
 	if (this->_m_bulk.empty())
 		throw ::std::logic_error("line_bulk not holding any GPIO lines");
 }
 
-line_bulk::line_bulk_ptr line_bulk::make_line_bulk_ptr(void) const
+GPIOD_CXX_API line_bulk::line_bulk_ptr line_bulk::make_line_bulk_ptr(void) const
 {
 	line_bulk_ptr bulk(::gpiod_line_bulk_new(this->size()));
 
@@ -346,7 +348,7 @@ line_bulk::line_bulk_ptr line_bulk::make_line_bulk_ptr(void) const
 	return bulk;
 }
 
-line_bulk::line_bulk_ptr line_bulk::to_line_bulk(void) const
+GPIOD_CXX_API line_bulk::line_bulk_ptr line_bulk::to_line_bulk(void) const
 {
 	line_bulk_ptr bulk = this->make_line_bulk_ptr();
 
@@ -356,7 +358,7 @@ line_bulk::line_bulk_ptr line_bulk::to_line_bulk(void) const
 	return bulk;
 }
 
-void line_bulk::line_bulk_deleter::operator()(::gpiod_line_bulk *bulk)
+GPIOD_CXX_API void line_bulk::line_bulk_deleter::operator()(::gpiod_line_bulk *bulk)
 {
 	::gpiod_line_bulk_free(bulk);
 }

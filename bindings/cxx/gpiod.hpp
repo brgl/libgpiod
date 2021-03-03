@@ -34,7 +34,7 @@ struct line_event;
  * @return True if the file exists and is a GPIO chip character device or a
  *         symbolic link to it.
  */
-bool is_gpiochip_device(const ::std::string& path) GPIOD_API;
+bool is_gpiochip_device(const ::std::string& path);
 
 /**
  * @brief Represents a GPIO chip.
@@ -50,44 +50,44 @@ public:
 	/**
 	 * @brief Default constructor. Creates an empty GPIO chip object.
 	 */
-	GPIOD_API chip(void) = default;
+	chip(void) = default;
 
 	/**
 	 * @brief Constructor. Opens the chip using chip::open.
 	 * @param path Path to the GPIO chip device.
 	 */
-	GPIOD_API chip(const ::std::string& path);
+	chip(const ::std::string& path);
 
 	/**
 	 * @brief Copy constructor. References the object held by other.
 	 * @param other Other chip object.
 	 */
-	GPIOD_API chip(const chip& other) = default;
+	chip(const chip& other) = default;
 
 	/**
 	 * @brief Move constructor. References the object held by other.
 	 * @param other Other chip object.
 	 */
-	GPIOD_API chip(chip&& other) = default;
+	chip(chip&& other) = default;
 
 	/**
 	 * @brief Assignment operator. References the object held by other.
 	 * @param other Other chip object.
 	 * @return Reference to this object.
 	 */
-	GPIOD_API chip& operator=(const chip& other) = default;
+	chip& operator=(const chip& other) = default;
 
 	/**
 	 * @brief Move assignment operator. References the object held by other.
 	 * @param other Other chip object.
 	 * @return Reference to this object.
 	 */
-	GPIOD_API chip& operator=(chip&& other) = default;
+	chip& operator=(chip&& other) = default;
 
 	/**
 	 * @brief Destructor. Unreferences the internal chip object.
 	 */
-	GPIOD_API ~chip(void) = default;
+	~chip(void) = default;
 
 	/**
 	 * @brief Open a GPIO chip.
@@ -96,37 +96,37 @@ public:
 	 * If the object already holds a reference to an open chip, it will be
 	 * closed and the reference reset.
 	 */
-	GPIOD_API void open(const ::std::string &path);
+	void open(const ::std::string &path);
 
 	/**
 	 * @brief Reset the internal smart pointer owned by this object.
 	 */
-	GPIOD_API void reset(void) noexcept;
+	void reset(void) noexcept;
 
 	/**
 	 * @brief Return the name of the chip held by this object.
 	 * @return Name of the GPIO chip.
 	 */
-	GPIOD_API ::std::string name(void) const;
+	::std::string name(void) const;
 
 	/**
 	 * @brief Return the label of the chip held by this object.
 	 * @return Label of the GPIO chip.
 	 */
-	GPIOD_API ::std::string label(void) const;
+	::std::string label(void) const;
 
 	/**
 	 * @brief Return the number of lines exposed by this chip.
 	 * @return Number of lines.
 	 */
-	GPIOD_API unsigned int num_lines(void) const;
+	unsigned int num_lines(void) const;
 
 	/**
 	 * @brief Get the line exposed by this chip at given offset.
 	 * @param offset Offset of the line.
 	 * @return Line object.
 	 */
-	GPIOD_API line get_line(unsigned int offset) const;
+	line get_line(unsigned int offset) const;
 
 	/**
 	 * @brief Map a GPIO line's name to its offset within the chip.
@@ -134,46 +134,46 @@ public:
 	 * @return Offset of the line within the chip or -1 if a line with
 	 *         given name is not exposed by the chip.
 	 */
-	GPIOD_API int find_line(const ::std::string& name) const;
+	int find_line(const ::std::string& name) const;
 
 	/**
 	 * @brief Get a set of lines exposed by this chip at given offsets.
 	 * @param offsets Vector of line offsets.
 	 * @return Set of lines held by a line_bulk object.
 	 */
-	GPIOD_API line_bulk get_lines(const ::std::vector<unsigned int>& offsets) const;
+	line_bulk get_lines(const ::std::vector<unsigned int>& offsets) const;
 
 	/**
 	 * @brief Get all lines exposed by this chip.
 	 * @return All lines exposed by this chip held by a line_bulk object.
 	 */
-	GPIOD_API line_bulk get_all_lines(void) const;
+	line_bulk get_all_lines(void) const;
 
 	/**
 	 * @brief Equality operator.
 	 * @param rhs Right-hand side of the equation.
 	 * @return True if rhs references the same chip. False otherwise.
 	 */
-	GPIOD_API bool operator==(const chip& rhs) const noexcept;
+	bool operator==(const chip& rhs) const noexcept;
 
 	/**
 	 * @brief Inequality operator.
 	 * @param rhs Right-hand side of the equation.
 	 * @return False if rhs references the same chip. True otherwise.
 	 */
-	GPIOD_API bool operator!=(const chip& rhs) const noexcept;
+	bool operator!=(const chip& rhs) const noexcept;
 
 	/**
 	 * @brief Check if this object holds a reference to a GPIO chip.
 	 * @return True if this object references a GPIO chip, false otherwise.
 	 */
-	GPIOD_API explicit operator bool(void) const noexcept;
+	explicit operator bool(void) const noexcept;
 
 	/**
 	 * @brief Check if this object doesn't hold a reference to a GPIO chip.
 	 * @return False if this object references a GPIO chip, true otherwise.
 	 */
-	GPIOD_API bool operator!(void) const noexcept;
+	bool operator!(void) const noexcept;
 
 private:
 
@@ -212,17 +212,17 @@ struct line_request
 		/**< Listen for all types of events. */
 	};
 
-	GPIOD_API static const ::std::bitset<32> FLAG_ACTIVE_LOW;
+	static const ::std::bitset<32> FLAG_ACTIVE_LOW;
 	/**< Set the active state to 'low' (high is the default). */
-	GPIOD_API static const ::std::bitset<32> FLAG_OPEN_SOURCE;
+	static const ::std::bitset<32> FLAG_OPEN_SOURCE;
 	/**< The line is an open-source port. */
-	GPIOD_API static const ::std::bitset<32> FLAG_OPEN_DRAIN;
+	static const ::std::bitset<32> FLAG_OPEN_DRAIN;
 	/**< The line is an open-drain port. */
-	GPIOD_API static const ::std::bitset<32> FLAG_BIAS_DISABLED;
+	static const ::std::bitset<32> FLAG_BIAS_DISABLED;
 	/**< The line has neither pull-up nor pull-down resistor enabled. */
-	GPIOD_API static const ::std::bitset<32> FLAG_BIAS_PULL_DOWN;
+	static const ::std::bitset<32> FLAG_BIAS_PULL_DOWN;
 	/**< The line has a configurable pull-down resistor enabled. */
-	GPIOD_API static const ::std::bitset<32> FLAG_BIAS_PULL_UP;
+	static const ::std::bitset<32> FLAG_BIAS_PULL_UP;
 	/**< The line has a configurable pull-up resistor enabled. */
 
 	::std::string consumer;
@@ -247,112 +247,112 @@ public:
 	/**
 	 * @brief Default constructor. Creates an empty line object.
 	 */
-	GPIOD_API line(void);
+	line(void);
 
 	/**
 	 * @brief Copy constructor.
 	 * @param other Other line object.
 	 */
-	GPIOD_API line(const line& other) = default;
+	line(const line& other) = default;
 
 	/**
 	 * @brief Move constructor.
 	 * @param other Other line object.
 	 */
-	GPIOD_API line(line&& other) = default;
+	line(line&& other) = default;
 
 	/**
 	 * @brief Assignment operator.
 	 * @param other Other line object.
 	 * @return Reference to this object.
 	 */
-	GPIOD_API line& operator=(const line& other) = default;
+	line& operator=(const line& other) = default;
 
 	/**
 	 * @brief Move assignment operator.
 	 * @param other Other line object.
 	 * @return Reference to this object.
 	 */
-	GPIOD_API line& operator=(line&& other) = default;
+	line& operator=(line&& other) = default;
 
 	/**
 	 * @brief Destructor.
 	 */
-	GPIOD_API ~line(void) = default;
+	~line(void) = default;
 
 	/**
 	 * @brief Get the offset of this line.
 	 * @return Offet of this line.
 	 */
-	GPIOD_API unsigned int offset(void) const;
+	unsigned int offset(void) const;
 
 	/**
 	 * @brief Get the name of this line (if any).
 	 * @return Name of this line or an empty string if it is unnamed.
 	 */
-	GPIOD_API ::std::string name(void) const;
+	::std::string name(void) const;
 
 	/**
 	 * @brief Get the consumer of this line (if any).
 	 * @return Name of the consumer of this line or an empty string if it
 	 *         is unused.
 	 */
-	GPIOD_API ::std::string consumer(void) const;
+	::std::string consumer(void) const;
 
 	/**
 	 * @brief Get current direction of this line.
 	 * @return Current direction setting.
 	 */
-	GPIOD_API int direction(void) const;
+	int direction(void) const;
 
 	/**
 	 * @brief Check if this line's signal is inverted.
 	 * @return True if this line is "active-low", false otherwise.
 	 */
-	GPIOD_API bool is_active_low(void) const;
+	bool is_active_low(void) const;
 
 	/**
 	 * @brief Get current bias of this line.
 	 * @return Current bias setting.
 	 */
-	GPIOD_API int bias(void) const;
+	int bias(void) const;
 
 	/**
 	 * @brief Check if this line is used by the kernel or other user space
 	 *        process.
 	 * @return True if this line is in use, false otherwise.
 	 */
-	GPIOD_API bool is_used(void) const;
+	bool is_used(void) const;
 
 	/**
 	 * @brief Get current drive setting of this line.
 	 * @return Current drive setting.
 	 */
-	GPIOD_API int drive(void) const;
+	int drive(void) const;
 
 	/**
 	 * @brief Request this line.
 	 * @param config Request config (see gpiod::line_request).
 	 * @param default_val Default value - only matters for OUTPUT direction.
 	 */
-	GPIOD_API void request(const line_request& config, int default_val = 0) const;
+	void request(const line_request& config, int default_val = 0) const;
 
 	/**
 	 * @brief Release the line if it was previously requested.
 	 */
-	GPIOD_API void release(void) const;
+	void release(void) const;
 
 	/**
 	 * @brief Read the line value.
 	 * @return Current value (0 or 1).
 	 */
-	GPIOD_API int get_value(void) const;
+	int get_value(void) const;
 
 	/**
 	 * @brief Set the value of this line.
 	 * @param val New value (0 or 1).
 	 */
-	GPIOD_API void set_value(int val) const;
+	void set_value(int val) const;
 
 	/**
 	 * @brief Set configuration of this line.
@@ -360,25 +360,24 @@ public:
 	 * @param flags Replacement flags.
 	 * @param value New value (0 or 1) - only matters for OUTPUT direction.
 	 */
-	GPIOD_API void set_config(int direction, ::std::bitset<32> flags,
-				  int value = 0) const;
+	void set_config(int direction, ::std::bitset<32> flags, int value = 0) const;
 
 	/**
 	 * @brief Set configuration flags of this line.
 	 * @param flags Replacement flags.
 	 */
-	GPIOD_API void set_flags(::std::bitset<32> flags) const;
+	void set_flags(::std::bitset<32> flags) const;
 
 	/**
 	 * @brief Change the direction this line to input.
 	 */
-	GPIOD_API void set_direction_input() const;
+	void set_direction_input() const;
 
 	/**
 	 * @brief Change the direction this lines to output.
 	 * @param value New value (0 or 1).
 	 */
-	GPIOD_API void set_direction_output(int value = 0) const;
+	void set_direction_output(int value = 0) const;
 
 	/**
 	 * @brief Wait for an event on this line.
@@ -386,31 +385,31 @@ public:
 	 * @return True if an event occurred and can be read, false if the wait
 	 *         timed out.
 	 */
-	GPIOD_API bool event_wait(const ::std::chrono::nanoseconds& timeout) const;
+	bool event_wait(const ::std::chrono::nanoseconds& timeout) const;
 
 	/**
 	 * @brief Read a line event.
 	 * @return Line event object.
 	 */
-	GPIOD_API line_event event_read(void) const;
+	line_event event_read(void) const;
 
 	/**
 	 * @brief Read multiple line events.
 	 * @return Vector of line event objects.
 	 */
-	GPIOD_API ::std::vector<line_event> event_read_multiple(void) const;
+	::std::vector<line_event> event_read_multiple(void) const;
 
 	/**
 	 * @brief Get the event file descriptor associated with this line.
 	 * @return File descriptor number.
 	 */
-	GPIOD_API int event_get_fd(void) const;
+	int event_get_fd(void) const;
 
 	/**
 	 * @brief Get the parent chip.
 	 * @return Parent chip of this line.
 	 */
-	GPIOD_API const chip get_chip(void) const;
+	const chip get_chip(void) const;
 
 	/**
 	 * @brief Reset the state of this object.
@@ -419,34 +418,34 @@ public:
 	 * but wants to drop the reference to the GPIO chip indirectly held by
 	 * the line being the source of the event.
 	 */
-	GPIOD_API void reset(void);
+	void reset(void);
 
 	/**
 	 * @brief Check if two line objects reference the same GPIO line.
 	 * @param rhs Right-hand side of the equation.
 	 * @return True if both objects reference the same line, fale otherwise.
 	 */
-	GPIOD_API bool operator==(const line& rhs) const noexcept;
+	bool operator==(const line& rhs) const noexcept;
 
 	/**
 	 * @brief Check if two line objects reference different GPIO lines.
 	 * @param rhs Right-hand side of the equation.
 	 * @return False if both objects reference the same line, true otherwise.
 	 */
-	GPIOD_API bool operator!=(const line& rhs) const noexcept;
+	bool operator!=(const line& rhs) const noexcept;
 
 	/**
 	 * @brief Check if this object holds a reference to any GPIO line.
 	 * @return True if this object references a GPIO line, false otherwise.
 	 */
-	GPIOD_API explicit operator bool(void) const noexcept;
+	explicit operator bool(void) const noexcept;
 
 	/**
 	 * @brief Check if this object doesn't reference any GPIO line.
 	 * @return True if this object doesn't reference any GPIO line, true
 	 *         otherwise.
 	 */
-	GPIOD_API bool operator!(void) const noexcept;
+	bool operator!(void) const noexcept;
 
 	/**
 	 * @brief Possible direction settings.
@@ -550,45 +549,45 @@ public:
 	/**
 	 * @brief Default constructor. Creates an empty line_bulk object.
 	 */
-	GPIOD_API line_bulk(void) = default;
+	line_bulk(void) = default;
 
 	/**
 	 * @brief Construct a line_bulk from a vector of lines.
 	 * @param lines Vector of gpiod::line objects.
 	 * @note All lines must be owned by the same GPIO chip.
 	 */
-	GPIOD_API line_bulk(const ::std::vector<line>& lines);
+	line_bulk(const ::std::vector<line>& lines);
 
 	/**
 	 * @brief Copy constructor.
 	 * @param other Other line_bulk object.
 	 */
-	GPIOD_API line_bulk(const line_bulk& other) = default;
+	line_bulk(const line_bulk& other) = default;
 
 	/**
 	 * @brief Move constructor.
 	 * @param other Other line_bulk object.
 	 */
-	GPIOD_API line_bulk(line_bulk&& other) = default;
+	line_bulk(line_bulk&& other) = default;
 
 	/**
 	 * @brief Assignment operator.
 	 * @param other Other line_bulk object.
 	 * @return Reference to this object.
 	 */
-	GPIOD_API line_bulk& operator=(const line_bulk& other) = default;
+	line_bulk& operator=(const line_bulk& other) = default;
 
 	/**
 	 * @brief Move assignment operator.
 	 * @param other Other line_bulk object.
 	 * @return Reference to this object.
 	 */
-	GPIOD_API line_bulk& operator=(line_bulk&& other) = default;
+	line_bulk& operator=(line_bulk&& other) = default;
 
 	/**
 	 * @brief Destructor.
 	 */
-	GPIOD_API ~line_bulk(void) = default;
+	~line_bulk(void) = default;
 
 	/**
 	 * @brief Add a line to this line_bulk object.
@@ -596,7 +595,7 @@ public:
 	 * @note The new line must be owned by the same chip as all the other
 	 *       lines already held by this line_bulk object.
 	 */
-	GPIOD_API void append(const line& new_line);
+	void append(const line& new_line);
 
 	/**
 	 * @brief Get the line at given offset.
@@ -605,7 +604,7 @@ public:
 	 * @note This method will throw if index is equal or greater than the
 	 *       number of lines currently held by this bulk.
 	 */
-	GPIOD_API line& get(unsigned int index);
+	line& get(unsigned int index);
 
 	/**
 	 * @brief Get the line at given offset without bounds checking.
@@ -613,24 +612,24 @@ public:
 	 * @return Reference to the line object.
 	 * @note No bounds checking is performed.
 	 */
-	GPIOD_API line& operator[](unsigned int index);
+	line& operator[](unsigned int index);
 
 	/**
 	 * @brief Get the number of lines currently held by this object.
 	 * @return Number of elements in this line_bulk.
 	 */
-	GPIOD_API unsigned int size(void) const noexcept;
+	unsigned int size(void) const noexcept;
 
 	/**
 	 * @brief Check if this line_bulk doesn't hold any lines.
 	 * @return True if this object is empty, false otherwise.
 	 */
-	GPIOD_API bool empty(void) const noexcept;
+	bool empty(void) const noexcept;
 
 	/**
 	 * @brief Remove all lines from this object.
 	 */
-	GPIOD_API void clear(void);
+	void clear(void);
 
 	/**
 	 * @brief Request all lines held by this object.
@@ -638,27 +637,27 @@ public:
 	 * @param default_vals Vector of default values. Only relevant for
 	 *                     output direction requests.
 	 */
-	GPIOD_API void request(const line_request& config,
-			       const ::std::vector<int> default_vals = ::std::vector<int>()) const;
+	void request(const line_request& config,
+		     const ::std::vector<int> default_vals = ::std::vector<int>()) const;
 
 	/**
 	 * @brief Release all lines held by this object.
 	 */
-	GPIOD_API void release(void) const;
+	void release(void) const;
 
 	/**
 	 * @brief Read values from all lines held by this object.
 	 * @return Vector containing line values the order of which corresponds
 	 *         with the order of lines in the internal array.
 	 */
-	GPIOD_API ::std::vector<int> get_values(void) const;
+	::std::vector<int> get_values(void) const;
 
 	/**
 	 * @brief Set values of all lines held by this object.
 	 * @param values Vector of values to set. Must be the same size as the
 	 *               number of lines held by this line_bulk.
 	 */
-	GPIOD_API void set_values(const ::std::vector<int>& values) const;
+	void set_values(const ::std::vector<int>& values) const;
 
 	/**
 	 * @brief Set configuration of all lines held by this object.
@@ -668,26 +667,26 @@ public:
 	 *               number of lines held by this line_bulk.
 	 *               Only relevant for output direction requests.
 	 */
-	GPIOD_API void set_config(int direction, ::std::bitset<32> flags,
-				  const ::std::vector<int> values = ::std::vector<int>()) const;
+	void set_config(int direction, ::std::bitset<32> flags,
+			const ::std::vector<int> values = ::std::vector<int>()) const;
 
 	/**
 	 * @brief Set configuration flags of all lines held by this object.
 	 * @param flags Replacement flags.
 	 */
-	GPIOD_API void set_flags(::std::bitset<32> flags) const;
+	void set_flags(::std::bitset<32> flags) const;
 
 	/**
 	 * @brief Change the direction all lines held by this object to input.
 	 */
-	GPIOD_API void set_direction_input() const;
+	void set_direction_input() const;
 
 	/**
 	 * @brief Change the direction all lines held by this object to output.
 	 * @param values Vector of values to set. Must be the same size as the
 	 *               number of lines held by this line_bulk.
 	 */
-	GPIOD_API void set_direction_output(const ::std::vector<int>& values) const;
+	void set_direction_output(const ::std::vector<int>& values) const;
 
 	/**
 	 * @brief Poll the set of lines for line events.
@@ -696,24 +695,24 @@ public:
 	 * @return Returns a line_bulk object containing lines on which events
 	 *         occurred.
 	 */
-	GPIOD_API line_bulk event_wait(const ::std::chrono::nanoseconds& timeout) const;
+	line_bulk event_wait(const ::std::chrono::nanoseconds& timeout) const;
 
 	/**
 	 * @brief Check if this object holds any lines.
 	 * @return True if this line_bulk holds at least one line, false otherwise.
 	 */
-	GPIOD_API explicit operator bool(void) const noexcept;
+	explicit operator bool(void) const noexcept;
 
 	/**
 	 * @brief Check if this object doesn't hold any lines.
 	 * @return True if this line_bulk is empty, false otherwise.
 	 */
-	GPIOD_API bool operator!(void) const noexcept;
+	bool operator!(void) const noexcept;
 
 	/**
 	 * @brief Max number of lines that this object can hold.
 	 */
-	GPIOD_API static const unsigned int MAX_LINES;
+	static const unsigned int MAX_LINES;
 
 	/**
 	 * @brief Iterator for iterating over lines held by line_bulk.
@@ -725,56 +724,56 @@ public:
 		/**
 		 * @brief Default constructor. Builds an empty iterator object.
 		 */
-		GPIOD_API iterator(void) = default;
+		iterator(void) = default;
 
 		/**
 		 * @brief Copy constructor.
 		 * @param other Other line_bulk iterator.
 		 */
-		GPIOD_API iterator(const iterator& other) = default;
+		iterator(const iterator& other) = default;
 
 		/**
 		 * @brief Move constructor.
 		 * @param other Other line_bulk iterator.
 		 */
-		GPIOD_API iterator(iterator&& other) = default;
+		iterator(iterator&& other) = default;
 
 		/**
 		 * @brief Assignment operator.
 		 * @param other Other line_bulk iterator.
 		 * @return Reference to this iterator.
 		 */
-		GPIOD_API iterator& operator=(const iterator& other) = default;
+		iterator& operator=(const iterator& other) = default;
 
 		/**
 		 * @brief Move assignment operator.
 		 * @param other Other line_bulk iterator.
 		 * @return Reference to this iterator.
 		 */
-		GPIOD_API iterator& operator=(iterator&& other) = default;
+		iterator& operator=(iterator&& other) = default;
 
 		/**
 		 * @brief Destructor.
 		 */
-		GPIOD_API ~iterator(void) = default;
+		~iterator(void) = default;
 
 		/**
 		 * @brief Advance the iterator by one element.
 		 * @return Reference to this iterator.
 		 */
-		GPIOD_API iterator& operator++(void);
+		iterator& operator++(void);
 
 		/**
 		 * @brief Dereference current element.
 		 * @return Current GPIO line by reference.
 		 */
-		GPIOD_API const line& operator*(void) const;
+		const line& operator*(void) const;
 
 		/**
 		 * @brief Member access operator.
 		 * @return Current GPIO line by pointer.
 		 */
-		GPIOD_API const line* operator->(void) const;
+		const line* operator->(void) const;
 
 		/**
 		 * @brief Check if this operator points to the same element.
@@ -782,7 +781,7 @@ public:
 		 * @return True if this iterator points to the same GPIO line,
 		 *         false otherwise.
 		 */
-		GPIOD_API bool operator==(const iterator& rhs) const noexcept;
+		bool operator==(const iterator& rhs) const noexcept;
 
 		/**
 		 * @brief Check if this operator doesn't point to the same element.
@@ -790,7 +789,7 @@ public:
 		 * @return True if this iterator doesn't point to the same GPIO
 		 *         line, false otherwise.
 		 */
-		GPIOD_API bool operator!=(const iterator& rhs) const noexcept;
+		bool operator!=(const iterator& rhs) const noexcept;
 
 	private:
 
@@ -805,13 +804,13 @@ public:
 	 * @brief Returns an iterator to the first line.
 	 * @return A line_bulk iterator.
 	 */
-	GPIOD_API iterator begin(void) noexcept;
+	iterator begin(void) noexcept;
 
 	/**
 	 * @brief Returns an iterator to the element following the last line.
 	 * @return A line_bulk iterator.
 	 */
-	GPIOD_API iterator end(void) noexcept;
+	iterator end(void) noexcept;
 
 private:
 
@@ -835,14 +834,14 @@ private:
  * @param iter A line iterator.
  * @return Iterator unchanged.
  */
-GPIOD_API line_iter begin(line_iter iter) noexcept;
+line_iter begin(line_iter iter) noexcept;
 
 /**
  * @brief Support for range-based loops for line iterators.
  * @param iter A line iterator.
  * @return New end iterator.
  */
-GPIOD_API line_iter end(const line_iter& iter) noexcept;
+line_iter end(const line_iter& iter) noexcept;
 
 /**
  * @brief Allows to iterate over all lines owned by a GPIO chip.
@@ -854,62 +853,62 @@ public:
 	/**
 	 * @brief Default constructor. Creates the end iterator.
 	 */
-	GPIOD_API line_iter(void) = default;
+	line_iter(void) = default;
 
 	/**
 	 * @brief Constructor. Creates the begin iterator.
 	 * @param owner Chip owning the GPIO lines over which we want to iterate.
 	 */
-	GPIOD_API line_iter(const chip& owner);
+	line_iter(const chip& owner);
 
 	/**
 	 * @brief Copy constructor.
 	 * @param other Other line iterator.
 	 */
-	GPIOD_API line_iter(const line_iter& other) = default;
+	line_iter(const line_iter& other) = default;
 
 	/**
 	 * @brief Move constructor.
 	 * @param other Other line iterator.
 	 */
-	GPIOD_API line_iter(line_iter&& other) = default;
+	line_iter(line_iter&& other) = default;
 
 	/**
 	 * @brief Assignment operator.
 	 * @param other Other line iterator.
 	 * @return Reference to this line_iter.
 	 */
-	GPIOD_API line_iter& operator=(const line_iter& other) = default;
+	line_iter& operator=(const line_iter& other) = default;
 
 	/**
 	 * @brief Move assignment operator.
 	 * @param other Other line iterator.
 	 * @return Reference to this line_iter.
 	 */
-	GPIOD_API line_iter& operator=(line_iter&& other) = default;
+	line_iter& operator=(line_iter&& other) = default;
 
 	/**
 	 * @brief Destructor.
 	 */
-	GPIOD_API ~line_iter(void) = default;
+	~line_iter(void) = default;
 
 	/**
 	 * @brief Advance the iterator by one element.
 	 * @return Reference to this iterator.
 	 */
-	GPIOD_API line_iter& operator++(void);
+	line_iter& operator++(void);
 
 	/**
 	 * @brief Dereference current element.
 	 * @return Current GPIO line by reference.
 	 */
-	GPIOD_API const line& operator*(void) const;
+	const line& operator*(void) const;
 
 	/**
 	 * @brief Member access operator.
 	 * @return Current GPIO line by pointer.
 	 */
-	GPIOD_API const line* operator->(void) const;
+	const line* operator->(void) const;
 
 	/**
 	 * @brief Check if this operator points to the same element.
@@ -917,7 +916,7 @@ public:
 	 * @return True if this iterator points to the same line_iter,
 	 *         false otherwise.
 	 */
-	GPIOD_API bool operator==(const line_iter& rhs) const noexcept;
+	bool operator==(const line_iter& rhs) const noexcept;
 
 	/**
 	 * @brief Check if this operator doesn't point to the same element.
@@ -925,7 +924,7 @@ public:
 	 * @return True if this iterator doesn't point to the same line_iter,
 	 *         false otherwise.
 	 */
-	GPIOD_API bool operator!=(const line_iter& rhs) const noexcept;
+	bool operator!=(const line_iter& rhs) const noexcept;
 
 private:
 
