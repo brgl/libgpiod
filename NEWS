@@ -1,3 +1,12 @@
+libgpiod v1.6.3
+===============
+
+Bug fixes:
+- fix uninitialized default_vals being passed to gpiod_LineBulk_request()
+  in Python bindings
+- fix building C++ bindings with clang
+- fix one of the line request test cases
+
 libgpiod v1.6.2
 ===============
 
