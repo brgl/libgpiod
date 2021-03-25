@@ -20,9 +20,9 @@ int main(int argc, char **argv)
 		if (::gpiod::is_gpiochip_device(entry.path())) {
 			::gpiod::chip chip(entry.path());
 
-			auto offset = chip.find_line(argv[1]);
+			auto offset = chip.get_line_offset_from_name(argv[1]);
 			if (offset >= 0) {
-				::std::cout << chip.name() << " " << offset << ::std::endl;
+				::std::cout << chip.get_info().name() << " " << offset << ::std::endl;
 				return EXIT_SUCCESS;
 			}
 		}

@@ -57,14 +57,14 @@ void print_version(void)
 	printf("There is NO WARRANTY, to the extent permitted by law.\n");
 }
 
-int bias_flags(const char *option)
+int parse_bias(const char *option)
 {
 	if (strcmp(option, "pull-down") == 0)
-		return GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN;
+		return GPIOD_LINE_BIAS_PULL_DOWN;
 	if (strcmp(option, "pull-up") == 0)
-		return GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP;
+		return GPIOD_LINE_BIAS_PULL_UP;
 	if (strcmp(option, "disable") == 0)
-		return GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED;
+		return GPIOD_LINE_BIAS_DISABLED;
 	if (strcmp(option, "as-is") != 0)
 		die("invalid bias: %s", option);
 	return 0;
@@ -168,4 +168,17 @@ struct gpiod_chip *chip_open_lookup(const char *device)
 	}
 
 	return chip;
+}
+
+bool has_duplicate_offsets(size_t num_offsets, unsigned int *offsets)
+{
+	size_t i, j;
+
+	for (i = 0; i < num_offsets; i++) {
+		for (j = i + 1; j < num_offsets; j++)
+			if (offsets[i] == offsets[j])
+				return true;
+	}
+
+	return false;
 }

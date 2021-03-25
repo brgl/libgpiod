@@ -5,6 +5,8 @@
 #include <libkmod.h>
 #include <libmount.h>
 #include <linux/version.h>
+#include <pthread.h>
+#include <search.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,8 +22,137 @@
 
 #define GPIOSIM_API		__attribute__((visibility("default")))
 #define ARRAY_SIZE(x)		(sizeof(x) / sizeof(*(x)))
-/* FIXME Change the minimum version to v5.17.0 once released. */
-#define MIN_KERNEL_VERSION	KERNEL_VERSION(5, 16, 0)
+#define MIN_KERNEL_VERSION	KERNEL_VERSION(5, 17, 4)
+
+static pthread_mutex_t id_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_once_t id_init_once = PTHREAD_ONCE_INIT;
+static void *id_root;
+
+struct id_find_next_ctx {
+	int lowest;
+	bool found;
+};
+
+struct id_del_ctx {
+	int id;
+	int *idp;
+};
+
+static void id_cleanup(void)
+{
+	tdestroy(id_root, free);
+}
+
+static void id_schedule_cleanup(void)
+{
+	atexit(id_cleanup);
+}
+
+static int id_compare(const void *p1, const void *p2)
+{
+	int id1 = *(int *)p1;
+	int id2 = *(int *)p2;
+
+	if (id1 < id2)
+		return -1;
+	if (id1 > id2)
+		return 1;
+	return 0;
+}
+
+static void id_find_next(const void *node, VISIT which, void *data)
+{
+	struct id_find_next_ctx *ctx = data;
+	int *id = *(int **)node;
+
+	if (ctx->found)
+		return;
+
+	switch (which) {
+	case postorder:
+	case leaf:
+		if (*id != ctx->lowest)
+			ctx->found = true;
+		else
+			ctx->lowest++;
+		break;
+	default:
+		break;
+	};
+}
+
+static void id_del(const void *node, VISIT which, void *data)
+{
+	struct id_del_ctx *ctx = data;
+	int *id = *(int **)node;
+
+	if (ctx->idp)
+		return;
+
+	switch (which) {
+	case postorder:
+	case leaf:
+		if (*id == ctx->id)
+			ctx->idp = id;
+		break;
+	default:
+		break;
+	}
+}
+
+static int id_alloc(void)
+{
+	struct id_find_next_ctx ctx;
+	void *ret;
+	int *id;
+
+	pthread_once(&id_init_once, id_schedule_cleanup);
+
+	ctx.lowest = 0;
+	ctx.found = false;
+
+	pthread_mutex_lock(&id_lock);
+
+	twalk_r(id_root, id_find_next, &ctx);
+
+	id = malloc(sizeof(*id));
+	if (!id) {
+		pthread_mutex_unlock(&id_lock);
+		return -1;
+	}
+
+	*id = ctx.lowest;
+
+	ret = tsearch(id, &id_root, id_compare);
+	if (!ret) {
+		pthread_mutex_unlock(&id_lock);
+		/* tsearch() doesn't set errno. */
+		errno = ENOMEM;
+		return -1;
+	}
+
+	pthread_mutex_unlock(&id_lock);
+
+	return *id;
+}
+
+static void id_free(int id)
+{
+	struct id_del_ctx ctx;
+
+	ctx.id = id;
+	ctx.idp = NULL;
+
+	pthread_mutex_lock(&id_lock);
+
+	twalk_r(id_root, id_del, &ctx);
+	if (ctx.idp) {
+		tdelete(ctx.idp, &id_root, id_compare);
+		free(ctx.idp);
+	}
+
+	pthread_mutex_unlock(&id_lock);
+}
 
 struct refcount {
 	unsigned int cnt;
@@ -234,60 +365,20 @@ out_unref_kmod:
 	return ret;
 }
 
-/* We don't have mkdtempat()... :( */
-static char *make_random_dir_at(int at)
-{
-	static const char chars[] = "abcdefghijklmnoprstquvwxyz"
-				    "ABCDEFGHIJKLMNOPRSTQUVWXYZ"
-				    "0123456789";
-
-	char name[] = "XXXXXXXXXXXX\0";
-	unsigned int idx, i;
-	int ret;
-
-again:
-	for (i = 0; i < sizeof(name) - 1; i++) {
-		ret = getrandom(&idx, sizeof(idx), GRND_NONBLOCK);
-		if (ret != sizeof(idx)) {
-			if (ret >= 0)
-				errno = EAGAIN;
-
-			return NULL;
-		}
-
-		name[i] = chars[idx % (ARRAY_SIZE(chars) - 1)];
-	}
-
-	ret = mkdirat(at, name, 0600);
-	if (ret) {
-		if (errno == EEXIST)
-			goto again;
-
-		return NULL;
-	}
-
-	return strdup(name);
-}
-
-static char *configfs_make_item_name(int at, const char *name)
+static char *configfs_make_item(int at, int id)
 {
 	char *item_name;
 	int ret;
 
-	if (name) {
-		item_name = strdup(name);
-		if (!item_name)
-			return NULL;
+	ret = asprintf(&item_name, "%s.%u.%d",
+		       program_invocation_short_name, getpid(), id);
+	if (ret < 0)
+		return NULL;
 
-		ret = mkdirat(at, item_name, 0600);
-		if (ret) {
-			free(item_name);
-			return NULL;
-		}
-	} else {
-		item_name = make_random_dir_at(at);
-		if (!item_name)
-			return NULL;
+	ret = mkdirat(at, item_name, 0600);
+	if (ret) {
+		free(item_name);
+		return NULL;
 	}
 
 	return item_name;
@@ -304,6 +395,7 @@ struct gpiosim_dev {
 	struct gpiosim_ctx *ctx;
 	bool live;
 	char *item_name;
+	int id;
 	char *dev_name;
 	int cfs_dir_fd;
 	int sysfs_dir_fd;
@@ -315,6 +407,7 @@ struct gpiosim_bank {
 	struct gpiosim_dev *dev;
 	struct list_head siblings;
 	char *item_name;
+	int id;
 	char *chip_name;
 	char *dev_path;
 	int cfs_dir_fd;
@@ -479,21 +572,26 @@ static void dev_release(struct refcount *ref)
 	close(dev->cfs_dir_fd);
 	free(dev->dev_name);
 	free(dev->item_name);
+	id_free(dev->id);
 	gpiosim_ctx_unref(ctx);
 	free(dev);
 }
 
 GPIOSIM_API struct gpiosim_dev *
-gpiosim_dev_new(struct gpiosim_ctx *ctx, const char *name)
+gpiosim_dev_new(struct gpiosim_ctx *ctx)
 {
+	int configfs_fd, ret, id;
 	struct gpiosim_dev *dev;
-	int configfs_fd, ret;
 	char devname[128];
 	char *item_name;
 
-	item_name = configfs_make_item_name(ctx->cfs_dir_fd, name);
-	if (!item_name)
+	id = id_alloc();
+	if (id < 0)
 		return NULL;
+
+	item_name = configfs_make_item(ctx->cfs_dir_fd, id);
+	if (!item_name)
+		goto err_free_id;
 
 	configfs_fd = openat(ctx->cfs_dir_fd, item_name, O_RDONLY);
 	if (configfs_fd < 0)
@@ -514,6 +612,7 @@ gpiosim_dev_new(struct gpiosim_ctx *ctx, const char *name)
 	dev->cfs_dir_fd = configfs_fd;
 	dev->sysfs_dir_fd = -1;
 	dev->item_name = item_name;
+	dev->id = id;
 
 	dev->dev_name = strdup(devname);
 	if (!dev->dev_name)
@@ -530,6 +629,8 @@ err_close_fd:
 err_unlink:
 	unlinkat(ctx->cfs_dir_fd, item_name, AT_REMOVEDIR);
 	free(item_name);
+err_free_id:
+	id_free(id);
 
 	return NULL;
 }
@@ -732,6 +833,7 @@ static void bank_release(struct refcount *ref)
 	unsigned int i;
 	char buf[64];
 
+	/* FIXME should be based on dirent because num_lines can change. */
 	for (i = 0; i < bank->num_lines; i++) {
 		snprintf(buf, sizeof(buf), "line%u/hog", i);
 		unlinkat(bank->cfs_dir_fd, buf, AT_REMOVEDIR);
@@ -747,24 +849,29 @@ static void bank_release(struct refcount *ref)
 		/* If the device wasn't disabled yet, this fd is still open. */
 		close(bank->sysfs_dir_fd);
 	free(bank->item_name);
+	id_free(bank->id);
 	free(bank->chip_name);
 	free(bank->dev_path);
 	free(bank);
 }
 
 GPIOSIM_API struct gpiosim_bank*
-gpiosim_bank_new(struct gpiosim_dev *dev, const char *name)
+gpiosim_bank_new(struct gpiosim_dev *dev)
 {
 	struct gpiosim_bank *bank;
-	int configfs_fd;
+	int configfs_fd, id;
 	char *item_name;
 
 	if (!dev_check_pending(dev))
 		return NULL;
 
-	item_name = configfs_make_item_name(dev->cfs_dir_fd, name);
-	if (!item_name)
+	id = id_alloc();
+	if (id < 0)
 		return NULL;
+
+	item_name = configfs_make_item(dev->cfs_dir_fd, id);
+	if (!item_name)
+		goto err_free_id;
 
 	configfs_fd = openat(dev->cfs_dir_fd, item_name, O_RDONLY);
 	if (configfs_fd < 0)
@@ -782,6 +889,7 @@ gpiosim_bank_new(struct gpiosim_dev *dev, const char *name)
 	bank->dev = gpiosim_dev_ref(dev);
 	bank->item_name = item_name;
 	bank->num_lines = 1;
+	bank->id = id;
 
 	return bank;
 
@@ -789,6 +897,8 @@ err_close_cfs:
 	close(configfs_fd);
 err_unlink:
 	unlinkat(dev->cfs_dir_fd, item_name, AT_REMOVEDIR);
+err_free_id:
+	id_free(id);
 
 	return NULL;
 }

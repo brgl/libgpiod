@@ -440,7 +440,7 @@ teardown() {
 	run_tool gpioget "$(gpiosim_chip_name sim0)" 0 1 2 3 4
 
 	test "$status" -eq "1"
-	output_regex_match ".*unable to retrieve GPIO lines from chip"
+	output_regex_match ".*unable to request lines.*"
 }
 
 @test "gpioget: same line twice" {
@@ -449,7 +449,7 @@ teardown() {
 	run_tool gpioget "$(gpiosim_chip_name sim0)" 0 0
 
 	test "$status" -eq "1"
-	output_regex_match ".*unable to request lines.*"
+	output_regex_match ".*offsets must be unique"
 }
 
 @test "gpioget: invalid bias" {
@@ -648,7 +648,7 @@ teardown() {
 	run_tool gpioset "$(gpiosim_chip_name sim0)" 0=1 1=1 2=1 3=1 4=1 5=1
 
 	test "$status" -eq "1"
-	output_regex_match ".*unable to retrieve GPIO lines from chip"
+	output_regex_match ".*unable to request lines.*"
 }
 
 @test "gpioset: use --sec without --mode=time" {
@@ -737,7 +737,7 @@ teardown() {
 	run_tool gpioset "$(gpiosim_chip_name sim0)" 0=1 0=1
 
 	test "$status" -eq "1"
-	output_regex_match ".*unable to request lines.*"
+	output_regex_match ".*offsets must be unique"
 }
 
 #
@@ -957,7 +957,7 @@ teardown() {
 	run_tool gpiomon "$(gpiosim_chip_name sim0)" 0 0
 
 	test "$status" -eq "1"
-	output_regex_match ".*unable to request GPIO lines for events"
+	output_regex_match ".*offsets must be unique"
 }
 
 @test "gpiomon: no arguments" {
@@ -982,7 +982,7 @@ teardown() {
 	run_tool gpiomon "$(gpiosim_chip_name sim0)" 5
 
 	test "$status" -eq "1"
-	output_regex_match ".*unable to retrieve GPIO lines from chip"
+	output_regex_match ".*unable to request lines"
 }
 
 @test "gpiomon: invalid bias" {

@@ -3,10 +3,9 @@
 
 /* C++ reimplementation of the gpiodetect tool. */
 
-#include <gpiod.hpp>
-
 #include <cstdlib>
 #include <filesystem>
+#include <gpiod.hpp>
 #include <iostream>
 
 int main(int argc, char **argv)
@@ -19,10 +18,11 @@ int main(int argc, char **argv)
 	for (const auto& entry: ::std::filesystem::directory_iterator("/dev/")) {
 		if (::gpiod::is_gpiochip_device(entry.path())) {
 			::gpiod::chip chip(entry.path());
+			auto info = chip.get_info();
 
-			::std::cout << chip.name() << " ["
-				    << chip.label() << "] ("
-				    << chip.num_lines() << " lines)" << ::std::endl;
+			::std::cout << info.name() << " [" <<
+				       info.label() << "] (" <<
+				       info.num_lines() << " lines)" << ::std::endl;
 		}
 	}
 

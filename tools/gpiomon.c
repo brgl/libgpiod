@@ -4,14 +4,18 @@
 #include <errno.h>
 #include <getopt.h>
 #include <gpiod.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "tools-common.h"
+
+#define EVENT_BUF_SIZE 32
 
 static const struct option longopts[] = {
 	{ "help",		no_argument,		NULL,	'h' },
@@ -64,10 +68,8 @@ struct mon_ctx {
 	char *fmt;
 };
 
-static void event_print_custom(unsigned int offset,
-			       const struct timespec *ts,
-			       int event_type,
-			       struct mon_ctx *ctx)
+static void event_print_custom(unsigned int offset, uint64_t timeout,
+			       int event_type, struct mon_ctx *ctx)
 {
 	char *prev, *curr, fmt;
 
@@ -88,16 +90,16 @@ static void event_print_custom(unsigned int offset,
 			printf("%u", offset);
 			break;
 		case 'e':
-			if (event_type == GPIOD_LINE_EVENT_RISING_EDGE)
+			if (event_type == GPIOD_EDGE_EVENT_RISING_EDGE)
 				fputc('1', stdout);
 			else
 				fputc('0', stdout);
 			break;
 		case 's':
-			printf("%ld", ts->tv_sec);
+			printf("%"PRIu64, timeout / 1000000000);
 			break;
 		case 'n':
-			printf("%ld", ts->tv_nsec);
+			printf("%"PRIu64, timeout % 1000000000);
 			break;
 		case '%':
 			fputc('%', stdout);
@@ -119,22 +121,21 @@ end:
 }
 
 static void event_print_human_readable(unsigned int offset,
-				       const struct timespec *ts,
-				       int event_type)
+				       uint64_t timeout, int event_type)
 {
 	char *evname;
 
-	if (event_type == GPIOD_LINE_EVENT_RISING_EDGE)
+	if (event_type == GPIOD_EDGE_EVENT_RISING_EDGE)
 		evname = " RISING EDGE";
 	else
 		evname = "FALLING EDGE";
 
-	printf("event: %s offset: %u timestamp: [%8ld.%09ld]\n",
-	       evname, offset, ts->tv_sec, ts->tv_nsec);
+	printf("event: %s offset: %u timestamp: [%8"PRIu64".%09"PRIu64"]\n",
+	       evname, offset, timeout / 1000000000, timeout % 1000000000);
 }
 
 static void handle_event(unsigned int line_offset, unsigned int event_type,
-			 struct timespec *timestamp, struct mon_ctx *ctx)
+			 uint64_t timestamp, struct mon_ctx *ctx)
 {
 	if (!ctx->silent) {
 		if (ctx->fmt)
@@ -153,19 +154,20 @@ static void handle_signal(int signum UNUSED)
 
 int main(int argc, char **argv)
 {
-	unsigned int offsets[64], num_lines = 0, offset,
-		     events_wanted = 0, events_done = 0, x;
-	bool watch_rising = false, watch_falling = false;
-	int flags = 0;
-	struct timespec timeout = { 10, 0 };
-	int optc, opti, rv, i, y, event_type;
-	struct mon_ctx ctx;
+	bool watch_rising = false, watch_falling = false, active_low = false;
+	size_t num_lines = 0, events_wanted = 0, events_done = 0;
+	struct gpiod_edge_event_buffer *event_buffer;
+	int optc, opti, ret, i, edge, bias = 0;
+	uint64_t timeout = 10 * 1000000000LLU;
+	struct gpiod_line_settings *settings;
+	struct gpiod_request_config *req_cfg;
+	struct gpiod_line_request *request;
+	struct gpiod_line_config *line_cfg;
+	unsigned int offsets[64], offset;
+	struct gpiod_edge_event *event;
 	struct gpiod_chip *chip;
-	struct gpiod_line_bulk *lines, *evlines;
+	struct mon_ctx ctx;
 	char *end;
-	struct gpiod_line_request_config config;
-	struct gpiod_line *line;
-	struct gpiod_line_event events[16];
 
 	/*
 	 * FIXME: use signalfd once the API has been converted to using a single file
@@ -189,10 +191,10 @@ int main(int argc, char **argv)
 			print_version();
 			return EXIT_SUCCESS;
 		case 'l':
-			flags |= GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
+			active_low = true;
 			break;
 		case 'B':
-			flags |= bias_flags(optarg);
+			bias = parse_bias(optarg);
 			break;
 		case 'n':
 			events_wanted = strtoul(optarg, &end, 10);
@@ -225,11 +227,11 @@ int main(int argc, char **argv)
 	argv += optind;
 
 	if (watch_rising && !watch_falling)
-		event_type = GPIOD_LINE_REQUEST_EVENT_RISING_EDGE;
+		edge = GPIOD_LINE_EDGE_RISING;
 	else if (watch_falling && !watch_rising)
-		event_type = GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE;
+		edge = GPIOD_LINE_EDGE_FALLING;
 	else
-		event_type = GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES;
+		edge = GPIOD_LINE_EDGE_BOTH;
 
 	if (argc < 1)
 		die("gpiochip must be specified");
@@ -249,64 +251,83 @@ int main(int argc, char **argv)
 		num_lines++;
 	}
 
+	if (has_duplicate_offsets(num_lines, offsets))
+		die("offsets must be unique");
+
 	chip = chip_open_lookup(argv[0]);
 	if (!chip)
 		die_perror("unable to open %s", argv[0]);
 
-	lines = gpiod_chip_get_lines(chip, offsets, num_lines);
-	if (!lines)
-		die_perror("unable to retrieve GPIO lines from chip");
+	settings = gpiod_line_settings_new();
+	if (!settings)
+		die_perror("unable to allocate line settings");
 
-	memset(&config, 0, sizeof(config));
+	if (bias)
+		gpiod_line_settings_set_bias(settings, bias);
+	if (active_low)
+		gpiod_line_settings_set_active_low(settings, active_low);
+	gpiod_line_settings_set_edge_detection(settings, edge);
 
-	config.consumer = "gpiomon";
-	config.request_type = event_type;
-	config.flags = flags;
+	req_cfg = gpiod_request_config_new();
+	if (!req_cfg)
+		die_perror("unable to allocate the request config structure");
 
-	rv = gpiod_line_request_bulk(lines, &config, NULL);
-	if (rv)
-		die_perror("unable to request GPIO lines for events");
+	gpiod_request_config_set_consumer(req_cfg, "gpiomon");
 
-	evlines = gpiod_line_bulk_new(num_lines);
-	if (!evlines)
-		die("out of memory");
+	line_cfg = gpiod_line_config_new();
+	if (!line_cfg)
+		die_perror("unable to allocate the line config structure");
+
+	ret = gpiod_line_config_add_line_settings(line_cfg, offsets,
+						  num_lines, settings);
+	if (ret)
+		die_perror("unable to add line settings");
+
+	request = gpiod_chip_request_lines(chip, req_cfg, line_cfg);
+	if (!request)
+		die_perror("unable to request lines");
+
+	event_buffer = gpiod_edge_event_buffer_new(EVENT_BUF_SIZE);
+	if (!event_buffer)
+		die_perror("unable to allocate the line event buffer");
 
 	for (;;) {
-		gpiod_line_bulk_reset(evlines);
-		rv = gpiod_line_event_wait_bulk(lines, &timeout, evlines);
-		if (rv < 0)
+		ret = gpiod_line_request_wait_edge_event(request, timeout);
+		if (ret < 0)
 			die_perror("error waiting for events");
-		if (rv == 0)
+		if (ret == 0)
 			continue;
 
-		num_lines = gpiod_line_bulk_num_lines(evlines);
+		ret = gpiod_line_request_read_edge_event(request, event_buffer,
+							 EVENT_BUF_SIZE);
+		if (ret < 0)
+			die_perror("error reading line events");
 
-		for (x = 0; x < num_lines; x++) {
-			line = gpiod_line_bulk_get_line(evlines, x);
+		for (i = 0; i < ret; i++) {
+			event = gpiod_edge_event_buffer_get_event(event_buffer,
+								  i);
+			if (!event)
+				die_perror("unable to retrieve the event from the buffer");
 
-			rv = gpiod_line_event_read_multiple(line, events,
-							    ARRAY_SIZE(events));
-			if (rv < 0)
-				die_perror("error reading line events");
+			handle_event(gpiod_edge_event_get_line_offset(event),
+				     gpiod_edge_event_get_event_type(event),
+				     gpiod_edge_event_get_timestamp_ns(event),
+				     &ctx);
 
-			for (y = 0; y < rv; y++) {
-				handle_event(gpiod_line_offset(line),
-					     events[y].event_type,
-					     &events[y].ts, &ctx);
-				events_done++;
+			events_done++;
 
-				if (events_wanted &&
-				    events_done >= events_wanted)
-					goto done;
-			}
+			if (events_wanted && events_done >= events_wanted)
+				goto done;
 		}
 	}
 
 done:
-	gpiod_line_release_bulk(lines);
-	gpiod_line_bulk_free(lines);
-	gpiod_line_bulk_free(evlines);
-	gpiod_chip_unref(chip);
+	gpiod_edge_event_buffer_free(event_buffer);
+	gpiod_line_request_release(request);
+	gpiod_request_config_free(req_cfg);
+	gpiod_line_config_free(line_cfg);
+	gpiod_line_settings_free(settings);
+	gpiod_chip_close(chip);
 
 	return EXIT_SUCCESS;
 }

@@ -6,6 +6,7 @@
 #include <getopt.h>
 #include <gpiod.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "tools-common.h"
@@ -33,6 +34,7 @@ int main(int argc, char **argv)
 {
 	int i, num_chips, optc, opti, offset;
 	struct gpiod_chip *chip;
+	struct gpiod_chip_info *info;
 	struct dirent **entries;
 
 	for (;;) {
@@ -73,11 +75,16 @@ int main(int argc, char **argv)
 			die_perror("unable to open %s", entries[i]->d_name);
 		}
 
-		offset = gpiod_chip_find_line(chip, argv[0]);
+		offset = gpiod_chip_get_line_offset_from_name(chip, argv[0]);
 		if (offset >= 0) {
+			info = gpiod_chip_get_info(chip);
+			if (!info)
+				die_perror("unable to get info for %s", entries[i]->d_name);
+
 			printf("%s %u\n",
-			       gpiod_chip_get_name(chip), offset);
-			gpiod_chip_unref(chip);
+			       gpiod_chip_info_get_name(info), offset);
+			gpiod_chip_info_free(info);
+			gpiod_chip_close(chip);
 			return EXIT_SUCCESS;
 		}
 	}

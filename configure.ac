@@ -28,9 +28,8 @@ AC_SUBST(VERSION_STR, [$PACKAGE_VERSION$EXTRA_VERSION])
 AC_SUBST(ABI_VERSION, [4.1.2])
 # Have a separate ABI version for C++ bindings:
 AC_SUBST(ABI_CXX_VERSION, [2.1.1])
-# ABI version for libgpiomockup (we need this since it can be installed if we
+# ABI version for libgpiosim (we need this since it can be installed if we
 # enable install-tests).
-AC_SUBST(ABI_MOCKUP_VERSION, [0.1.0])
 AC_SUBST(ABI_GPIOSIM_VERSION, [0.1.0])
 
 AC_CONFIG_AUX_DIR([autostuff])
@@ -47,7 +46,7 @@ AC_ARG_VAR([PYTHON_LIBS],
 	[Libraries to link into Python extensions [default: auto-detect]])
 
 AC_CONFIG_SRCDIR([lib])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 AC_DEFINE([_GNU_SOURCE], [], [We want GNU extensions])
 
@@ -58,6 +57,7 @@ AM_PROG_AR
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
+AC_PROG_EGREP
 
 LT_INIT
 
@@ -122,19 +122,30 @@ AC_ARG_ENABLE([tests],
 	[with_tests=false])
 AM_CONDITIONAL([WITH_TESTS], [test "x$with_tests" = xtrue])
 
+AC_ARG_ENABLE([profiling],
+	[AS_HELP_STRING([--enable-profiling],
+		[enable gcov profiling on the core library and tests [default=no]])],
+	[if test "x$enableval" = xyes; then with_profiling=true; fi],
+	[with_profiling=false])
+if test "x$with_profiling" = xtrue
+then
+	AC_SUBST(PROFILING_CFLAGS, ["-fprofile-arcs -ftest-coverage"])
+	AC_SUBST(PROFILING_LDFLAGS, ["-lgcov"])
+fi
+
 AC_DEFUN([FUNC_NOT_FOUND_TESTS],
 	[ERR_NOT_FOUND([$1()], [tests])])
 
 if test "x$with_tests" = xtrue
 then
-	# For libgpiomockup & libgpiosim
+	# For libgpiosim
 	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
 	PKG_CHECK_MODULES([KMOD], [libkmod >= 18])
-	PKG_CHECK_MODULES([UDEV], [libudev >= 215])
 	PKG_CHECK_MODULES([MOUNT], [mount >= 2.33.1])
 
 	# For core library tests
 	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.50])
+	PKG_CHECK_MODULES([GOBJECT], [gobject-2.0 >= 2.50])
 
 	if test "x$with_tools" = xtrue
 	then
@@ -160,7 +171,7 @@ AM_CONDITIONAL([WITH_BINDINGS_CXX], [test "x$with_bindings_cxx" = xtrue])
 
 if test "x$with_bindings_cxx" = xtrue
 then
-	AC_LIBTOOL_CXX
+	LT_LANG([C++])
 	# This needs autoconf-archive
 	AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
 
@@ -225,16 +236,19 @@ AC_CONFIG_FILES([Makefile
 		 lib/libgpiod.pc
 		 tools/Makefile
 		 tests/Makefile
-		 tests/mockup/Makefile
 		 tests/gpiosim/Makefile
 		 bindings/cxx/libgpiodcxx.pc
 		 bindings/Makefile
 		 bindings/cxx/Makefile
+		 bindings/cxx/gpiodcxx/Makefile
 		 bindings/cxx/examples/Makefile
 		 bindings/cxx/tests/Makefile
 		 bindings/python/Makefile
+		 bindings/python/gpiod/Makefile
+		 bindings/python/gpiod/ext/Makefile
 		 bindings/python/examples/Makefile
 		 bindings/python/tests/Makefile
+		 bindings/python/tests/gpiosim/Makefile
 		 man/Makefile])
 
 AC_OUTPUT

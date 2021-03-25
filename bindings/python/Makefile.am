@@ -1,16 +1,26 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-# SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
+# SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-pyexec_LTLIBRARIES = gpiod.la
+EXTRA_DIST = setup.py
 
-gpiod_la_SOURCES = gpiodmodule.c
+if WITH_TESTS
 
-gpiod_la_CFLAGS = -I$(top_srcdir)/include/
-gpiod_la_CFLAGS += -Wall -Wextra -g -std=gnu89 $(PYTHON_CPPFLAGS)
-gpiod_la_LDFLAGS = -module -avoid-version
-gpiod_la_LIBADD = $(top_builddir)/lib/libgpiod.la $(PYTHON_LIBS)
+BUILD_TESTS = 1
 
-SUBDIRS = .
+endif
+
+all-local:
+	GPIOD_VERSION_STRING=$(VERSION_STR) \
+	GPIOD_WITH_TESTS=$(BUILD_TESTS) \
+	$(PYTHON) setup.py build_ext --inplace \
+		--include-dirs=$(top_srcdir)/include/:$(top_srcdir)/tests/gpiosim/ \
+		--library-dirs=$(top_builddir)/lib/.libs/:$(top_srcdir)/tests/gpiosim/.libs/
+
+install-exec-local:
+	GPIOD_WITH_TESTS= \
+	$(PYTHON) setup.py install --prefix=$(prefix)
+
+SUBDIRS = gpiod
 
 if WITH_TESTS
 

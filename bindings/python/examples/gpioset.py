@@ -1,25 +1,36 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-or-later
-# SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
+# SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-'''Simplified reimplementation of the gpioset tool in Python.'''
+"""Simplified reimplementation of the gpioset tool in Python."""
 
 import gpiod
 import sys
 
-if __name__ == '__main__':
+from gpiod.line import Direction, Value
+
+if __name__ == "__main__":
     if len(sys.argv) < 3:
-        raise TypeError('usage: gpioset.py <gpiochip> <offset1>=<value1> ...')
+        raise TypeError(
+            "usage: gpioset.py <gpiochip> <offset1>=<value1> <offset2>=<value2> ..."
+        )
 
-    with gpiod.Chip(sys.argv[1]) as chip:
-        offsets = []
-        values = []
-        for arg in sys.argv[2:]:
-            arg = arg.split('=')
-            offsets.append(int(arg[0]))
-            values.append(int(arg[1]))
+    path = sys.argv[1]
 
-        lines = chip.get_lines(offsets)
-        lines.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_OUT)
-        lines.set_values(values)
-        input()
+    def parse_value(arg):
+        x, y = arg.split("=")
+        return (x, Value(int(y)))
+
+    lvs = [parse_value(arg) for arg in sys.argv[2:]]
+    lines = [x[0] for x in lvs]
+    values = dict(lvs)
+
+    request = gpiod.request_lines(
+        path,
+        consumer="gpioset.py",
+        config={tuple(lines): gpiod.LineSettings(direction=Direction.OUTPUT)},
+    )
+
+    vals = request.set_values(values)
+
+    input()

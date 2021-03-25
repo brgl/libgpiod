@@ -1,20 +1,20 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
-/* SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com> */
+/* SPDX-FileCopyrightText: 2017-2022 Bartosz Golaszewski <brgl@bgdev.pl> */
+
+/**
+ * @file gpiod.h
+ */
 
 #ifndef __LIBGPIOD_GPIOD_H__
 #define __LIBGPIOD_GPIOD_H__
 
 #include <stdbool.h>
-#include <stdlib.h>
-#include <time.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @file gpiod.h
- */
 
 /**
  * @mainpage libgpiod public API
@@ -25,220 +25,297 @@ extern "C" {
  * <p>The API is logically split into several parts such as: GPIO chip & line
  * operators, GPIO events handling etc.
  *
- * <p>General note on error handling: all routines exported by libgpiod  set
- * errno to one of the error values defined in errno.h upon failure. The way
- * of notifying the caller that an error occurred varies between functions,
- * but in general a function that returns an int, returns -1 on error, while
- * a function returning a pointer bails out on error condition by returning
- * a NULL pointer.
+ * <p>General note on error handling: all functions exported by libgpiod that
+ * can fail, set errno to one of the error values defined in errno.h upon
+ * failure. The way of notifying the caller that an error occurred varies
+ * between functions, but in general a function that returns an int, returns -1
+ * on error, while a function returning a pointer indicates an error condition
+ * by returning a NULL pointer. It's not practical to list all possible error
+ * codes for every function as they propagate errors from the underlying libc
+ * functions.
+ *
+ * <p>In general libgpiod functions are not NULL-aware and it's expected that
+ * users pass valid pointers to objects as arguments. An exception to this rule
+ * are the functions that free/close/release resources - which work when passed
+ * a NULL-pointer as argument. Other exceptions are documented.
  */
 
 struct gpiod_chip;
-struct gpiod_line;
-struct gpiod_line_bulk;
+struct gpiod_chip_info;
+struct gpiod_line_info;
+struct gpiod_line_settings;
+struct gpiod_line_config;
+struct gpiod_request_config;
+struct gpiod_line_request;
+struct gpiod_info_event;
+struct gpiod_edge_event;
+struct gpiod_edge_event_buffer;
 
 /**
- * @defgroup common Common helper macros
+ * @defgroup chips GPIO chips
  * @{
  *
- * Commonly used utility macros.
- */
-
-/**
- * @brief Shift 1 by given offset.
- * @param nr Bit position.
- * @return 1 shifted by nr.
- */
-#define GPIOD_BIT(nr)		(1UL << (nr))
-
-/**
- * @}
+ * Functions and data structures for GPIO chip operations.
  *
- * @defgroup chips GPIO chip operations
- * @{
- *
- * Functions and data structures dealing with GPIO chips.
+ * A GPIO chip object is associated with an open file descriptor to the GPIO
+ * character device. It exposes basic information about the chip and allows
+ * callers to retrieve information about each line, watch lines for state
+ * changes and make line requests.
  */
 
 /**
- * @brief Check if the file pointed to by path is a GPIO chip character device.
- * @param path Path to check.
- * @return True if the file exists and is a GPIO chip character device or a
- *         symbolic link to it.
- */
-bool gpiod_is_gpiochip_device(const char *path);
-
-/**
- * @brief Open a gpiochip by path.
+ * @brief Open a chip by path.
  * @param path Path to the gpiochip device file.
- * @return GPIO chip handle or NULL if an error occurred.
+ * @return GPIO chip object or NULL if an error occurred.  The returned object
+ *	   must be closed by the caller using ::gpiod_chip_close.
  */
 struct gpiod_chip *gpiod_chip_open(const char *path);
 
 /**
- * @brief Increase the refcount on this GPIO object.
- * @param chip The GPIO chip object.
- * @return Passed reference to the GPIO chip.
+ * @brief Close the chip and release all associated resources.
+ * @param chip Chip to close.
  */
-struct gpiod_chip *gpiod_chip_ref(struct gpiod_chip *chip);
+void gpiod_chip_close(struct gpiod_chip *chip);
 
 /**
- * @brief Decrease the refcount on this GPIO object. If the refcount reaches 0,
- *        close the chip device and free all associated resources.
- * @param chip The GPIO chip object.
+ * @brief Get information about the chip.
+ * @param chip GPIO chip object.
+ * @return New GPIO chip info object or NULL if an error occurred. The returned
+ *         object must be freed by the caller using ::gpiod_chip_info_free.
  */
-void gpiod_chip_unref(struct gpiod_chip *chip);
+struct gpiod_chip_info *gpiod_chip_get_info(struct gpiod_chip *chip);
 
 /**
- * @brief Get the GPIO chip name as represented in the kernel.
- * @param chip The GPIO chip object.
- * @return Pointer to a human-readable string containing the chip name.
+ * @brief Get the path used to open the chip.
+ * @param chip GPIO chip object.
+ * @return Path to the file passed as argument to ::gpiod_chip_open.  The
+ *	   returned pointer is valid for the lifetime of the chip object and
+ *	   must not be freed by the caller.
  */
-const char *gpiod_chip_get_name(struct gpiod_chip *chip);
+const char *gpiod_chip_get_path(struct gpiod_chip *chip);
 
 /**
- * @brief Get the GPIO chip label as represented in the kernel.
- * @param chip The GPIO chip object.
- * @return Pointer to a human-readable string containing the chip label.
- */
-const char *gpiod_chip_get_label(struct gpiod_chip *chip);
-
-/**
- * @brief Get the number of GPIO lines exposed by this chip.
- * @param chip The GPIO chip object.
- * @return Number of GPIO lines.
- */
-unsigned int gpiod_chip_get_num_lines(struct gpiod_chip *chip);
-
-/**
- * @brief Get the handle to the GPIO line at given offset.
- * @param chip The GPIO chip object.
+ * @brief Get a snapshot of information about a line.
+ * @param chip GPIO chip object.
  * @param offset The offset of the GPIO line.
- * @return Pointer to the GPIO line handle or NULL if an error occured.
+ * @return New GPIO line info object or NULL if an error occurred. The returned
+ *	   object must be freed by the caller using ::gpiod_line_info_free.
  */
-struct gpiod_line *
-gpiod_chip_get_line(struct gpiod_chip *chip, unsigned int offset);
+struct gpiod_line_info *gpiod_chip_get_line_info(struct gpiod_chip *chip,
+						 unsigned int offset);
 
 /**
- * @brief Retrieve a set of lines and store them in a line bulk object.
- * @param chip The GPIO chip object.
- * @param offsets Array of offsets of lines to retrieve.
- * @param num_offsets Number of lines to retrieve.
- * @return New line bulk object or NULL on error.
+ * @brief Get a snapshot of the status of a line and start watching it for
+ *	  future changes.
+ * @param chip GPIO chip object.
+ * @param offset The offset of the GPIO line.
+ * @return New GPIO line info object or NULL if an error occurred. The returned
+ *	   object must be freed by the caller using ::gpiod_line_info_free.
+ * @note Line status does not include the line value.  To monitor the line
+ *	 value the line must be requested as an input with edge detection set.
  */
-struct gpiod_line_bulk *
-gpiod_chip_get_lines(struct gpiod_chip *chip, unsigned int *offsets,
-		     unsigned int num_offsets);
+struct gpiod_line_info *gpiod_chip_watch_line_info(struct gpiod_chip *chip,
+						   unsigned int offset);
 
 /**
- * @brief Retrieve all lines exposed by a chip and store them in a bulk object.
- * @param chip The GPIO chip object.
- * @return New line bulk object or NULL on error.
+ * @brief Stop watching a line for status changes.
+ * @param chip GPIO chip object.
+ * @param offset The offset of the line to stop watching.
+ * @return 0 on success, -1 on failure.
  */
-struct gpiod_line_bulk *
-gpiod_chip_get_all_lines(struct gpiod_chip *chip);
+int gpiod_chip_unwatch_line_info(struct gpiod_chip *chip, unsigned int offset);
 
 /**
- * @brief Map a GPIO line's name to its offset within the chip.
- * @param chip The GPIO chip object.
+ * @brief Get the file descriptor associated with the chip.
+ * @param chip GPIO chip object.
+ * @return File descriptor number for the chip.
+ *	   This function never fails.
+ *	   The returned file descriptor must not be closed by the caller.
+ *	   Call ::gpiod_chip_close to close the file descriptor.
+ */
+int gpiod_chip_get_fd(struct gpiod_chip *chip);
+
+/**
+ * @brief Wait for line status change events on any of the watched lines
+ *	  on the chip.
+ * @param chip GPIO chip object.
+ * @param timeout_ns Wait time limit in nanoseconds. If set to 0, the function
+ *		     returns immediatelly. If set to a negative number, the
+ *		     function blocks indefinitely until an event becomes
+ *		     available.
+ * @return 0 if wait timed out, -1 if an error occurred, 1 if an event is
+ *	   pending.
+ */
+int gpiod_chip_wait_info_event(struct gpiod_chip *chip, int64_t timeout_ns);
+
+/**
+ * @brief Read a single line status change event from the chip.
+ * @param chip GPIO chip object.
+ * @return Newly read watch event object or NULL on error. The event must be
+ *	   freed by the caller using ::gpiod_info_event_free.
+ * @note If no events are pending, this function will block.
+ */
+struct gpiod_info_event *gpiod_chip_read_info_event(struct gpiod_chip *chip);
+
+/**
+ * @brief Map a line's name to its offset within the chip.
+ * @param chip GPIO chip object.
  * @param name Name of the GPIO line to map.
- * @return Offset of the line within the chip or -1 if a line with given name
- *         is not exposed by the chip.
+ * @return Offset of the line within the chip or -1 on error.
+ * @note If a line with given name is not exposed by the chip, the function
+ *       sets errno to ENOENT.
  */
-int gpiod_chip_find_line(struct gpiod_chip *chip, const char *name);
+int gpiod_chip_get_line_offset_from_name(struct gpiod_chip *chip,
+					 const char *name);
+
+/**
+ * @brief Request a set of lines for exclusive usage.
+ * @param chip GPIO chip object.
+ * @param req_cfg Request config object. Can be NULL for default settings.
+ * @param line_cfg Line config object.
+ * @return New line request object or NULL if an error occurred. The request
+ *	   must be released by the caller using ::gpiod_line_request_release.
+ */
+struct gpiod_line_request *
+gpiod_chip_request_lines(struct gpiod_chip *chip,
+			 struct gpiod_request_config *req_cfg,
+			 struct gpiod_line_config *line_cfg);
 
 /**
  * @}
  *
- * @defgroup lines GPIO line operations
+ * @defgroup chip_info Chip info
  * @{
  *
- * Functions and data structures dealing with GPIO lines.
+ * Functions for retrieving kernel information about chips.
  *
- * @defgroup line_bulk Operating on multiple lines
+ * Line info object contains an immutable snapshot of a chip's status.
+ *
+ * The chip info contains all the publicly available information about a
+ * chip.
+ *
+ * Some accessor methods return pointers.  Those pointers refer to internal
+ * fields.  The lifetimes of those fields are tied to the lifetime of the
+ * containing chip info object.
+ * Such pointers remain valid until ::gpiod_chip_info_free is called on the
+ * containing chip info object. They must not be freed by the caller.
+ */
+
+/**
+ * @brief Free a chip info object and release all associated resources.
+ * @param info GPIO chip info object to free.
+ */
+void gpiod_chip_info_free(struct gpiod_chip_info *info);
+
+/**
+ * @brief Get the name of the chip as represented in the kernel.
+ * @param info GPIO chip info object.
+ * @return Valid pointer to a human-readable string containing the chip name.
+ *	   The string lifetime is tied to the chip info object so the pointer
+ *	   must not be freed by the caller.
+ */
+const char *gpiod_chip_info_get_name(struct gpiod_chip_info *info);
+
+/**
+ * @brief Get the label of the chip as represented in the kernel.
+ * @param info GPIO chip info object.
+ * @return Valid pointer to a human-readable string containing the chip label.
+ *	   The string lifetime is tied to the chip info object so the pointer
+ *	   must not be freed by the caller.
+ */
+const char *gpiod_chip_info_get_label(struct gpiod_chip_info *info);
+
+/**
+ * @brief Get the number of lines exposed by the chip.
+ * @param info GPIO chip info object.
+ * @return Number of GPIO lines.
+ */
+size_t gpiod_chip_info_get_num_lines(struct gpiod_chip_info *info);
+
+/**
+ * @}
+ *
+ * @defgroup line_defs Line definitions
  * @{
  *
- * Convenience data structures and helper functions for storing and operating
- * on multiple lines at once.
+ * These defines are used across the API.
  */
 
 /**
- * @brief Allocate and initialize a new line bulk object.
- * @param max_lines Maximum number of lines this object can hold.
- * @return New line bulk object or NULL on error.
- */
-struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines);
-
-/**
- * @brief Reset a bulk object. Remove all lines and set size to 0.
- * @param bulk Bulk object to reset.
- */
-void gpiod_line_bulk_reset(struct gpiod_line_bulk *bulk);
-
-/**
- * @brief Release all resources allocated for this bulk object.
- * @param bulk Bulk object to free.
- */
-void gpiod_line_bulk_free(struct gpiod_line_bulk *bulk);
-
-/**
- * @brief Add a single line to a GPIO bulk object.
- * @param bulk Line bulk object.
- * @param line Line to add.
- * @return 0 on success, -1 on error.
- * @note The line is added at the next free bulk index.
- *
- * The function can fail if this bulk already holds its maximum amount of
- * lines or if the added line is associated with a different chip than all
- * the other lines already held by this object.
- */
-int gpiod_line_bulk_add_line(struct gpiod_line_bulk *bulk,
-			     struct gpiod_line *line);
-
-/**
- * @brief Retrieve the line handle from a line bulk object at given index.
- * @param bulk Line bulk object.
- * @param index Index of the line to retrieve.
- * @return Line handle at given index or NULL if index is greater or equal to
- *         the number of lines this bulk can hold.
- */
-struct gpiod_line *
-gpiod_line_bulk_get_line(struct gpiod_line_bulk *bulk, unsigned int index);
-
-/**
- * @brief Retrieve the number of GPIO lines held by this line bulk object.
- * @param bulk Line bulk object.
- * @return Number of lines held by this line bulk.
- */
-unsigned int gpiod_line_bulk_num_lines(struct gpiod_line_bulk *bulk);
-
-/**
- * @brief Values returned by the callback passed to
- *        ::gpiod_line_bulk_foreach_line.
+ * @brief Logical line state.
  */
 enum {
-	/**< Continue the loop. */
-	GPIOD_LINE_BULK_CB_NEXT = 0,
-	/**< Stop the loop. */
-	GPIOD_LINE_BULK_CB_STOP,
+	GPIOD_LINE_VALUE_INACTIVE = 0,
+	/**< Line is logically inactive. */
+	GPIOD_LINE_VALUE_ACTIVE = 1,
+	/**< Line is logically active. */
 };
 
 /**
- * @brief Signature of the callback passed to ::gpiod_line_bulk_foreach_line.
- *
- * Takes the current line and additional user data as arguments.
+ * @brief Direction settings.
  */
-typedef int (*gpiod_line_bulk_foreach_cb)(struct gpiod_line *, void *);
+enum {
+	GPIOD_LINE_DIRECTION_AS_IS = 1,
+	/**< Request the line(s), but don't change direction. */
+	GPIOD_LINE_DIRECTION_INPUT,
+	/**< Direction is input - for reading the value of an externally driven GPIO line. */
+	GPIOD_LINE_DIRECTION_OUTPUT
+	/**< Direction is output - for driving the GPIO line. */
+};
 
 /**
- * @brief Iterate over all lines held by this bulk object.
- * @param bulk Bulk object to iterate over.
- * @param func Callback to be called for each line.
- * @param data User data pointer that is passed to the callback.
+ * @brief Edge detection settings.
  */
-void gpiod_line_bulk_foreach_line(struct gpiod_line_bulk *bulk,
-				  gpiod_line_bulk_foreach_cb func,
-				  void *data);
+enum {
+	GPIOD_LINE_EDGE_NONE = 1,
+	/**< Line edge detection is disabled. */
+	GPIOD_LINE_EDGE_RISING,
+	/**< Line detects rising edge events. */
+	GPIOD_LINE_EDGE_FALLING,
+	/**< Line detects falling edge events. */
+	GPIOD_LINE_EDGE_BOTH
+	/**< Line detects both rising and falling edge events. */
+};
+
+/**
+ * @brief Internal bias settings.
+ */
+enum {
+	GPIOD_LINE_BIAS_AS_IS = 1,
+	/**< Don't change the bias setting when applying line config. */
+	GPIOD_LINE_BIAS_UNKNOWN,
+	/**< The internal bias state is unknown. */
+	GPIOD_LINE_BIAS_DISABLED,
+	/**< The internal bias is disabled. */
+	GPIOD_LINE_BIAS_PULL_UP,
+	/**< The internal pull-up bias is enabled. */
+	GPIOD_LINE_BIAS_PULL_DOWN
+	/**< The internal pull-down bias is enabled. */
+};
+
+/**
+ * @brief Drive settings.
+ */
+enum {
+	GPIOD_LINE_DRIVE_PUSH_PULL = 1,
+	/**< Drive setting is push-pull. */
+	GPIOD_LINE_DRIVE_OPEN_DRAIN,
+	/**< Line output is open-drain. */
+	GPIOD_LINE_DRIVE_OPEN_SOURCE
+	/**< Line output is open-source. */
+};
+
+/**
+ * @brief Event clock settings.
+ */
+enum {
+	GPIOD_LINE_EVENT_CLOCK_MONOTONIC = 1,
+	/**< Line uses the monotonic clock for edge event timestamps. */
+	GPIOD_LINE_EVENT_CLOCK_REALTIME,
+	/**< Line uses the realtime clock for edge event timestamps. */
+	GPIOD_LINE_EVENT_CLOCK_HTE,
+	/**< Line uses the hardware timestamp engine for event timestamps. */
+};
 
 /**
  * @}
@@ -246,712 +323,827 @@ void gpiod_line_bulk_foreach_line(struct gpiod_line_bulk *bulk,
  * @defgroup line_info Line info
  * @{
  *
- * Definitions and functions for retrieving kernel information about both
- * requested and free lines.
+ * Functions for retrieving kernel information about both requested and free
+ * lines.
+ *
+ * Line info object contains an immutable snapshot of a line's status.
+ *
+ * The line info contains all the publicly available information about a
+ * line, which does not include the line value.  The line must be requested
+ * to access the line value.
+ *
+ * Some accessor methods return pointers.  Those pointers refer to internal
+ * fields.  The lifetimes of those fields are tied to the lifetime of the
+ * containing line info object.
+ * Such pointers remain valid until ::gpiod_line_info_free is called on the
+ * containing line info object. They must not be freed by the caller.
  */
 
 /**
- * @brief Possible direction settings.
+ * @brief Free a line info object and release all associated resources.
+ * @param info GPIO line info object to free.
  */
-enum {
-	GPIOD_LINE_DIRECTION_INPUT = 1,
-	/**< Direction is input - we're reading the state of a GPIO line. */
-	GPIOD_LINE_DIRECTION_OUTPUT,
-	/**< Direction is output - we're driving the GPIO line. */
-};
+void gpiod_line_info_free(struct gpiod_line_info *info);
 
 /**
- * @brief Possible drive settings.
+ * @brief Copy a line info object.
+ * @param info Line info to copy.
+ * @return Copy of the line info or NULL on error. The returned object must
+ *	   be freed by the caller using :gpiod_line_info_free.
  */
-enum {
-	GPIOD_LINE_DRIVE_PUSH_PULL = 1,
-	/**< Drive setting is push-pull. */
-	GPIOD_LINE_DRIVE_OPEN_DRAIN,
-	/**< Line output is open-drain. */
-	GPIOD_LINE_DRIVE_OPEN_SOURCE,
-	/**< Line output is open-source. */
-};
+struct gpiod_line_info *gpiod_line_info_copy(struct gpiod_line_info *info);
 
 /**
- * @brief Possible internal bias settings.
+ * @brief Get the offset of the line.
+ * @param info GPIO line info object.
+ * @return Offset of the line within the parent chip.
+ *
+ * The offset uniquely identifies the line on the chip.
+ * The combination of the chip and offset uniquely identifies the line within
+ * the system.
  */
-enum {
-	GPIOD_LINE_BIAS_UNKNOWN = 1,
-	/**< The internal bias state is unknown. */
-	GPIOD_LINE_BIAS_DISABLED,
-	/**< The internal bias is disabled. */
-	GPIOD_LINE_BIAS_PULL_UP,
-	/**< The internal pull-up bias is enabled. */
-	GPIOD_LINE_BIAS_PULL_DOWN,
-	/**< The internal pull-down bias is enabled. */
-};
+unsigned int gpiod_line_info_get_offset(struct gpiod_line_info *info);
 
 /**
- * @brief Read the GPIO line offset.
- * @param line GPIO line object.
- * @return Line offset.
+ * @brief Get the name of the line.
+ * @param info GPIO line info object.
+ * @return Name of the GPIO line as it is represented in the kernel.
+ *	   This function returns a valid pointer to a null-terminated string
+ *	   or NULL if the line is unnamed.
+ *	   The string lifetime is tied to the line info object so the pointer
+ *	   must not be freed.
  */
-unsigned int gpiod_line_offset(struct gpiod_line *line);
+const char *gpiod_line_info_get_name(struct gpiod_line_info *info);
 
 /**
- * @brief Read the GPIO line name.
- * @param line GPIO line object.
- * @return Name of the GPIO line as it is represented in the kernel. This
- *         routine returns a pointer to a null-terminated string or NULL if
- *         the line is unnamed.
- */
-const char *gpiod_line_name(struct gpiod_line *line);
-
-/**
- * @brief Read the GPIO line consumer name.
- * @param line GPIO line object.
- * @return Name of the GPIO consumer name as it is represented in the
- *         kernel. This routine returns a pointer to a null-terminated string
- *         or NULL if the line is not used.
- */
-const char *gpiod_line_consumer(struct gpiod_line *line);
-
-/**
- * @brief Read the GPIO line direction setting.
- * @param line GPIO line object.
- * @return Returns GPIOD_LINE_DIRECTION_INPUT or GPIOD_LINE_DIRECTION_OUTPUT.
- */
-int gpiod_line_direction(struct gpiod_line *line);
-
-/**
- * @brief Check if the signal of this line is inverted.
- * @param line GPIO line object.
- * @return True if this line is "active-low", false otherwise.
- */
-bool gpiod_line_is_active_low(struct gpiod_line *line);
-
-/**
- * @brief Read the GPIO line bias setting.
- * @param line GPIO line object.
- * @return Returns GPIOD_LINE_BIAS_PULL_UP, GPIOD_LINE_BIAS_PULL_DOWN,
- *         GPIOD_LINE_BIAS_DISABLE or GPIOD_LINE_BIAS_UNKNOWN.
- */
-int gpiod_line_bias(struct gpiod_line *line);
-
-/**
- * @brief Check if the line is currently in use.
- * @param line GPIO line object.
+ * @brief Check if the line is in use.
+ * @param info GPIO line object.
  * @return True if the line is in use, false otherwise.
  *
- * The user space can't know exactly why a line is busy. It may have been
- * requested by another process or hogged by the kernel. It only matters that
- * the line is used and we can't request it.
+ * The exact reason a line is busy cannot be determined from user space.
+ * It may have been requested by another process or hogged by the kernel.
+ * It only matters that the line is used and can't be requested until
+ * released by the existing consumer.
  */
-bool gpiod_line_is_used(struct gpiod_line *line);
+bool gpiod_line_info_is_used(struct gpiod_line_info *info);
 
 /**
- * @brief Read the GPIO line drive setting.
- * @param line GPIO line object.
- * @return Returns GPIOD_LINE_DRIVE_PUSH_PULL, GPIOD_LINE_DRIVE_OPEN_DRAIN or
- *         GPIOD_LINE_DRIVE_OPEN_SOURCE.
+ * @brief Get the name of the consumer of the line.
+ * @param info GPIO line info object.
+ * @return Name of the GPIO consumer as it is represented in the kernel.
+ *	   This function returns a valid pointer to a null-terminated string
+ *	   or NULL if the consumer name is not set.
+ *	   The string lifetime is tied to the line info object so the pointer
+ *	   must not be freed.
  */
-int gpiod_line_drive(struct gpiod_line *line);
+const char *gpiod_line_info_get_consumer(struct gpiod_line_info *info);
 
 /**
- * @brief Get the handle to the GPIO chip controlling this line.
- * @param line The GPIO line object.
- * @return Pointer to the GPIO chip handle controlling this line.
+ * @brief Get the direction setting of the line.
+ * @param info GPIO line info object.
+ * @return Returns ::GPIOD_LINE_DIRECTION_INPUT or
+ *	   ::GPIOD_LINE_DIRECTION_OUTPUT.
  */
-struct gpiod_chip *gpiod_line_get_chip(struct gpiod_line *line);
+int gpiod_line_info_get_direction(struct gpiod_line_info *info);
+
+/**
+ * @brief Get the edge detection setting of the line.
+ * @param info GPIO line info object.
+ * @return Returns ::GPIOD_LINE_EDGE_NONE, ::GPIOD_LINE_EDGE_RISING,
+ *	   ::GPIOD_LINE_EDGE_FALLING or ::GPIOD_LINE_EDGE_BOTH.
+ */
+int gpiod_line_info_get_edge_detection(struct gpiod_line_info *info);
+
+/**
+ * @brief Get the bias setting of the line.
+ * @param info GPIO line object.
+ * @return Returns ::GPIOD_LINE_BIAS_PULL_UP, ::GPIOD_LINE_BIAS_PULL_DOWN,
+ *	   ::GPIOD_LINE_BIAS_DISABLED or ::GPIOD_LINE_BIAS_UNKNOWN.
+ */
+int gpiod_line_info_get_bias(struct gpiod_line_info *info);
+
+/**
+ * @brief Get the drive setting of the line.
+ * @param info GPIO line info object.
+ * @return Returns ::GPIOD_LINE_DRIVE_PUSH_PULL, ::GPIOD_LINE_DRIVE_OPEN_DRAIN
+ *	   or ::GPIOD_LINE_DRIVE_OPEN_SOURCE.
+ */
+int gpiod_line_info_get_drive(struct gpiod_line_info *info);
+
+/**
+ * @brief Check if the logical value of the line is inverted compared to the
+ *	  physical.
+ * @param info GPIO line object.
+ * @return True if the line is "active-low", false otherwise.
+ */
+bool gpiod_line_info_is_active_low(struct gpiod_line_info *info);
+
+/**
+ * @brief Check if the line is debounced (either by hardware or by the kernel
+ *	  software debouncer).
+ * @param info GPIO line info object.
+ * @return True if the line is debounced, false otherwise.
+ */
+bool gpiod_line_info_is_debounced(struct gpiod_line_info *info);
+
+/**
+ * @brief Get the debounce period of the line, in microseconds.
+ * @param info GPIO line info object.
+ * @return Debounce period in microseconds.
+ *	   0 if the line is not debounced.
+ */
+unsigned long
+gpiod_line_info_get_debounce_period_us(struct gpiod_line_info *info);
+
+/**
+ * @brief Get the event clock setting used for edge event timestamps for the
+ *	  line.
+ * @param info GPIO line info object.
+ * @return Returns ::GPIOD_LINE_EVENT_CLOCK_MONOTONIC or
+ *	   ::GPIOD_LINE_EVENT_CLOCK_REALTIME.
+ */
+int gpiod_line_info_get_event_clock(struct gpiod_line_info *info);
 
 /**
  * @}
  *
- * @defgroup line_request Line requests
+ * @defgroup line_watch Line status watch events
  * @{
  *
- * Interface for requesting GPIO lines from userspace for both values and
- * events.
+ * Accessors for the info event objects allowing to monitor changes in GPIO
+ * line status.
+ *
+ * Callers are notified about changes in a line's status due to GPIO uAPI
+ * calls. Each info event contains information about the event itself
+ * (timestamp, type) as well as a snapshot of line's status in the form
+ * of a line-info object.
  */
 
 /**
- * @brief Available types of requests.
+ * @brief Line status change event types.
  */
 enum {
-	GPIOD_LINE_REQUEST_DIRECTION_AS_IS = 1,
-	/**< Request the line(s), but don't change current direction. */
-	GPIOD_LINE_REQUEST_DIRECTION_INPUT,
-	/**< Request the line(s) for reading the GPIO line state. */
-	GPIOD_LINE_REQUEST_DIRECTION_OUTPUT,
-	/**< Request the line(s) for setting the GPIO line state. */
-	GPIOD_LINE_REQUEST_EVENT_FALLING_EDGE,
-	/**< Only watch falling edge events. */
-	GPIOD_LINE_REQUEST_EVENT_RISING_EDGE,
-	/**< Only watch rising edge events. */
-	GPIOD_LINE_REQUEST_EVENT_BOTH_EDGES,
-	/**< Monitor both types of events. */
+	GPIOD_INFO_EVENT_LINE_REQUESTED = 1,
+	/**< Line has been requested. */
+	GPIOD_INFO_EVENT_LINE_RELEASED,
+	/**< Previously requested line has been released. */
+	GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED
+	/**< Line configuration has changed. */
 };
 
 /**
- * @brief Miscellaneous GPIO request flags.
+ * @brief Free the info event object and release all associated resources.
+ * @param event Info event to free.
  */
-enum {
-	GPIOD_LINE_REQUEST_FLAG_OPEN_DRAIN	= GPIOD_BIT(0),
-	/**< The line is an open-drain port. */
-	GPIOD_LINE_REQUEST_FLAG_OPEN_SOURCE	= GPIOD_BIT(1),
-	/**< The line is an open-source port. */
-	GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW	= GPIOD_BIT(2),
-	/**< The active state of the line is low (high is the default). */
-	GPIOD_LINE_REQUEST_FLAG_BIAS_DISABLED	= GPIOD_BIT(3),
-	/**< The line has neither either pull-up nor pull-down resistor. */
-	GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_DOWN	= GPIOD_BIT(4),
-	/**< The line has pull-down resistor enabled. */
-	GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP	= GPIOD_BIT(5),
-	/**< The line has pull-up resistor enabled. */
-};
+void gpiod_info_event_free(struct gpiod_info_event *event);
 
 /**
- * @brief Structure holding configuration of a line request.
+ * @brief Get the event type of the status change event.
+ * @param event Line status watch event.
+ * @return One of ::GPIOD_INFO_EVENT_LINE_REQUESTED,
+ *	   ::GPIOD_INFO_EVENT_LINE_RELEASED or
+ *	   ::GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED.
  */
-struct gpiod_line_request_config {
-	const char *consumer;
-	/**< Name of the consumer. */
-	int request_type;
-	/**< Request type. */
-	int flags;
-	/**< Other configuration flags. */
-};
+int gpiod_info_event_get_event_type(struct gpiod_info_event *event);
 
 /**
- * @brief Reserve a single line.
- * @param line GPIO line object.
- * @param config Request options.
- * @param default_val Initial line value - only relevant if we're setting
- *                    the direction to output.
- * @return 0 if the line was properly reserved. In case of an error this
- *         routine returns -1 and sets the last error number.
- *
- * If this routine succeeds, the caller takes ownership of the GPIO line until
- * it's released.
+ * @brief Get the timestamp of the event.
+ * @param event Line status watch event.
+ * @return Timestamp in nanoseconds, read from the monotonic clock.
  */
-int gpiod_line_request(struct gpiod_line *line,
-		       const struct gpiod_line_request_config *config,
-		       int default_val);
+uint64_t gpiod_info_event_get_timestamp_ns(struct gpiod_info_event *event);
 
 /**
- * @brief Reserve a single line, set the direction to input.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @return 0 if the line was properly reserved, -1 on failure.
+ * @brief Get the snapshot of line-info associated with the event.
+ * @param event Line info event object.
+ * @return Returns a pointer to the line-info object associated with the event.
+ *	   The object lifetime is tied to the event object, so the pointer must
+ *	   be not be freed by the caller.
  */
-int gpiod_line_request_input(struct gpiod_line *line, const char *consumer);
-
-/**
- * @brief Reserve a single line, set the direction to output.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @param default_val Initial line value.
- * @return 0 if the line was properly reserved, -1 on failure.
- */
-int gpiod_line_request_output(struct gpiod_line *line,
-			      const char *consumer, int default_val);
-
-/**
- * @brief Request rising edge event notifications on a single line.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_rising_edge_events(struct gpiod_line *line,
-					  const char *consumer);
-
-/**
- * @brief Request falling edge event notifications on a single line.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_falling_edge_events(struct gpiod_line *line,
-					   const char *consumer);
-
-/**
- * @brief Request all event type notifications on a single line.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_both_edges_events(struct gpiod_line *line,
-					 const char *consumer);
-
-/**
- * @brief Reserve a single line, set the direction to input.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @param flags Additional request flags.
- * @return 0 if the line was properly reserved, -1 on failure.
- */
-int gpiod_line_request_input_flags(struct gpiod_line *line,
-				   const char *consumer, int flags);
-
-/**
- * @brief Reserve a single line, set the direction to output.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @param flags Additional request flags.
- * @param default_val Initial line value.
- * @return 0 if the line was properly reserved, -1 on failure.
- */
-int gpiod_line_request_output_flags(struct gpiod_line *line,
-				    const char *consumer, int flags,
-				    int default_val);
-
-/**
- * @brief Request rising edge event notifications on a single line.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @param flags Additional request flags.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_rising_edge_events_flags(struct gpiod_line *line,
-						const char *consumer,
-						int flags);
-
-/**
- * @brief Request falling edge event notifications on a single line.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @param flags Additional request flags.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_falling_edge_events_flags(struct gpiod_line *line,
-						 const char *consumer,
-						 int flags);
-
-/**
- * @brief Request all event type notifications on a single line.
- * @param line GPIO line object.
- * @param consumer Name of the consumer.
- * @param flags Additional request flags.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_both_edges_events_flags(struct gpiod_line *line,
-					       const char *consumer,
-					       int flags);
-
-/**
- * @brief Reserve a set of GPIO lines.
- * @param bulk Set of GPIO lines to reserve.
- * @param config Request options.
- * @param default_vals Initial line values - only relevant if we're setting
- *                     the direction to output.
- * @return 0 if all lines were properly requested. In case of an error
- *         this routine returns -1 and sets the last error number.
- *
- * If this routine succeeds, the caller takes ownership of the GPIO lines
- * until they're released. All the requested lines must be provided by the
- * same gpiochip.
- */
-int gpiod_line_request_bulk(struct gpiod_line_bulk *bulk,
-			    const struct gpiod_line_request_config *config,
-			    const int *default_vals);
-
-/**
- * @brief Reserve a set of GPIO lines, set the direction to input.
- * @param bulk Set of GPIO lines to reserve.
- * @param consumer Name of the consumer.
- * @return 0 if the lines were properly reserved, -1 on failure.
- */
-int gpiod_line_request_bulk_input(struct gpiod_line_bulk *bulk,
-				  const char *consumer);
-
-/**
- * @brief Reserve a set of GPIO lines, set the direction to output.
- * @param bulk Set of GPIO lines to reserve.
- * @param consumer Name of the consumer.
- * @param default_vals Initial line values.
- * @return 0 if the lines were properly reserved, -1 on failure.
- */
-int gpiod_line_request_bulk_output(struct gpiod_line_bulk *bulk,
-				   const char *consumer,
-				   const int *default_vals);
-
-/**
- * @brief Request rising edge event notifications on a set of lines.
- * @param bulk Set of GPIO lines to request.
- * @param consumer Name of the consumer.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_bulk_rising_edge_events(struct gpiod_line_bulk *bulk,
-					       const char *consumer);
-
-/**
- * @brief Request falling edge event notifications on a set of lines.
- * @param bulk Set of GPIO lines to request.
- * @param consumer Name of the consumer.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_bulk_falling_edge_events(struct gpiod_line_bulk *bulk,
-						const char *consumer);
-
-/**
- * @brief Request all event type notifications on a set of lines.
- * @param bulk Set of GPIO lines to request.
- * @param consumer Name of the consumer.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_bulk_both_edges_events(struct gpiod_line_bulk *bulk,
-					      const char *consumer);
-
-/**
- * @brief Reserve a set of GPIO lines, set the direction to input.
- * @param bulk Set of GPIO lines to reserve.
- * @param consumer Name of the consumer.
- * @param flags Additional request flags.
- * @return 0 if the lines were properly reserved, -1 on failure.
- */
-int gpiod_line_request_bulk_input_flags(struct gpiod_line_bulk *bulk,
-					const char *consumer, int flags);
-
-/**
- * @brief Reserve a set of GPIO lines, set the direction to output.
- * @param bulk Set of GPIO lines to reserve.
- * @param consumer Name of the consumer.
- * @param flags Additional request flags.
- * @param default_vals Initial line values.
- * @return 0 if the lines were properly reserved, -1 on failure.
- */
-int gpiod_line_request_bulk_output_flags(struct gpiod_line_bulk *bulk,
-					 const char *consumer, int flags,
-					 const int *default_vals);
-
-/**
- * @brief Request rising edge event notifications on a set of lines.
- * @param bulk Set of GPIO lines to request.
- * @param consumer Name of the consumer.
- * @param flags Additional request flags.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_bulk_rising_edge_events_flags(
-					struct gpiod_line_bulk *bulk,
-					const char *consumer, int flags);
-
-/**
- * @brief Request falling edge event notifications on a set of lines.
- * @param bulk Set of GPIO lines to request.
- * @param consumer Name of the consumer.
- * @param flags Additional request flags.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_bulk_falling_edge_events_flags(
-					struct gpiod_line_bulk *bulk,
-					const char *consumer, int flags);
-
-/**
- * @brief Request all event type notifications on a set of lines.
- * @param bulk Set of GPIO lines to request.
- * @param consumer Name of the consumer.
- * @param flags Additional request flags.
- * @return 0 if the operation succeeds, -1 on failure.
- */
-int gpiod_line_request_bulk_both_edges_events_flags(
-					struct gpiod_line_bulk *bulk,
-					const char *consumer, int flags);
-
-/**
- * @brief Release a previously reserved line.
- * @param line GPIO line object.
- */
-void gpiod_line_release(struct gpiod_line *line);
-
-/**
- * @brief Release a set of previously reserved lines.
- * @param bulk Set of GPIO lines to release.
- *
- * If the lines were not previously requested together, the behavior is
- * undefined.
- */
-void gpiod_line_release_bulk(struct gpiod_line_bulk *bulk);
+struct gpiod_line_info *
+gpiod_info_event_get_line_info(struct gpiod_info_event *event);
 
 /**
  * @}
  *
- * @defgroup line_value Reading & setting line values
+ * @defgroup line_settings Line settings objects
  * @{
  *
- * Functions allowing to read and set GPIO line values for single lines and
- * in bulk.
- */
-
-/**
- * @brief Read current value of a single GPIO line.
- * @param line GPIO line object.
- * @return 0 or 1 if the operation succeeds. On error this routine returns -1
- *         and sets the last error number.
- */
-int gpiod_line_get_value(struct gpiod_line *line);
-
-/**
- * @brief Read current values of a set of GPIO lines.
- * @param bulk Set of GPIO lines to reserve.
- * @param values An array big enough to hold line_bulk->num_lines values.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
+ * Functions for manipulating line settings objects.
  *
- * If succeeds, this routine fills the values array with a set of values in
- * the same order, the lines are added to line_bulk. If the lines were not
- * previously requested together, the behavior is undefined.
- */
-int gpiod_line_get_value_bulk(struct gpiod_line_bulk *bulk, int *values);
-
-/**
- * @brief Set the value of a single GPIO line.
- * @param line GPIO line object.
- * @param value New value.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
- */
-int gpiod_line_set_value(struct gpiod_line *line, int value);
-
-/**
- * @brief Set the values of a set of GPIO lines.
- * @param bulk Set of GPIO lines to reserve.
- * @param values An array holding line_bulk->num_lines new values for lines.
- *               A NULL pointer is interpreted as a logical low for all lines.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
+ * Line settings object contains a set of line properties that can be used
+ * when requesting lines or reconfiguring an existing request.
  *
- * If the lines were not previously requested together, the behavior is
- * undefined.
- */
-int gpiod_line_set_value_bulk(struct gpiod_line_bulk *bulk, const int *values);
-
-/**
- * @}
- *
- * @defgroup line_config Setting line configuration
- * @{
- *
- * Functions allowing modification of config options of GPIO lines requested
- * from user-space.
+ * Mutators in general can only fail if the new property value is invalid. The
+ * return values can be safely ignored - the object remains valid even after
+ * a mutator fails and simply uses the sane default appropriate for given
+ * property.
  */
 
 /**
- * @brief Update the configuration of a single GPIO line.
- * @param line GPIO line object.
- * @param direction Updated direction which may be one of
- *                  GPIOD_LINE_REQUEST_DIRECTION_AS_IS,
- *                  GPIOD_LINE_REQUEST_DIRECTION_INPUT, or
- *                  GPIOD_LINE_REQUEST_DIRECTION_OUTPUT.
- * @param flags Replacement flags.
- * @param value The new output value for the line when direction is
- *              GPIOD_LINE_REQUEST_DIRECTION_OUTPUT.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
+ * @brief Create a new line settings object.
+ * @return New line settings object or NULL on error. The returned object must
+ *         be freed by the caller using ::gpiod_line_settings_free.
  */
-int gpiod_line_set_config(struct gpiod_line *line, int direction,
-			  int flags, int value);
+struct gpiod_line_settings *gpiod_line_settings_new(void);
 
 /**
- * @brief Update the configuration of a set of GPIO lines.
- * @param bulk Set of GPIO lines.
- * @param direction Updated direction which may be one of
- *                  GPIOD_LINE_REQUEST_DIRECTION_AS_IS,
- *                  GPIOD_LINE_REQUEST_DIRECTION_INPUT, or
- *                  GPIOD_LINE_REQUEST_DIRECTION_OUTPUT.
- * @param flags Replacement flags.
- * @param values An array holding line_bulk->num_lines new logical values
- *               for lines when direction is
- *               GPIOD_LINE_REQUEST_DIRECTION_OUTPUT.
- *               A NULL pointer is interpreted as a logical low for all lines.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
- *
- * If the lines were not previously requested together, the behavior is
- * undefined.
+ * @brief Free the line settings object and release all associated resources.
+ * @param settings Line settings object.
  */
-int gpiod_line_set_config_bulk(struct gpiod_line_bulk *bulk,
-			       int direction, int flags, const int *values);
-
+void gpiod_line_settings_free(struct gpiod_line_settings *settings);
 
 /**
- * @brief Update the configuration flags of a single GPIO line.
- * @param line GPIO line object.
- * @param flags Replacement flags.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
+ * @brief Reset the line settings object to its default values.
+ * @param settings Line settings object.
  */
-int gpiod_line_set_flags(struct gpiod_line *line, int flags);
+void gpiod_line_settings_reset(struct gpiod_line_settings *settings);
 
 /**
- * @brief Update the configuration flags of a set of GPIO lines.
- * @param bulk Set of GPIO lines.
- * @param flags Replacement flags.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
- *
- * If the lines were not previously requested together, the behavior is
- * undefined.
+ * @brief Copy the line settings object.
+ * @param settings Line settings object to copy.
+ * @return New line settings object that must be freed using
+ *         ::gpiod_line_settings_free or NULL on failure.
  */
-int gpiod_line_set_flags_bulk(struct gpiod_line_bulk *bulk, int flags);
+struct gpiod_line_settings *
+gpiod_line_settings_copy(struct gpiod_line_settings *settings);
 
 /**
- * @brief Set the direction of a single GPIO line to input.
- * @param line GPIO line object.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
+ * @brief Set direction.
+ * @param settings Line settings object.
+ * @param direction New direction.
+ * @return 0 on success, -1 on error.
  */
-int gpiod_line_set_direction_input(struct gpiod_line *line);
+int gpiod_line_settings_set_direction(struct gpiod_line_settings *settings,
+				      int direction);
 
 /**
- * @brief Set the direction of a set of GPIO lines to input.
- * @param bulk Set of GPIO lines.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
- *
- * If the lines were not previously requested together, the behavior is
- * undefined.
+ * @brief Get direction.
+ * @param settings Line settings object.
+ * @return Current direction.
+ */
+int gpiod_line_settings_get_direction(struct gpiod_line_settings *settings);
+
+/**
+ * @brief Set edge detection.
+ * @param settings Line settings object.
+ * @param edge New edge detection setting.
+ * @return 0 on success, -1 on failure.
+ */
+int gpiod_line_settings_set_edge_detection(struct gpiod_line_settings *settings,
+					   int edge);
+
+/**
+ * @brief Get edge detection.
+ * @param settings Line settings object.
+ * @return Current edge detection setting.
  */
 int
-gpiod_line_set_direction_input_bulk(struct gpiod_line_bulk *bulk);
+gpiod_line_settings_get_edge_detection(struct gpiod_line_settings *settings);
 
 /**
- * @brief Set the direction of a single GPIO line to output.
- * @param line GPIO line object.
- * @param value The logical value output on the line.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
+ * @brief Set bias.
+ * @param settings Line settings object.
+ * @param bias New bias.
+ * @return 0 on success, -1 on failure.
  */
-int gpiod_line_set_direction_output(struct gpiod_line *line, int value);
+int gpiod_line_settings_set_bias(struct gpiod_line_settings *settings,
+				 int bias);
 
 /**
- * @brief Set the direction of a set of GPIO lines to output.
- * @param bulk Set of GPIO lines.
- * @param values An array holding line_bulk->num_lines new logical values
- *               for lines.  A NULL pointer is interpreted as a logical low
- *               for all lines.
- * @return 0 is the operation succeeds. In case of an error this routine
- *         returns -1 and sets the last error number.
+ * @brief Get bias.
+ * @param settings Line settings object.
+ * @return Current bias setting.
+ */
+int gpiod_line_settings_get_bias(struct gpiod_line_settings *settings);
+
+/**
+ * @brief Set drive.
+ * @param settings Line settings object.
+ * @param drive New drive setting.
+ * @return 0 on success, -1 on failure.
+ */
+int gpiod_line_settings_set_drive(struct gpiod_line_settings *settings,
+				  int drive);
+
+/**
+ * @brief Get drive.
+ * @param settings Line settings object.
+ * @return Current drive setting.
+ */
+int gpiod_line_settings_get_drive(struct gpiod_line_settings *settings);
+
+/**
+ * @brief Set active-low setting.
+ * @param settings Line settings object.
+ * @param active_low New active-low setting.
+ */
+void gpiod_line_settings_set_active_low(struct gpiod_line_settings *settings,
+					bool active_low);
+
+/**
+ * @brief Get active-low setting.
+ * @param settings Line settings object.
+ * @return True if active-low is enabled, false otherwise.
+ */
+bool gpiod_line_settings_get_active_low(struct gpiod_line_settings *settings);
+
+/**
+ * @brief Set debounce period.
+ * @param settings Line settings object.
+ * @param period New debounce period in microseconds.
+ */
+void
+gpiod_line_settings_set_debounce_period_us(struct gpiod_line_settings *settings,
+					   unsigned long period);
+
+/**
+ * @brief Get debounce period.
+ * @param settings Line settings object.
+ * @return Current debounce period in microseconds.
+ */
+unsigned long
+gpiod_line_settings_get_debounce_period_us(
+		struct gpiod_line_settings *settings);
+
+/**
+ * @brief Set event clock.
+ * @param settings Line settings object.
+ * @param event_clock New event clock.
+ * @return 0 on success, -1 on failure.
+ */
+int gpiod_line_settings_set_event_clock(struct gpiod_line_settings *settings,
+					int event_clock);
+
+/**
+ * @brief Get event clock setting.
+ * @param settings Line settings object.
+ * @return Current event clock setting.
+ */
+int gpiod_line_settings_get_event_clock(struct gpiod_line_settings *settings);
+
+/**
+ * @brief Set the output value.
+ * @param settings Line settings object.
+ * @param value New output value.
+ * @return 0 on success, -1 on failure.
+ */
+int gpiod_line_settings_set_output_value(struct gpiod_line_settings *settings,
+					 int value);
+
+/**
+ * @brief Get the output value.
+ * @param settings Line settings object.
+ * @return Current output value.
+ */
+int gpiod_line_settings_get_output_value(struct gpiod_line_settings *settings);
+
+/*
+ * @}
  *
- * If the lines were not previously requested together, the behavior is
- * undefined.
+ * @defgroup line_config Line configuration objects
+ * @{
+ *
+ * Functions for manipulating line configuration objects.
+ *
+ * The line-config object contains the configuration for lines that can be
+ * used in two cases:
+ *  - when making a line request
+ *  - when reconfiguring a set of already requested lines.
+ *
+ * A new line-config object is empty. Using it in a request will lead to an
+ * error. In order to a line-config to become useful, it needs to be assigned
+ * at least one offset-to-settings mapping by calling
+ * ::gpiod_line_config_add_line_settings.
+ *
+ * When calling ::gpiod_chip_request_lines, the library will request all
+ * offsets that were assigned settings in the order that they were assigned.
+ * If any of the offsets was duplicated, the last one will take precedence.
  */
-int gpiod_line_set_direction_output_bulk(struct gpiod_line_bulk *bulk,
+
+/**
+ * @brief Create a new line config object.
+ * @return New line config object or NULL on error.  The returned object must
+ *	   be freed by the caller using ::gpiod_line_config_free.
+ */
+struct gpiod_line_config *gpiod_line_config_new(void);
+
+/**
+ * @brief Free the line config object and release all associated resources.
+ * @param config Line config object to free.
+ */
+void gpiod_line_config_free(struct gpiod_line_config *config);
+
+/**
+ * @brief Reset the line config object.
+ * @param config Line config object to free.
+ *
+ * Resets the entire configuration stored in the object. This is useful if
+ * the user wants to reuse the object without reallocating it.
+ */
+void gpiod_line_config_reset(struct gpiod_line_config *config);
+
+/**
+ * @brief Add line settings for a set of offsets.
+ * @param config Line config object.
+ * @param offsets Array of offsets for which to apply the settings.
+ * @param num_offsets Number of offsets stored in the offsets array.
+ * @param settings Line settings to apply.
+ * @return 0 on success, -1 on failure.
+ */
+int gpiod_line_config_add_line_settings(struct gpiod_line_config *config,
+					const unsigned int *offsets,
+					size_t num_offsets,
+					struct gpiod_line_settings *settings);
+
+/**
+ * @brief Get line settings for offset.
+ * @param config Line config object.
+ * @param offset Offset for which to get line settings.
+ * @return New line settings object (must be freed by the caller) or NULL on
+ *         error.
+ */
+struct gpiod_line_settings *
+gpiod_line_config_get_line_settings(struct gpiod_line_config *config,
+				    unsigned int offset);
+
+/**
+ * @brief Get configured offsets.
+ * @param config Line config object.
+ * @param num_offsets Pointer to a variable in which the number of line offsets
+ *                    will be stored.
+ * @param offsets Pointer to a pointer which will be set to point to an array
+ *                containing the configured offsets. The array will be allocated
+ *                using malloc() and must be freed using free().
+ * @return 0 on success, -1 on failure.
+ */
+int gpiod_line_config_get_offsets(struct gpiod_line_config *config,
+				  size_t *num_offsets,
+				  unsigned int **offsets);
+
+/**
+ * @}
+ *
+ * @defgroup request_config Request configuration objects
+ * @{
+ *
+ * Functions for manipulating request configuration objects.
+ *
+ * Request config objects are used to pass a set of options to the kernel at
+ * the time of the line request. The mutators don't return error values. If the
+ * values are invalid, in general they are silently adjusted to acceptable
+ * ranges.
+ */
+
+/**
+ * @brief Create a new request config object.
+ * @return New request config object or NULL on error.  The returned object must
+ *	   be freed by the caller using ::gpiod_request_config_free.
+ */
+struct gpiod_request_config *gpiod_request_config_new(void);
+
+/**
+ * @brief Free the request config object and release all associated resources.
+ * @param config Line config object.
+ */
+void gpiod_request_config_free(struct gpiod_request_config *config);
+
+/**
+ * @brief Set the consumer name for the request.
+ * @param config Request config object.
+ * @param consumer Consumer name.
+ * @note If the consumer string is too long, it will be truncated to the max
+ *       accepted length.
+ */
+void gpiod_request_config_set_consumer(struct gpiod_request_config *config,
+				       const char *consumer);
+
+/**
+ * @brief Get the consumer name configured in the request config.
+ * @param config Request config object.
+ * @return Consumer name stored in the request config.
+ */
+const char *
+gpiod_request_config_get_consumer(struct gpiod_request_config *config);
+
+/**
+ * @brief Set the size of the kernel event buffer for the request.
+ * @param config Request config object.
+ * @param event_buffer_size New event buffer size.
+ * @note The kernel may adjust the value if it's too high. If set to 0, the
+ *       default value will be used.
+ * @note The kernel buffer is distinct from and independent of the user space
+ *	 buffer (::gpiod_edge_event_buffer_new).
+ */
+void
+gpiod_request_config_set_event_buffer_size(struct gpiod_request_config *config,
+					   size_t event_buffer_size);
+
+/**
+ * @brief Get the edge event buffer size for the request config.
+ * @param config Request config object.
+ * @return Edge event buffer size setting from the request config.
+ */
+size_t
+gpiod_request_config_get_event_buffer_size(struct gpiod_request_config *config);
+
+/**
+ * @}
+ *
+ * @defgroup request_request Line request operations
+ * @{
+ *
+ * Functions allowing interactions with requested lines.
+ */
+
+/**
+ * @brief Release the requested lines and free all associated resources.
+ * @param request Line request object to release.
+ */
+void gpiod_line_request_release(struct gpiod_line_request *request);
+
+/**
+ * @brief Get the number of lines in the request.
+ * @param request Line request object.
+ * @return Number of requested lines.
+ */
+size_t gpiod_line_request_get_num_lines(struct gpiod_line_request *request);
+
+/**
+ * @brief Get the offsets of the lines in the request.
+ * @param request Line request object.
+ * @param offsets Array to store offsets. Must be sized to hold the number of
+ *		  lines returned by ::gpiod_line_request_get_num_lines.
+ */
+void gpiod_line_request_get_offsets(struct gpiod_line_request *request,
+				    unsigned int *offsets);
+
+/**
+ * @brief Get the value of a single requested line.
+ * @param request Line request object.
+ * @param offset The offset of the line of which the value should be read.
+ * @return Returns 1 or 0 on success and -1 on error.
+ */
+int gpiod_line_request_get_value(struct gpiod_line_request *request,
+				 unsigned int offset);
+
+/**
+ * @brief Get the values of a subset of requested lines.
+ * @param request GPIO line request.
+ * @param num_values Number of lines for which to read values.
+ * @param offsets Array of offsets identifying the subset of requested lines
+ *		  from which to read values.
+ * @param values Array in which the values will be stored.  Must be sized
+ *		 to hold \p num_values entries.  Each value is associated with the
+ *		 line identified by the corresponding entry in \p offsets.
+ * @return 0 on success, -1 on failure.
+ */
+int gpiod_line_request_get_values_subset(struct gpiod_line_request *request,
+					 size_t num_values,
+					 const unsigned int *offsets,
+					 int *values);
+
+/**
+ * @brief Get the values of all requested lines.
+ * @param request GPIO line request.
+ * @param values Array in which the values will be stored. Must be sized to
+ *		 hold the number of lines returned by
+ *		 ::gpiod_line_request_get_num_lines.
+ *		 Each value is associated with the line identified by the
+ *		 corresponding entry in the offset array returned by
+ *		 ::gpiod_line_request_get_offsets.
+ * @return 0 on success, -1 on failure.
+ */
+int gpiod_line_request_get_values(struct gpiod_line_request *request,
+				  int *values);
+
+/**
+ * @brief Set the value of a single requested line.
+ * @param request Line request object.
+ * @param offset The offset of the line for which the value should be set.
+ * @param value Value to set.
+ */
+int gpiod_line_request_set_value(struct gpiod_line_request *request,
+				 unsigned int offset, int value);
+
+/**
+ * @brief Set the values of a subset of requested lines.
+ * @param request GPIO line request.
+ * @param num_values Number of lines for which to set values.
+ * @param offsets Array of offsets, containing the number of entries specified
+ *		  by \p num_values, identifying the requested lines for
+ *		  which to set values.
+ * @param values Array of values to set, containing the number of entries
+ *		 specified by \p num_values.  Each value is associated with the
+ *		 line identified by the corresponding entry in \p offsets.
+ * @return 0 on success, -1 on failure.
+ */
+int gpiod_line_request_set_values_subset(struct gpiod_line_request *request,
+					 size_t num_values,
+					 const unsigned int *offsets,
 					 const int *values);
 
 /**
+ * @brief Set the values of all lines associated with a request.
+ * @param request GPIO line request.
+ * @param values Array containing the values to set. Must be sized to
+ *		 contain the number of lines returned by
+ *		 ::gpiod_line_request_get_num_lines.
+ *		 Each value is associated with the line identified by the
+ *		 corresponding entry in the offset array returned by
+ *		 ::gpiod_line_request_get_offsets.
+ */
+int gpiod_line_request_set_values(struct gpiod_line_request *request,
+				  const int *values);
+
+/**
+ * @brief Update the configuration of lines associated with a line request.
+ * @param request GPIO line request.
+ * @param config New line config to apply.
+ * @return 0 on success, -1 on failure.
+ * @note The new line configuration completely replaces the old.
+ * @note Any requested lines without overrides are configured to the requested
+ *	 defaults.
+ * @note Any configured overrides for lines that have not been requested
+ *	 are silently ignored.
+ */
+int gpiod_line_request_reconfigure_lines(struct gpiod_line_request *request,
+					 struct gpiod_line_config *config);
+
+/**
+ * @brief Get the file descriptor associated with a line request.
+ * @param request GPIO line request.
+ * @return The file descriptor associated with the request.
+ *	   This function never fails.
+ *	   The returned file descriptor must not be closed by the caller.
+ *	   Call ::gpiod_line_request_release to close the file.
+ */
+int gpiod_line_request_get_fd(struct gpiod_line_request *request);
+
+/**
+ * @brief Wait for edge events on any of the requested lines.
+ * @param request GPIO line request.
+ * @param timeout_ns Wait time limit in nanoseconds. If set to 0, the function
+ *		     returns immediatelly. If set to a negative number, the
+ *		     function blocks indefinitely until an event becomes
+ *		     available.
+ * @return 0 if wait timed out, -1 if an error occurred, 1 if an event is
+ *	   pending.
+ *q
+ * Lines must have edge detection set for edge events to be emitted.
+ * By default edge detection is disabled.
+ */
+int gpiod_line_request_wait_edge_event(struct gpiod_line_request *request,
+				       int64_t timeout_ns);
+
+/**
+ * @brief Read a number of edge events from a line request.
+ * @param request GPIO line request.
+ * @param buffer Edge event buffer, sized to hold at least \p max_events.
+ * @param max_events Maximum number of events to read.
+ * @return On success returns the number of events read from the file
+ *	   descriptor, on failure return -1.
+ * @note This function will block if no event was queued for the line request.
+ * @note Any exising events in the buffer are overwritten.  This is not an
+ *       append operation.
+ */
+int gpiod_line_request_read_edge_event(struct gpiod_line_request *request,
+				       struct gpiod_edge_event_buffer *buffer,
+				       size_t max_events);
+
+/**
  * @}
  *
- * @defgroup line_event Line events handling
+ * @defgroup edge_event Line edge events handling
  * @{
  *
- * Structures and functions allowing to poll lines for events and read them,
- * both for individual lines as well as in bulk. Also contains functions for
- * retrieving the associated file descriptors and operate on them for easy
- * integration with standard unix interfaces.
+ * Functions and data types for handling edge events.
+ *
+ * An edge event object contains information about a single line edge event.
+ * It contains the event type, timestamp and the offset of the line on which
+ * the event occurred as well as two sequence numbers (global for all lines
+ * in the associated request and local for this line only).
+ *
+ * Edge events are stored into an edge-event buffer object to improve
+ * performance and to limit the number of memory allocations when a large
+ * number of events are being read.
  */
 
 /**
  * @brief Event types.
  */
 enum {
-	GPIOD_LINE_EVENT_RISING_EDGE = 1,
+	GPIOD_EDGE_EVENT_RISING_EDGE = 1,
 	/**< Rising edge event. */
-	GPIOD_LINE_EVENT_FALLING_EDGE,
+	GPIOD_EDGE_EVENT_FALLING_EDGE
 	/**< Falling edge event. */
 };
 
 /**
- * @brief Structure holding event info.
+ * @brief Free the edge event object.
+ * @param event Edge event object to free.
  */
-struct gpiod_line_event {
-	struct timespec ts;
-	/**< Best estimate of time of event occurrence. */
-	int event_type;
-	/**< Type of the event that occurred. */
-	int offset;
-	/**< Offset of line on which the event occurred. */
-};
+void gpiod_edge_event_free(struct gpiod_edge_event *event);
 
 /**
- * @brief Wait for an event on a single line.
- * @param line GPIO line object.
- * @param timeout Wait time limit.
- * @return 0 if wait timed out, -1 if an error occurred, 1 if an event
- *         occurred.
+ * @brief Copy the edge event object.
+ * @param event Edge event to copy.
+ * @return Copy of the edge event or NULL on error. The returned object must
+ *	   be freed by the caller using ::gpiod_edge_event_free.
  */
-int gpiod_line_event_wait(struct gpiod_line *line,
-			  const struct timespec *timeout);
+struct gpiod_edge_event *gpiod_edge_event_copy(struct gpiod_edge_event *event);
 
 /**
- * @brief Wait for events on a set of lines.
- * @param bulk Set of GPIO lines to monitor.
- * @param timeout Wait time limit.
- * @param event_bulk Bulk object in which to store the line handles on which
- *                   events occurred. Can be NULL.
- * @return 0 if wait timed out, -1 if an error occurred, 1 if at least one
- *         event occurred.
+ * @brief Get the event type.
+ * @param event GPIO edge event.
+ * @return The event type (::GPIOD_EDGE_EVENT_RISING_EDGE or
+ *	   ::GPIOD_EDGE_EVENT_FALLING_EDGE).
  */
-int gpiod_line_event_wait_bulk(struct gpiod_line_bulk *bulk,
-			       const struct timespec *timeout,
-			       struct gpiod_line_bulk *event_bulk);
+int gpiod_edge_event_get_event_type(struct gpiod_edge_event *event);
 
 /**
- * @brief Read next pending event from the GPIO line.
- * @param line GPIO line object.
- * @param event Buffer to which the event data will be copied.
- * @return 0 if the event was read correctly, -1 on error.
- * @note This function will block if no event was queued for this line.
+ * @brief Get the timestamp of the event.
+ * @param event GPIO edge event.
+ * @return Timestamp in nanoseconds.
+ * @note The source clock for the timestamp depends on the event_clock
+ *	 setting for the line.
  */
-int gpiod_line_event_read(struct gpiod_line *line,
-			  struct gpiod_line_event *event);
+uint64_t gpiod_edge_event_get_timestamp_ns(struct gpiod_edge_event *event);
 
 /**
- * @brief Read up to a certain number of events from the GPIO line.
- * @param line GPIO line object.
- * @param events Buffer to which the event data will be copied. Must hold at
- *               least the amount of events specified in num_events.
- * @param num_events Specifies how many events can be stored in the buffer.
- * @return On success returns the number of events stored in the buffer, on
- *         failure -1 is returned.
+ * @brief Get the offset of the line which triggered the event.
+ * @param event GPIO edge event.
+ * @return Line offset.
  */
-int gpiod_line_event_read_multiple(struct gpiod_line *line,
-				   struct gpiod_line_event *events,
-				   unsigned int num_events);
+unsigned int gpiod_edge_event_get_line_offset(struct gpiod_edge_event *event);
 
 /**
- * @brief Get the event file descriptor.
- * @param line GPIO line object.
- * @return Number of the event file descriptor or -1 if the user tries to
- *         retrieve the descriptor from a line that wasn't configured for
- *         event monitoring.
- *
- * Users may want to poll the event file descriptor on their own. This routine
- * allows to access it.
+ * @brief Get the global sequence number of the event.
+ * @param event GPIO edge event.
+ * @return Sequence number of the event in the series of events for all lines
+ *	   in the associated line request.
  */
-int gpiod_line_event_get_fd(struct gpiod_line *line);
+unsigned long gpiod_edge_event_get_global_seqno(struct gpiod_edge_event *event);
 
 /**
- * @brief Read the last GPIO event directly from a file descriptor.
- * @param fd File descriptor.
- * @param event Buffer in which the event data will be stored.
- * @return 0 if the event was read correctly, -1 on error.
- *
- * Users who directly poll the file descriptor for incoming events can also
- * directly read the event data from it using this routine. This function
- * translates the kernel representation of the event to the libgpiod format.
+ * @brief Get the event sequence number specific to the line.
+ * @param event GPIO edge event.
+ * @return Sequence number of the event in the series of events only for this
+ *	   line within the lifetime of the associated line request.
  */
-int gpiod_line_event_read_fd(int fd, struct gpiod_line_event *event);
+unsigned long gpiod_edge_event_get_line_seqno(struct gpiod_edge_event *event);
 
 /**
- * @brief Read up to a certain number of events directly from a file descriptor.
- * @param fd File descriptor.
- * @param events Buffer to which the event data will be copied. Must hold at
- *               least the amount of events specified in num_events.
- * @param num_events Specifies how many events can be stored in the buffer.
- * @return On success returns the number of events stored in the buffer, on
- *         failure -1 is returned.
+ * @brief Create a new edge event buffer.
+ * @param capacity Number of events the buffer can store (min = 1, max = 1024).
+ * @return New edge event buffer or NULL on error.
+ * @note If capacity equals 0, it will be set to a default value of 64. If
+ *	 capacity is larger than 1024, it will be limited to 1024.
+ * @note The user space buffer is independent of the kernel buffer
+ *	 (::gpiod_request_config_set_event_buffer_size).  As the user space
+ *	 buffer is filled from the kernel buffer, there is no benefit making
+ *	 the user space buffer larger than the kernel buffer.
+ *	 The default kernel buffer size for each request is 16*num_lines.
  */
-int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
-				      unsigned int num_events);
+struct gpiod_edge_event_buffer *
+gpiod_edge_event_buffer_new(size_t capacity);
 
 /**
- * @}
- *
+ * @brief Get the capacity (the max number of events that can be stored) of
+ *	  the event buffer.
+ * @param buffer Edge event buffer.
+ * @return The capacity of the buffer.
+ */
+size_t
+gpiod_edge_event_buffer_get_capacity(struct gpiod_edge_event_buffer *buffer);
+
+/**
+ * @brief Free the edge event buffer and release all associated resources.
+ * @param buffer Edge event buffer to free.
+ */
+void gpiod_edge_event_buffer_free(struct gpiod_edge_event_buffer *buffer);
+
+/**
+ * @brief Get an event stored in the buffer.
+ * @param buffer Edge event buffer.
+ * @param index Index of the event in the buffer.
+ * @return Pointer to an event stored in the buffer. The lifetime of the
+ *	   event is tied to the buffer object. Users must not free the event
+ *	   returned by this function.
+ */
+struct gpiod_edge_event *
+gpiod_edge_event_buffer_get_event(struct gpiod_edge_event_buffer *buffer,
+				  unsigned long index);
+
+/**
+ * @brief Get the number of events a buffer has stored.
+ * @param buffer Edge event buffer.
+ * @return Number of events stored in the buffer.
+ */
+size_t
+gpiod_edge_event_buffer_get_num_events(struct gpiod_edge_event_buffer *buffer);
+
+/**
  * @}
  *
  * @defgroup misc Stuff that didn't fit anywhere else
@@ -961,8 +1153,18 @@ int gpiod_line_event_read_fd_multiple(int fd, struct gpiod_line_event *events,
  */
 
 /**
+ * @brief Check if the file pointed to by path is a GPIO chip character device.
+ * @param path Path to check.
+ * @return True if the file exists and is either a GPIO chip character device
+ *	   or a symbolic link to one.
+ */
+bool gpiod_is_gpiochip_device(const char *path);
+
+/**
  * @brief Get the API version of the library as a human-readable string.
- * @return Human-readable string containing the library version.
+ * @return A valid pointer to a human-readable string containing the library
+ *	   version.  The pointer is valid for the lifetime of the program and
+ *	   must not be freed by the caller.
  */
 const char *gpiod_version_string(void);
 

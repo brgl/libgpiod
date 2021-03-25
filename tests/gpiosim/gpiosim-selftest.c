@@ -31,27 +31,27 @@ int main(int argc UNUSED, char **argv UNUSED)
 		return EXIT_FAILURE;
 	}
 
-	printf("Creating a chip with random name\n");
+	printf("Creating a chip\n");
 
-	dev = gpiosim_dev_new(ctx, NULL);
+	dev = gpiosim_dev_new(ctx);
 	if (!dev) {
-		perror("Unable to create a chip with random name");
+		perror("Unable to create a chip");
 		return EXIT_FAILURE;
 	}
 
-	printf("Creating a bank with a random name\n");
+	printf("Creating a bank\n");
 
-	bank0 = gpiosim_bank_new(dev, NULL);
+	bank0 = gpiosim_bank_new(dev);
 	if (!bank0) {
-		perror("Unable to create a bank with random name");
+		perror("Unable to create a bank");
 		return EXIT_FAILURE;
 	}
 
-	printf("Creating a bank with a specific name\n");
+	printf("Creating a second bank\n");
 
-	bank1 = gpiosim_bank_new(dev, "foobar");
+	bank1 = gpiosim_bank_new(dev);
 	if (!bank1) {
-		perror("Unable to create a bank with a specific name");
+		perror("Unable to create a bank");
 		return EXIT_FAILURE;
 	}
 

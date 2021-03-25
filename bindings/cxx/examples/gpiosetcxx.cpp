@@ -11,12 +11,13 @@
 int main(int argc, char **argv)
 {
 	if (argc < 3) {
-		::std::cerr << "usage: " << argv[0] << " <chip> <line_offset0>=<value0> ..." << ::std::endl;
+		::std::cerr << "usage: " << argv[0] <<
+			       " <chip> <line_offset0>=<value0> ..." << ::std::endl;
 		return EXIT_FAILURE;
 	}
 
-	::std::vector<unsigned int> offsets;
-	::std::vector<int> values;
+	::gpiod::line::offsets offsets;
+	::gpiod::line::values values;
 
 	for (int i = 2; i < argc; i++) {
 		::std::string arg(argv[i]);
@@ -27,20 +28,25 @@ int main(int argc, char **argv)
 		::std::string value(arg.substr(pos + 1, ::std::string::npos));
 
 		if (offset.empty() || value.empty())
-			throw ::std::invalid_argument("invalid argument: " + ::std::string(argv[i]));
+			throw ::std::invalid_argument("invalid offset=value mapping: " +
+						      ::std::string(argv[i]));
 
 		offsets.push_back(::std::stoul(offset));
-		values.push_back(::std::stoul(value));
+		values.push_back(::std::stoul(value) ? ::gpiod::line::value::ACTIVE :
+						       ::gpiod::line::value::INACTIVE);
 	}
 
-	::gpiod::chip chip(argv[1]);
-	auto lines = chip.get_lines(offsets);
+	auto request = ::gpiod::chip(argv[1])
+		.prepare_request()
+		.set_consumer("gpiosetcxx")
+		.add_line_settings(
+			offsets,
+			::gpiod::line_settings()
+				.set_direction(::gpiod::line::direction::OUTPUT)
+		)
+		.do_request();
 
-	lines.request({
-		argv[0],
-		::gpiod::line_request::DIRECTION_OUTPUT,
-		0
-	}, values);
+	request.set_values(values);
 
 	::std::cin.get();
 

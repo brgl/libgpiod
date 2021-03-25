@@ -15,24 +15,25 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	::std::vector<unsigned int> offsets;
+	::gpiod::line::offsets offsets;
 
 	for (int i = 2; i < argc; i++)
 		offsets.push_back(::std::stoul(argv[i]));
 
-	::gpiod::chip chip(argv[1]);
-	auto lines = chip.get_lines(offsets);
+	auto request = ::gpiod::chip(argv[1])
+		.prepare_request()
+		.set_consumer("gpiogetcxx")
+		.add_line_settings(
+			offsets,
+			::gpiod::line_settings()
+				.set_direction(::gpiod::line::direction::INPUT)
+		)
+		.do_request();
 
-	lines.request({
-		argv[0],
-		::gpiod::line_request::DIRECTION_INPUT,
-		0
-	});
-
-	auto vals = lines.get_values();
+	auto vals = request.get_values();
 
 	for (auto& it: vals)
-		::std::cout << it << ' ';
+		::std::cout << (it == ::gpiod::line::value::ACTIVE ? "1" : "0") << ' ';
 	::std::cout << ::std::endl;
 
 	return EXIT_SUCCESS;

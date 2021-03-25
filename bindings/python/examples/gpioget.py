@@ -1,25 +1,29 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-or-later
-# SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
+# SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-'''Simplified reimplementation of the gpioget tool in Python.'''
+"""Simplified reimplementation of the gpioget tool in Python."""
 
 import gpiod
 import sys
 
-if __name__ == '__main__':
+from gpiod.line import Direction
+
+if __name__ == "__main__":
     if len(sys.argv) < 3:
-        raise TypeError('usage: gpioget.py <gpiochip> <offset1> <offset2> ...')
+        raise TypeError("usage: gpioget.py <gpiochip> <offset1> <offset2> ...")
 
-    with gpiod.Chip(sys.argv[1]) as chip:
-        offsets = []
-        for off in sys.argv[2:]:
-            offsets.append(int(off))
+    path = sys.argv[1]
+    lines = [int(line) if line.isdigit() else line for line in sys.argv[2:]]
 
-        lines = chip.get_lines(offsets)
-        lines.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_IN)
-        vals = lines.get_values()
+    request = gpiod.request_lines(
+        path,
+        consumer="gpioget.py",
+        config={tuple(lines): gpiod.LineSettings(direction=Direction.INPUT)},
+    )
 
-        for val in vals:
-            print(val, end=' ')
-        print()
+    vals = request.get_values()
+
+    for val in vals:
+        print("{} ".format(val.value), end="")
+    print()

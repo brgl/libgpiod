@@ -1,173 +1,182 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
+// SPDX-FileCopyrightText: 2021-2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 #include <catch2/catch.hpp>
 #include <gpiod.hpp>
+#include <sstream>
+#include <system_error>
+#include <utility>
 
-#include "gpio-mockup.hpp"
+#include "gpiosim.hpp"
+#include "helpers.hpp"
 
-using ::gpiod::test::mockup;
+using ::gpiosim::make_sim;
 
-TEST_CASE("GPIO chip device can be verified with is_gpiochip_device()", "[chip]")
+namespace {
+
+TEST_CASE("chip constructor works", "[chip]")
 {
-	mockup::probe_guard mockup_chips({ 8 });
-
-	SECTION("good chip")
+	SECTION("open an existing GPIO chip")
 	{
-		REQUIRE(::gpiod::is_gpiochip_device(mockup::instance().chip_path(0)));
+		auto sim = make_sim().build();
+
+		REQUIRE_NOTHROW(::gpiod::chip(sim.dev_path()));
 	}
 
-	SECTION("not a chip")
+	SECTION("opening a nonexistent file fails with ENOENT")
 	{
-		REQUIRE_FALSE(::gpiod::is_gpiochip_device("/dev/null"));
+		REQUIRE_THROWS_MATCHES(::gpiod::chip("/dev/nonexistent"),
+				       ::std::system_error, system_error_matcher(ENOENT));
 	}
 
-	SECTION("nonexistent file")
+	SECTION("opening a file that is not a device fails with ENOTTY")
 	{
-		REQUIRE_FALSE(::gpiod::is_gpiochip_device("/dev/nonexistent_device"));
+		REQUIRE_THROWS_MATCHES(::gpiod::chip("/tmp"),
+				       ::std::system_error, system_error_matcher(ENOTTY));
+	}
+
+	SECTION("opening a non-GPIO character device fails with ENODEV")
+	{
+		REQUIRE_THROWS_MATCHES(::gpiod::chip("/dev/null"),
+				       ::std::system_error, system_error_matcher(ENODEV));
+	}
+
+	SECTION("move constructor")
+	{
+		auto sim = make_sim()
+			.set_label("foobar")
+			.build();
+
+		::gpiod::chip first(sim.dev_path());
+		REQUIRE_THAT(first.get_info().label(), Catch::Equals("foobar"));
+		::gpiod::chip second(::std::move(first));
+		REQUIRE_THAT(second.get_info().label(), Catch::Equals("foobar"));
 	}
 }
 
-TEST_CASE("GPIO chip device can be opened", "[chip]")
+TEST_CASE("chip operators work", "[chip]")
 {
-	mockup::probe_guard mockup_chips({ 8, 8, 8 });
+	auto sim = make_sim()
+		.set_label("foobar")
+		.build();
 
-	SECTION("open from constructor")
+	::gpiod::chip chip(sim.dev_path());
+
+	SECTION("assignment operator")
 	{
-		REQUIRE_NOTHROW(::gpiod::chip(mockup::instance().chip_path(1)));
+		auto moved_sim = make_sim()
+			.set_label("moved")
+			.build();
+
+		::gpiod::chip moved_chip(moved_sim.dev_path());
+
+		REQUIRE_THAT(chip.get_info().label(), Catch::Equals("foobar"));
+		chip = ::std::move(moved_chip);
+		REQUIRE_THAT(chip.get_info().label(), Catch::Equals("moved"));
 	}
 
-	SECTION("open from open() method")
+	SECTION("boolean operator")
 	{
-		::gpiod::chip chip;
-
-		REQUIRE_FALSE(!!chip);
-
-		REQUIRE_NOTHROW(chip.open(mockup::instance().chip_path(1)));
+		REQUIRE(chip);
+		chip.close();
+		REQUIRE_FALSE(chip);
 	}
 }
 
-TEST_CASE("Uninitialized GPIO chip behaves correctly", "[chip]")
+TEST_CASE("chip properties can be read", "[chip]")
 {
-	::gpiod::chip chip;
+	auto sim = make_sim()
+		.set_num_lines(8)
+		.set_label("foobar")
+		.build();
 
-	SECTION("uninitialized chip is 'false'")
+	::gpiod::chip chip(sim.dev_path());
+
+	SECTION("get device path")
 	{
-		REQUIRE_FALSE(!!chip);
+		REQUIRE_THAT(chip.path(), Catch::Equals(sim.dev_path()));
 	}
 
-	SECTION("using uninitialized chip throws logic_error")
+	SECTION("get file descriptor")
 	{
-		REQUIRE_THROWS_AS(chip.name(), ::std::logic_error);
+		REQUIRE(chip.fd() >= 0);
 	}
 }
 
-TEST_CASE("Trying to open a nonexistent chip throws system_error", "[chip]")
+TEST_CASE("line lookup by name works", "[chip]")
 {
-	REQUIRE_THROWS_AS(::gpiod::chip("nonexistent-chip"), ::std::system_error);
-}
+	auto sim = make_sim()
+		.set_num_lines(8)
+		.set_line_name(0, "foo")
+		.set_line_name(2, "bar")
+		.set_line_name(3, "baz")
+		.set_line_name(5, "xyz")
+		.build();
 
-TEST_CASE("Chip object can be reset", "[chip]")
-{
-	mockup::probe_guard mockup_chips({ 8 });
+	::gpiod::chip chip(sim.dev_path());
 
-	::gpiod::chip chip(mockup::instance().chip_path(0));
-	REQUIRE(chip);
-	chip.reset();
-	REQUIRE_FALSE(!!chip);
-}
-
-TEST_CASE("Chip info can be correctly retrieved", "[chip]")
-{
-	mockup::probe_guard mockup_chips({ 8, 16, 8 });
-
-	::gpiod::chip chip(mockup::instance().chip_path(1));
-	REQUIRE(chip.name() == mockup::instance().chip_name(1));
-	REQUIRE(chip.label() == "gpio-mockup-B");
-	REQUIRE(chip.num_lines() == 16);
-}
-
-TEST_CASE("Chip object can be copied and compared", "[chip]")
-{
-	mockup::probe_guard mockup_chips({ 8, 8 });
-
-	::gpiod::chip chip1(mockup::instance().chip_path(0));
-	auto chip2 = chip1;
-	REQUIRE(chip1 == chip2);
-	REQUIRE_FALSE(chip1 != chip2);
-	::gpiod::chip chip3(mockup::instance().chip_path(1));
-	REQUIRE(chip1 != chip3);
-	REQUIRE_FALSE(chip2 == chip3);
-}
-
-TEST_CASE("Lines can be retrieved from chip objects", "[chip]")
-{
-	mockup::probe_guard mockup_chips({ 8, 8, 8 }, mockup::FLAG_NAMED_LINES);
-	::gpiod::chip chip(mockup::instance().chip_path(1));
-
-	SECTION("get single line by offset")
+	SECTION("lookup successful")
 	{
-		auto line = chip.get_line(3);
-		REQUIRE(line.name() == "gpio-mockup-B-3");
+		REQUIRE(chip.get_line_offset_from_name("baz") == 3);
 	}
 
-	SECTION("find single line by name")
+	SECTION("lookup failed")
 	{
-		auto offset = chip.find_line("gpio-mockup-B-3");
-		REQUIRE(offset == 3);
-	}
-
-	SECTION("get multiple lines by offsets")
-	{
-		auto lines = chip.get_lines({ 1, 3, 4, 7});
-		REQUIRE(lines.size() == 4);
-		REQUIRE(lines.get(0).name() == "gpio-mockup-B-1");
-		REQUIRE(lines.get(1).name() == "gpio-mockup-B-3");
-		REQUIRE(lines.get(2).name() == "gpio-mockup-B-4");
-		REQUIRE(lines.get(3).name() == "gpio-mockup-B-7");
-	}
-
-	SECTION("get multiple lines by offsets in mixed order")
-	{
-		auto lines = chip.get_lines({ 5, 1, 3, 2});
-		REQUIRE(lines.size() == 4);
-		REQUIRE(lines.get(0).name() == "gpio-mockup-B-5");
-		REQUIRE(lines.get(1).name() == "gpio-mockup-B-1");
-		REQUIRE(lines.get(2).name() == "gpio-mockup-B-3");
-		REQUIRE(lines.get(3).name() == "gpio-mockup-B-2");
+		REQUIRE(chip.get_line_offset_from_name("nonexistent") < 0);
 	}
 }
 
-TEST_CASE("All lines can be retrieved from a chip at once", "[chip]")
+TEST_CASE("line lookup: behavior for duplicate names", "[chip]")
 {
-	mockup::probe_guard mockup_chips({ 4 });
-	::gpiod::chip chip(mockup::instance().chip_path(0));
+	auto sim = make_sim()
+		.set_num_lines(8)
+		.set_line_name(0, "foo")
+		.set_line_name(2, "bar")
+		.set_line_name(3, "baz")
+		.set_line_name(5, "bar")
+		.build();
 
-	auto lines = chip.get_all_lines();
-	REQUIRE(lines.size() == 4);
-	REQUIRE(lines.get(0).offset() == 0);
-	REQUIRE(lines.get(1).offset() == 1);
-	REQUIRE(lines.get(2).offset() == 2);
-	REQUIRE(lines.get(3).offset() == 3);
+	::gpiod::chip chip(sim.dev_path());
+
+	REQUIRE(chip.get_line_offset_from_name("bar") == 2);
 }
 
-TEST_CASE("Errors occurring when retrieving lines are correctly reported", "[chip]")
+TEST_CASE("closed chip can no longer be used", "[chip]")
 {
-	mockup::probe_guard mockup_chips({ 8 }, mockup::FLAG_NAMED_LINES);
-	::gpiod::chip chip(mockup::instance().chip_path(0));
+	auto sim = make_sim().build();
 
-	SECTION("invalid offset (single line)")
+	::gpiod::chip chip(sim.dev_path());
+	chip.close();
+	REQUIRE_THROWS_AS(chip.path(), ::gpiod::chip_closed);
+}
+
+TEST_CASE("stream insertion operator works for chip", "[chip]")
+{
+	auto sim = make_sim()
+		.set_num_lines(4)
+		.set_label("foobar")
+		.build();
+
+	::gpiod::chip chip(sim.dev_path());
+	::std::stringstream buf;
+
+	SECTION("open chip")
 	{
-		REQUIRE_THROWS_AS(chip.get_line(9), ::std::out_of_range);
+		::std::stringstream expected;
+
+		expected << "gpiod::chip(path=" << sim.dev_path() <<
+			    ", info=gpiod::chip_info(name=\"" << sim.name() <<
+			    "\", label=\"foobar\", num_lines=4))";
+
+		buf << chip;
+		REQUIRE_THAT(buf.str(), Catch::Equals(expected.str()));
 	}
 
-	SECTION("invalid offset (multiple lines)")
+	SECTION("closed chip")
 	{
-		REQUIRE_THROWS_AS(chip.get_lines({ 1, 19, 4, 7 }), ::std::out_of_range);
-	}
-
-	SECTION("line not found by name")
-	{
-		REQUIRE(chip.find_line("nonexistent-line") == -1);
+		chip.close();
+		REQUIRE_THAT(chip, stringify_matcher<::gpiod::chip>("gpiod::chip(closed)"));
 	}
 }
+
+} /* namespace */

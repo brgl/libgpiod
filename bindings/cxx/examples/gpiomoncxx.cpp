@@ -3,29 +3,27 @@
 
 /* Simplified C++ reimplementation of the gpiomon tool. */
 
-#include <gpiod.hpp>
-
+#include <chrono>
 #include <cstdlib>
+#include <gpiod.hpp>
 #include <iostream>
 
 namespace {
 
-void print_event(const ::gpiod::line_event& event)
+void print_event(const ::gpiod::edge_event& event)
 {
-	if (event.event_type == ::gpiod::line_event::RISING_EDGE)
+	if (event.type() == ::gpiod::edge_event::event_type::RISING_EDGE)
 		::std::cout << " RISING EDGE";
-	else if (event.event_type == ::gpiod::line_event::FALLING_EDGE)
-		::std::cout << "FALLING EDGE";
 	else
-		throw ::std::logic_error("invalid event type");
+		::std::cout << "FALLING EDGE";
 
 	::std::cout << " ";
 
-	::std::cout << ::std::chrono::duration_cast<::std::chrono::seconds>(event.timestamp).count();
+	::std::cout << event.timestamp_ns() / 1000000000;
 	::std::cout << ".";
-	::std::cout << event.timestamp.count() % 1000000000;
+	::std::cout << event.timestamp_ns() % 1000000000;
 
-	::std::cout << " line: " << event.source.offset();
+	::std::cout << " line: " << event.line_offset();
 
 	::std::cout << ::std::endl;
 }
@@ -39,26 +37,29 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	::std::vector<unsigned int> offsets;
+	::gpiod::line::offsets offsets;
 	offsets.reserve(argc);
 	for (int i = 2; i < argc; i++)
 		offsets.push_back(::std::stoul(argv[i]));
 
-	::gpiod::chip chip(argv[1]);
-	auto lines = chip.get_lines(offsets);
+	auto request = ::gpiod::chip(argv[1])
+		.prepare_request()
+		.set_consumer("gpiomoncxx")
+		.add_line_settings(
+			offsets,
+			::gpiod::line_settings()
+				.set_direction(::gpiod::line::direction::INPUT)
+				.set_edge_detection(::gpiod::line::edge::BOTH)
+		)
+		.do_request();
 
-	lines.request({
-		argv[0],
-		::gpiod::line_request::EVENT_BOTH_EDGES,
-		0,
-	});
+	::gpiod::edge_event_buffer buffer;
 
 	for (;;) {
-		auto events = lines.event_wait(::std::chrono::seconds(1));
-		if (events) {
-			for (auto& it: events)
-				print_event(it.event_read());
-		}
+		request.read_edge_event(buffer);
+
+		for (const auto& event: buffer)
+			print_event(event);
 	}
 
 	return EXIT_SUCCESS;

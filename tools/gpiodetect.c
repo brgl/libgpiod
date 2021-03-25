@@ -6,6 +6,7 @@
 #include <getopt.h>
 #include <gpiod.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "tools-common.h"
@@ -33,6 +34,7 @@ int main(int argc, char **argv)
 {
 	int optc, opti, num_chips, i;
 	struct gpiod_chip *chip;
+	struct gpiod_chip_info *info;
 	struct dirent **entries;
 
 	for (;;) {
@@ -66,21 +68,21 @@ int main(int argc, char **argv)
 
 	for (i = 0; i < num_chips; i++) {
 		chip = chip_open_by_name(entries[i]->d_name);
-		if (!chip) {
-			if (errno == EACCES)
-				printf("%s Permission denied\n",
-				       entries[i]->d_name);
-			else
-				die_perror("unable to open %s",
-					   entries[i]->d_name);
-		}
+		if (!chip)
+			die_perror("unable to open %s", entries[i]->d_name);
 
-		printf("%s [%s] (%u lines)\n",
-		       gpiod_chip_get_name(chip),
-		       gpiod_chip_get_label(chip),
-		       gpiod_chip_get_num_lines(chip));
+		info = gpiod_chip_get_info(chip);
+		if (!info)
+			die_perror("unable to get info for %s", entries[i]->d_name);
 
-		gpiod_chip_unref(chip);
+
+		printf("%s [%s] (%zu lines)\n",
+		       gpiod_chip_info_get_name(info),
+		       gpiod_chip_info_get_label(info),
+		       gpiod_chip_info_get_num_lines(info));
+
+		gpiod_chip_info_free(info);
+		gpiod_chip_close(chip);
 		free(entries[i]);
 	}
 

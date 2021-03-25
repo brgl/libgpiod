@@ -26,7 +26,12 @@ config.h.in~
 config.log
 config.status
 configure
+configure~
 libtool
 *-libtool
 m4/
 stamp-h1
+
+# profiling
+*.gcda
+*.gcno

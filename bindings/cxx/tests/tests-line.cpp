@@ -1,467 +1,139 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
+// SPDX-FileCopyrightText: 2021-2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 #include <catch2/catch.hpp>
 #include <gpiod.hpp>
 
-#include "gpio-mockup.hpp"
+#include "helpers.hpp"
 
-using ::gpiod::test::mockup;
+using offset = ::gpiod::line::offset;
+using value = ::gpiod::line::value;
+using direction = ::gpiod::line::direction;
+using edge = ::gpiod::line::edge;
+using bias = ::gpiod::line::bias;
+using drive = ::gpiod::line::drive;
+using clock_type = ::gpiod::line::clock;
+using offsets = ::gpiod::line::offsets;
+using values = ::gpiod::line::values;
+using value_mapping = ::gpiod::line::value_mapping;
+using value_mappings = ::gpiod::line::value_mappings;
 
 namespace {
 
-const ::std::string consumer = "line-test";
+TEST_CASE("stream insertion operators for types in gpiod::line work", "[line]")
+{
+	SECTION("offset")
+	{
+		offset off = 4;
+
+		REQUIRE_THAT(off, stringify_matcher<offset>("4"));
+	}
+
+	SECTION("value")
+	{
+		auto active = value::ACTIVE;
+		auto inactive = value::INACTIVE;
+
+		REQUIRE_THAT(active, stringify_matcher<value>("ACTIVE"));
+		REQUIRE_THAT(inactive, stringify_matcher<value>("INACTIVE"));
+	}
+
+	SECTION("direction")
+	{
+		auto input = direction::INPUT;
+		auto output = direction::OUTPUT;
+		auto as_is = direction::AS_IS;
+
+		REQUIRE_THAT(input, stringify_matcher<direction>("INPUT"));
+		REQUIRE_THAT(output, stringify_matcher<direction>("OUTPUT"));
+		REQUIRE_THAT(as_is, stringify_matcher<direction>("AS_IS"));
+	}
+
+	SECTION("edge")
+	{
+		auto rising = edge::RISING;
+		auto falling = edge::FALLING;
+		auto both = edge::BOTH;
+		auto none = edge::NONE;
+
+		REQUIRE_THAT(rising, stringify_matcher<edge>("RISING_EDGE"));
+		REQUIRE_THAT(falling, stringify_matcher<edge>("FALLING_EDGE"));
+		REQUIRE_THAT(both, stringify_matcher<edge>("BOTH_EDGES"));
+		REQUIRE_THAT(none, stringify_matcher<edge>("NONE"));
+	}
+
+	SECTION("bias")
+	{
+		auto pull_up = bias::PULL_UP;
+		auto pull_down = bias::PULL_DOWN;
+		auto disabled = bias::DISABLED;
+		auto as_is = bias::AS_IS;
+		auto unknown = bias::UNKNOWN;
+
+		REQUIRE_THAT(pull_up, stringify_matcher<bias>("PULL_UP"));
+		REQUIRE_THAT(pull_down, stringify_matcher<bias>("PULL_DOWN"));
+		REQUIRE_THAT(disabled, stringify_matcher<bias>("DISABLED"));
+		REQUIRE_THAT(as_is, stringify_matcher<bias>("AS_IS"));
+		REQUIRE_THAT(unknown, stringify_matcher<bias>("UNKNOWN"));
+	}
+
+	SECTION("drive")
+	{
+		auto push_pull = drive::PUSH_PULL;
+		auto open_drain = drive::OPEN_DRAIN;
+		auto open_source = drive::OPEN_SOURCE;
+
+		REQUIRE_THAT(push_pull, stringify_matcher<drive>("PUSH_PULL"));
+		REQUIRE_THAT(open_drain, stringify_matcher<drive>("OPEN_DRAIN"));
+		REQUIRE_THAT(open_source, stringify_matcher<drive>("OPEN_SOURCE"));
+	}
+
+	SECTION("clock")
+	{
+		auto monotonic = clock_type::MONOTONIC;
+		auto realtime = clock_type::REALTIME;
+		auto hte = clock_type::HTE;
+
+		REQUIRE_THAT(monotonic, stringify_matcher<clock_type>("MONOTONIC"));
+		REQUIRE_THAT(realtime, stringify_matcher<clock_type>("REALTIME"));
+		REQUIRE_THAT(hte, stringify_matcher<clock_type>("HTE"));
+	}
+
+	SECTION("offsets")
+	{
+		offsets offs = { 2, 5, 3, 9, 8, 7 };
+
+		REQUIRE_THAT(offs, stringify_matcher<offsets>("gpiod::offsets(2, 5, 3, 9, 8, 7)"));
+	}
+
+	SECTION("values")
+	{
+		values vals = {
+			value::ACTIVE,
+			value::INACTIVE,
+			value::ACTIVE,
+			value::ACTIVE,
+			value::INACTIVE
+		};
+
+		REQUIRE_THAT(vals,
+			     stringify_matcher<values>("gpiod::values(ACTIVE, INACTIVE, ACTIVE, ACTIVE, INACTIVE)"));
+	}
+
+	SECTION("value_mapping")
+	{
+		value_mapping val = { 4, value::ACTIVE };
+
+		REQUIRE_THAT(val, stringify_matcher<value_mapping>("gpiod::value_mapping(4: ACTIVE)"));
+	}
+
+	SECTION("value_mappings")
+	{
+		value_mappings vals = { { 0, value::ACTIVE }, { 4, value::INACTIVE }, { 8, value::ACTIVE } };
+
+		REQUIRE_THAT(vals, stringify_matcher<value_mappings>(
+			"gpiod::value_mappings(gpiod::value_mapping(0: ACTIVE), gpiod::value_mapping(4: INACTIVE), gpiod::value_mapping(8: ACTIVE))"));
+	}
+}
 
 } /* namespace */
-
-TEST_CASE("Line information can be correctly retrieved", "[line]")
-{
-	mockup::probe_guard mockup_chips({ 8 }, mockup::FLAG_NAMED_LINES);
-	::gpiod::chip chip(mockup::instance().chip_path(0));
-	auto line = chip.get_line(4);
-
-	SECTION("unexported line")
-	{
-		REQUIRE(line.offset() == 4);
-		REQUIRE(line.name() == "gpio-mockup-A-4");
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_INPUT);
-		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(line.consumer().empty());
-		REQUIRE_FALSE(line.is_used());
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
-	}
-
-	SECTION("exported line")
-	{
-		::gpiod::line_request config;
-
-		config.consumer = consumer.c_str();
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		line.request(config);
-
-		REQUIRE(line.offset() == 4);
-		REQUIRE(line.name() == "gpio-mockup-A-4");
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(line.is_used());
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
-	}
-
-	SECTION("exported line with flags")
-	{
-		::gpiod::line_request config;
-
-		config.consumer = consumer.c_str();
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = ::gpiod::line_request::FLAG_ACTIVE_LOW |
-			       ::gpiod::line_request::FLAG_OPEN_DRAIN;
-		line.request(config);
-
-		REQUIRE(line.offset() == 4);
-		REQUIRE(line.name() == "gpio-mockup-A-4");
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.is_active_low());
-		REQUIRE(line.is_used());
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_OPEN_DRAIN);
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
-	}
-
-	SECTION("exported open source line")
-	{
-		::gpiod::line_request config;
-
-		config.consumer = consumer.c_str();
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = ::gpiod::line_request::FLAG_OPEN_SOURCE;
-		line.request(config);
-
-		REQUIRE(line.offset() == 4);
-		REQUIRE(line.name() == "gpio-mockup-A-4");
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(line.is_used());
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_OPEN_SOURCE);
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_UNKNOWN);
-	}
-
-	SECTION("exported bias disable line")
-	{
-		::gpiod::line_request config;
-
-		config.consumer = consumer.c_str();
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = ::gpiod::line_request::FLAG_BIAS_DISABLED;
-		line.request(config);
-
-		REQUIRE(line.offset() == 4);
-		REQUIRE(line.name() == "gpio-mockup-A-4");
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(line.is_used());
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_DISABLED);
-	}
-
-	SECTION("exported pull-down line")
-	{
-		::gpiod::line_request config;
-
-		config.consumer = consumer.c_str();
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = ::gpiod::line_request::FLAG_BIAS_PULL_DOWN;
-		line.request(config);
-
-		REQUIRE(line.offset() == 4);
-		REQUIRE(line.name() == "gpio-mockup-A-4");
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE_FALSE(line.is_active_low());;
-		REQUIRE(line.is_used());
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_PULL_DOWN);
-	}
-
-	SECTION("exported pull-up line")
-	{
-		::gpiod::line_request config;
-
-		config.consumer = consumer.c_str();
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = ::gpiod::line_request::FLAG_BIAS_PULL_UP;
-		line.request(config);
-
-		REQUIRE(line.offset() == 4);
-		REQUIRE(line.name() == "gpio-mockup-A-4");
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(line.is_used());
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
-		REQUIRE(line.bias() == ::gpiod::line::BIAS_PULL_UP);
-	}
-}
-
-TEST_CASE("Line values can be set and read", "[line]")
-{
-	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_path(0));
-	::gpiod::line_request config;
-
-	config.consumer = consumer.c_str();
-
-	SECTION("get value (single line)")
-	{
-		auto line = chip.get_line(3);
-		config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
-		line.request(config);
-		REQUIRE(line.get_value() == 0);
-		mockup::instance().chip_set_pull(0, 3, 1);
-		REQUIRE(line.get_value() == 1);
-	}
-
-	SECTION("set value (single line)")
-	{
-		auto line = chip.get_line(3);
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		line.request(config);
-		line.set_value(1);
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
-		line.set_value(0);
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
-	}
-
-	SECTION("set value with default value parameter")
-	{
-		auto line = chip.get_line(3);
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		line.request(config, 1);
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
-	}
-
-	SECTION("get multiple values at once")
-	{
-		auto lines = chip.get_lines({ 0, 1, 2, 3, 4 });
-		config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
-		lines.request(config);
-		REQUIRE(lines.get_values() == ::std::vector<int>({ 0, 0, 0, 0, 0 }));
-		mockup::instance().chip_set_pull(0, 1, 1);
-		mockup::instance().chip_set_pull(0, 3, 1);
-		mockup::instance().chip_set_pull(0, 4, 1);
-		REQUIRE(lines.get_values() == ::std::vector<int>({ 0, 1, 0, 1, 1 }));
-	}
-
-	SECTION("set multiple values at once")
-	{
-		auto lines = chip.get_lines({ 0, 1, 2, 6, 7 });
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		lines.request(config);
-		lines.set_values({ 1, 1, 0, 1, 0 });
-		REQUIRE(mockup::instance().chip_get_value(0, 0) == 1);
-		REQUIRE(mockup::instance().chip_get_value(0, 1) == 1);
-		REQUIRE(mockup::instance().chip_get_value(0, 2) == 0);
-		REQUIRE(mockup::instance().chip_get_value(0, 6) == 1);
-		REQUIRE(mockup::instance().chip_get_value(0, 7) == 0);
-	}
-
-	SECTION("set multiple values with default values parameter")
-	{
-		auto lines = chip.get_lines({ 1, 2, 4, 6, 7 });
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		lines.request(config, { 1, 1, 0, 1, 0 });
-		REQUIRE(mockup::instance().chip_get_value(0, 1) == 1);
-		REQUIRE(mockup::instance().chip_get_value(0, 2) == 1);
-		REQUIRE(mockup::instance().chip_get_value(0, 4) == 0);
-		REQUIRE(mockup::instance().chip_get_value(0, 6) == 1);
-		REQUIRE(mockup::instance().chip_get_value(0, 7) == 0);
-	}
-
-	SECTION("get value (single line, active-low")
-	{
-		auto line = chip.get_line(4);
-		config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
-		config.flags = ::gpiod::line_request::FLAG_ACTIVE_LOW;
-		line.request(config);
-		REQUIRE(line.get_value() == 1);
-		mockup::instance().chip_set_pull(0, 4, 1);
-		REQUIRE(line.get_value() == 0);
-	}
-
-	SECTION("set value (single line, active-low)")
-	{
-		auto line = chip.get_line(3);
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = ::gpiod::line_request::FLAG_ACTIVE_LOW;
-		line.request(config);
-		line.set_value(1);
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
-		line.set_value(0);
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
-	}
-}
-
-TEST_CASE("Line can be reconfigured", "[line]")
-{
-	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_path(0));
-	::gpiod::line_request config;
-
-	config.consumer = consumer.c_str();
-
-	SECTION("set config (single line, active-state)")
-	{
-		auto line = chip.get_line(3);
-		config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
-		config.flags = 0;
-		line.request(config);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_INPUT);
-		REQUIRE_FALSE(line.is_active_low());
-
-		line.set_config(::gpiod::line_request::DIRECTION_OUTPUT,
-			::gpiod::line_request::FLAG_ACTIVE_LOW,1);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.is_active_low());
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
-		line.set_value(0);
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
-
-		line.set_config(::gpiod::line_request::DIRECTION_OUTPUT, 0);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
-		line.set_value(1);
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
-	}
-
-	SECTION("set flags (single line, active-state)")
-	{
-		auto line = chip.get_line(3);
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = 0;
-		line.request(config,1);
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
-
-		line.set_flags(::gpiod::line_request::FLAG_ACTIVE_LOW);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.is_active_low());
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 0);
-
-		line.set_flags(0);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE_FALSE(line.is_active_low());
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
-	}
-
-	SECTION("set flags (single line, drive)")
-	{
-		auto line = chip.get_line(3);
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = 0;
-		line.request(config);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
-
-		line.set_flags(::gpiod::line_request::FLAG_OPEN_DRAIN);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_OPEN_DRAIN);
-
-		line.set_flags(::gpiod::line_request::FLAG_OPEN_SOURCE);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_OPEN_SOURCE);
-
-		line.set_flags(0);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
-	}
-
-	SECTION("set flags (single line, bias)")
-	{
-		auto line = chip.get_line(3);
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = 0;
-		line.request(config);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
-
-		line.set_flags(::gpiod::line_request::FLAG_OPEN_DRAIN);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_OPEN_DRAIN);
-
-		line.set_flags(::gpiod::line_request::FLAG_OPEN_SOURCE);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_OPEN_SOURCE);
-
-		line.set_flags(0);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(line.drive() == ::gpiod::line::DRIVE_PUSH_PULL);
-	}
-
-	SECTION("set direction input (single line)")
-	{
-		auto line = chip.get_line(3);
-		config.request_type = ::gpiod::line_request::DIRECTION_OUTPUT;
-		config.flags = 0;
-		line.request(config);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		line.set_direction_input();
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_INPUT);
-	}
-
-	SECTION("set direction output (single line)")
-	{
-		auto line = chip.get_line(3);
-		config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
-		config.flags = 0;
-		line.request(config);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_INPUT);
-		line.set_direction_output(1);
-		REQUIRE(line.direction() == ::gpiod::line::DIRECTION_OUTPUT);
-		REQUIRE(mockup::instance().chip_get_value(0, 3) == 1);
-	}
-}
-
-TEST_CASE("Exported line can be released", "[line]")
-{
-	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_path(0));
-	auto line = chip.get_line(4);
-	::gpiod::line_request config;
-
-	config.consumer = consumer.c_str();
-	config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
-
-	line.request(config);
-
-	REQUIRE(line.get_value() == 0);
-
-	line.release();
-
-	REQUIRE_THROWS_AS(line.get_value(), ::std::system_error);
-}
-
-TEST_CASE("Uninitialized GPIO line behaves correctly", "[line]")
-{
-	::gpiod::line line;
-
-	SECTION("uninitialized line is 'false'")
-	{
-		REQUIRE_FALSE(line);
-	}
-
-	SECTION("using uninitialized line throws logic_error")
-	{
-		REQUIRE_THROWS_AS(line.name(), ::std::logic_error);
-	}
-}
-
-TEST_CASE("Uninitialized GPIO line_bulk behaves correctly", "[line][bulk]")
-{
-	::gpiod::line_bulk bulk;
-
-	SECTION("uninitialized line_bulk is 'false'")
-	{
-		REQUIRE_FALSE(bulk);
-	}
-
-	SECTION("using uninitialized line_bulk throws logic_error")
-	{
-		REQUIRE_THROWS_AS(bulk.get(0), ::std::logic_error);
-	}
-}
-
-TEST_CASE("Cannot request the same line twice", "[line]")
-{
-	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_path(0));
-	::gpiod::line_request config;
-
-	config.consumer = consumer.c_str();
-	config.request_type = ::gpiod::line_request::DIRECTION_INPUT;
-
-	SECTION("two separate calls to request()")
-	{
-		auto line = chip.get_line(3);
-
-		REQUIRE_NOTHROW(line.request(config));
-		REQUIRE_THROWS_AS(line.request(config), ::std::system_error);
-	}
-
-	SECTION("request the same line twice in line_bulk")
-	{
-		/*
-		 * While a line_bulk object can hold two or more line objects
-		 * representing the same line - requesting it will fail.
-		 */
-		auto lines = chip.get_lines({ 2, 3, 4, 4 });
-
-		REQUIRE_THROWS_AS(lines.request(config), ::std::system_error);
-	}
-}
-
-TEST_CASE("Cannot get/set values of unrequested lines", "[line]")
-{
-	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_path(0));
-	auto line = chip.get_line(3);
-
-	SECTION("get value")
-	{
-		REQUIRE_THROWS_AS(line.get_value(), ::std::system_error);
-	}
-
-	SECTION("set value")
-	{
-		REQUIRE_THROWS_AS(line.set_value(1), ::std::system_error);
-	}
-}
-
-TEST_CASE("Line objects can be compared")
-{
-	mockup::probe_guard mockup_chips({ 8 });
-	::gpiod::chip chip(mockup::instance().chip_path(0));
-	auto line1 = chip.get_line(3);
-	auto line2 = chip.get_line(3);
-	auto line3 = chip.get_line(4);
-
-	REQUIRE(line1 == line2);
-	REQUIRE(line2 != line3);
-}
