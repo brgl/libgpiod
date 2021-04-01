@@ -182,11 +182,10 @@ GPIOD_API void gpiod_line_bulk_foreach_line(struct gpiod_line_bulk *bulk,
 
 GPIOD_API bool gpiod_is_gpiochip_device(const char *path)
 {
-	char *name, *realname, *sysfsp, sysfsdev[16], devstr[16];
+	char *realname, *sysfsp, devpath[64];
 	struct stat statbuf;
 	bool ret = false;
-	int rv, fd;
-	ssize_t rd;
+	int rv;
 
 	rv = lstat(path, &statbuf);
 	if (rv)
@@ -217,15 +216,15 @@ GPIOD_API bool gpiod_is_gpiochip_device(const char *path)
 		goto out_free_realname;
 	}
 
-	/* Get the basename. */
-	name = basename(realname);
+	/* Is the device associated with the GPIO subsystem? */
+	snprintf(devpath, sizeof(devpath), "/sys/dev/char/%u:%u/subsystem",
+		 major(statbuf.st_rdev), minor(statbuf.st_rdev));
 
-	/* Do we have a corresponding sysfs attribute? */
-	rv = asprintf(&sysfsp, "/sys/bus/gpio/devices/%s/dev", name);
-	if (rv < 0)
+	sysfsp = realpath(devpath, NULL);
+	if (!sysfsp)
 		goto out_free_realname;
 
-	if (access(sysfsp, R_OK) != 0) {
+	if (strcmp(sysfsp, "/sys/bus/gpio") != 0) {
 		/*
 		 * This is a character device but not the one we're after.
 		 * Before the introduction of this function, we'd fail with
@@ -234,30 +233,6 @@ GPIOD_API bool gpiod_is_gpiochip_device(const char *path)
 		 * the same error code.
 		 */
 		errno = ENOTTY;
-		goto out_free_sysfsp;
-	}
-
-	/*
-	 * Make sure the major and minor numbers of the character device
-	 * correspond to the ones in the dev attribute in sysfs.
-	 */
-	snprintf(devstr, sizeof(devstr), "%u:%u",
-		 major(statbuf.st_rdev), minor(statbuf.st_rdev));
-
-	fd = open(sysfsp, O_RDONLY);
-	if (fd < 0)
-		goto out_free_sysfsp;
-
-	memset(sysfsdev, 0, sizeof(sysfsdev));
-	rd = read(fd, sysfsdev, sizeof(sysfsdev) - 1);
-	close(fd);
-	if (rd < 0)
-		goto out_free_sysfsp;
-
-	rd--; /* Ignore trailing newline. */
-	if ((size_t)rd != strlen(devstr) ||
-	    strncmp(sysfsdev, devstr, rd) != 0) {
-		errno = ENODEV;
 		goto out_free_sysfsp;
 	}
 
