@@ -45,11 +45,11 @@ gpiod_chip_get_all_lines(struct gpiod_chip *chip)
 	struct gpiod_line *line;
 	unsigned int offset;
 
-	bulk = gpiod_line_bulk_new(gpiod_chip_num_lines(chip));
+	bulk = gpiod_line_bulk_new(gpiod_chip_get_num_lines(chip));
 	if (!bulk)
 		return NULL;
 
-	for (offset = 0; offset < gpiod_chip_num_lines(chip); offset++) {
+	for (offset = 0; offset < gpiod_chip_get_num_lines(chip); offset++) {
 		line = gpiod_chip_get_line(chip, offset);
 		if (!line) {
 			gpiod_line_bulk_free(bulk);
@@ -68,7 +68,7 @@ GPIOD_API int gpiod_chip_find_line(struct gpiod_chip *chip, const char *name)
 	struct gpiod_line *line;
 	const char *tmp;
 
-	num_lines = gpiod_chip_num_lines(chip);
+	num_lines = gpiod_chip_get_num_lines(chip);
 
 	for (offset = 0; offset < num_lines; offset++) {
 		line = gpiod_chip_get_line(chip, offset);

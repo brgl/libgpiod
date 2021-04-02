@@ -335,17 +335,17 @@ GPIOD_API void gpiod_chip_unref(struct gpiod_chip *chip)
 	free(chip);
 }
 
-GPIOD_API const char *gpiod_chip_name(struct gpiod_chip *chip)
+GPIOD_API const char *gpiod_chip_get_name(struct gpiod_chip *chip)
 {
 	return chip->name;
 }
 
-GPIOD_API const char *gpiod_chip_label(struct gpiod_chip *chip)
+GPIOD_API const char *gpiod_chip_get_label(struct gpiod_chip *chip)
 {
 	return chip->label;
 }
 
-GPIOD_API unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip)
+GPIOD_API unsigned int gpiod_chip_get_num_lines(struct gpiod_chip *chip)
 {
 	return chip->num_lines;
 }

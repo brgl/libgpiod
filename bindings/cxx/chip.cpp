@@ -62,21 +62,21 @@ GPIOD_CXX_API ::std::string chip::name(void) const
 {
 	this->throw_if_noref();
 
-	return ::std::string(::gpiod_chip_name(this->_m_chip.get()));
+	return ::std::string(::gpiod_chip_get_name(this->_m_chip.get()));
 }
 
 GPIOD_CXX_API ::std::string chip::label(void) const
 {
 	this->throw_if_noref();
 
-	return ::std::string(::gpiod_chip_label(this->_m_chip.get()));
+	return ::std::string(::gpiod_chip_get_label(this->_m_chip.get()));
 }
 
 GPIOD_CXX_API unsigned int chip::num_lines(void) const
 {
 	this->throw_if_noref();
 
-	return ::gpiod_chip_num_lines(this->_m_chip.get());
+	return ::gpiod_chip_get_num_lines(this->_m_chip.get());
 }
 
 GPIOD_CXX_API line chip::get_line(unsigned int offset) const

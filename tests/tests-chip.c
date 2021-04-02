@@ -63,9 +63,12 @@ GPIOD_TEST_CASE(get_name, 0, { 8, 8, 8})
 	g_assert_nonnull(chip2);
 	gpiod_test_return_if_failed();
 
-	g_assert_cmpstr(gpiod_chip_name(chip0), ==, gpiod_test_chip_name(0));
-	g_assert_cmpstr(gpiod_chip_name(chip1), ==, gpiod_test_chip_name(1));
-	g_assert_cmpstr(gpiod_chip_name(chip2), ==, gpiod_test_chip_name(2));
+	g_assert_cmpstr(gpiod_chip_get_name(chip0), ==,
+			gpiod_test_chip_name(0));
+	g_assert_cmpstr(gpiod_chip_get_name(chip1), ==,
+			gpiod_test_chip_name(1));
+	g_assert_cmpstr(gpiod_chip_get_name(chip2), ==,
+			gpiod_test_chip_name(2));
 }
 
 GPIOD_TEST_CASE(get_label, 0, { 8, 8, 8})
@@ -83,9 +86,9 @@ GPIOD_TEST_CASE(get_label, 0, { 8, 8, 8})
 	g_assert_nonnull(chip2);
 	gpiod_test_return_if_failed();
 
-	g_assert_cmpstr(gpiod_chip_label(chip0), ==, "gpio-mockup-A");
-	g_assert_cmpstr(gpiod_chip_label(chip1), ==, "gpio-mockup-B");
-	g_assert_cmpstr(gpiod_chip_label(chip2), ==, "gpio-mockup-C");
+	g_assert_cmpstr(gpiod_chip_get_label(chip0), ==, "gpio-mockup-A");
+	g_assert_cmpstr(gpiod_chip_get_label(chip1), ==, "gpio-mockup-B");
+	g_assert_cmpstr(gpiod_chip_get_label(chip2), ==, "gpio-mockup-C");
 }
 
 GPIOD_TEST_CASE(num_lines, 0, { 1, 4, 8, 16, 32 })
@@ -109,11 +112,11 @@ GPIOD_TEST_CASE(num_lines, 0, { 1, 4, 8, 16, 32 })
 	g_assert_nonnull(chip4);
 	gpiod_test_return_if_failed();
 
-	g_assert_cmpuint(gpiod_chip_num_lines(chip0), ==, 1);
-	g_assert_cmpuint(gpiod_chip_num_lines(chip1), ==, 4);
-	g_assert_cmpuint(gpiod_chip_num_lines(chip2), ==, 8);
-	g_assert_cmpuint(gpiod_chip_num_lines(chip3), ==, 16);
-	g_assert_cmpuint(gpiod_chip_num_lines(chip4), ==, 32);
+	g_assert_cmpuint(gpiod_chip_get_num_lines(chip0), ==, 1);
+	g_assert_cmpuint(gpiod_chip_get_num_lines(chip1), ==, 4);
+	g_assert_cmpuint(gpiod_chip_get_num_lines(chip2), ==, 8);
+	g_assert_cmpuint(gpiod_chip_get_num_lines(chip3), ==, 16);
+	g_assert_cmpuint(gpiod_chip_get_num_lines(chip4), ==, 32);
 }
 
 GPIOD_TEST_CASE(get_line, 0, { 16 })

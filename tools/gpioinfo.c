@@ -130,9 +130,9 @@ static void list_lines(struct gpiod_chip *chip)
 	int direction;
 
 	printf("%s - %u lines:\n",
-	       gpiod_chip_name(chip), gpiod_chip_num_lines(chip));
+	       gpiod_chip_get_name(chip), gpiod_chip_get_num_lines(chip));
 
-	for (offset = 0; offset < gpiod_chip_num_lines(chip); offset++) {
+	for (offset = 0; offset < gpiod_chip_get_num_lines(chip); offset++) {
 		line = gpiod_chip_get_line(chip, offset);
 		if (!line)
 			die_perror("unable to retrieve the line object from chip");

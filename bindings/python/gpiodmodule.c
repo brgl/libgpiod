@@ -1918,9 +1918,9 @@ static PyObject *gpiod_Chip_repr(gpiod_ChipObject *self)
 		return NULL;
 
 	return PyUnicode_FromFormat("'%s /%s/ %u lines'",
-				    gpiod_chip_name(self->chip),
-				    gpiod_chip_label(self->chip),
-				    gpiod_chip_num_lines(self->chip));
+				    gpiod_chip_get_name(self->chip),
+				    gpiod_chip_get_label(self->chip),
+				    gpiod_chip_get_num_lines(self->chip));
 }
 
 PyDoc_STRVAR(gpiod_Chip_close_doc,
@@ -1971,7 +1971,7 @@ static PyObject *gpiod_Chip_name(gpiod_ChipObject *self,
 	if (gpiod_ChipIsClosed(self))
 		return NULL;
 
-	return PyUnicode_FromFormat("%s", gpiod_chip_name(self->chip));
+	return PyUnicode_FromFormat("%s", gpiod_chip_get_name(self->chip));
 }
 
 PyDoc_STRVAR(gpiod_Chip_label_doc,
@@ -1985,7 +1985,7 @@ static PyObject *gpiod_Chip_label(gpiod_ChipObject *self,
 	if (gpiod_ChipIsClosed(self))
 		return NULL;
 
-	return PyUnicode_FromFormat("%s", gpiod_chip_label(self->chip));
+	return PyUnicode_FromFormat("%s", gpiod_chip_get_label(self->chip));
 }
 
 PyDoc_STRVAR(gpiod_Chip_num_lines_doc,
@@ -1999,7 +1999,7 @@ static PyObject *gpiod_Chip_num_lines(gpiod_ChipObject *self,
 	if (gpiod_ChipIsClosed(self))
 		return NULL;
 
-	return Py_BuildValue("I", gpiod_chip_num_lines(self->chip));
+	return Py_BuildValue("I", gpiod_chip_get_num_lines(self->chip));
 }
 
 static gpiod_LineObject *
@@ -2381,7 +2381,7 @@ static gpiod_LineObject *gpiod_LineIter_next(gpiod_LineIterObject *self)
 {
 	struct gpiod_line *line;
 
-	if (self->offset == gpiod_chip_num_lines(self->owner->chip))
+	if (self->offset == gpiod_chip_get_num_lines(self->owner->chip))
 		return NULL; /* Last element. */
 
 	line = gpiod_chip_get_line(self->owner->chip, self->offset++);

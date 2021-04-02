@@ -94,21 +94,21 @@ void gpiod_chip_unref(struct gpiod_chip *chip);
  * @param chip The GPIO chip object.
  * @return Pointer to a human-readable string containing the chip name.
  */
-const char *gpiod_chip_name(struct gpiod_chip *chip);
+const char *gpiod_chip_get_name(struct gpiod_chip *chip);
 
 /**
  * @brief Get the GPIO chip label as represented in the kernel.
  * @param chip The GPIO chip object.
  * @return Pointer to a human-readable string containing the chip label.
  */
-const char *gpiod_chip_label(struct gpiod_chip *chip);
+const char *gpiod_chip_get_label(struct gpiod_chip *chip);
 
 /**
  * @brief Get the number of GPIO lines exposed by this chip.
  * @param chip The GPIO chip object.
  * @return Number of GPIO lines.
  */
-unsigned int gpiod_chip_num_lines(struct gpiod_chip *chip);
+unsigned int gpiod_chip_get_num_lines(struct gpiod_chip *chip);
 
 /**
  * @brief Get the handle to the GPIO line at given offset.

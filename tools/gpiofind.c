@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 		offset = gpiod_chip_find_line(chip, argv[0]);
 		if (offset >= 0) {
 			printf("%s %u\n",
-			       gpiod_chip_name(chip), offset);
+			       gpiod_chip_get_name(chip), offset);
 			gpiod_chip_unref(chip);
 			return EXIT_SUCCESS;
 		}

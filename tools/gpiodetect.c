@@ -76,9 +76,9 @@ int main(int argc, char **argv)
 		}
 
 		printf("%s [%s] (%u lines)\n",
-		       gpiod_chip_name(chip),
-		       gpiod_chip_label(chip),
-		       gpiod_chip_num_lines(chip));
+		       gpiod_chip_get_name(chip),
+		       gpiod_chip_get_label(chip),
+		       gpiod_chip_get_num_lines(chip));
 
 		gpiod_chip_unref(chip);
 		free(entries[i]);
