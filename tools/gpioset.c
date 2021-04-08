@@ -302,7 +302,8 @@ int main(int argc, char **argv)
 	if (rv)
 		die_perror("unable to request lines");
 
-	mode->callback(&cbdata);
+	if (mode->callback)
+		mode->callback(&cbdata);
 
 	gpiod_line_release_bulk(lines);
 	gpiod_chip_unref(chip);

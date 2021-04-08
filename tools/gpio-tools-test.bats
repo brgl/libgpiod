@@ -599,6 +599,14 @@ teardown() {
 	output_regex_match ".*can't specify wait time in this mode"
 }
 
+@test "gpioset: default mode" {
+	gpio_mockup_probe 8 8 8
+
+	run_tool gpioset "$(gpio_mockup_chip_name 1)" 0=1
+
+	test "$status" -eq "0"
+}
+
 @test "gpioset: invalid mapping" {
 	gpio_mockup_probe 8 8 8
 
