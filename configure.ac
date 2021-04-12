@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-# SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
+# SPDX-FileCopyrightText: 2017-2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 AC_PREREQ([2.69])
 
@@ -31,6 +31,7 @@ AC_SUBST(ABI_CXX_VERSION, [2.1.1])
 # ABI version for libgpiomockup (we need this since it can be installed if we
 # enable install-tests).
 AC_SUBST(ABI_MOCKUP_VERSION, [0.1.0])
+AC_SUBST(ABI_GPIOSIM_VERSION, [0.1.0])
 
 AC_CONFIG_AUX_DIR([autostuff])
 AC_CONFIG_MACRO_DIRS([m4])
@@ -126,10 +127,11 @@ AC_DEFUN([FUNC_NOT_FOUND_TESTS],
 
 if test "x$with_tests" = xtrue
 then
-	# For libgpiomockup
+	# For libgpiomockup & libgpiosim
 	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
 	PKG_CHECK_MODULES([KMOD], [libkmod >= 18])
 	PKG_CHECK_MODULES([UDEV], [libudev >= 215])
+	PKG_CHECK_MODULES([MOUNT], [mount >= 2.33.1])
 
 	# For core library tests
 	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.50])
@@ -224,6 +226,7 @@ AC_CONFIG_FILES([Makefile
 		 tools/Makefile
 		 tests/Makefile
 		 tests/mockup/Makefile
+		 tests/gpiosim/Makefile
 		 bindings/cxx/libgpiodcxx.pc
 		 bindings/Makefile
 		 bindings/cxx/Makefile
