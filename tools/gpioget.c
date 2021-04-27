@@ -13,11 +13,12 @@ static const struct option longopts[] = {
 	{ "help",	no_argument,		NULL,	'h' },
 	{ "version",	no_argument,		NULL,	'v' },
 	{ "active-low",	no_argument,		NULL,	'l' },
+	{ "dir-as-is",	no_argument,		NULL,	'n' },
 	{ "bias",	required_argument,	NULL,	'B' },
 	{ GETOPT_NULL_LONGOPT },
 };
 
-static const char *const shortopts = "+hvlB:";
+static const char *const shortopts = "+hvlnB:";
 
 static void print_help(void)
 {
@@ -30,6 +31,7 @@ static void print_help(void)
 	printf("  -h, --help:\t\tdisplay this message and exit\n");
 	printf("  -v, --version:\tdisplay the version and exit\n");
 	printf("  -l, --active-low:\tset the line active state to low\n");
+	printf("  -n, --dir-as-is:\tdon't force-reconfigure line direction\n");
 	printf("  -B, --bias=[as-is|disable|pull-down|pull-up] (defaults to 'as-is'):\n");
 	printf("		set the line bias\n");
 	printf("\n");
@@ -38,6 +40,7 @@ static void print_help(void)
 
 int main(int argc, char **argv)
 {
+	int request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
 	struct gpiod_line_request_config config;
 	int *values, optc, opti, rv, flags = 0;
 	unsigned int *offsets, i, num_lines;
@@ -59,6 +62,9 @@ int main(int argc, char **argv)
 			return EXIT_SUCCESS;
 		case 'l':
 			flags |= GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW;
+			break;
+		case 'n':
+			request_type = GPIOD_LINE_REQUEST_DIRECTION_AS_IS;
 			break;
 		case 'B':
 			flags |= bias_flags(optarg);
@@ -104,7 +110,7 @@ int main(int argc, char **argv)
 	memset(&config, 0, sizeof(config));
 
 	config.consumer = "gpioget";
-	config.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
+	config.request_type = request_type;
 	config.flags = flags;
 
 	rv = gpiod_line_request_bulk(lines, &config, NULL);
