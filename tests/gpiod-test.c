@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
+// SPDX-FileCopyrightText: 2017-2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 #include <errno.h>
 #include <glib/gstdio.h>
-#include <gpio-mockup.h>
+#include <gpiosim.h>
 #include <linux/version.h>
 #include <stdio.h>
 #include <sys/utsname.h>
@@ -30,7 +30,9 @@ struct gpiod_test_event_thread {
 
 static struct {
 	GList *tests;
-	struct gpio_mockup *mockup;
+	struct gpiosim_ctx *gpiosim;
+	GPtrArray *sim_chips;
+	GPtrArray *sim_banks;
 } globals;
 
 static void check_kernel(void)
@@ -61,29 +63,98 @@ static void check_kernel(void)
 	return;
 }
 
+static void remove_gpiosim_chip(gpointer data)
+{
+	struct gpiosim_dev *dev = data;
+	gint ret;
+
+	ret = gpiosim_dev_disable(dev);
+	if (ret)
+		g_error("unable to uncommit a simulated GPIO device: %s",
+			g_strerror(errno));
+
+	gpiosim_dev_unref(dev);
+}
+
+static void remove_gpiosim_bank(gpointer data)
+{
+	struct gpiosim_bank *bank = data;
+
+	gpiosim_bank_unref(bank);
+}
+
 static void test_func_wrapper(gconstpointer data)
 {
 	const _GpiodTestCase *test = data;
-	gint ret, flags = 0;
+	struct gpiosim_bank *sim_bank;
+	struct gpiosim_dev *sim_dev;
+	gchar *line_name, *label;
+	gchar chip_idx;
+	guint i, j;
+	gint ret;
 
-	if (test->flags & GPIOD_TEST_FLAG_NAMED_LINES)
-		flags |= GPIO_MOCKUP_FLAG_NAMED_LINES;
+	globals.sim_chips = g_ptr_array_new_full(test->num_chips,
+						 remove_gpiosim_chip);
+	globals.sim_banks = g_ptr_array_new_full(test->num_chips,
+						 remove_gpiosim_bank);
 
-	ret = gpio_mockup_probe(globals.mockup, test->num_chips,
-				test->chip_sizes, flags);
-	if (ret)
-		g_error("unable to probe gpio-mockup: %s", g_strerror(errno));
+	for (i = 0; i < test->num_chips; i++) {
+		chip_idx = i + 65;
+
+		sim_dev = gpiosim_dev_new(globals.gpiosim, NULL);
+		if (!sim_dev)
+			g_error("unable to create a simulated GPIO chip: %s",
+				g_strerror(errno));
+
+		sim_bank = gpiosim_bank_new(sim_dev, NULL);
+		if (!sim_bank)
+			g_error("unable to create a simulated GPIO bank: %s",
+				g_strerror(errno));
+
+		label = g_strdup_printf("gpio-mockup-%c", chip_idx);
+		ret = gpiosim_bank_set_label(sim_bank, label);
+		g_free(label);
+		if (ret)
+			g_error("unable to set simulated chip label: %s",
+				g_strerror(errno));
+
+		ret = gpiosim_bank_set_num_lines(sim_bank, test->chip_sizes[i]);
+		if (ret)
+			g_error("unable to set the number of lines for a simulated chip: %s",
+				g_strerror(errno));
+
+		if (test->flags & GPIOD_TEST_FLAG_NAMED_LINES) {
+			for (j = 0; j < test->chip_sizes[i]; j++) {
+				line_name = g_strdup_printf("gpio-mockup-%c-%u",
+							    chip_idx, j);
+
+				ret = gpiosim_bank_set_line_name(sim_bank, j,
+								 line_name);
+				g_free(line_name);
+				if (ret)
+					g_error("unable to set the line names for a simulated bank: %s",
+						g_strerror(errno));
+			}
+		}
+
+		ret = gpiosim_dev_enable(sim_dev);
+		if (ret)
+			g_error("unable to commit the simulated GPIO device: %s",
+				g_strerror(errno));
+
+		g_ptr_array_add(globals.sim_chips, sim_dev);
+		g_ptr_array_add(globals.sim_banks, sim_bank);
+	}
 
 	test->func();
 
-	ret = gpio_mockup_remove(globals.mockup);
-	if (ret)
-		g_error("unable to remove gpio_mockup: %s", g_strerror(errno));
+	g_ptr_array_unref(globals.sim_banks);
+	g_ptr_array_unref(globals.sim_chips);
 }
 
-static void unref_mockup(void)
+static void unref_gpiosim(void)
 {
-	gpio_mockup_unref(globals.mockup);
+	gpiosim_ctx_unref(globals.gpiosim);
 }
 
 static void add_test_from_list(gpointer element, gpointer data G_GNUC_UNUSED)
@@ -102,15 +173,15 @@ int main(gint argc, gchar **argv)
 	g_debug("%u tests registered", g_list_length(globals.tests));
 
 	/*
-	 * Setup libgpiomockup first so that it runs its own kernel version
+	 * Setup libpiosim first so that it runs its own kernel version
 	 * check before we tell the user our local requirements are met as
 	 * well.
 	 */
-	globals.mockup = gpio_mockup_new();
-	if (!globals.mockup)
-		g_error("unable to initialize gpio-mockup library: %s",
+	globals.gpiosim = gpiosim_ctx_new();
+	if (!globals.gpiosim)
+		g_error("unable to initialize gpiosim library: %s",
 			g_strerror(errno));
-	atexit(unref_mockup);
+	atexit(unref_gpiosim);
 
 	check_kernel();
 
@@ -127,35 +198,27 @@ void _gpiod_test_register(_GpiodTestCase *test)
 
 const gchar *gpiod_test_chip_path(guint idx)
 {
-	const gchar *path;
+	struct gpiosim_bank *bank = g_ptr_array_index(globals.sim_banks, idx);
 
-	path = gpio_mockup_chip_path(globals.mockup, idx);
-	if (!path)
-		g_error("unable to retrieve the chip path: %s",
-			g_strerror(errno));
-
-	return path;
+	return gpiosim_bank_get_dev_path(bank);
 }
 
 const gchar *gpiod_test_chip_name(guint idx)
 {
-	const gchar *name;
+	struct gpiosim_bank *bank = g_ptr_array_index(globals.sim_banks, idx);
 
-	name = gpio_mockup_chip_name(globals.mockup, idx);
-	if (!name)
-		g_error("unable to retrieve the chip name: %s",
-			g_strerror(errno));
-
-	return name;
+	return gpiosim_bank_get_chip_name(bank);
 }
 
 gint gpiod_test_chip_get_value(guint chip_index, guint line_offset)
 {
+	struct gpiosim_bank *bank = g_ptr_array_index(globals.sim_banks,
+						      chip_index);
 	gint ret;
 
-	ret = gpio_mockup_get_value(globals.mockup, chip_index, line_offset);
+	ret = gpiosim_bank_get_value(bank, line_offset);
 	if (ret < 0)
-		g_error("unable to read line value from gpio-mockup: %s",
+		g_error("unable to read line value from gpiosim: %s",
 			g_strerror(errno));
 
 	return ret;
@@ -163,12 +226,14 @@ gint gpiod_test_chip_get_value(guint chip_index, guint line_offset)
 
 void gpiod_test_chip_set_pull(guint chip_index, guint line_offset, gint pull)
 {
+	struct gpiosim_bank *bank = g_ptr_array_index(globals.sim_banks,
+						      chip_index);
 	gint ret;
 
-	ret = gpio_mockup_set_pull(globals.mockup, chip_index,
-				   line_offset, pull);
+	ret = gpiosim_bank_set_pull(bank, line_offset,
+				    pull ? GPIOSIM_PULL_UP : GPIOSIM_PULL_DOWN);
 	if (ret)
-		g_error("unable to set line pull in gpio-mockup: %s",
+		g_error("unable to set line pull in gpiosim: %s",
 			g_strerror(errno));
 }
 

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/* SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com> */
+/* SPDX-FileCopyrightText: 2017-2022 Bartosz Golaszewski <brgl@bgdev.pl> */
 
 /*
  * Testing framework for the core library.
@@ -50,7 +50,7 @@ enum {
 
 /*
  * Register a test case function. The last argument is the array of numbers
- * of lines per mockup chip.
+ * of lines per simulated chip.
  */
 #define GPIOD_TEST_CASE(_name, _flags, ...)				\
 	static void _name(void);					\
