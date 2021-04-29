@@ -149,18 +149,6 @@ const gchar *gpiod_test_chip_name(guint idx)
 	return name;
 }
 
-gint gpiod_test_chip_num(unsigned int idx)
-{
-	gint num;
-
-	num = gpio_mockup_chip_num(globals.mockup, idx);
-	if (num < 0)
-		g_error("unable to retrieve the chip number: %s",
-			g_strerror(errno));
-
-	return num;
-}
-
 gint gpiod_test_chip_get_value(guint chip_index, guint line_offset)
 {
 	gint ret;
