@@ -159,7 +159,7 @@ then
 		AC_CHECK_PROG([has_bats], [bats], [true], [false])
 		if test "x$has_bats" = "xfalse"
 		then
-			AC_MSG_NOTICE(["bats not found - gpio-tools tests cannot be run])
+			AC_MSG_NOTICE([bats not found - gpio-tools tests cannot be run])
 		fi
 	fi
 fi
