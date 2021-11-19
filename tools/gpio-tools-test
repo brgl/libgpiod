@@ -38,6 +38,7 @@ check_prog bats
 check_prog modprobe
 check_prog rmmod
 check_prog udevadm
+check_prog timeout
 
 # Check if we're running a kernel at the required version or later
 check_kernel $MIN_KERNEL_VERSION
