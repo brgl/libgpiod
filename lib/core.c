@@ -117,7 +117,7 @@ GPIOD_API struct gpiod_line_bulk *gpiod_line_bulk_new(unsigned int max_lines)
 GPIOD_API void gpiod_line_bulk_reset(struct gpiod_line_bulk *bulk)
 {
 	bulk->num_lines = 0;
-	memset(bulk->lines, 0, bulk->max_lines * sizeof(struct line *));
+	memset(bulk->lines, 0, bulk->max_lines * sizeof(struct gpiod_line *));
 }
 
 GPIOD_API void gpiod_line_bulk_free(struct gpiod_line_bulk *bulk)
