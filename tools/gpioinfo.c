@@ -231,7 +231,9 @@ int main(int argc, char **argv)
 			list_lines(chip);
 
 			gpiod_chip_unref(chip);
+			free(entries[i]);
 		}
+		free(entries);
 	} else {
 		for (i = 0; i < argc; i++) {
 			chip = chip_open_lookup(argv[i]);
