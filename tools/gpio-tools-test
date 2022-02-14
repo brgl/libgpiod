@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 
-MIN_KERNEL_VERSION="5.5.0"
+# Switch to v5.17.0 once released
+MIN_KERNEL_VERSION="5.16.0"
 BATS_SCRIPT="gpio-tools-test.bats"
 SOURCE_DIR="$(dirname ${BASH_SOURCE[0]})"
 
@@ -50,5 +51,9 @@ then
 fi
 
 BATS_PATH=$(which bats)
+
+modprobe gpio-sim || die "unable to load the gpio-sim module"
+mountpoint /sys/kernel/config/ > /dev/null 2> /dev/null || \
+	die "configfs not mounted at /sys/kernel/config/"
 
 exec $BATS_PATH $SOURCE_DIR/$BATS_SCRIPT ${1+"$@"}
