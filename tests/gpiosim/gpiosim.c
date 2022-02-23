@@ -748,6 +748,8 @@ static void bank_release(struct refcount *ref)
 	gpiosim_dev_unref(dev);
 	close(bank->cfs_dir_fd);
 	free(bank->item_name);
+	free(bank->chip_name);
+	free(bank->dev_path);
 	free(bank);
 }
 
