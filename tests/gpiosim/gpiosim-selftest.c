@@ -135,7 +135,7 @@ int main(int argc UNUSED, char **argv UNUSED)
 		return EXIT_FAILURE;
 	}
 
-	if (ret != 1) {
+	if (ret != GPIOSIM_VALUE_ACTIVE) {
 		fprintf(stderr, "Invalid value read\n");
 		return EXIT_FAILURE;
 	}

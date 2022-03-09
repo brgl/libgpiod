@@ -982,9 +982,9 @@ GPIOSIM_API int gpiosim_bank_get_value(struct gpiosim_bank *bank,
 		return ret;
 
 	if (what[0] == '0')
-		return 0;
+		return GPIOSIM_VALUE_INACTIVE;
 	if (what[0] == '1')
-		return 1;
+		return GPIOSIM_VALUE_ACTIVE;
 
 	errno = EIO;
 	return -1;

@@ -16,6 +16,11 @@ struct gpiosim_dev;
 struct gpiosim_bank;
 
 enum {
+	GPIOSIM_VALUE_INACTIVE = 0,
+	GPIOSIM_VALUE_ACTIVE = 1,
+};
+
+enum {
 	GPIOSIM_PULL_DOWN = 1,
 	GPIOSIM_PULL_UP,
 };
