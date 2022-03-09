@@ -319,7 +319,7 @@ struct gpiosim_bank {
 	char *dev_path;
 	int cfs_dir_fd;
 	int sysfs_dir_fd;
-	unsigned int num_lines;
+	size_t num_lines;
 };
 
 static int ctx_open_configfs_dir(struct gpiosim_ctx *ctx, const char *cfs_path)
@@ -830,7 +830,7 @@ GPIOSIM_API int gpiosim_bank_set_label(struct gpiosim_bank *bank,
 }
 
 GPIOSIM_API int gpiosim_bank_set_num_lines(struct gpiosim_bank *bank,
-					   unsigned int num_lines)
+					   size_t num_lines)
 {
 	char buf[32];
 	int ret;
@@ -838,7 +838,7 @@ GPIOSIM_API int gpiosim_bank_set_num_lines(struct gpiosim_bank *bank,
 	if (!dev_check_pending(bank->dev))
 		return -1;
 
-	snprintf(buf, sizeof(buf), "%u", num_lines);
+	snprintf(buf, sizeof(buf), "%zu", num_lines);
 
 	ret = open_write_close(bank->cfs_dir_fd, "num_lines", buf);
 	if (ret)
@@ -958,8 +958,7 @@ GPIOSIM_API int gpiosim_bank_clear_hog(struct gpiosim_bank *bank,
 }
 
 static int sysfs_read_bank_attr(struct gpiosim_bank *bank, unsigned int offset,
-				const char *attr, char *buf,
-				unsigned int bufsize)
+				const char *attr, char *buf, size_t bufsize)
 {
 	struct gpiosim_dev *dev = bank->dev;
 	char where[32];

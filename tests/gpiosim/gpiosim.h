@@ -5,6 +5,7 @@
 #define __GPIOD_GPIOSIM_H__
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,8 +50,7 @@ const char *gpiosim_bank_get_chip_name(struct gpiosim_bank *bank);
 const char *gpiosim_bank_get_dev_path(struct gpiosim_bank *bank);
 
 int gpiosim_bank_set_label(struct gpiosim_bank *bank, const char *label);
-int gpiosim_bank_set_num_lines(struct gpiosim_bank *bank,
-			       unsigned int num_lines);
+int gpiosim_bank_set_num_lines(struct gpiosim_bank *bank, size_t num_lines);
 int gpiosim_bank_set_line_name(struct gpiosim_bank *bank,
 			       unsigned int offset, const char *name);
 int gpiosim_bank_hog_line(struct gpiosim_bank *bank, unsigned int offset,
