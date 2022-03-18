@@ -659,10 +659,6 @@ static void dev_close_sysfs_dirs(struct gpiosim_dev *dev)
 		free(bank->chip_name);
 		free(bank->dev_path);
 		bank->chip_name = bank->dev_path = NULL;
-
-		if (bank->sysfs_dir_fd < 0)
-			break;
-
 		close(bank->sysfs_dir_fd);
 		bank->sysfs_dir_fd = -1;
 	}
@@ -744,9 +740,12 @@ static void bank_release(struct refcount *ref)
 	}
 
 	list_del(&bank->siblings);
+	close(bank->cfs_dir_fd);
 	unlinkat(dev->cfs_dir_fd, bank->item_name, AT_REMOVEDIR);
 	gpiosim_dev_unref(dev);
-	close(bank->cfs_dir_fd);
+	if (bank->sysfs_dir_fd >= 0)
+		/* If the device wasn't disabled yet, this fd is still open. */
+		close(bank->sysfs_dir_fd);
 	free(bank->item_name);
 	free(bank->chip_name);
 	free(bank->dev_path);
