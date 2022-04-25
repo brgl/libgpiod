@@ -781,6 +781,7 @@ gpiosim_bank_new(struct gpiosim_dev *dev, const char *name)
 	bank->cfs_dir_fd = configfs_fd;
 	bank->dev = gpiosim_dev_ref(dev);
 	bank->item_name = item_name;
+	bank->num_lines = 1;
 
 	return bank;
 
