@@ -5,6 +5,7 @@
 [workspace]
 
 members = [
+    "gpiosim-sys",
     "libgpiod",
     "libgpiod-sys"
 ]
