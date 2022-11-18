@@ -20,3 +20,6 @@ intmap = "2.0.0"
 libc = "0.2.39"
 libgpiod-sys = { path = "../libgpiod-sys" }
 thiserror = "1.0"
+
+[dev-dependencies]
+gpiosim-sys = { path = "../gpiosim-sys" }
