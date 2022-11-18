@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2022 Linaro Ltd.
+# SPDX-FileCopyrightTest: 2022 Viresh Kumar <viresh.kumar@linaro.org>
+
+[package]
+name = "libgpiod"
+version = "0.1.0"
+authors = ["Viresh Kumar <viresh.kumar@linaro.org>"]
+description = "libgpiod wrappers"
+repository = "https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git"
+categories = ["api-bindings", "hardware-support", "embedded", "os::linux-apis"]
+rust-version = "1.56"
+keywords = ["libgpiod", "gpio"]
+license = "Apache-2.0 OR BSD-3-Clause"
+edition = "2021"
+
+[dependencies]
+errno = "0.2.8"
+intmap = "2.0.0"
+libc = "0.2.39"
+libgpiod-sys = { path = "../libgpiod-sys" }
+thiserror = "1.0"
