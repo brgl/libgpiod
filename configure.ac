@@ -103,18 +103,20 @@ AM_CONDITIONAL([WITH_TOOLS], [test "x$with_tools" = xtrue])
 AC_DEFUN([FUNC_NOT_FOUND_TOOLS],
 	[ERR_NOT_FOUND([$1()], [tools])])
 
-AC_DEFUN([HEADER_NOT_FOUND_TOOLS],
-	[ERR_NOT_FOUND([$1 header], [tools])])
+AC_ARG_ENABLE([gpioset-interactive],
+	[AS_HELP_STRING([--enable-gpioset-interactive],
+		[enable gpioset interactive mode [default=no]])],
+	[if test "x$enableval" = xyes; then with_gpioset_interactive=true; fi],
+	[with_gpioset_interactive=false])
+AM_CONDITIONAL([WITH_GPIOSET_INTERACTIVE],
+	[test "x$with_gpioset_interactive" = xtrue])
 
-if test "x$with_tools" = xtrue
-then
-	# These are only needed to build tools
-	AC_CHECK_FUNC([basename], [], [FUNC_NOT_FOUND_TOOLS([basename])])
+AS_IF([test "x$with_tools" = xtrue],
+	[# These are only needed to build tools
 	AC_CHECK_FUNC([daemon], [], [FUNC_NOT_FOUND_TOOLS([daemon])])
-	AC_CHECK_FUNC([signalfd], [], [FUNC_NOT_FOUND_TOOLS([signalfd])])
-	AC_CHECK_FUNC([setlinebuf], [], [FUNC_NOT_FOUND_TOOLS([setlinebuf])])
-	AC_CHECK_HEADERS([sys/signalfd.h], [], [HEADER_NOT_FOUND_TOOLS([sys/signalfd.h])])
-fi
+	AS_IF([test "x$with_gpioset_interactive" = xtrue],
+		[PKG_CHECK_MODULES([LIBEDIT], [libedit >= 3.1])])
+	])
 
 AC_ARG_ENABLE([tests],
 	[AS_HELP_STRING([--enable-tests],[enable libgpiod tests [default=no]])],

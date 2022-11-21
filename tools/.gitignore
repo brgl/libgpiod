@@ -6,4 +6,3 @@ gpioinfo
 gpioget
 gpioset
 gpiomon
-gpiofind
