@@ -906,6 +906,20 @@ request_release_line() {
 	status_is 0
 }
 
+@test "gpioget: with consumer" {
+	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
+	gpiosim_chip sim1 num_lines=8 line_name=3:baz line_name=4:xyz
+
+	dut_run gpionotify --banner -F "%l %E %C" foo baz
+
+	run_tool gpioget --consumer gpio-tools-tests foo baz
+	status_is 0
+
+	dut_read
+	output_regex_match "foo requested gpio-tools-tests"
+	output_regex_match "baz requested gpio-tools-tests"
+}
+
 @test "gpioget: with pull-up" {
 	gpiosim_chip sim0 num_lines=8
 
@@ -2414,6 +2428,523 @@ request_release_line() {
 	dut_flush
 
 	gpiosim_set_pull sim0 4 pull-up
+	dut_read
+	output_is "%x"
+}
+
+#
+# gpionotify test cases
+#
+
+@test "gpionotify: by name" {
+	gpiosim_chip sim0 num_lines=8 line_name=4:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner foo
+	dut_regex_match "Watching line .*"
+
+	request_release_line $sim0 4
+
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+\"foo\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+\"foo\""
+	# tools currently have no way to generate a reconfig event
+}
+
+@test "gpionotify: by offset" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --chip $sim0 4
+	dut_regex_match "Watching line .*"
+
+	request_release_line $sim0 4
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 4"
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0 4"
+
+	assert_fail dut_readable
+}
+
+@test "gpionotify: by symlink" {
+	gpiosim_chip sim0 num_lines=8
+	gpiosim_chip_symlink sim0 .
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --chip $GPIOSIM_CHIP_LINK 4
+	dut_regex_match "Watching line .*"
+
+	request_release_line $sim0 4
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0\\s+4"
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0\\s+4"
+
+	assert_fail dut_readable
+}
+
+@test "gpionotify: by chip and name" {
+	gpiosim_chip sim0 num_lines=8 line_name=4:foo
+	gpiosim_chip sim1 num_lines=8 line_name=2:foo
+
+	local sim1=${GPIOSIM_CHIP_NAME[sim1]}
+
+	dut_run gpionotify --banner --chip $sim1 foo
+	dut_regex_match "Watching line .*"
+
+	request_release_line $sim1 2
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim1 2 \"foo\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim1 2 \"foo\""
+
+	assert_fail dut_readable
+}
+
+@test "gpionotify: first matching named line" {
+	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
+				      line_name=3:foobar
+	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
+				      line_name=4:xyz line_name=7:foobar
+	gpiosim_chip sim2 num_lines=16
+
+	dut_run gpionotify --banner foobar
+	dut_regex_match "Watching line .*"
+
+	request_release_line ${GPIOSIM_CHIP_NAME[sim0]} 3
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+\"foobar\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+\"foobar\""
+
+	assert_fail dut_readable
+}
+
+@test "gpionotify: with requested" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpiosim_set_pull sim0 4 pull-up
+
+	dut_run gpionotify --banner --event=requested --chip $sim0 4
+	dut_flush
+
+	request_release_line ${GPIOSIM_CHIP_NAME[sim0]} 4
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 4"
+	assert_fail dut_readable
+}
+
+@test "gpionotify: with released" {
+	gpiosim_chip sim0 num_lines=8
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpiosim_set_pull sim0 4 pull-down
+
+	dut_run gpionotify --banner --event=released --chip $sim0 4
+	dut_flush
+
+	request_release_line ${GPIOSIM_CHIP_NAME[sim0]} 4
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0 4"
+	assert_fail dut_readable
+}
+
+@test "gpionotify: with quiet mode" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --quiet --chip $sim0 4
+	dut_flush
+
+	request_release_line ${GPIOSIM_CHIP_NAME[sim0]} 4
+	assert_fail dut_readable
+}
+
+@test "gpionotify: with unquoted" {
+	gpiosim_chip sim0 num_lines=8 line_name=4:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --unquoted foo
+	dut_regex_match "Watching line .*"
+
+	request_release_line $sim0 4
+
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+foo"
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+foo"
+}
+
+@test "gpionotify: with num-events" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	# redirect, as gpionotify exits after 4 events
+	dut_run_redirect gpionotify --num-events=4 --chip $sim0 3 4
+
+
+	request_release_line ${GPIOSIM_CHIP_NAME[sim0]} 4
+	request_release_line ${GPIOSIM_CHIP_NAME[sim0]} 3
+
+	dut_wait
+	status_is 0
+	dut_read_redirect
+
+	regex_matches "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 4" "${lines[0]}"
+	regex_matches "[0-9]+\.[0-9]+\\s+released\\s+$sim0 4" "${lines[1]}"
+	regex_matches "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 3" "${lines[2]}"
+	regex_matches "[0-9]+\.[0-9]+\\s+released\\s+$sim0 3" "${lines[3]}"
+	num_lines_is 4
+}
+
+@test "gpionotify: multiple lines" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --chip $sim0 1 2 3 4 5
+	dut_regex_match "Watching lines .*"
+
+	request_release_line $sim0 2
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 2"
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0 2"
+
+	request_release_line $sim0 3
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 3"
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0 3"
+
+	request_release_line $sim0 4
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 4"
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0 4"
+
+	assert_fail dut_readable
+}
+
+@test "gpionotify: multiple lines by name and offset" {
+	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --chip $sim0 bar foo 3
+	dut_regex_match "Watching lines .*"
+
+	request_release_line $sim0 2
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 2\\s+\"bar\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0 2\\s+\"bar\""
+
+	request_release_line $sim0 1
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 1\\s+\"foo\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0 1\\s+\"foo\""
+
+	request_release_line $sim0 3
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 3"
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0 3"
+
+	assert_fail dut_readable
+}
+
+@test "gpionotify: multiple lines across multiple chips" {
+	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
+	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=4:xyz
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local sim1=${GPIOSIM_CHIP_NAME[sim1]}
+
+	dut_run gpionotify --banner baz bar foo xyz
+	dut_regex_match "Watching lines .*"
+
+	request_release_line $sim0 2
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+\"bar\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+\"bar\""
+
+	request_release_line $sim0 1
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+\"foo\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+\"foo\""
+
+	request_release_line $sim1 4
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+\"xyz\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+\"xyz\""
+
+	request_release_line $sim1 0
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+\"baz\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+\"baz\""
+
+	assert_fail dut_readable
+}
+
+@test "gpionotify: exit after SIGINT" {
+	gpiosim_chip sim0 num_lines=8
+
+	dut_run gpionotify --banner --chip ${GPIOSIM_CHIP_NAME[sim0]} 4
+	dut_regex_match "Watching line .*"
+
+	dut_kill -SIGINT
+	dut_wait
+
+	status_is 130
+}
+
+@test "gpionotify: exit after SIGTERM" {
+	gpiosim_chip sim0 num_lines=8
+
+	dut_run gpionotify --banner --chip ${GPIOSIM_CHIP_NAME[sim0]} 4
+	dut_regex_match "Watching line .*"
+
+	dut_kill -SIGTERM
+	dut_wait
+
+	status_is 143
+}
+
+@test "gpionotify: with nonexistent line" {
+	run_tool gpionotify nonexistent-line
+
+	status_is 1
+	output_regex_match ".*cannot find line 'nonexistent-line'"
+}
+
+@test "gpionotify: with same line twice" {
+	gpiosim_chip sim0 num_lines=8 line_name=1:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	# by offset
+	run_tool gpionotify --chip $sim0 0 0
+
+	output_regex_match ".*lines '0' and '0' are the same line"
+	num_lines_is 1
+	status_is 1
+
+	# by name
+	run_tool gpionotify foo foo
+
+	output_regex_match ".*lines 'foo' and 'foo' are the same line"
+	num_lines_is 1
+	status_is 1
+
+	# by name and offset
+	run_tool gpionotify --chip $sim0 1 foo
+
+	output_regex_match ".*lines '1' and 'foo' are the same line"
+	num_lines_is 1
+	status_is 1
+}
+
+@test "gpionotify: with strict named line check" {
+	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
+				      line_name=3:foobar
+	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
+				      line_name=4:xyz line_name=7:foobar
+	gpiosim_chip sim2 num_lines=16
+
+	run_tool gpionotify --strict foobar
+
+	output_regex_match ".*line 'foobar' is not unique"
+	status_is 1
+}
+
+@test "gpionotify: with lines by offset" {
+	# not suggesting this setup makes any sense
+	# - just test that we can deal with it
+	gpiosim_chip sim0 num_lines=8 line_name=1:6 line_name=6:1
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --chip $sim0 1
+	dut_flush
+
+	request_release_line $sim0 1
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 1"
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0 1"
+
+	request_release_line $sim0 6
+
+	assert_fail dut_readable
+}
+
+@test "gpionotify: with lines strictly by name" {
+	# not suggesting this setup makes any sense
+	# - just test that we can deal with it
+	gpiosim_chip sim0 num_lines=8 line_name=1:6 line_name=6:1
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --by-name --chip $sim0 1
+	dut_flush
+
+	request_release_line $sim0 6
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+$sim0 6 \"1\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+$sim0 6 \"1\""
+
+	request_release_line $sim0 1
+	assert_fail dut_readable
+}
+
+@test "gpionotify: with no arguments" {
+	run_tool gpionotify
+
+	output_regex_match ".*at least one GPIO line must be specified"
+	status_is 1
+}
+
+@test "gpionotify: with no line specified" {
+	gpiosim_chip sim0 num_lines=8
+
+	run_tool gpionotify --chip ${GPIOSIM_CHIP_NAME[sim0]}
+
+	output_regex_match ".*at least one GPIO line must be specified"
+	status_is 1
+}
+
+@test "gpionotify: with offset out of range" {
+	gpiosim_chip sim0 num_lines=4
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_tool gpionotify --chip $sim0 5
+
+	output_regex_match ".*offset 5 is out of range on chip '$sim0'"
+	status_is 1
+}
+
+@test "gpionotify: with custom format (event type + offset)" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=requested "--format=%e %o" -c $sim0 4
+	dut_flush
+
+	request_release_line $sim0 4
+	dut_read
+	output_is "1 4"
+}
+
+@test "gpionotify: with custom format (event type + offset joined)" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=requested "--format=%e%o" -c $sim0 4
+	dut_flush
+
+	request_release_line $sim0 4
+	dut_read
+	output_is "14"
+}
+
+@test "gpionotify: with custom format (event, chip and line)" {
+	gpiosim_chip sim0 num_lines=8 line_name=4:baz
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=released \
+		"--format=%e %o %E %c %l" -c $sim0 baz
+	dut_flush
+
+	request_release_line $sim0 4
+	dut_regex_match "2 4 released $sim0 baz"
+}
+
+@test "gpionotify: with custom format (seconds timestamp)" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=requested "--format=%e %o %S" \
+		-c $sim0 4
+	dut_flush
+
+	request_release_line $sim0 4
+	dut_regex_match "1 4 [0-9]+\\.[0-9]+"
+}
+
+@test "gpionotify: with custom format (UTC timestamp)" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=released \
+		"--format=%U %e %o" -c $sim0 4
+	dut_flush
+
+	request_release_line $sim0 4
+	dut_regex_match \
+"[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]\\.[0-9]+Z 2 4"
+}
+
+@test "gpionotify: with custom format (localtime timestamp)" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=released \
+		"--format=%L %e %o" -c $sim0 4
+	dut_flush
+
+	request_release_line $sim0 4
+	dut_regex_match \
+"[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]\\.[0-9]+ 2 4"
+}
+
+@test "gpionotify: with custom format (double percent sign)" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=requested "--format=start%%end" \
+		-c $sim0 4
+	dut_flush
+
+	request_release_line $sim0 4
+	dut_read
+	output_is "start%end"
+}
+
+@test "gpionotify: with custom format (double percent sign + event type specifier)" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=requested "--format=%%e" -c $sim0 4
+	dut_flush
+
+	request_release_line $sim0 4
+	dut_read
+	output_is "%e"
+}
+
+@test "gpionotify: with custom format (single percent sign)" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=requested "--format=%" -c $sim0 4
+	dut_flush
+
+	request_release_line $sim0 4
+	dut_read
+	output_is "%"
+}
+
+@test "gpionotify: with custom format (single percent sign between other characters)" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=requested "--format=foo % bar" -c $sim0 4
+	dut_flush
+
+	request_release_line $sim0 4
+	dut_read
+	output_is "foo % bar"
+}
+
+@test "gpionotify: with custom format (unknown specifier)" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpionotify --banner --event=requested "--format=%x" -c $sim0 4
+	dut_flush
+
+	request_release_line $sim0 4
 	dut_read
 	output_is "%x"
 }
