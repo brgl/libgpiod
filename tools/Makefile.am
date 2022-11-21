@@ -16,7 +16,7 @@ LDADD += $(LIBEDIT_LIBS)
 
 endif
 
-bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon
+bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpionotify
 
 gpiodetect_SOURCES = gpiodetect.c
 
@@ -27,6 +27,8 @@ gpioget_SOURCES = gpioget.c
 gpioset_SOURCES = gpioset.c
 
 gpiomon_SOURCES = gpiomon.c
+
+gpionotify_SOURCES = gpionotify.c
 
 EXTRA_DIST = gpio-tools-test gpio-tools-test.bats
 

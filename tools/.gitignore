@@ -6,3 +6,4 @@ gpioinfo
 gpioget
 gpioset
 gpiomon
+gpionotify
