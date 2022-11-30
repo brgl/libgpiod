@@ -16,8 +16,9 @@ from .exception import ChipClosedError, RequestReleasedError
 from .info_event import InfoEvent
 from .line_request import LineRequest
 from .line_settings import LineSettings
+from .version import __version__
 
-__version__ = _ext.__version__
+api_version = _ext.api_version
 
 
 def is_gpiochip_device(path: str) -> bool:

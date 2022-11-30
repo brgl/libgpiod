@@ -32,16 +32,12 @@ with_tests = bool(environ["GPIOD_WITH_TESTS"])
 if with_tests:
     extensions.append(gpiosim_ext)
 
-# FIXME Find a better way to get the version
-version = None
-try:
-    version = environ["GPIOD_VERSION_STR"]
-except KeyError:
-    pass
+with open("gpiod/version.py", "r") as fd:
+    exec(fd.read())
 
 setup(
     name="gpiod",
     packages=find_packages(include=["gpiod"]),
     ext_modules=extensions,
-    version=version,
+    version=__version__,
 )

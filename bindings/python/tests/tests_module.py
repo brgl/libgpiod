@@ -3,7 +3,6 @@
 
 import gpiod
 import os
-import re
 import unittest
 
 from . import gpiosim
@@ -51,9 +50,11 @@ class IsGPIOChip(TestCase):
 
 
 class VersionString(TestCase):
-    def test_version_string(self):
-        self.assertTrue(
-            re.match(
-                "^[0-9][1-9]?\\.[0-9][1-9]?([\\.0-9]?|\\-devel)$", gpiod.__version__
-            )
-        )
+
+    VERSION_PATTERN = "^[0-9][1-9]?\\.[0-9][1-9]?(\\.[0-9]?|\\-devel)$"
+
+    def test_api_version_string(self):
+        self.assertRegex(gpiod.api_version, VersionString.VERSION_PATTERN)
+
+    def test_module_version(self):
+        self.assertRegex(gpiod.__version__, VersionString.VERSION_PATTERN)
