@@ -29,7 +29,7 @@ line_settings_init(line_settings_object *self, PyObject *args, PyObject *kwargs)
 		NULL
 	};
 
-	enum gpiod_line_event_clock event_clock;
+	enum gpiod_line_clock event_clock;
 	enum gpiod_line_direction direction;
 	enum gpiod_line_value output_value;
 	unsigned long debounce_period;

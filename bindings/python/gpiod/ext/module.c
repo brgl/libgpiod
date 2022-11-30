@@ -80,15 +80,15 @@ static const struct module_const module_constants[] = {
 	},
 	{
 		.name = "CLOCK_MONOTONIC",
-		.val = GPIOD_LINE_EVENT_CLOCK_MONOTONIC,
+		.val = GPIOD_LINE_CLOCK_MONOTONIC,
 	},
 	{
 		.name = "CLOCK_REALTIME",
-		.val = GPIOD_LINE_EVENT_CLOCK_REALTIME,
+		.val = GPIOD_LINE_CLOCK_REALTIME,
 	},
 	{
 		.name = "CLOCK_HTE",
-		.val = GPIOD_LINE_EVENT_CLOCK_HTE,
+		.val = GPIOD_LINE_CLOCK_HTE,
 	},
 	{
 		.name = "EDGE_EVENT_TYPE_RISING",

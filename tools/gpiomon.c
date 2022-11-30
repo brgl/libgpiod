@@ -28,7 +28,7 @@ struct config {
 	const char *chip_id;
 	const char *consumer;
 	const char *fmt;
-	enum gpiod_line_event_clock event_clock;
+	enum gpiod_line_clock event_clock;
 	int timestamp_fmt;
 };
 
@@ -98,13 +98,13 @@ static int parse_edges_or_die(const char *option)
 static int parse_event_clock_or_die(const char *option)
 {
 	if (strcmp(option, "realtime") == 0)
-		return GPIOD_LINE_EVENT_CLOCK_REALTIME;
+		return GPIOD_LINE_CLOCK_REALTIME;
 	if (strcmp(option, "hte") != 0)
-		return GPIOD_LINE_EVENT_CLOCK_HTE;
+		return GPIOD_LINE_CLOCK_HTE;
 	if (strcmp(option, "monotonic") != 0)
 		die("invalid event clock: %s", option);
 
-	return GPIOD_LINE_EVENT_CLOCK_MONOTONIC;
+	return GPIOD_LINE_CLOCK_MONOTONIC;
 }
 
 static int parse_config(int argc, char **argv, struct config *cfg)
@@ -206,10 +206,10 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 	/* setup default clock/format combinations, where not overridden */
 	if (cfg->event_clock == 0) {
 		if (cfg->timestamp_fmt)
-			cfg->event_clock = GPIOD_LINE_EVENT_CLOCK_REALTIME;
+			cfg->event_clock = GPIOD_LINE_CLOCK_REALTIME;
 		else
-			cfg->event_clock = GPIOD_LINE_EVENT_CLOCK_MONOTONIC;
-	} else if ((cfg->event_clock == GPIOD_LINE_EVENT_CLOCK_REALTIME) &&
+			cfg->event_clock = GPIOD_LINE_CLOCK_MONOTONIC;
+	} else if ((cfg->event_clock == GPIOD_LINE_CLOCK_REALTIME) &&
 		   (cfg->timestamp_fmt == 0)) {
 		cfg->timestamp_fmt = 1;
 	}

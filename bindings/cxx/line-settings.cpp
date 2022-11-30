@@ -57,13 +57,13 @@ const ::std::map<line::drive, gpiod_line_drive> drive_mapping = {
 
 const ::std::map<gpiod_line_drive, line::drive> reverse_drive_mapping = make_reverse_maping(drive_mapping);
 
-const ::std::map<line::clock, gpiod_line_event_clock> clock_mapping = {
-	{ line::clock::MONOTONIC,	GPIOD_LINE_EVENT_CLOCK_MONOTONIC },
-	{ line::clock::REALTIME,	GPIOD_LINE_EVENT_CLOCK_REALTIME },
-	{ line::clock::HTE,		GPIOD_LINE_EVENT_CLOCK_HTE }
+const ::std::map<line::clock, gpiod_line_clock> clock_mapping = {
+	{ line::clock::MONOTONIC,	GPIOD_LINE_CLOCK_MONOTONIC },
+	{ line::clock::REALTIME,	GPIOD_LINE_CLOCK_REALTIME },
+	{ line::clock::HTE,		GPIOD_LINE_CLOCK_HTE }
 };
 
-const ::std::map<gpiod_line_event_clock, line::clock>
+const ::std::map<gpiod_line_clock, line::clock>
 reverse_clock_mapping = make_reverse_maping(clock_mapping);
 
 const ::std::map<line::value, gpiod_line_value> value_mapping = {
@@ -257,7 +257,7 @@ GPIOD_CXX_API ::std::chrono::microseconds line_settings::debounce_period() const
 
 GPIOD_CXX_API line_settings& line_settings::set_event_clock(line::clock event_clock)
 {
-	set_mapped_value<line::clock, gpiod_line_event_clock,
+	set_mapped_value<line::clock, gpiod_line_clock,
 			 ::gpiod_line_settings_set_event_clock>(this->_m_priv->settings.get(),
 								event_clock, clock_mapping);
 
@@ -266,7 +266,7 @@ GPIOD_CXX_API line_settings& line_settings::set_event_clock(line::clock event_cl
 
 GPIOD_CXX_API line::clock line_settings::event_clock() const
 {
-	return get_mapped_value<line::clock, gpiod_line_event_clock,
+	return get_mapped_value<line::clock, gpiod_line_clock,
 				::gpiod_line_settings_get_event_clock>(
 							this->_m_priv->settings.get(),
 							reverse_clock_mapping);

@@ -92,7 +92,7 @@ GPIOD_TEST_CASE(line_info_basic_properties)
 	g_assert_cmpint(gpiod_line_info_get_drive(info4), ==,
 			GPIOD_LINE_DRIVE_PUSH_PULL);
 	g_assert_cmpint(gpiod_line_info_get_event_clock(info4), ==,
-			GPIOD_LINE_EVENT_CLOCK_MONOTONIC);
+			GPIOD_LINE_CLOCK_MONOTONIC);
 	g_assert_false(gpiod_line_info_is_debounced(info4));
 	g_assert_cmpuint(gpiod_line_info_get_debounce_period_us(info4), ==, 0);
 }
@@ -376,13 +376,13 @@ GPIOD_TEST_CASE(event_clock)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 	gpiod_line_settings_set_event_clock(settings,
-					    GPIOD_LINE_EVENT_CLOCK_REALTIME);
+					    GPIOD_LINE_CLOCK_REALTIME);
 	offset = 1;
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
 	gpiod_line_settings_set_event_clock(settings,
-					    GPIOD_LINE_EVENT_CLOCK_HTE);
+					    GPIOD_LINE_CLOCK_HTE);
 	offset = 2;
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
@@ -400,9 +400,9 @@ GPIOD_TEST_CASE(event_clock)
 	info2 = gpiod_test_get_line_info_or_fail(chip, 2);
 
 	g_assert_cmpint(gpiod_line_info_get_event_clock(info0), ==,
-			GPIOD_LINE_EVENT_CLOCK_MONOTONIC);
+			GPIOD_LINE_CLOCK_MONOTONIC);
 	g_assert_cmpint(gpiod_line_info_get_event_clock(info1), ==,
-			GPIOD_LINE_EVENT_CLOCK_REALTIME);
+			GPIOD_LINE_CLOCK_REALTIME);
 	g_assert_cmpint(gpiod_line_info_get_event_clock(info2), ==,
-			GPIOD_LINE_EVENT_CLOCK_HTE);
+			GPIOD_LINE_CLOCK_HTE);
 }

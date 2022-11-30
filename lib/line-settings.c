@@ -14,7 +14,7 @@ struct gpiod_line_settings {
 	enum gpiod_line_drive drive;
 	enum gpiod_line_bias bias;
 	bool active_low;
-	enum gpiod_line_event_clock event_clock;
+	enum gpiod_line_clock event_clock;
 	long debounce_period_us;
 	enum gpiod_line_value output_value;
 };
@@ -45,7 +45,7 @@ GPIOD_API void gpiod_line_settings_reset(struct gpiod_line_settings *settings)
 	settings->drive = GPIOD_LINE_DRIVE_PUSH_PULL;
 	settings->active_low = false;
 	settings->debounce_period_us = 0;
-	settings->event_clock = GPIOD_LINE_EVENT_CLOCK_MONOTONIC;
+	settings->event_clock = GPIOD_LINE_CLOCK_MONOTONIC;
 	settings->output_value = GPIOD_LINE_VALUE_INACTIVE;
 }
 
@@ -192,16 +192,16 @@ gpiod_line_settings_get_debounce_period_us(struct gpiod_line_settings *settings)
 
 GPIOD_API int
 gpiod_line_settings_set_event_clock(struct gpiod_line_settings *settings,
-				    enum gpiod_line_event_clock event_clock)
+				    enum gpiod_line_clock event_clock)
 {
 	switch (event_clock) {
-	case GPIOD_LINE_EVENT_CLOCK_MONOTONIC:
-	case GPIOD_LINE_EVENT_CLOCK_REALTIME:
-	case GPIOD_LINE_EVENT_CLOCK_HTE:
+	case GPIOD_LINE_CLOCK_MONOTONIC:
+	case GPIOD_LINE_CLOCK_REALTIME:
+	case GPIOD_LINE_CLOCK_HTE:
 		settings->event_clock = event_clock;
 		break;
 	default:
-		settings->event_clock = GPIOD_LINE_EVENT_CLOCK_MONOTONIC;
+		settings->event_clock = GPIOD_LINE_CLOCK_MONOTONIC;
 		errno = EINVAL;
 		return -1;
 	}
@@ -209,7 +209,7 @@ gpiod_line_settings_set_event_clock(struct gpiod_line_settings *settings,
 	return 0;
 }
 
-GPIOD_API enum gpiod_line_event_clock
+GPIOD_API enum gpiod_line_clock
 gpiod_line_settings_get_event_clock(struct gpiod_line_settings *settings)
 {
 	return settings->event_clock;

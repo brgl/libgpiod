@@ -308,14 +308,14 @@ enum gpiod_line_drive {
 };
 
 /**
- * @brief Event clock settings.
+ * @brief Clock settings.
  */
-enum gpiod_line_event_clock {
-	GPIOD_LINE_EVENT_CLOCK_MONOTONIC = 1,
+enum gpiod_line_clock {
+	GPIOD_LINE_CLOCK_MONOTONIC = 1,
 	/**< Line uses the monotonic clock for edge event timestamps. */
-	GPIOD_LINE_EVENT_CLOCK_REALTIME,
+	GPIOD_LINE_CLOCK_REALTIME,
 	/**< Line uses the realtime clock for edge event timestamps. */
-	GPIOD_LINE_EVENT_CLOCK_HTE,
+	GPIOD_LINE_CLOCK_HTE,
 	/**< Line uses the hardware timestamp engine for event timestamps. */
 };
 
@@ -465,10 +465,10 @@ gpiod_line_info_get_debounce_period_us(struct gpiod_line_info *info);
  * @brief Get the event clock setting used for edge event timestamps for the
  *	  line.
  * @param info GPIO line info object.
- * @return Returns ::GPIOD_LINE_EVENT_CLOCK_MONOTONIC or
- *	   ::GPIOD_LINE_EVENT_CLOCK_REALTIME.
+ * @return Returns ::GPIOD_LINE_CLOCK_MONOTONIC, ::GPIOD_LINE_CLOCK_HTE or
+ *	   ::GPIOD_LINE_CLOCK_REALTIME.
  */
-enum gpiod_line_event_clock
+enum gpiod_line_clock
 gpiod_line_info_get_event_clock(struct gpiod_line_info *info);
 
 /**
@@ -684,14 +684,14 @@ gpiod_line_settings_get_debounce_period_us(
  * @return 0 on success, -1 on failure.
  */
 int gpiod_line_settings_set_event_clock(struct gpiod_line_settings *settings,
-				enum gpiod_line_event_clock event_clock);
+				enum gpiod_line_clock event_clock);
 
 /**
  * @brief Get event clock setting.
  * @param settings Line settings object.
  * @return Current event clock setting.
  */
-enum gpiod_line_event_clock
+enum gpiod_line_clock
 gpiod_line_settings_get_event_clock(struct gpiod_line_settings *settings);
 
 /**

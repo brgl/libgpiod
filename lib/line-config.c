@@ -343,10 +343,10 @@ static uint64_t make_kernel_flags(struct gpiod_line_settings *settings)
 		flags |= GPIO_V2_LINE_FLAG_ACTIVE_LOW;
 
 	switch (gpiod_line_settings_get_event_clock(settings)) {
-	case GPIOD_LINE_EVENT_CLOCK_REALTIME:
+	case GPIOD_LINE_CLOCK_REALTIME:
 		flags |= GPIO_V2_LINE_FLAG_EVENT_CLOCK_REALTIME;
 		break;
-	case GPIOD_LINE_EVENT_CLOCK_HTE:
+	case GPIOD_LINE_CLOCK_HTE:
 		flags |= GPIO_V2_LINE_FLAG_EVENT_CLOCK_HTE;
 		break;
 	default:

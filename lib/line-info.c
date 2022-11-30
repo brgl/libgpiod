@@ -17,7 +17,7 @@ struct gpiod_line_info {
 	enum gpiod_line_bias bias;
 	enum gpiod_line_drive drive;
 	enum gpiod_line_edge edge;
-	enum gpiod_line_event_clock event_clock;
+	enum gpiod_line_clock event_clock;
 	bool debounced;
 	unsigned long debounce_period_us;
 };
@@ -93,7 +93,7 @@ gpiod_line_info_get_edge_detection(struct gpiod_line_info *info)
 	return info->edge;
 }
 
-GPIOD_API enum gpiod_line_event_clock
+GPIOD_API enum gpiod_line_clock
 gpiod_line_info_get_event_clock(struct gpiod_line_info *info)
 {
 	return info->event_clock;
@@ -164,11 +164,11 @@ gpiod_line_info_from_uapi(struct gpio_v2_line_info *uapi_info)
 		info->edge = GPIOD_LINE_EDGE_NONE;
 
 	if (uapi_info->flags & GPIO_V2_LINE_FLAG_EVENT_CLOCK_REALTIME)
-		info->event_clock = GPIOD_LINE_EVENT_CLOCK_REALTIME;
+		info->event_clock = GPIOD_LINE_CLOCK_REALTIME;
 	else if (uapi_info->flags & GPIO_V2_LINE_FLAG_EVENT_CLOCK_HTE)
-		info->event_clock = GPIOD_LINE_EVENT_CLOCK_HTE;
+		info->event_clock = GPIOD_LINE_CLOCK_HTE;
 	else
-		info->event_clock = GPIOD_LINE_EVENT_CLOCK_MONOTONIC;
+		info->event_clock = GPIOD_LINE_CLOCK_MONOTONIC;
 
 	/*
 	 * We assume that the kernel returns correct configuration and that no

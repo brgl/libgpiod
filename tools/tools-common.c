@@ -286,10 +286,10 @@ static void print_event_clock(struct gpiod_line_info *info)
 	const char *name;
 
 	switch (gpiod_line_info_get_event_clock(info)) {
-	case GPIOD_LINE_EVENT_CLOCK_REALTIME:
+	case GPIOD_LINE_CLOCK_REALTIME:
 		name = "realtime";
 		break;
-	case GPIOD_LINE_EVENT_CLOCK_HTE:
+	case GPIOD_LINE_CLOCK_HTE:
 		name = "hte";
 		break;
 	default:

@@ -110,7 +110,7 @@ GPIOD_TEST_CASE(too_many_attrs)
 							 settings);
 
 	gpiod_line_settings_set_event_clock(settings,
-					    GPIOD_LINE_EVENT_CLOCK_REALTIME);
+					    GPIOD_LINE_CLOCK_REALTIME);
 	offset = 7;
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);

@@ -28,7 +28,7 @@ GPIOD_TEST_CASE(default_config)
 	g_assert_cmpuint(gpiod_line_settings_get_debounce_period_us(settings),
 			 ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_event_clock(settings), ==,
-			GPIOD_LINE_EVENT_CLOCK_MONOTONIC);
+			GPIOD_LINE_CLOCK_MONOTONIC);
 	g_assert_cmpint(gpiod_line_settings_get_output_value(settings), ==,
 			GPIOD_LINE_VALUE_INACTIVE);
 }
@@ -207,28 +207,28 @@ GPIOD_TEST_CASE(set_event_clock)
 	settings = gpiod_test_create_line_settings_or_fail();
 
 	ret = gpiod_line_settings_set_event_clock(settings,
-					GPIOD_LINE_EVENT_CLOCK_MONOTONIC);
+					GPIOD_LINE_CLOCK_MONOTONIC);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_event_clock(settings), ==,
-			GPIOD_LINE_EVENT_CLOCK_MONOTONIC);
+			GPIOD_LINE_CLOCK_MONOTONIC);
 
 	ret = gpiod_line_settings_set_event_clock(settings,
-					GPIOD_LINE_EVENT_CLOCK_REALTIME);
+					GPIOD_LINE_CLOCK_REALTIME);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_event_clock(settings), ==,
-			GPIOD_LINE_EVENT_CLOCK_REALTIME);
+			GPIOD_LINE_CLOCK_REALTIME);
 
 	ret = gpiod_line_settings_set_event_clock(settings,
-					GPIOD_LINE_EVENT_CLOCK_HTE);
+					GPIOD_LINE_CLOCK_HTE);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_event_clock(settings), ==,
-			GPIOD_LINE_EVENT_CLOCK_HTE);
+			GPIOD_LINE_CLOCK_HTE);
 
 	ret = gpiod_line_settings_set_event_clock(settings, 999);
 	g_assert_cmpint(ret, <, 0);
 	g_assert_cmpint(errno, ==, EINVAL);
 	g_assert_cmpint(gpiod_line_settings_get_event_clock(settings), ==,
-			GPIOD_LINE_EVENT_CLOCK_MONOTONIC);
+			GPIOD_LINE_CLOCK_MONOTONIC);
 }
 
 GPIOD_TEST_CASE(set_output_value)
@@ -268,7 +268,7 @@ GPIOD_TEST_CASE(copy_line_settings)
 	gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_BOTH);
 	gpiod_line_settings_set_debounce_period_us(settings, 2000);
 	gpiod_line_settings_set_event_clock(settings,
-					    GPIOD_LINE_EVENT_CLOCK_REALTIME);
+					    GPIOD_LINE_CLOCK_REALTIME);
 
 	copy = gpiod_line_settings_copy(settings);
 	g_assert_nonnull(copy);
@@ -281,7 +281,7 @@ GPIOD_TEST_CASE(copy_line_settings)
 	g_assert_cmpint(gpiod_line_settings_get_debounce_period_us(copy), ==,
 			2000);
 	g_assert_cmpint(gpiod_line_settings_get_event_clock(copy), ==,
-			GPIOD_LINE_EVENT_CLOCK_REALTIME);
+			GPIOD_LINE_CLOCK_REALTIME);
 }
 
 GPIOD_TEST_CASE(reset_settings)
@@ -294,7 +294,7 @@ GPIOD_TEST_CASE(reset_settings)
 	gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_BOTH);
 	gpiod_line_settings_set_debounce_period_us(settings, 2000);
 	gpiod_line_settings_set_event_clock(settings,
-					    GPIOD_LINE_EVENT_CLOCK_REALTIME);
+					    GPIOD_LINE_CLOCK_REALTIME);
 
 	gpiod_line_settings_reset(settings);
 
@@ -310,7 +310,7 @@ GPIOD_TEST_CASE(reset_settings)
 	g_assert_cmpuint(gpiod_line_settings_get_debounce_period_us(settings),
 			 ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_event_clock(settings), ==,
-			GPIOD_LINE_EVENT_CLOCK_MONOTONIC);
+			GPIOD_LINE_CLOCK_MONOTONIC);
 	g_assert_cmpint(gpiod_line_settings_get_output_value(settings), ==,
 			GPIOD_LINE_VALUE_INACTIVE);
 }

@@ -45,9 +45,9 @@ use gpiod::{
     gpiod_line_edge_GPIOD_LINE_EDGE_FALLING as GPIOD_LINE_EDGE_FALLING,
     gpiod_line_edge_GPIOD_LINE_EDGE_NONE as GPIOD_LINE_EDGE_NONE,
     gpiod_line_edge_GPIOD_LINE_EDGE_RISING as GPIOD_LINE_EDGE_RISING,
-    gpiod_line_event_clock_GPIOD_LINE_EVENT_CLOCK_HTE as GPIOD_LINE_EVENT_CLOCK_HTE,
-    gpiod_line_event_clock_GPIOD_LINE_EVENT_CLOCK_MONOTONIC as GPIOD_LINE_EVENT_CLOCK_MONOTONIC,
-    gpiod_line_event_clock_GPIOD_LINE_EVENT_CLOCK_REALTIME as GPIOD_LINE_EVENT_CLOCK_REALTIME,
+    gpiod_line_clock_GPIOD_LINE_CLOCK_HTE as GPIOD_LINE_CLOCK_HTE,
+    gpiod_line_clock_GPIOD_LINE_CLOCK_MONOTONIC as GPIOD_LINE_CLOCK_MONOTONIC,
+    gpiod_line_clock_GPIOD_LINE_CLOCK_REALTIME as GPIOD_LINE_CLOCK_REALTIME,
     gpiod_line_value_GPIOD_LINE_VALUE_ACTIVE as GPIOD_LINE_VALUE_ACTIVE,
     gpiod_line_value_GPIOD_LINE_VALUE_INACTIVE as GPIOD_LINE_VALUE_INACTIVE,
     gpiod_line_value_GPIOD_LINE_VALUE_ERROR as GPIOD_LINE_VALUE_ERROR,
@@ -393,20 +393,20 @@ pub mod line {
     }
 
     impl EventClock {
-        pub(crate) fn new(clock: gpiod::gpiod_line_event_clock) -> Result<Self> {
+        pub(crate) fn new(clock: gpiod::gpiod_line_clock) -> Result<Self> {
             Ok(match clock {
-                GPIOD_LINE_EVENT_CLOCK_MONOTONIC => EventClock::Monotonic,
-                GPIOD_LINE_EVENT_CLOCK_REALTIME => EventClock::Realtime,
-                GPIOD_LINE_EVENT_CLOCK_HTE => EventClock::HTE,
+                GPIOD_LINE_CLOCK_MONOTONIC => EventClock::Monotonic,
+                GPIOD_LINE_CLOCK_REALTIME => EventClock::Realtime,
+                GPIOD_LINE_CLOCK_HTE => EventClock::HTE,
                 _ => return Err(Error::InvalidEnumValue("Eventclock", clock as i32)),
             })
         }
 
-        pub(crate) fn gpiod_clock(&self) -> gpiod::gpiod_line_event_clock {
+        pub(crate) fn gpiod_clock(&self) -> gpiod::gpiod_line_clock {
             match self {
-                EventClock::Monotonic => GPIOD_LINE_EVENT_CLOCK_MONOTONIC,
-                EventClock::Realtime => GPIOD_LINE_EVENT_CLOCK_REALTIME,
-                EventClock::HTE => GPIOD_LINE_EVENT_CLOCK_HTE,
+                EventClock::Monotonic => GPIOD_LINE_CLOCK_MONOTONIC,
+                EventClock::Realtime => GPIOD_LINE_CLOCK_REALTIME,
+                EventClock::HTE => GPIOD_LINE_CLOCK_HTE,
             }
         }
     }

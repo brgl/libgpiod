@@ -37,9 +37,9 @@ const ::std::map<int, line::edge> edge_mapping = {
 };
 
 const ::std::map<int, line::clock> clock_mapping = {
-	{ GPIOD_LINE_EVENT_CLOCK_MONOTONIC,	line::clock::MONOTONIC },
-	{ GPIOD_LINE_EVENT_CLOCK_REALTIME,	line::clock::REALTIME },
-	{ GPIOD_LINE_EVENT_CLOCK_HTE,		line::clock::HTE }
+	{ GPIOD_LINE_CLOCK_MONOTONIC,		line::clock::MONOTONIC },
+	{ GPIOD_LINE_CLOCK_REALTIME,		line::clock::REALTIME },
+	{ GPIOD_LINE_CLOCK_HTE,			line::clock::HTE }
 };
 
 } /* namespace */
