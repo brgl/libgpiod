@@ -266,7 +266,16 @@ AC_CONFIG_FILES([Makefile
 		 bindings/python/examples/Makefile
 		 bindings/python/tests/Makefile
 		 bindings/python/tests/gpiosim/Makefile
+		 bindings/rust/libgpiod-sys/src/Makefile
+		 bindings/rust/libgpiod-sys/Makefile
+		 bindings/rust/libgpiod/src/Makefile
+		 bindings/rust/libgpiod/tests/common/Makefile
+		 bindings/rust/libgpiod/tests/Makefile
+		 bindings/rust/libgpiod/Makefile
+		 bindings/rust/libgpiod/examples/Makefile
 		 bindings/rust/Makefile
+		 bindings/rust/gpiosim-sys/src/Makefile
+		 bindings/rust/gpiosim-sys/Makefile
 		 man/Makefile])
 
 AC_OUTPUT

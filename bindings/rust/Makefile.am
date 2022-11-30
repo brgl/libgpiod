@@ -17,3 +17,7 @@ all:
 
 clean:
 	cargo clean
+
+EXTRA_DIST = Cargo.toml
+
+SUBDIRS = gpiosim-sys libgpiod libgpiod-sys
