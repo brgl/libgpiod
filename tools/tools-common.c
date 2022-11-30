@@ -78,7 +78,7 @@ void print_version(void)
 	printf("%s (libgpiod) v%s\n",
 	       program_invocation_short_name, gpiod_version_string());
 	printf("Copyright (C) 2017-2018 Bartosz Golaszewski\n");
-	printf("License: LGPLv2.1\n");
+	printf("License: GPL-2.0-or-later\n");
 	printf("This is free software: you are free to change and redistribute it.\n");
 	printf("There is NO WARRANTY, to the extent permitted by law.\n");
 }
