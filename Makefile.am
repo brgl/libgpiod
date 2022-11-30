@@ -6,12 +6,15 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = include lib
 
 EXTRA_DIST = \
-	LICENSES/CC-BY-SA-4.0.txt \
-	LICENSES/GPL-2.0-only.txt \
 	LICENSES/GPL-2.0-or-later.txt \
+	LICENSES/Apache-2.0.txt \
 	LICENSES/LGPL-2.1-or-later.txt \
+	LICENSES/CC-BY-SA-4.0.txt \
+	LICENSES/CC0-1.0.txt \
+	LICENSES/GPL-2.0-only.txt \
+	LICENSES/Linux-syscall-note.txt \
 	LICENSES/LGPL-3.0-or-later.txt \
-	LICENSES/Linux-syscall-note.txt
+	LICENSES/BSD-3-Clause.txt
 
 if WITH_TOOLS
 
