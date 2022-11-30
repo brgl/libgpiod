@@ -51,7 +51,7 @@ TEST_CASE("edge_event wait timeout", "[edge-event]")
 		)
 		.do_request();
 
-	REQUIRE_FALSE(request.wait_edge_event(::std::chrono::milliseconds(100)));
+	REQUIRE_FALSE(request.wait_edge_events(::std::chrono::milliseconds(100)));
 }
 
 TEST_CASE("output mode and edge detection don't work together", "[edge-event]")
@@ -113,23 +113,23 @@ TEST_CASE("waiting for and reading edge events works", "[edge-event]")
 
 		::std::thread thread(trigger_falling_and_rising_edge, ::std::ref(sim), 2);
 
-		REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-		REQUIRE(request.read_edge_event(buffer, 1) == 1);
+		REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+		REQUIRE(request.read_edge_events(buffer, 1) == 1);
 		REQUIRE(buffer.num_events() == 1);
 		auto event = buffer.get_event(0);
 		REQUIRE(event.type() == event_type::RISING_EDGE);
 		REQUIRE(event.line_offset() == 2);
 		ts_rising = event.timestamp_ns();
 
-		REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-		REQUIRE(request.read_edge_event(buffer, 1) == 1);
+		REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+		REQUIRE(request.read_edge_events(buffer, 1) == 1);
 		REQUIRE(buffer.num_events() == 1);
 		event = buffer.get_event(0);
 		REQUIRE(event.type() == event_type::FALLING_EDGE);
 		REQUIRE(event.line_offset() == 2);
 		ts_falling = event.timestamp_ns();
 
-		REQUIRE_FALSE(request.wait_edge_event(::std::chrono::milliseconds(100)));
+		REQUIRE_FALSE(request.wait_edge_events(::std::chrono::milliseconds(100)));
 
 		thread.join();
 
@@ -149,14 +149,14 @@ TEST_CASE("waiting for and reading edge events works", "[edge-event]")
 
 		::std::thread thread(trigger_falling_and_rising_edge, ::std::ref(sim), 6);
 
-		REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-		REQUIRE(request.read_edge_event(buffer, 1) == 1);
+		REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+		REQUIRE(request.read_edge_events(buffer, 1) == 1);
 		REQUIRE(buffer.num_events() == 1);
 		auto event = buffer.get_event(0);
 		REQUIRE(event.type() == event_type::RISING_EDGE);
 		REQUIRE(event.line_offset() == 6);
 
-		REQUIRE_FALSE(request.wait_edge_event(::std::chrono::milliseconds(100)));
+		REQUIRE_FALSE(request.wait_edge_events(::std::chrono::milliseconds(100)));
 
 		thread.join();
 	}
@@ -174,14 +174,14 @@ TEST_CASE("waiting for and reading edge events works", "[edge-event]")
 
 		::std::thread thread(trigger_falling_and_rising_edge, ::std::ref(sim), 7);
 
-		REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-		REQUIRE(request.read_edge_event(buffer, 1) == 1);
+		REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+		REQUIRE(request.read_edge_events(buffer, 1) == 1);
 		REQUIRE(buffer.num_events() == 1);
 		auto event = buffer.get_event(0);
 		REQUIRE(event.type() == event_type::FALLING_EDGE);
 		REQUIRE(event.line_offset() == 7);
 
-		REQUIRE_FALSE(request.wait_edge_event(::std::chrono::milliseconds(100)));
+		REQUIRE_FALSE(request.wait_edge_events(::std::chrono::milliseconds(100)));
 
 		thread.join();
 	}
@@ -199,8 +199,8 @@ TEST_CASE("waiting for and reading edge events works", "[edge-event]")
 
 		::std::thread thread(trigger_rising_edge_events_on_two_offsets, ::std::ref(sim), 0, 1);
 
-		REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-		REQUIRE(request.read_edge_event(buffer, 1) == 1);
+		REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+		REQUIRE(request.read_edge_events(buffer, 1) == 1);
 		REQUIRE(buffer.num_events() == 1);
 		auto event = buffer.get_event(0);
 		REQUIRE(event.type() == event_type::RISING_EDGE);
@@ -208,8 +208,8 @@ TEST_CASE("waiting for and reading edge events works", "[edge-event]")
 		REQUIRE(event.global_seqno() == 1);
 		REQUIRE(event.line_seqno() == 1);
 
-		REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-		REQUIRE(request.read_edge_event(buffer, 1) == 1);
+		REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+		REQUIRE(request.read_edge_events(buffer, 1) == 1);
 		REQUIRE(buffer.num_events() == 1);
 		event = buffer.get_event(0);
 		REQUIRE(event.type() == event_type::RISING_EDGE);
@@ -251,8 +251,8 @@ TEST_CASE("reading multiple events", "[edge-event]")
 	{
 		::gpiod::edge_event_buffer buffer;
 
-		REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-		REQUIRE(request.read_edge_event(buffer) == 3);
+		REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+		REQUIRE(request.read_edge_events(buffer) == 3);
 		REQUIRE(buffer.num_events() == 3);
 
 		for (const auto& event: buffer) {
@@ -266,8 +266,8 @@ TEST_CASE("reading multiple events", "[edge-event]")
 	{
 		::gpiod::edge_event_buffer buffer(2);
 
-		REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-		REQUIRE(request.read_edge_event(buffer) == 2);
+		REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+		REQUIRE(request.read_edge_events(buffer) == 2);
 		REQUIRE(buffer.num_events() == 2);
 	}
 }
@@ -300,8 +300,8 @@ TEST_CASE("edge_event_buffer can be moved", "[edge-event]")
 
 	::std::this_thread::sleep_for(::std::chrono::milliseconds(500));
 
-	REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-	REQUIRE(request.read_edge_event(buffer) == 3);
+	REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+	REQUIRE(request.read_edge_events(buffer) == 3);
 
 	SECTION("move constructor works")
 	{
@@ -337,14 +337,14 @@ TEST_CASE("edge_event can be copied and moved", "[edge-event]")
 
 	sim.set_pull(0, pull::PULL_UP);
 	::std::this_thread::sleep_for(::std::chrono::milliseconds(10));
-	REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-	REQUIRE(request.read_edge_event(buffer) == 1);
+	REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+	REQUIRE(request.read_edge_events(buffer) == 1);
 	auto event = buffer.get_event(0);
 
 	sim.set_pull(0, pull::PULL_DOWN);
 	::std::this_thread::sleep_for(::std::chrono::milliseconds(10));
-	REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-	REQUIRE(request.read_edge_event(buffer) == 1);
+	REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+	REQUIRE(request.read_edge_events(buffer) == 1);
 	auto copy = buffer.get_event(0);
 
 	SECTION("copy constructor works")
@@ -406,8 +406,8 @@ TEST_CASE("stream insertion operators work for edge_event and edge_event_buffer"
 	sim.set_pull(0, pull::PULL_DOWN);
 	::std::this_thread::sleep_for(::std::chrono::milliseconds(30));
 
-	REQUIRE(request.wait_edge_event(::std::chrono::seconds(1)));
-	REQUIRE(request.read_edge_event(buffer) == 2);
+	REQUIRE(request.wait_edge_events(::std::chrono::seconds(1)));
+	REQUIRE(request.read_edge_events(buffer) == 2);
 
 	sbuf << buffer;
 

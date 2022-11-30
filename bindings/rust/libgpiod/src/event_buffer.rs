@@ -106,7 +106,7 @@ impl Buffer {
 
         // SAFETY: `gpiod_line_request` is guaranteed to be valid here.
         let ret = unsafe {
-            gpiod::gpiod_line_request_read_edge_event(
+            gpiod::gpiod_line_request_read_edge_events(
                 request.request,
                 self.buffer,
                 self.events.len().try_into().unwrap(),

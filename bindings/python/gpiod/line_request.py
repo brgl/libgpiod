@@ -169,7 +169,7 @@ class LineRequest:
 
         self._req.reconfigure_lines(line_cfg)
 
-    def wait_edge_event(
+    def wait_edge_events(
         self, timeout: Optional[Union[timedelta, float]] = None
     ) -> bool:
         """
@@ -187,7 +187,7 @@ class LineRequest:
 
         return poll_fd(self.fd, timeout)
 
-    def read_edge_event(self, max_events: Optional[int] = None) -> list[EdgeEvent]:
+    def read_edge_events(self, max_events: Optional[int] = None) -> list[EdgeEvent]:
         """
         Read a number of edge events from a line request.
 
@@ -200,7 +200,7 @@ class LineRequest:
         """
         self._check_released()
 
-        return self._req.read_edge_event(max_events)
+        return self._req.read_edge_events(max_events)
 
     def __str__(self):
         """

@@ -44,7 +44,7 @@ fn main() -> Result<()> {
     let request = chip.request_lines(&rconfig, &lconfig)?;
 
     loop {
-        match request.wait_edge_event(None) {
+        match request.wait_edge_events(None) {
             Err(x) => {
                 println!("{:?}", x);
                 return Err(Error::InvalidArguments);

@@ -23,7 +23,7 @@ class EdgeEventWaitTimeout(TestCase):
             sim.dev_path,
             {0: gpiod.LineSettings(edge_detection=Edge.BOTH)},
         ) as req:
-            self.assertEqual(req.wait_edge_event(timedelta(microseconds=10000)), False)
+            self.assertEqual(req.wait_edge_events(timedelta(microseconds=10000)), False)
 
     def test_event_wait_timeout_float(self):
         sim = gpiosim.Chip()
@@ -32,7 +32,7 @@ class EdgeEventWaitTimeout(TestCase):
             sim.dev_path,
             {0: gpiod.LineSettings(edge_detection=Edge.BOTH)},
         ) as req:
-            self.assertEqual(req.wait_edge_event(0.01), False)
+            self.assertEqual(req.wait_edge_events(0.01), False)
 
 
 class EdgeEventInvalidConfig(TestCase):
@@ -82,16 +82,16 @@ class WaitingForEdgeEvents(TestCase):
             )
             self.thread.start()
 
-            self.assertTrue(req.wait_edge_event(timedelta(seconds=1)))
-            events = req.read_edge_event()
+            self.assertTrue(req.wait_edge_events(timedelta(seconds=1)))
+            events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
             self.assertEqual(event.event_type, EventType.RISING_EDGE)
             self.assertEqual(event.line_offset, 2)
             ts_rising = event.timestamp_ns
 
-            self.assertTrue(req.wait_edge_event(timedelta(seconds=1)))
-            events = req.read_edge_event()
+            self.assertTrue(req.wait_edge_events(timedelta(seconds=1)))
+            events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
             self.assertEqual(event.event_type, EventType.FALLING_EDGE)
@@ -109,14 +109,14 @@ class WaitingForEdgeEvents(TestCase):
             )
             self.thread.start()
 
-            self.assertTrue(req.wait_edge_event(timedelta(seconds=1)))
-            events = req.read_edge_event()
+            self.assertTrue(req.wait_edge_events(timedelta(seconds=1)))
+            events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
             self.assertEqual(event.event_type, EventType.RISING_EDGE)
             self.assertEqual(event.line_offset, 6)
 
-            self.assertFalse(req.wait_edge_event(timedelta(microseconds=10000)))
+            self.assertFalse(req.wait_edge_events(timedelta(microseconds=10000)))
 
     def test_rising_edge_event(self):
         with gpiod.request_lines(
@@ -127,14 +127,14 @@ class WaitingForEdgeEvents(TestCase):
             )
             self.thread.start()
 
-            self.assertTrue(req.wait_edge_event(timedelta(seconds=1)))
-            events = req.read_edge_event()
+            self.assertTrue(req.wait_edge_events(timedelta(seconds=1)))
+            events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
             self.assertEqual(event.event_type, EventType.FALLING_EDGE)
             self.assertEqual(event.line_offset, 6)
 
-            self.assertFalse(req.wait_edge_event(timedelta(microseconds=10000)))
+            self.assertFalse(req.wait_edge_events(timedelta(microseconds=10000)))
 
     def test_sequence_numbers(self):
         with gpiod.request_lines(
@@ -145,8 +145,8 @@ class WaitingForEdgeEvents(TestCase):
             )
             self.thread.start()
 
-            self.assertTrue(req.wait_edge_event(timedelta(seconds=1)))
-            events = req.read_edge_event()
+            self.assertTrue(req.wait_edge_events(timedelta(seconds=1)))
+            events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
             self.assertEqual(event.event_type, EventType.RISING_EDGE)
@@ -154,8 +154,8 @@ class WaitingForEdgeEvents(TestCase):
             self.assertEqual(event.global_seqno, 1)
             self.assertEqual(event.line_seqno, 1)
 
-            self.assertTrue(req.wait_edge_event(timedelta(seconds=1)))
-            events = req.read_edge_event()
+            self.assertTrue(req.wait_edge_events(timedelta(seconds=1)))
+            events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
             self.assertEqual(event.event_type, EventType.RISING_EDGE)
@@ -185,8 +185,8 @@ class ReadingMultipleEdgeEvents(TestCase):
         del self.sim
 
     def test_read_multiple_events(self):
-        self.assertTrue(self.request.wait_edge_event(timedelta(seconds=1)))
-        events = self.request.read_edge_event()
+        self.assertTrue(self.request.wait_edge_events(timedelta(seconds=1)))
+        events = self.request.read_edge_events()
         self.assertEqual(len(events), 3)
 
         for event in events:
@@ -205,7 +205,7 @@ class EdgeEventStringRepresentation(TestCase):
             path=sim.dev_path, config={0: gpiod.LineSettings(edge_detection=Edge.BOTH)}
         ) as req:
             sim.set_pull(0, Pull.UP)
-            event = req.read_edge_event()[0]
+            event = req.read_edge_events()[0]
             self.assertRegex(
                 str(event),
                 "<EdgeEvent type=Type\.RISING_EDGE timestamp_ns=[0-9]+ line_offset=0 global_seqno=1 line_seqno=1>",

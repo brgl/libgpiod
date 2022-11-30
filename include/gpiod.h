@@ -1008,8 +1008,8 @@ int gpiod_line_request_get_fd(struct gpiod_line_request *request);
  * Lines must have edge detection set for edge events to be emitted.
  * By default edge detection is disabled.
  */
-int gpiod_line_request_wait_edge_event(struct gpiod_line_request *request,
-				       int64_t timeout_ns);
+int gpiod_line_request_wait_edge_events(struct gpiod_line_request *request,
+					int64_t timeout_ns);
 
 /**
  * @brief Read a number of edge events from a line request.
@@ -1022,9 +1022,9 @@ int gpiod_line_request_wait_edge_event(struct gpiod_line_request *request,
  * @note Any exising events in the buffer are overwritten.  This is not an
  *       append operation.
  */
-int gpiod_line_request_read_edge_event(struct gpiod_line_request *request,
-				       struct gpiod_edge_event_buffer *buffer,
-				       size_t max_events);
+int gpiod_line_request_read_edge_events(struct gpiod_line_request *request,
+					struct gpiod_edge_event_buffer *buffer,
+					size_t max_events);
 
 /**
  * @}

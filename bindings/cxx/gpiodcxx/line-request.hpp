@@ -180,7 +180,7 @@ public:
 	 * @return True if at least one event is ready to be read. False if the
 	 *         wait timed out.
 	 */
-	bool wait_edge_event(const ::std::chrono::nanoseconds& timeout) const;
+	bool wait_edge_events(const ::std::chrono::nanoseconds& timeout) const;
 
 	/**
 	 * @brief Read a number of edge events from this request up to the
@@ -188,7 +188,7 @@ public:
 	 * @param buffer Edge event buffer to read events into.
 	 * @return Number of events read.
 	 */
-	::std::size_t read_edge_event(edge_event_buffer& buffer);
+	::std::size_t read_edge_events(edge_event_buffer& buffer);
 
 	/**
 	 * @brief Read a number of edge events from this request.
@@ -197,7 +197,7 @@ public:
 	 *                   capacity of the buffer.
 	 * @return Number of events read.
 	 */
-	::std::size_t read_edge_event(edge_event_buffer& buffer, ::std::size_t max_events);
+	::std::size_t read_edge_events(edge_event_buffer& buffer, ::std::size_t max_events);
 
 private:
 

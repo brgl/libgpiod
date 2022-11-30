@@ -89,7 +89,7 @@ mod edge_event {
             // Rising event
             assert!(config
                 .request()
-                .wait_edge_event(Some(Duration::from_secs(1)))
+                .wait_edge_events(Some(Duration::from_secs(1)))
                 .unwrap());
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
@@ -103,7 +103,7 @@ mod edge_event {
             // Falling event
             assert!(config
                 .request()
-                .wait_edge_event(Some(Duration::from_secs(1)))
+                .wait_edge_events(Some(Duration::from_secs(1)))
                 .unwrap());
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
@@ -117,7 +117,7 @@ mod edge_event {
             // No events available
             assert!(!config
                 .request()
-                .wait_edge_event(Some(Duration::from_millis(100)))
+                .wait_edge_events(Some(Duration::from_millis(100)))
                 .unwrap());
 
             assert!(ts_falling > ts_rising);
@@ -138,7 +138,7 @@ mod edge_event {
             // Rising event
             assert!(config
                 .request()
-                .wait_edge_event(Some(Duration::from_secs(1)))
+                .wait_edge_events(Some(Duration::from_secs(1)))
                 .unwrap());
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
@@ -151,7 +151,7 @@ mod edge_event {
             // No events available
             assert!(!config
                 .request()
-                .wait_edge_event(Some(Duration::from_millis(100)))
+                .wait_edge_events(Some(Duration::from_millis(100)))
                 .unwrap());
         }
 
@@ -170,7 +170,7 @@ mod edge_event {
             // Falling event
             assert!(config
                 .request()
-                .wait_edge_event(Some(Duration::from_secs(1)))
+                .wait_edge_events(Some(Duration::from_secs(1)))
                 .unwrap());
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
@@ -183,7 +183,7 @@ mod edge_event {
             // No events available
             assert!(!config
                 .request()
-                .wait_edge_event(Some(Duration::from_millis(100)))
+                .wait_edge_events(Some(Duration::from_millis(100)))
                 .unwrap());
         }
 
@@ -202,7 +202,7 @@ mod edge_event {
             let mut buf = request::Buffer::new(0).unwrap();
             assert!(config
                 .request()
-                .wait_edge_event(Some(Duration::from_secs(1)))
+                .wait_edge_events(Some(Duration::from_secs(1)))
                 .unwrap());
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
@@ -217,7 +217,7 @@ mod edge_event {
             // Rising event GPIO 1
             assert!(config
                 .request()
-                .wait_edge_event(Some(Duration::from_secs(1)))
+                .wait_edge_events(Some(Duration::from_secs(1)))
                 .unwrap());
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
@@ -232,7 +232,7 @@ mod edge_event {
             // No events available
             assert!(!config
                 .request()
-                .wait_edge_event(Some(Duration::from_millis(100)))
+                .wait_edge_events(Some(Duration::from_millis(100)))
                 .unwrap());
         }
 
@@ -251,7 +251,7 @@ mod edge_event {
             // Read multiple events
             assert!(config
                 .request()
-                .wait_edge_event(Some(Duration::from_secs(1)))
+                .wait_edge_events(Some(Duration::from_secs(1)))
                 .unwrap());
 
             let events = config.request().read_edge_events(&mut buf).unwrap();
@@ -287,7 +287,7 @@ mod edge_event {
             // Read multiple events
             assert!(config
                 .request()
-                .wait_edge_event(Some(Duration::from_secs(1)))
+                .wait_edge_events(Some(Duration::from_secs(1)))
                 .unwrap());
 
             let events = config.request().read_edge_events(&mut buf).unwrap();

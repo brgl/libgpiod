@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 	::gpiod::edge_event_buffer buffer;
 
 	for (;;) {
-		request.read_edge_event(buffer);
+		request.read_edge_events(buffer);
 
 		for (const auto& event: buffer)
 			print_event(event);

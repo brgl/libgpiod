@@ -249,7 +249,7 @@ static PyObject *request_reconfigure_lines(request_object *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-static PyObject *request_read_edge_event(request_object *self, PyObject *args)
+static PyObject *request_read_edge_events(request_object *self, PyObject *args)
 {
 	PyObject *max_events_obj, *event_obj, *events, *type;
 	size_t max_events, num_events, i;
@@ -273,7 +273,7 @@ static PyObject *request_read_edge_event(request_object *self, PyObject *args)
 		return NULL;
 
 	Py_BEGIN_ALLOW_THREADS;
-	ret = gpiod_line_request_read_edge_event(self->request,
+	ret = gpiod_line_request_read_edge_events(self->request,
 						 self->buffer, max_events);
 	Py_END_ALLOW_THREADS;
 	if (ret < 0)
@@ -336,8 +336,8 @@ static PyMethodDef request_methods[] = {
 		.ml_flags = METH_VARARGS,
 	},
 	{
-		.ml_name = "read_edge_event",
-		.ml_meth = (PyCFunction)request_read_edge_event,
+		.ml_name = "read_edge_events",
+		.ml_meth = (PyCFunction)request_read_edge_events,
 		.ml_flags = METH_VARARGS,
 	},
 	{ }

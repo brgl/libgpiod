@@ -231,7 +231,7 @@ mod line_request {
             // No events available
             assert!(!config
                 .request()
-                .wait_edge_event(Some(Duration::from_millis(100)))
+                .wait_edge_events(Some(Duration::from_millis(100)))
                 .unwrap());
         }
     }

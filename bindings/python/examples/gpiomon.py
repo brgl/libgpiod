@@ -22,5 +22,5 @@ if __name__ == "__main__":
         config={tuple(lines): gpiod.LineSettings(edge_detection=Edge.BOTH)},
     ) as request:
         while True:
-            for event in request.read_edge_event():
+            for event in request.read_edge_events():
                 print(event)

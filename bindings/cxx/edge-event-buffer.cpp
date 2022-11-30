@@ -36,7 +36,7 @@ edge_event_buffer::impl::impl(unsigned int capacity)
 
 int edge_event_buffer::impl::read_events(const line_request_ptr& request, unsigned int max_events)
 {
-	int ret = ::gpiod_line_request_read_edge_event(request.get(),
+	int ret = ::gpiod_line_request_read_edge_events(request.get(),
 						       this->buffer.get(), max_events);
 	if (ret < 0)
 		throw_from_errno("error reading edge events from file descriptor");

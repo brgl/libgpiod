@@ -178,7 +178,7 @@ impl Request {
     }
 
     /// Wait for edge events on any of the lines associated with the request.
-    pub fn wait_edge_event(&self, timeout: Option<Duration>) -> Result<bool> {
+    pub fn wait_edge_events(&self, timeout: Option<Duration>) -> Result<bool> {
         let timeout = match timeout {
             Some(x) => x.as_nanos() as i64,
             // Block indefinitely
@@ -186,7 +186,7 @@ impl Request {
         };
 
         // SAFETY: `gpiod_line_request` is guaranteed to be valid here.
-        let ret = unsafe { gpiod::gpiod_line_request_wait_edge_event(self.request, timeout) };
+        let ret = unsafe { gpiod::gpiod_line_request_wait_edge_events(self.request, timeout) };
 
         match ret {
             -1 => Err(Error::OperationFailed(

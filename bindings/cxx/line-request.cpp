@@ -192,11 +192,11 @@ GPIOD_CXX_API int line_request::fd() const
 	return ::gpiod_line_request_get_fd(this->_m_priv->request.get());
 }
 
-GPIOD_CXX_API bool line_request::wait_edge_event(const ::std::chrono::nanoseconds& timeout) const
+GPIOD_CXX_API bool line_request::wait_edge_events(const ::std::chrono::nanoseconds& timeout) const
 {
 	this->_m_priv->throw_if_released();
 
-	int ret = ::gpiod_line_request_wait_edge_event(this->_m_priv->request.get(),
+	int ret = ::gpiod_line_request_wait_edge_events(this->_m_priv->request.get(),
 						       timeout.count());
 	if (ret < 0)
 		throw_from_errno("error waiting for edge events");
@@ -204,13 +204,13 @@ GPIOD_CXX_API bool line_request::wait_edge_event(const ::std::chrono::nanosecond
 	return ret;
 }
 
-GPIOD_CXX_API ::std::size_t line_request::read_edge_event(edge_event_buffer& buffer)
+GPIOD_CXX_API ::std::size_t line_request::read_edge_events(edge_event_buffer& buffer)
 {
-	return this->read_edge_event(buffer, buffer.capacity());
+	return this->read_edge_events(buffer, buffer.capacity());
 }
 
 GPIOD_CXX_API ::std::size_t
-line_request::read_edge_event(edge_event_buffer& buffer, ::std::size_t max_events)
+line_request::read_edge_events(edge_event_buffer& buffer, ::std::size_t max_events)
 {
 	this->_m_priv->throw_if_released();
 

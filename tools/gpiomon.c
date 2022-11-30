@@ -451,7 +451,7 @@ int main(int argc, char **argv)
 			if (pollfds[i].revents == 0)
 				continue;
 
-			ret = gpiod_line_request_read_edge_event(requests[i],
+			ret = gpiod_line_request_read_edge_events(requests[i],
 					 event_buffer, EVENT_BUF_SIZE);
 			if (ret < 0)
 				die_perror("error reading line events");
