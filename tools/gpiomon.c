@@ -21,14 +21,14 @@ struct config {
 	bool quiet;
 	bool strict;
 	bool unquoted;
-	int bias;
-	int edges;
+	enum gpiod_line_bias bias;
+	enum gpiod_line_edge edges;
 	int events_wanted;
 	unsigned int debounce_period_us;
 	const char *chip_id;
 	const char *consumer;
 	const char *fmt;
-	int event_clock;
+	enum gpiod_line_event_clock event_clock;
 	int timestamp_fmt;
 };
 

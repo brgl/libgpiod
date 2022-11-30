@@ -25,8 +25,8 @@ struct config {
 	bool interactive;
 	bool strict;
 	bool unquoted;
-	int bias;
-	int drive;
+	enum gpiod_line_bias bias;
+	enum gpiod_line_drive drive;
 	int toggles;
 	unsigned int *toggle_periods;
 	unsigned int hold_period_us;
@@ -228,25 +228,26 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 	return optind;
 }
 
-static int parse_value(const char *option)
+static enum gpiod_line_value parse_value(const char *option)
 {
 	if (strcmp(option, "0") == 0)
-		return 0;
+		return GPIOD_LINE_VALUE_INACTIVE;
 	if (strcmp(option, "1") == 0)
-		return 1;
+		return GPIOD_LINE_VALUE_ACTIVE;
 	if (strcmp(option, "inactive") == 0)
-		return 0;
+		return GPIOD_LINE_VALUE_INACTIVE;
 	if (strcmp(option, "active") == 0)
-		return 1;
+		return GPIOD_LINE_VALUE_ACTIVE;
 	if (strcmp(option, "off") == 0)
-		return 0;
+		return GPIOD_LINE_VALUE_INACTIVE;
 	if (strcmp(option, "on") == 0)
-		return 1;
+		return GPIOD_LINE_VALUE_ACTIVE;
 	if (strcmp(option, "false") == 0)
-		return 0;
+		return GPIOD_LINE_VALUE_INACTIVE;
 	if (strcmp(option, "true") == 0)
-		return 1;
-	return -1;
+		return GPIOD_LINE_VALUE_ACTIVE;
+
+	return GPIOD_LINE_VALUE_ERROR;
 }
 
 /*
@@ -259,7 +260,7 @@ static int parse_value(const char *option)
  * If line id is quoted then it is returned unquoted.
  */
 static bool parse_line_values(int num_lines, char **lvs, char **lines,
-			      int *values, bool interactive)
+			      enum gpiod_line_value *values, bool interactive)
 {
 	char *value;
 	char *line;
@@ -293,7 +294,7 @@ static bool parse_line_values(int num_lines, char **lvs, char **lines,
 		value++;
 		values[i] = parse_value(value);
 
-		if (values[i] < 0) {
+		if (values[i] == GPIOD_LINE_VALUE_ERROR) {
 			if (interactive)
 				printf("invalid line value: '%s'\n", value);
 			else
@@ -312,7 +313,7 @@ static bool parse_line_values(int num_lines, char **lvs, char **lines,
  * Parse line id and values from lvs into lines and values, or die trying.
  */
 static void parse_line_values_or_die(int num_lines, char **lvs, char **lines,
-				     int *values)
+				     enum gpiod_line_value *values)
 {
 	if (!parse_line_values(num_lines, lvs, lines, values, false))
 		exit(EXIT_FAILURE);
@@ -352,7 +353,7 @@ static void wait_fd(int fd)
  */
 static void apply_values(struct gpiod_line_request **requests,
 			 struct line_resolver *resolver,
-			 unsigned int *offsets, int *values)
+			 unsigned int *offsets, enum gpiod_line_value *values)
 {
 	int i;
 
@@ -381,7 +382,7 @@ static void toggle_all_lines(struct line_resolver *resolver)
 static void toggle_sequence(int toggles, unsigned int *toggle_periods,
 			 struct gpiod_line_request **requests,
 			 struct line_resolver *resolver,
-			 unsigned int *offsets, int *values)
+			 unsigned int *offsets, enum gpiod_line_value *values)
 {
 	int i = 0;
 
@@ -436,7 +437,8 @@ static bool parse_line_ids(int num_lines, char **words, char **lines)
  * the remaining parameters.
  */
 static void set_line_values_subset(struct line_resolver *resolver,
-				   int num_lines, char **lines, int *values)
+				   int num_lines, char **lines,
+				   enum gpiod_line_value *values)
 {
 	int l, i;
 
@@ -739,8 +741,8 @@ static char **tab_completion(const char *text, int start, int end)
 
 static void interact(struct gpiod_line_request **requests,
 		    struct line_resolver *resolver,
-		    char **lines, unsigned int *offsets, int *values,
-		    bool unquoted)
+		    char **lines, unsigned int *offsets,
+		    enum gpiod_line_value *values, bool unquoted)
 {
 	int num_words, num_lines, max_words, period_us, i;
 	char *line, **words, *line_buf;
@@ -869,8 +871,9 @@ int main(int argc, char **argv)
 	struct gpiod_request_config *req_cfg;
 	struct gpiod_line_request **requests;
 	struct gpiod_line_config *line_cfg;
-	int i, j, num_lines, ret, *values;
 	struct line_resolver *resolver;
+	enum gpiod_line_value *values;
+	int i, j, num_lines, ret;
 	struct gpiod_chip *chip;
 	unsigned int *offsets;
 	struct config cfg;

@@ -100,7 +100,7 @@ GPIOD_CXX_API edge_event::event_type edge_event::type() const
 {
 	int evtype = ::gpiod_edge_event_get_event_type(this->_m_priv->get_event_ptr());
 
-	return map_int_to_enum(evtype, event_type_mapping);
+	return map_enum_c_to_cxx(evtype, event_type_mapping);
 }
 
 GPIOD_CXX_API timestamp edge_event::timestamp_ns() const noexcept

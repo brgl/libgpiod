@@ -12,18 +12,18 @@ namespace gpiosim {
 
 namespace {
 
-const ::std::map<chip::pull, int> pull_mapping = {
+const ::std::map<chip::pull, gpiosim_pull> pull_mapping = {
 	{ chip::pull::PULL_UP,		GPIOSIM_PULL_UP },
 	{ chip::pull::PULL_DOWN,	GPIOSIM_PULL_DOWN }
 };
 
-const ::std::map<chip_builder::hog_direction, int> hog_dir_mapping = {
+const ::std::map<chip_builder::hog_direction, gpiosim_direction> hog_dir_mapping = {
 	{ chip_builder::hog_direction::INPUT,		GPIOSIM_HOG_DIR_INPUT },
 	{ chip_builder::hog_direction::OUTPUT_HIGH,	GPIOSIM_HOG_DIR_OUTPUT_HIGH },
 	{ chip_builder::hog_direction::OUTPUT_LOW,	GPIOSIM_HOG_DIR_OUTPUT_LOW }
 };
 
-const ::std::map<int, chip::value> value_mapping = {
+const ::std::map<gpiosim_value, chip::value> value_mapping = {
 	{ GPIOSIM_VALUE_INACTIVE,	chip::value::INACTIVE },
 	{ GPIOSIM_VALUE_ACTIVE,		chip::value::ACTIVE }
 };
@@ -137,8 +137,8 @@ chip& chip::operator=(chip&& other)
 
 chip::value chip::get_value(unsigned int offset)
 {
-	int val = ::gpiosim_bank_get_value(this->_m_priv->bank.get(), offset);
-	if (val < 0)
+	auto val = ::gpiosim_bank_get_value(this->_m_priv->bank.get(), offset);
+	if (val == GPIOSIM_VALUE_ERROR)
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "failed to read the simulated GPIO line value");
 
@@ -147,8 +147,8 @@ chip::value chip::get_value(unsigned int offset)
 
 void chip::set_pull(unsigned int offset, pull pull)
 {
-	int ret = ::gpiosim_bank_set_pull(this->_m_priv->bank.get(),
-					  offset, pull_mapping.at(pull));
+	auto ret = ::gpiosim_bank_set_pull(this->_m_priv->bank.get(),
+					   offset, pull_mapping.at(pull));
 	if (ret)
 		throw ::std::system_error(errno, ::std::system_category(),
 					  "failed to set the pull of simulated GPIO line");

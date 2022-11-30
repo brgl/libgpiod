@@ -244,7 +244,9 @@ size_t gpiod_chip_info_get_num_lines(struct gpiod_chip_info *info);
 /**
  * @brief Logical line state.
  */
-enum {
+enum gpiod_line_value {
+	GPIOD_LINE_VALUE_ERROR = -1,
+	/**< Returned to indicate an error when reading the value. */
 	GPIOD_LINE_VALUE_INACTIVE = 0,
 	/**< Line is logically inactive. */
 	GPIOD_LINE_VALUE_ACTIVE = 1,
@@ -254,7 +256,7 @@ enum {
 /**
  * @brief Direction settings.
  */
-enum {
+enum gpiod_line_direction {
 	GPIOD_LINE_DIRECTION_AS_IS = 1,
 	/**< Request the line(s), but don't change direction. */
 	GPIOD_LINE_DIRECTION_INPUT,
@@ -266,7 +268,7 @@ enum {
 /**
  * @brief Edge detection settings.
  */
-enum {
+enum gpiod_line_edge {
 	GPIOD_LINE_EDGE_NONE = 1,
 	/**< Line edge detection is disabled. */
 	GPIOD_LINE_EDGE_RISING,
@@ -280,7 +282,7 @@ enum {
 /**
  * @brief Internal bias settings.
  */
-enum {
+enum gpiod_line_bias {
 	GPIOD_LINE_BIAS_AS_IS = 1,
 	/**< Don't change the bias setting when applying line config. */
 	GPIOD_LINE_BIAS_UNKNOWN,
@@ -296,7 +298,7 @@ enum {
 /**
  * @brief Drive settings.
  */
-enum {
+enum gpiod_line_drive {
 	GPIOD_LINE_DRIVE_PUSH_PULL = 1,
 	/**< Drive setting is push-pull. */
 	GPIOD_LINE_DRIVE_OPEN_DRAIN,
@@ -308,7 +310,7 @@ enum {
 /**
  * @brief Event clock settings.
  */
-enum {
+enum gpiod_line_event_clock {
 	GPIOD_LINE_EVENT_CLOCK_MONOTONIC = 1,
 	/**< Line uses the monotonic clock for edge event timestamps. */
 	GPIOD_LINE_EVENT_CLOCK_REALTIME,
@@ -404,7 +406,8 @@ const char *gpiod_line_info_get_consumer(struct gpiod_line_info *info);
  * @return Returns ::GPIOD_LINE_DIRECTION_INPUT or
  *	   ::GPIOD_LINE_DIRECTION_OUTPUT.
  */
-int gpiod_line_info_get_direction(struct gpiod_line_info *info);
+enum gpiod_line_direction
+gpiod_line_info_get_direction(struct gpiod_line_info *info);
 
 /**
  * @brief Get the edge detection setting of the line.
@@ -412,7 +415,8 @@ int gpiod_line_info_get_direction(struct gpiod_line_info *info);
  * @return Returns ::GPIOD_LINE_EDGE_NONE, ::GPIOD_LINE_EDGE_RISING,
  *	   ::GPIOD_LINE_EDGE_FALLING or ::GPIOD_LINE_EDGE_BOTH.
  */
-int gpiod_line_info_get_edge_detection(struct gpiod_line_info *info);
+enum gpiod_line_edge
+gpiod_line_info_get_edge_detection(struct gpiod_line_info *info);
 
 /**
  * @brief Get the bias setting of the line.
@@ -420,7 +424,8 @@ int gpiod_line_info_get_edge_detection(struct gpiod_line_info *info);
  * @return Returns ::GPIOD_LINE_BIAS_PULL_UP, ::GPIOD_LINE_BIAS_PULL_DOWN,
  *	   ::GPIOD_LINE_BIAS_DISABLED or ::GPIOD_LINE_BIAS_UNKNOWN.
  */
-int gpiod_line_info_get_bias(struct gpiod_line_info *info);
+enum gpiod_line_bias
+gpiod_line_info_get_bias(struct gpiod_line_info *info);
 
 /**
  * @brief Get the drive setting of the line.
@@ -428,7 +433,8 @@ int gpiod_line_info_get_bias(struct gpiod_line_info *info);
  * @return Returns ::GPIOD_LINE_DRIVE_PUSH_PULL, ::GPIOD_LINE_DRIVE_OPEN_DRAIN
  *	   or ::GPIOD_LINE_DRIVE_OPEN_SOURCE.
  */
-int gpiod_line_info_get_drive(struct gpiod_line_info *info);
+enum gpiod_line_drive
+gpiod_line_info_get_drive(struct gpiod_line_info *info);
 
 /**
  * @brief Check if the logical value of the line is inverted compared to the
@@ -462,7 +468,8 @@ gpiod_line_info_get_debounce_period_us(struct gpiod_line_info *info);
  * @return Returns ::GPIOD_LINE_EVENT_CLOCK_MONOTONIC or
  *	   ::GPIOD_LINE_EVENT_CLOCK_REALTIME.
  */
-int gpiod_line_info_get_event_clock(struct gpiod_line_info *info);
+enum gpiod_line_event_clock
+gpiod_line_info_get_event_clock(struct gpiod_line_info *info);
 
 /**
  * @}
@@ -482,7 +489,7 @@ int gpiod_line_info_get_event_clock(struct gpiod_line_info *info);
 /**
  * @brief Line status change event types.
  */
-enum {
+enum gpiod_info_event_type {
 	GPIOD_INFO_EVENT_LINE_REQUESTED = 1,
 	/**< Line has been requested. */
 	GPIOD_INFO_EVENT_LINE_RELEASED,
@@ -504,7 +511,8 @@ void gpiod_info_event_free(struct gpiod_info_event *event);
  *	   ::GPIOD_INFO_EVENT_LINE_RELEASED or
  *	   ::GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED.
  */
-int gpiod_info_event_get_event_type(struct gpiod_info_event *event);
+enum gpiod_info_event_type
+gpiod_info_event_get_event_type(struct gpiod_info_event *event);
 
 /**
  * @brief Get the timestamp of the event.
@@ -575,14 +583,15 @@ gpiod_line_settings_copy(struct gpiod_line_settings *settings);
  * @return 0 on success, -1 on error.
  */
 int gpiod_line_settings_set_direction(struct gpiod_line_settings *settings,
-				      int direction);
+				      enum gpiod_line_direction direction);
 
 /**
  * @brief Get direction.
  * @param settings Line settings object.
  * @return Current direction.
  */
-int gpiod_line_settings_get_direction(struct gpiod_line_settings *settings);
+enum gpiod_line_direction
+gpiod_line_settings_get_direction(struct gpiod_line_settings *settings);
 
 /**
  * @brief Set edge detection.
@@ -591,14 +600,14 @@ int gpiod_line_settings_get_direction(struct gpiod_line_settings *settings);
  * @return 0 on success, -1 on failure.
  */
 int gpiod_line_settings_set_edge_detection(struct gpiod_line_settings *settings,
-					   int edge);
+					   enum gpiod_line_edge edge);
 
 /**
  * @brief Get edge detection.
  * @param settings Line settings object.
  * @return Current edge detection setting.
  */
-int
+enum gpiod_line_edge
 gpiod_line_settings_get_edge_detection(struct gpiod_line_settings *settings);
 
 /**
@@ -608,14 +617,15 @@ gpiod_line_settings_get_edge_detection(struct gpiod_line_settings *settings);
  * @return 0 on success, -1 on failure.
  */
 int gpiod_line_settings_set_bias(struct gpiod_line_settings *settings,
-				 int bias);
+				 enum gpiod_line_bias bias);
 
 /**
  * @brief Get bias.
  * @param settings Line settings object.
  * @return Current bias setting.
  */
-int gpiod_line_settings_get_bias(struct gpiod_line_settings *settings);
+enum gpiod_line_bias
+gpiod_line_settings_get_bias(struct gpiod_line_settings *settings);
 
 /**
  * @brief Set drive.
@@ -624,14 +634,15 @@ int gpiod_line_settings_get_bias(struct gpiod_line_settings *settings);
  * @return 0 on success, -1 on failure.
  */
 int gpiod_line_settings_set_drive(struct gpiod_line_settings *settings,
-				  int drive);
+				  enum gpiod_line_drive drive);
 
 /**
  * @brief Get drive.
  * @param settings Line settings object.
  * @return Current drive setting.
  */
-int gpiod_line_settings_get_drive(struct gpiod_line_settings *settings);
+enum gpiod_line_drive
+gpiod_line_settings_get_drive(struct gpiod_line_settings *settings);
 
 /**
  * @brief Set active-low setting.
@@ -673,14 +684,15 @@ gpiod_line_settings_get_debounce_period_us(
  * @return 0 on success, -1 on failure.
  */
 int gpiod_line_settings_set_event_clock(struct gpiod_line_settings *settings,
-					int event_clock);
+				enum gpiod_line_event_clock event_clock);
 
 /**
  * @brief Get event clock setting.
  * @param settings Line settings object.
  * @return Current event clock setting.
  */
-int gpiod_line_settings_get_event_clock(struct gpiod_line_settings *settings);
+enum gpiod_line_event_clock
+gpiod_line_settings_get_event_clock(struct gpiod_line_settings *settings);
 
 /**
  * @brief Set the output value.
@@ -689,14 +701,15 @@ int gpiod_line_settings_get_event_clock(struct gpiod_line_settings *settings);
  * @return 0 on success, -1 on failure.
  */
 int gpiod_line_settings_set_output_value(struct gpiod_line_settings *settings,
-					 int value);
+					 enum gpiod_line_value value);
 
 /**
  * @brief Get the output value.
  * @param settings Line settings object.
  * @return Current output value.
  */
-int gpiod_line_settings_get_output_value(struct gpiod_line_settings *settings);
+enum gpiod_line_value
+gpiod_line_settings_get_output_value(struct gpiod_line_settings *settings);
 
 /*
  * @}
@@ -884,8 +897,9 @@ void gpiod_line_request_get_offsets(struct gpiod_line_request *request,
  * @param offset The offset of the line of which the value should be read.
  * @return Returns 1 or 0 on success and -1 on error.
  */
-int gpiod_line_request_get_value(struct gpiod_line_request *request,
-				 unsigned int offset);
+enum gpiod_line_value
+gpiod_line_request_get_value(struct gpiod_line_request *request,
+			     unsigned int offset);
 
 /**
  * @brief Get the values of a subset of requested lines.
@@ -901,7 +915,7 @@ int gpiod_line_request_get_value(struct gpiod_line_request *request,
 int gpiod_line_request_get_values_subset(struct gpiod_line_request *request,
 					 size_t num_values,
 					 const unsigned int *offsets,
-					 int *values);
+					 enum gpiod_line_value *values);
 
 /**
  * @brief Get the values of all requested lines.
@@ -915,7 +929,7 @@ int gpiod_line_request_get_values_subset(struct gpiod_line_request *request,
  * @return 0 on success, -1 on failure.
  */
 int gpiod_line_request_get_values(struct gpiod_line_request *request,
-				  int *values);
+				  enum gpiod_line_value *values);
 
 /**
  * @brief Set the value of a single requested line.
@@ -924,7 +938,8 @@ int gpiod_line_request_get_values(struct gpiod_line_request *request,
  * @param value Value to set.
  */
 int gpiod_line_request_set_value(struct gpiod_line_request *request,
-				 unsigned int offset, int value);
+				 unsigned int offset,
+				 enum gpiod_line_value value);
 
 /**
  * @brief Set the values of a subset of requested lines.
@@ -941,7 +956,7 @@ int gpiod_line_request_set_value(struct gpiod_line_request *request,
 int gpiod_line_request_set_values_subset(struct gpiod_line_request *request,
 					 size_t num_values,
 					 const unsigned int *offsets,
-					 const int *values);
+					 const enum gpiod_line_value *values);
 
 /**
  * @brief Set the values of all lines associated with a request.
@@ -954,7 +969,7 @@ int gpiod_line_request_set_values_subset(struct gpiod_line_request *request,
  *		 ::gpiod_line_request_get_offsets.
  */
 int gpiod_line_request_set_values(struct gpiod_line_request *request,
-				  const int *values);
+				  const enum gpiod_line_value *values);
 
 /**
  * @brief Update the configuration of lines associated with a line request.
@@ -1032,7 +1047,7 @@ int gpiod_line_request_read_edge_event(struct gpiod_line_request *request,
 /**
  * @brief Event types.
  */
-enum {
+enum gpiod_edge_event_type {
 	GPIOD_EDGE_EVENT_RISING_EDGE = 1,
 	/**< Rising edge event. */
 	GPIOD_EDGE_EVENT_FALLING_EDGE
@@ -1059,7 +1074,8 @@ struct gpiod_edge_event *gpiod_edge_event_copy(struct gpiod_edge_event *event);
  * @return The event type (::GPIOD_EDGE_EVENT_RISING_EDGE or
  *	   ::GPIOD_EDGE_EVENT_FALLING_EDGE).
  */
-int gpiod_edge_event_get_event_type(struct gpiod_edge_event *event);
+enum gpiod_edge_event_type
+gpiod_edge_event_get_event_type(struct gpiod_edge_event *event);
 
 /**
  * @brief Get the timestamp of the event.

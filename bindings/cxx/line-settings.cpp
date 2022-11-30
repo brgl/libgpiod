@@ -10,10 +10,11 @@ namespace gpiod {
 
 namespace {
 
-template<class enum_type>
-::std::map<int, enum_type> make_reverse_maping(const ::std::map<enum_type, int>& mapping)
+template<class cxx_enum_type, class c_enum_type>
+::std::map<c_enum_type, cxx_enum_type>
+make_reverse_maping(const ::std::map<cxx_enum_type, c_enum_type>& mapping)
 {
-	::std::map<int, enum_type> ret;
+	::std::map<c_enum_type, cxx_enum_type> ret;
 
 	for (const auto &item: mapping)
 		ret[item.second] = item.first;
@@ -21,54 +22,56 @@ template<class enum_type>
 	return ret;
 }
 
-const ::std::map<line::direction, int> direction_mapping = {
+const ::std::map<line::direction, gpiod_line_direction> direction_mapping = {
 	{ line::direction::AS_IS,	GPIOD_LINE_DIRECTION_AS_IS },
 	{ line::direction::INPUT,	GPIOD_LINE_DIRECTION_INPUT },
 	{ line::direction::OUTPUT,	GPIOD_LINE_DIRECTION_OUTPUT }
 };
 
-const ::std::map<int, line::direction> reverse_direction_mapping = make_reverse_maping(direction_mapping);
+const ::std::map<gpiod_line_direction, line::direction>
+reverse_direction_mapping = make_reverse_maping(direction_mapping);
 
-const ::std::map<line::edge, int> edge_mapping = {
+const ::std::map<line::edge, gpiod_line_edge> edge_mapping = {
 	{ line::edge::NONE,		GPIOD_LINE_EDGE_NONE },
 	{ line::edge::FALLING,		GPIOD_LINE_EDGE_FALLING },
 	{ line::edge::RISING,		GPIOD_LINE_EDGE_RISING },
 	{ line::edge::BOTH,		GPIOD_LINE_EDGE_BOTH }
 };
 
-const ::std::map<int, line::edge> reverse_edge_mapping = make_reverse_maping(edge_mapping);
+const ::std::map<gpiod_line_edge, line::edge> reverse_edge_mapping = make_reverse_maping(edge_mapping);
 
-const ::std::map<line::bias, int> bias_mapping = {
+const ::std::map<line::bias, gpiod_line_bias> bias_mapping = {
 	{ line::bias::AS_IS,		GPIOD_LINE_BIAS_AS_IS },
 	{ line::bias::DISABLED,		GPIOD_LINE_BIAS_DISABLED },
 	{ line::bias::PULL_UP,		GPIOD_LINE_BIAS_PULL_UP },
 	{ line::bias::PULL_DOWN,	GPIOD_LINE_BIAS_PULL_DOWN }
 };
 
-const ::std::map<int, line::bias> reverse_bias_mapping = make_reverse_maping(bias_mapping);
+const ::std::map<gpiod_line_bias, line::bias> reverse_bias_mapping = make_reverse_maping(bias_mapping);
 
-const ::std::map<line::drive, int> drive_mapping = {
+const ::std::map<line::drive, gpiod_line_drive> drive_mapping = {
 	{ line::drive::PUSH_PULL,	GPIOD_LINE_DRIVE_PUSH_PULL },
 	{ line::drive::OPEN_DRAIN,	GPIOD_LINE_DRIVE_OPEN_DRAIN },
 	{ line::drive::OPEN_SOURCE,	GPIOD_LINE_DRIVE_OPEN_SOURCE }
 };
 
-const ::std::map<int, line::drive> reverse_drive_mapping = make_reverse_maping(drive_mapping);
+const ::std::map<gpiod_line_drive, line::drive> reverse_drive_mapping = make_reverse_maping(drive_mapping);
 
-const ::std::map<line::clock, int> clock_mapping = {
+const ::std::map<line::clock, gpiod_line_event_clock> clock_mapping = {
 	{ line::clock::MONOTONIC,	GPIOD_LINE_EVENT_CLOCK_MONOTONIC },
 	{ line::clock::REALTIME,	GPIOD_LINE_EVENT_CLOCK_REALTIME },
 	{ line::clock::HTE,		GPIOD_LINE_EVENT_CLOCK_HTE }
 };
 
-const ::std::map<int, line::clock> reverse_clock_mapping = make_reverse_maping(clock_mapping);
+const ::std::map<gpiod_line_event_clock, line::clock>
+reverse_clock_mapping = make_reverse_maping(clock_mapping);
 
-const ::std::map<line::value, int> value_mapping = {
+const ::std::map<line::value, gpiod_line_value> value_mapping = {
 	{ line::value::INACTIVE,	GPIOD_LINE_VALUE_INACTIVE },
 	{ line::value::ACTIVE,		GPIOD_LINE_VALUE_ACTIVE }
 };
 
-const ::std::map<int, line::value> reverse_value_mapping = make_reverse_maping(value_mapping);
+const ::std::map<gpiod_line_value, line::value> reverse_value_mapping = make_reverse_maping(value_mapping);
 
 line_settings_ptr make_line_settings()
 {
@@ -95,30 +98,30 @@ value_type map_setting(const key_type& key, const ::std::map<key_type, value_typ
 	return ret;
 }
 
-template<class enum_type>
-int do_map_value(enum_type value, const ::std::map<enum_type, int>& mapping)
+template<class cxx_enum_type, class c_enum_type>
+c_enum_type do_map_value(cxx_enum_type value, const ::std::map<cxx_enum_type, c_enum_type>& mapping)
 {
-	return map_setting<enum_type, int, ::std::invalid_argument>(value, mapping);
+	return map_setting<cxx_enum_type, c_enum_type, ::std::invalid_argument>(value, mapping);
 }
 
-template<class enum_type, int set_func(::gpiod_line_settings*, int)>
-void set_mapped_value(::gpiod_line_settings* settings, enum_type value,
-		      const ::std::map<enum_type, int>& mapping)
+template<class cxx_enum_type, class c_enum_type, int set_func(::gpiod_line_settings*, c_enum_type)>
+void set_mapped_value(::gpiod_line_settings* settings, cxx_enum_type value,
+		      const ::std::map<cxx_enum_type, c_enum_type>& mapping)
 {
-	auto mapped_val = do_map_value(value, mapping);
+	c_enum_type mapped_val = do_map_value(value, mapping);
 
 	auto ret = set_func(settings, mapped_val);
 	if (ret)
 		throw_from_errno("unable to set property");
 }
 
-template<class ret_type, int get_func(::gpiod_line_settings*)>
-ret_type get_mapped_value(::gpiod_line_settings* settings,
-			  const ::std::map<int, ret_type>& mapping)
+template<class cxx_enum_type, class c_enum_type, c_enum_type get_func(::gpiod_line_settings*)>
+cxx_enum_type get_mapped_value(::gpiod_line_settings* settings,
+			  const ::std::map<c_enum_type, cxx_enum_type>& mapping)
 {
-	int mapped_val = get_func(settings);
+	auto mapped_val = get_func(settings);
 
-	return map_int_to_enum(mapped_val, mapping);
+	return map_enum_c_to_cxx(mapped_val, mapping);
 }
 
 } /* namespace */
@@ -162,7 +165,7 @@ GPIOD_CXX_API line_settings& line_settings::reset(void) noexcept
 
 GPIOD_CXX_API line_settings& line_settings::set_direction(line::direction direction)
 {
-	set_mapped_value<line::direction,
+	set_mapped_value<line::direction, gpiod_line_direction,
 			 ::gpiod_line_settings_set_direction>(this->_m_priv->settings.get(),
 							      direction, direction_mapping);
 
@@ -171,7 +174,7 @@ GPIOD_CXX_API line_settings& line_settings::set_direction(line::direction direct
 
 GPIOD_CXX_API line::direction line_settings::direction() const
 {
-	return get_mapped_value<line::direction,
+	return get_mapped_value<line::direction, gpiod_line_direction,
 				::gpiod_line_settings_get_direction>(
 							this->_m_priv->settings.get(),
 							reverse_direction_mapping);
@@ -179,7 +182,7 @@ GPIOD_CXX_API line::direction line_settings::direction() const
 
 GPIOD_CXX_API line_settings& line_settings::set_edge_detection(line::edge edge)
 {
-	set_mapped_value<line::edge,
+	set_mapped_value<line::edge, gpiod_line_edge,
 			 ::gpiod_line_settings_set_edge_detection>(this->_m_priv->settings.get(),
 								   edge, edge_mapping);
 
@@ -188,7 +191,7 @@ GPIOD_CXX_API line_settings& line_settings::set_edge_detection(line::edge edge)
 
 GPIOD_CXX_API line::edge line_settings::edge_detection() const
 {
-	return get_mapped_value<line::edge,
+	return get_mapped_value<line::edge, gpiod_line_edge,
 				::gpiod_line_settings_get_edge_detection>(
 							this->_m_priv->settings.get(),
 							reverse_edge_mapping);
@@ -196,7 +199,7 @@ GPIOD_CXX_API line::edge line_settings::edge_detection() const
 
 GPIOD_CXX_API line_settings& line_settings::set_bias(line::bias bias)
 {
-	set_mapped_value<line::bias,
+	set_mapped_value<line::bias, gpiod_line_bias,
 			 ::gpiod_line_settings_set_bias>(this->_m_priv->settings.get(),
 							 bias, bias_mapping);
 
@@ -205,14 +208,14 @@ GPIOD_CXX_API line_settings& line_settings::set_bias(line::bias bias)
 
 GPIOD_CXX_API line::bias line_settings::bias() const
 {
-	return get_mapped_value<line::bias,
+	return get_mapped_value<line::bias, gpiod_line_bias,
 				::gpiod_line_settings_get_bias>(this->_m_priv->settings.get(),
 								reverse_bias_mapping);
 }
 
 GPIOD_CXX_API line_settings& line_settings::set_drive(line::drive drive)
 {
-	set_mapped_value<line::drive,
+	set_mapped_value<line::drive, gpiod_line_drive,
 			 ::gpiod_line_settings_set_drive>(this->_m_priv->settings.get(),
 							  drive, drive_mapping);
 
@@ -221,7 +224,7 @@ GPIOD_CXX_API line_settings& line_settings::set_drive(line::drive drive)
 
 GPIOD_CXX_API line::drive line_settings::drive() const
 {
-	return get_mapped_value<line::drive,
+	return get_mapped_value<line::drive, gpiod_line_drive,
 				::gpiod_line_settings_get_drive>(this->_m_priv->settings.get(),
 								 reverse_drive_mapping);
 }
@@ -254,7 +257,7 @@ GPIOD_CXX_API ::std::chrono::microseconds line_settings::debounce_period() const
 
 GPIOD_CXX_API line_settings& line_settings::set_event_clock(line::clock event_clock)
 {
-	set_mapped_value<line::clock,
+	set_mapped_value<line::clock, gpiod_line_event_clock,
 			 ::gpiod_line_settings_set_event_clock>(this->_m_priv->settings.get(),
 								event_clock, clock_mapping);
 
@@ -263,7 +266,7 @@ GPIOD_CXX_API line_settings& line_settings::set_event_clock(line::clock event_cl
 
 GPIOD_CXX_API line::clock line_settings::event_clock() const
 {
-	return get_mapped_value<line::clock,
+	return get_mapped_value<line::clock, gpiod_line_event_clock,
 				::gpiod_line_settings_get_event_clock>(
 							this->_m_priv->settings.get(),
 							reverse_clock_mapping);
@@ -271,7 +274,7 @@ GPIOD_CXX_API line::clock line_settings::event_clock() const
 
 GPIOD_CXX_API line_settings& line_settings::set_output_value(line::value value)
 {
-	set_mapped_value<line::value,
+	set_mapped_value<line::value, gpiod_line_value,
 			 ::gpiod_line_settings_set_output_value>(this->_m_priv->settings.get(),
 								 value, value_mapping);
 
@@ -280,7 +283,7 @@ GPIOD_CXX_API line_settings& line_settings::set_output_value(line::value value)
 
 GPIOD_CXX_API line::value line_settings::output_value() const
 {
-	return get_mapped_value<line::value,
+	return get_mapped_value<line::value, gpiod_line_value,
 				::gpiod_line_settings_get_output_value>(
 							this->_m_priv->settings.get(),
 							reverse_value_mapping);

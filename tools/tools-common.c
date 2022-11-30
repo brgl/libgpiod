@@ -336,7 +336,7 @@ static void print_consumer(struct gpiod_line_info *info, bool unquoted)
 
 void print_line_attributes(struct gpiod_line_info *info, bool unquoted_strings)
 {
-	int direction;
+	enum gpiod_line_direction direction;
 
 	direction = gpiod_line_info_get_direction(info);
 
@@ -714,7 +714,7 @@ void free_line_resolver(struct line_resolver *resolver)
 
 int get_line_offsets_and_values(struct line_resolver *resolver,
 				int chip_num, unsigned int *offsets,
-				int *values)
+				enum gpiod_line_value *values)
 {
 	struct resolved_line *line;
 	int i, num_lines = 0;
@@ -754,7 +754,8 @@ const char *get_line_name(struct line_resolver *resolver,
 	return 0;
 }
 
-void set_line_values(struct line_resolver *resolver, int chip_num, int *values)
+void set_line_values(struct line_resolver *resolver, int chip_num,
+		     enum gpiod_line_value *values)
 {
 	int i, j;
 

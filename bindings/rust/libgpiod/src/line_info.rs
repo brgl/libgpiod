@@ -100,7 +100,7 @@ impl Info {
     /// Get the GPIO line's direction.
     pub fn direction(&self) -> Result<Direction> {
         // SAFETY: `gpiod_line_info` is guaranteed to be valid here.
-        Direction::new(unsafe { gpiod::gpiod_line_info_get_direction(self.info) } as u32)
+        Direction::new(unsafe { gpiod::gpiod_line_info_get_direction(self.info) })
     }
 
     /// Returns true if the line is "active-low", false otherwise.
@@ -112,25 +112,25 @@ impl Info {
     /// Get the GPIO line's bias setting.
     pub fn bias(&self) -> Result<Option<Bias>> {
         // SAFETY: `gpiod_line_info` is guaranteed to be valid here.
-        Bias::new(unsafe { gpiod::gpiod_line_info_get_bias(self.info) } as u32)
+        Bias::new(unsafe { gpiod::gpiod_line_info_get_bias(self.info) })
     }
 
     /// Get the GPIO line's drive setting.
     pub fn drive(&self) -> Result<Drive> {
         // SAFETY: `gpiod_line_info` is guaranteed to be valid here.
-        Drive::new(unsafe { gpiod::gpiod_line_info_get_drive(self.info) } as u32)
+        Drive::new(unsafe { gpiod::gpiod_line_info_get_drive(self.info) })
     }
 
     /// Get the current edge detection setting of the line.
     pub fn edge_detection(&self) -> Result<Option<Edge>> {
         // SAFETY: `gpiod_line_info` is guaranteed to be valid here.
-        Edge::new(unsafe { gpiod::gpiod_line_info_get_edge_detection(self.info) } as u32)
+        Edge::new(unsafe { gpiod::gpiod_line_info_get_edge_detection(self.info) })
     }
 
     /// Get the current event clock setting used for edge event timestamps.
     pub fn event_clock(&self) -> Result<EventClock> {
         // SAFETY: `gpiod_line_info` is guaranteed to be valid here.
-        EventClock::new(unsafe { gpiod::gpiod_line_info_get_event_clock(self.info) } as u32)
+        EventClock::new(unsafe { gpiod::gpiod_line_info_get_event_clock(self.info) })
     }
 
     /// Returns true if the line is debounced (either by hardware or by the

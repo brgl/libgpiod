@@ -102,10 +102,7 @@ impl Settings {
     pub fn set_direction(&mut self, direction: Direction) -> Result<&mut Self> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
         let ret = unsafe {
-            gpiod::gpiod_line_settings_set_direction(
-                self.settings,
-                direction.gpiod_direction() as i32,
-            )
+            gpiod::gpiod_line_settings_set_direction(self.settings, direction.gpiod_direction())
         };
 
         if ret == -1 {
@@ -121,17 +118,14 @@ impl Settings {
     /// Get the direction setting.
     pub fn direction(&self) -> Result<Direction> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
-        Direction::new(unsafe { gpiod::gpiod_line_settings_get_direction(self.settings) } as u32)
+        Direction::new(unsafe { gpiod::gpiod_line_settings_get_direction(self.settings) })
     }
 
     /// Set the edge event detection setting.
     pub fn set_edge_detection(&mut self, edge: Option<Edge>) -> Result<&mut Self> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
         let ret = unsafe {
-            gpiod::gpiod_line_settings_set_edge_detection(
-                self.settings,
-                Edge::gpiod_edge(edge) as i32,
-            )
+            gpiod::gpiod_line_settings_set_edge_detection(self.settings, Edge::gpiod_edge(edge))
         };
 
         if ret == -1 {
@@ -147,15 +141,14 @@ impl Settings {
     /// Get the edge event detection setting.
     pub fn edge_detection(&self) -> Result<Option<Edge>> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
-        Edge::new(unsafe { gpiod::gpiod_line_settings_get_edge_detection(self.settings) } as u32)
+        Edge::new(unsafe { gpiod::gpiod_line_settings_get_edge_detection(self.settings) })
     }
 
     /// Set the bias setting.
     pub fn set_bias(&mut self, bias: Option<Bias>) -> Result<&mut Self> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
-        let ret = unsafe {
-            gpiod::gpiod_line_settings_set_bias(self.settings, Bias::gpiod_bias(bias) as i32)
-        };
+        let ret =
+            unsafe { gpiod::gpiod_line_settings_set_bias(self.settings, Bias::gpiod_bias(bias)) };
 
         if ret == -1 {
             Err(Error::OperationFailed(
@@ -170,15 +163,14 @@ impl Settings {
     /// Get the bias setting.
     pub fn bias(&self) -> Result<Option<Bias>> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
-        Bias::new(unsafe { gpiod::gpiod_line_settings_get_bias(self.settings) } as u32)
+        Bias::new(unsafe { gpiod::gpiod_line_settings_get_bias(self.settings) })
     }
 
     /// Set the drive setting.
     pub fn set_drive(&mut self, drive: Drive) -> Result<&mut Self> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
-        let ret = unsafe {
-            gpiod::gpiod_line_settings_set_drive(self.settings, drive.gpiod_drive() as i32)
-        };
+        let ret =
+            unsafe { gpiod::gpiod_line_settings_set_drive(self.settings, drive.gpiod_drive()) };
 
         if ret == -1 {
             Err(Error::OperationFailed(
@@ -193,7 +185,7 @@ impl Settings {
     /// Get the drive setting.
     pub fn drive(&self) -> Result<Drive> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
-        Drive::new(unsafe { gpiod::gpiod_line_settings_get_drive(self.settings) } as u32)
+        Drive::new(unsafe { gpiod::gpiod_line_settings_get_drive(self.settings) })
     }
 
     /// Set active-low setting.
@@ -236,7 +228,7 @@ impl Settings {
     pub fn set_event_clock(&mut self, clock: EventClock) -> Result<&mut Self> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
         let ret = unsafe {
-            gpiod::gpiod_line_settings_set_event_clock(self.settings, clock.gpiod_clock() as i32)
+            gpiod::gpiod_line_settings_set_event_clock(self.settings, clock.gpiod_clock())
         };
 
         if ret == -1 {

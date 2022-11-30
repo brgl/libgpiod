@@ -8,18 +8,10 @@ typedef struct {
 	struct gpiod_line_settings *settings;
 } line_settings_object;
 
-static int set_int_prop(struct gpiod_line_settings *settings, int val,
-			int (*func)(struct gpiod_line_settings *, int))
+static int set_error(void)
 {
-	int ret;
-
-	ret = func(settings, val);
-	if (ret) {
-		Py_gpiod_SetErrFromErrno();
-		return -1;
-	}
-
-	return 0;
+	Py_gpiod_SetErrFromErrno();
+	return -1;
 }
 
 static int
@@ -37,9 +29,14 @@ line_settings_init(line_settings_object *self, PyObject *args, PyObject *kwargs)
 		NULL
 	};
 
-	int direction, edge, bias, drive, active_low, event_clock, output_value,
-	    ret;
+	enum gpiod_line_event_clock event_clock;
+	enum gpiod_line_direction direction;
+	enum gpiod_line_value output_value;
 	unsigned long debounce_period;
+	enum gpiod_line_drive drive;
+	enum gpiod_line_edge edge;
+	enum gpiod_line_bias bias;
+	int ret, active_low;
 
 	ret = PyArg_ParseTupleAndKeywords(args, kwargs, "IIIIpkII", kwlist,
 			&direction, &edge, &bias, &drive, &active_low,
@@ -53,39 +50,34 @@ line_settings_init(line_settings_object *self, PyObject *args, PyObject *kwargs)
 		return -1;
 	}
 
-	ret = set_int_prop(self->settings, direction,
-			   gpiod_line_settings_set_direction);
+	ret = gpiod_line_settings_set_direction(self->settings, direction);
 	if (ret)
-		return -1;
+		return set_error();
 
-	ret = set_int_prop(self->settings, edge,
-			   gpiod_line_settings_set_edge_detection);
+	ret = gpiod_line_settings_set_edge_detection(self->settings, edge);
 	if (ret)
-		return -1;
+		return set_error();
 
-	ret = set_int_prop(self->settings, bias,
-			   gpiod_line_settings_set_bias);
+	ret = gpiod_line_settings_set_bias(self->settings, bias);
 	if (ret)
-		return -1;
+		return set_error();
 
-	ret = set_int_prop(self->settings, drive,
-			   gpiod_line_settings_set_drive);
+	ret = gpiod_line_settings_set_drive(self->settings, drive);
 	if (ret)
-		return -1;
+		return set_error();
 
 	gpiod_line_settings_set_active_low(self->settings, active_low);
 	gpiod_line_settings_set_debounce_period_us(self->settings,
 						   debounce_period);
 
-	ret = set_int_prop(self->settings, edge,
-			   gpiod_line_settings_set_edge_detection);
+	ret = gpiod_line_settings_set_edge_detection(self->settings, edge);
 	if (ret)
-		return -1;
+		return set_error();
 
-	ret = set_int_prop(self->settings, output_value,
-			   gpiod_line_settings_set_output_value);
+	ret = gpiod_line_settings_set_output_value(self->settings,
+						   output_value);
 	if (ret)
-		return -1;
+		return set_error();
 
 	return 0;
 }

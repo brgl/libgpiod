@@ -9,7 +9,7 @@
 #include "internal.h"
 
 struct gpiod_info_event {
-	int event_type;
+	enum gpiod_info_event_type event_type;
 	uint64_t timestamp;
 	struct gpiod_line_info *info;
 };
@@ -61,7 +61,8 @@ GPIOD_API void gpiod_info_event_free(struct gpiod_info_event *event)
 	free(event);
 }
 
-GPIOD_API int gpiod_info_event_get_event_type(struct gpiod_info_event *event)
+GPIOD_API enum gpiod_info_event_type
+gpiod_info_event_get_event_type(struct gpiod_info_event *event)
 {
 	return event->event_type;
 }

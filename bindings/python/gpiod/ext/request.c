@@ -7,7 +7,7 @@ typedef struct {
 	PyObject_HEAD;
 	struct gpiod_line_request *request;
 	unsigned int *offsets;
-	int *values;
+	enum gpiod_line_value *values;
 	size_t num_lines;
 	struct gpiod_edge_event_buffer *buffer;
 } request_object;
@@ -360,10 +360,10 @@ PyObject *Py_gpiod_MakeRequestObject(struct gpiod_line_request *request,
 				     size_t event_buffer_size)
 {
 	struct gpiod_edge_event_buffer *buffer;
+	enum gpiod_line_value *values;
 	request_object *req_obj;
 	unsigned int *offsets;
 	size_t num_lines;
-	int *values;
 
 	num_lines = gpiod_line_request_get_num_lines(request);
 

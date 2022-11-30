@@ -18,15 +18,15 @@
 
 namespace gpiod {
 
-template<class enum_type> enum_type
-map_int_to_enum(int value, const ::std::map<int, enum_type>& mapping)
+template<class cxx_enum_type, class c_enum_type> cxx_enum_type
+map_enum_c_to_cxx(c_enum_type value, const ::std::map<c_enum_type, cxx_enum_type>& mapping)
 {
 	try {
 		return mapping.at(value);
 	} catch (const ::std::out_of_range& err) {
 		/* FIXME Demangle the name. */
 		throw bad_mapping(::std::string("invalid value for ") +
-				  typeid(enum_type).name());
+				  typeid(cxx_enum_type).name());
 	}
 }
 

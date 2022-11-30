@@ -15,17 +15,19 @@ struct gpiosim_ctx;
 struct gpiosim_dev;
 struct gpiosim_bank;
 
-enum {
+enum gpiosim_value {
+	GPIOSIM_VALUE_ERROR = -1,
 	GPIOSIM_VALUE_INACTIVE = 0,
 	GPIOSIM_VALUE_ACTIVE = 1,
 };
 
-enum {
+enum gpiosim_pull {
+	GPIOSIM_PULL_ERROR = -1,
 	GPIOSIM_PULL_DOWN = 1,
 	GPIOSIM_PULL_UP,
 };
 
-enum {
+enum gpiosim_direction {
 	GPIOSIM_HOG_DIR_INPUT = 1,
 	GPIOSIM_HOG_DIR_OUTPUT_HIGH,
 	GPIOSIM_HOG_DIR_OUTPUT_LOW,
@@ -59,13 +61,15 @@ int gpiosim_bank_set_num_lines(struct gpiosim_bank *bank, size_t num_lines);
 int gpiosim_bank_set_line_name(struct gpiosim_bank *bank,
 			       unsigned int offset, const char *name);
 int gpiosim_bank_hog_line(struct gpiosim_bank *bank, unsigned int offset,
-			  const char *name, int direction);
+			  const char *name, enum gpiosim_direction direction);
 int gpiosim_bank_clear_hog(struct gpiosim_bank *bank, unsigned int offset);
 
-int gpiosim_bank_get_value(struct gpiosim_bank *bank, unsigned int offset);
-int gpiosim_bank_get_pull(struct gpiosim_bank *bank, unsigned int offset);
+enum gpiosim_value
+gpiosim_bank_get_value(struct gpiosim_bank *bank, unsigned int offset);
+enum gpiosim_pull
+gpiosim_bank_get_pull(struct gpiosim_bank *bank, unsigned int offset);
 int gpiosim_bank_set_pull(struct gpiosim_bank *bank,
-			  unsigned int offset, int pull);
+			  unsigned int offset, enum gpiosim_pull pull);
 
 #ifdef __cplusplus
 } /* extern "C" */

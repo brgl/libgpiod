@@ -77,7 +77,7 @@ GPIOD_CXX_API info_event::event_type info_event::type() const
 {
 	int type = ::gpiod_info_event_get_event_type(this->_m_priv->event.get());
 
-	return map_int_to_enum(type, event_type_mapping);
+	return map_enum_c_to_cxx(type, event_type_mapping);
 }
 
 GPIOD_CXX_API ::std::uint64_t info_event::timestamp_ns() const noexcept

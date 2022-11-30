@@ -24,6 +24,35 @@ use thiserror::Error as ThisError;
 
 use libgpiod_sys as gpiod;
 
+use gpiod::{
+    gpiod_edge_event_type_GPIOD_EDGE_EVENT_FALLING_EDGE as GPIOD_EDGE_EVENT_FALLING_EDGE,
+    gpiod_edge_event_type_GPIOD_EDGE_EVENT_RISING_EDGE as GPIOD_EDGE_EVENT_RISING_EDGE,
+    gpiod_info_event_type_GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED as GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED,
+    gpiod_info_event_type_GPIOD_INFO_EVENT_LINE_RELEASED as GPIOD_INFO_EVENT_LINE_RELEASED,
+    gpiod_info_event_type_GPIOD_INFO_EVENT_LINE_REQUESTED as GPIOD_INFO_EVENT_LINE_REQUESTED,
+    gpiod_line_bias_GPIOD_LINE_BIAS_AS_IS as GPIOD_LINE_BIAS_AS_IS,
+    gpiod_line_bias_GPIOD_LINE_BIAS_DISABLED as GPIOD_LINE_BIAS_DISABLED,
+    gpiod_line_bias_GPIOD_LINE_BIAS_PULL_DOWN as GPIOD_LINE_BIAS_PULL_DOWN,
+    gpiod_line_bias_GPIOD_LINE_BIAS_PULL_UP as GPIOD_LINE_BIAS_PULL_UP,
+    gpiod_line_bias_GPIOD_LINE_BIAS_UNKNOWN as GPIOD_LINE_BIAS_UNKNOWN,
+    gpiod_line_direction_GPIOD_LINE_DIRECTION_AS_IS as GPIOD_LINE_DIRECTION_AS_IS,
+    gpiod_line_direction_GPIOD_LINE_DIRECTION_INPUT as GPIOD_LINE_DIRECTION_INPUT,
+    gpiod_line_direction_GPIOD_LINE_DIRECTION_OUTPUT as GPIOD_LINE_DIRECTION_OUTPUT,
+    gpiod_line_drive_GPIOD_LINE_DRIVE_OPEN_DRAIN as GPIOD_LINE_DRIVE_OPEN_DRAIN,
+    gpiod_line_drive_GPIOD_LINE_DRIVE_OPEN_SOURCE as GPIOD_LINE_DRIVE_OPEN_SOURCE,
+    gpiod_line_drive_GPIOD_LINE_DRIVE_PUSH_PULL as GPIOD_LINE_DRIVE_PUSH_PULL,
+    gpiod_line_edge_GPIOD_LINE_EDGE_BOTH as GPIOD_LINE_EDGE_BOTH,
+    gpiod_line_edge_GPIOD_LINE_EDGE_FALLING as GPIOD_LINE_EDGE_FALLING,
+    gpiod_line_edge_GPIOD_LINE_EDGE_NONE as GPIOD_LINE_EDGE_NONE,
+    gpiod_line_edge_GPIOD_LINE_EDGE_RISING as GPIOD_LINE_EDGE_RISING,
+    gpiod_line_event_clock_GPIOD_LINE_EVENT_CLOCK_HTE as GPIOD_LINE_EVENT_CLOCK_HTE,
+    gpiod_line_event_clock_GPIOD_LINE_EVENT_CLOCK_MONOTONIC as GPIOD_LINE_EVENT_CLOCK_MONOTONIC,
+    gpiod_line_event_clock_GPIOD_LINE_EVENT_CLOCK_REALTIME as GPIOD_LINE_EVENT_CLOCK_REALTIME,
+    gpiod_line_value_GPIOD_LINE_VALUE_ACTIVE as GPIOD_LINE_VALUE_ACTIVE,
+    gpiod_line_value_GPIOD_LINE_VALUE_INACTIVE as GPIOD_LINE_VALUE_INACTIVE,
+    gpiod_line_value_GPIOD_LINE_VALUE_ERROR as GPIOD_LINE_VALUE_ERROR,
+};
+
 /// Operation types, used with OperationFailed() Error.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum OperationType {
@@ -96,7 +125,7 @@ pub enum Error {
     #[error("Invalid String")]
     InvalidString,
     #[error("Invalid enum {0} value: {1}")]
-    InvalidEnumValue(&'static str, u32),
+    InvalidEnumValue(&'static str, i32),
     #[error("Operation {0} Failed: {1}")]
     OperationFailed(OperationType, errno::Errno),
     #[error("Invalid Arguments")]
@@ -150,18 +179,24 @@ pub mod line {
     pub type ValueMap = IntMap<Value>;
 
     impl Value {
-        pub fn new(val: i32) -> Result<Self> {
+        pub fn new(val: gpiod::gpiod_line_value) -> Result<Self> {
             Ok(match val {
-                0 => Value::InActive,
-                1 => Value::Active,
-                _ => return Err(Error::InvalidEnumValue("Value", val as u32)),
+                GPIOD_LINE_VALUE_INACTIVE => Value::InActive,
+                GPIOD_LINE_VALUE_ACTIVE => Value::Active,
+                GPIOD_LINE_VALUE_ERROR => {
+                    return Err(Error::OperationFailed(
+                        OperationType::LineRequestGetVal,
+                        errno::errno(),
+                    ))
+                }
+                _ => return Err(Error::InvalidEnumValue("Value", val as i32)),
             })
         }
 
-        pub(crate) fn value(&self) -> i32 {
+        pub(crate) fn value(&self) -> gpiod::gpiod_line_value {
             match self {
-                Value::Active => 1,
-                Value::InActive => 0,
+                Value::Active => GPIOD_LINE_VALUE_ACTIVE,
+                Value::InActive => GPIOD_LINE_VALUE_INACTIVE,
             }
         }
     }
@@ -181,20 +216,20 @@ pub mod line {
     }
 
     impl Direction {
-        pub(crate) fn new(dir: u32) -> Result<Self> {
+        pub(crate) fn new(dir: gpiod::gpiod_line_direction) -> Result<Self> {
             Ok(match dir {
-                gpiod::GPIOD_LINE_DIRECTION_AS_IS => Direction::AsIs,
-                gpiod::GPIOD_LINE_DIRECTION_INPUT => Direction::Input,
-                gpiod::GPIOD_LINE_DIRECTION_OUTPUT => Direction::Output,
-                _ => return Err(Error::InvalidEnumValue("Direction", dir)),
+                GPIOD_LINE_DIRECTION_AS_IS => Direction::AsIs,
+                GPIOD_LINE_DIRECTION_INPUT => Direction::Input,
+                GPIOD_LINE_DIRECTION_OUTPUT => Direction::Output,
+                _ => return Err(Error::InvalidEnumValue("Direction", dir as i32)),
             })
         }
 
-        pub(crate) fn gpiod_direction(&self) -> u32 {
+        pub(crate) fn gpiod_direction(&self) -> gpiod::gpiod_line_direction {
             match self {
-                Direction::AsIs => gpiod::GPIOD_LINE_DIRECTION_AS_IS,
-                Direction::Input => gpiod::GPIOD_LINE_DIRECTION_INPUT,
-                Direction::Output => gpiod::GPIOD_LINE_DIRECTION_OUTPUT,
+                Direction::AsIs => GPIOD_LINE_DIRECTION_AS_IS,
+                Direction::Input => GPIOD_LINE_DIRECTION_INPUT,
+                Direction::Output => GPIOD_LINE_DIRECTION_OUTPUT,
             }
         }
     }
@@ -211,24 +246,24 @@ pub mod line {
     }
 
     impl Bias {
-        pub(crate) fn new(bias: u32) -> Result<Option<Self>> {
+        pub(crate) fn new(bias: gpiod::gpiod_line_bias) -> Result<Option<Self>> {
             Ok(match bias {
-                gpiod::GPIOD_LINE_BIAS_UNKNOWN => None,
-                gpiod::GPIOD_LINE_BIAS_AS_IS => None,
-                gpiod::GPIOD_LINE_BIAS_DISABLED => Some(Bias::Disabled),
-                gpiod::GPIOD_LINE_BIAS_PULL_UP => Some(Bias::PullUp),
-                gpiod::GPIOD_LINE_BIAS_PULL_DOWN => Some(Bias::PullDown),
-                _ => return Err(Error::InvalidEnumValue("Bias", bias)),
+                GPIOD_LINE_BIAS_UNKNOWN => None,
+                GPIOD_LINE_BIAS_AS_IS => None,
+                GPIOD_LINE_BIAS_DISABLED => Some(Bias::Disabled),
+                GPIOD_LINE_BIAS_PULL_UP => Some(Bias::PullUp),
+                GPIOD_LINE_BIAS_PULL_DOWN => Some(Bias::PullDown),
+                _ => return Err(Error::InvalidEnumValue("Bias", bias as i32)),
             })
         }
 
-        pub(crate) fn gpiod_bias(bias: Option<Bias>) -> u32 {
+        pub(crate) fn gpiod_bias(bias: Option<Bias>) -> gpiod::gpiod_line_bias {
             match bias {
-                None => gpiod::GPIOD_LINE_BIAS_AS_IS,
+                None => GPIOD_LINE_BIAS_AS_IS,
                 Some(bias) => match bias {
-                    Bias::Disabled => gpiod::GPIOD_LINE_BIAS_DISABLED,
-                    Bias::PullUp => gpiod::GPIOD_LINE_BIAS_PULL_UP,
-                    Bias::PullDown => gpiod::GPIOD_LINE_BIAS_PULL_DOWN,
+                    Bias::Disabled => GPIOD_LINE_BIAS_DISABLED,
+                    Bias::PullUp => GPIOD_LINE_BIAS_PULL_UP,
+                    Bias::PullDown => GPIOD_LINE_BIAS_PULL_DOWN,
                 },
             }
         }
@@ -246,20 +281,20 @@ pub mod line {
     }
 
     impl Drive {
-        pub(crate) fn new(drive: u32) -> Result<Self> {
+        pub(crate) fn new(drive: gpiod::gpiod_line_drive) -> Result<Self> {
             Ok(match drive {
-                gpiod::GPIOD_LINE_DRIVE_PUSH_PULL => Drive::PushPull,
-                gpiod::GPIOD_LINE_DRIVE_OPEN_DRAIN => Drive::OpenDrain,
-                gpiod::GPIOD_LINE_DRIVE_OPEN_SOURCE => Drive::OpenSource,
-                _ => return Err(Error::InvalidEnumValue("Drive", drive)),
+                GPIOD_LINE_DRIVE_PUSH_PULL => Drive::PushPull,
+                GPIOD_LINE_DRIVE_OPEN_DRAIN => Drive::OpenDrain,
+                GPIOD_LINE_DRIVE_OPEN_SOURCE => Drive::OpenSource,
+                _ => return Err(Error::InvalidEnumValue("Drive", drive as i32)),
             })
         }
 
-        pub(crate) fn gpiod_drive(&self) -> u32 {
+        pub(crate) fn gpiod_drive(&self) -> gpiod::gpiod_line_drive {
             match self {
-                Drive::PushPull => gpiod::GPIOD_LINE_DRIVE_PUSH_PULL,
-                Drive::OpenDrain => gpiod::GPIOD_LINE_DRIVE_OPEN_DRAIN,
-                Drive::OpenSource => gpiod::GPIOD_LINE_DRIVE_OPEN_SOURCE,
+                Drive::PushPull => GPIOD_LINE_DRIVE_PUSH_PULL,
+                Drive::OpenDrain => GPIOD_LINE_DRIVE_OPEN_DRAIN,
+                Drive::OpenSource => GPIOD_LINE_DRIVE_OPEN_SOURCE,
             }
         }
     }
@@ -276,23 +311,23 @@ pub mod line {
     }
 
     impl Edge {
-        pub(crate) fn new(edge: u32) -> Result<Option<Self>> {
+        pub(crate) fn new(edge: gpiod::gpiod_line_edge) -> Result<Option<Self>> {
             Ok(match edge {
-                gpiod::GPIOD_LINE_EDGE_NONE => None,
-                gpiod::GPIOD_LINE_EDGE_RISING => Some(Edge::Rising),
-                gpiod::GPIOD_LINE_EDGE_FALLING => Some(Edge::Falling),
-                gpiod::GPIOD_LINE_EDGE_BOTH => Some(Edge::Both),
-                _ => return Err(Error::InvalidEnumValue("Edge", edge)),
+                GPIOD_LINE_EDGE_NONE => None,
+                GPIOD_LINE_EDGE_RISING => Some(Edge::Rising),
+                GPIOD_LINE_EDGE_FALLING => Some(Edge::Falling),
+                GPIOD_LINE_EDGE_BOTH => Some(Edge::Both),
+                _ => return Err(Error::InvalidEnumValue("Edge", edge as i32)),
             })
         }
 
-        pub(crate) fn gpiod_edge(edge: Option<Edge>) -> u32 {
+        pub(crate) fn gpiod_edge(edge: Option<Edge>) -> gpiod::gpiod_line_edge {
             match edge {
-                None => gpiod::GPIOD_LINE_EDGE_NONE,
+                None => GPIOD_LINE_EDGE_NONE,
                 Some(edge) => match edge {
-                    Edge::Rising => gpiod::GPIOD_LINE_EDGE_RISING,
-                    Edge::Falling => gpiod::GPIOD_LINE_EDGE_FALLING,
-                    Edge::Both => gpiod::GPIOD_LINE_EDGE_BOTH,
+                    Edge::Rising => GPIOD_LINE_EDGE_RISING,
+                    Edge::Falling => GPIOD_LINE_EDGE_FALLING,
+                    Edge::Both => GPIOD_LINE_EDGE_BOTH,
                 },
             }
         }
@@ -358,20 +393,20 @@ pub mod line {
     }
 
     impl EventClock {
-        pub(crate) fn new(clock: u32) -> Result<Self> {
+        pub(crate) fn new(clock: gpiod::gpiod_line_event_clock) -> Result<Self> {
             Ok(match clock {
-                gpiod::GPIOD_LINE_EVENT_CLOCK_MONOTONIC => EventClock::Monotonic,
-                gpiod::GPIOD_LINE_EVENT_CLOCK_REALTIME => EventClock::Realtime,
-                gpiod::GPIOD_LINE_EVENT_CLOCK_HTE => EventClock::HTE,
-                _ => return Err(Error::InvalidEnumValue("Eventclock", clock)),
+                GPIOD_LINE_EVENT_CLOCK_MONOTONIC => EventClock::Monotonic,
+                GPIOD_LINE_EVENT_CLOCK_REALTIME => EventClock::Realtime,
+                GPIOD_LINE_EVENT_CLOCK_HTE => EventClock::HTE,
+                _ => return Err(Error::InvalidEnumValue("Eventclock", clock as i32)),
             })
         }
 
-        pub(crate) fn gpiod_clock(&self) -> u32 {
+        pub(crate) fn gpiod_clock(&self) -> gpiod::gpiod_line_event_clock {
             match self {
-                EventClock::Monotonic => gpiod::GPIOD_LINE_EVENT_CLOCK_MONOTONIC,
-                EventClock::Realtime => gpiod::GPIOD_LINE_EVENT_CLOCK_REALTIME,
-                EventClock::HTE => gpiod::GPIOD_LINE_EVENT_CLOCK_HTE,
+                EventClock::Monotonic => GPIOD_LINE_EVENT_CLOCK_MONOTONIC,
+                EventClock::Realtime => GPIOD_LINE_EVENT_CLOCK_REALTIME,
+                EventClock::HTE => GPIOD_LINE_EVENT_CLOCK_HTE,
             }
         }
     }
@@ -388,12 +423,12 @@ pub mod line {
     }
 
     impl InfoChangeKind {
-        pub(crate) fn new(kind: u32) -> Result<Self> {
+        pub(crate) fn new(kind: gpiod::gpiod_info_event_type) -> Result<Self> {
             Ok(match kind {
-                gpiod::GPIOD_INFO_EVENT_LINE_REQUESTED => InfoChangeKind::LineRequested,
-                gpiod::GPIOD_INFO_EVENT_LINE_RELEASED => InfoChangeKind::LineReleased,
-                gpiod::GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED => InfoChangeKind::LineConfigChanged,
-                _ => return Err(Error::InvalidEnumValue("InfoChangeKind", kind)),
+                GPIOD_INFO_EVENT_LINE_REQUESTED => InfoChangeKind::LineRequested,
+                GPIOD_INFO_EVENT_LINE_RELEASED => InfoChangeKind::LineReleased,
+                GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED => InfoChangeKind::LineConfigChanged,
+                _ => return Err(Error::InvalidEnumValue("InfoChangeKind", kind as i32)),
             })
         }
     }
@@ -408,11 +443,11 @@ pub mod line {
     }
 
     impl EdgeKind {
-        pub(crate) fn new(kind: u32) -> Result<Self> {
+        pub(crate) fn new(kind: gpiod::gpiod_edge_event_type) -> Result<Self> {
             Ok(match kind {
-                gpiod::GPIOD_EDGE_EVENT_RISING_EDGE => EdgeKind::Rising,
-                gpiod::GPIOD_EDGE_EVENT_FALLING_EDGE => EdgeKind::Falling,
-                _ => return Err(Error::InvalidEnumValue("EdgeEvent", kind)),
+                GPIOD_EDGE_EVENT_RISING_EDGE => EdgeKind::Rising,
+                GPIOD_EDGE_EVENT_FALLING_EDGE => EdgeKind::Falling,
+                _ => return Err(Error::InvalidEnumValue("EdgeEvent", kind as i32)),
             })
         }
     }

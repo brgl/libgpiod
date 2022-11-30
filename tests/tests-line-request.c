@@ -173,7 +173,8 @@ GPIOD_TEST_CASE(read_all_values)
 	g_autoptr(struct_gpiod_line_settings) settings = NULL;
 	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
 	g_autoptr(struct_gpiod_line_request) request = NULL;
-	gint ret, values[5];
+	enum gpiod_line_value values[5];
+	gint ret;
 	guint i;
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
@@ -232,11 +233,13 @@ GPIOD_TEST_CASE(request_multiple_values_but_read_one)
 GPIOD_TEST_CASE(set_all_values)
 {
 	static const guint offsets[] = { 0, 2, 4, 5, 6 };
-	static const gint values[] = { GPIOD_LINE_VALUE_ACTIVE,
-				       GPIOD_LINE_VALUE_INACTIVE,
-				       GPIOD_LINE_VALUE_ACTIVE,
-				       GPIOD_LINE_VALUE_ACTIVE,
-				       GPIOD_LINE_VALUE_ACTIVE };
+	static const enum gpiod_line_value values[] = {
+		GPIOD_LINE_VALUE_ACTIVE,
+		GPIOD_LINE_VALUE_INACTIVE,
+		GPIOD_LINE_VALUE_ACTIVE,
+		GPIOD_LINE_VALUE_ACTIVE,
+		GPIOD_LINE_VALUE_ACTIVE
+	};
 
 	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 8, NULL);
 	g_autoptr(struct_gpiod_chip) chip = NULL;
@@ -270,9 +273,11 @@ GPIOD_TEST_CASE(set_values_subset_of_lines)
 {
 	static const guint offsets[] = { 0, 1, 2, 3 };
 	static const guint offsets_to_set[] = { 0, 1, 3 };
-	static const gint values[] = { GPIOD_LINE_VALUE_ACTIVE,
-				       GPIOD_LINE_VALUE_INACTIVE,
-				       GPIOD_LINE_VALUE_ACTIVE };
+	static const enum gpiod_line_value values[] = {
+		GPIOD_LINE_VALUE_ACTIVE,
+		GPIOD_LINE_VALUE_INACTIVE,
+		GPIOD_LINE_VALUE_ACTIVE
+	};
 
 	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 4, NULL);
 	g_autoptr(struct_gpiod_chip) chip = NULL;
@@ -508,8 +513,8 @@ GPIOD_TEST_CASE(request_lines_with_unordered_offsets)
 	g_autoptr(struct_gpiod_line_settings) settings = NULL;
 	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
 	g_autoptr(struct_gpiod_line_request) request = NULL;
+	enum gpiod_line_value values[4];
 	guint set_offsets[4];
-	gint values[4];
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
 	settings = gpiod_test_create_line_settings_or_fail();

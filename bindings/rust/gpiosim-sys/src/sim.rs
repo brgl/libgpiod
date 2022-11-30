@@ -164,7 +164,7 @@ impl SimBank {
                 errno::errno(),
             ))
         } else {
-            Value::new(ret as u32)
+            Value::new(ret as i32)
         }
     }
 

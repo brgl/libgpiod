@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2022 Linaro Ltd.
 // SPDX-FileCopyrightTest: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
-use libgpiod::{Error, Result};
+use libgpiod::{Error, Result, OperationType};
 
 #[allow(non_camel_case_types, non_upper_case_globals)]
 #[cfg_attr(test, allow(deref_nullptr, non_snake_case))]
@@ -15,6 +15,17 @@ use bindings_raw::*;
 mod sim;
 pub use sim::*;
 
+use crate::{
+    gpiosim_value_GPIOSIM_VALUE_INACTIVE as GPIOSIM_VALUE_INACTIVE,
+    gpiosim_value_GPIOSIM_VALUE_ACTIVE as GPIOSIM_VALUE_ACTIVE,
+    gpiosim_value_GPIOSIM_VALUE_ERROR as GPIOSIM_VALUE_ERROR,
+    gpiosim_direction_GPIOSIM_HOG_DIR_INPUT as GPIOSIM_HOG_DIR_INPUT,
+    gpiosim_direction_GPIOSIM_HOG_DIR_OUTPUT_HIGH as GPIOSIM_HOG_DIR_OUTPUT_HIGH,
+    gpiosim_direction_GPIOSIM_HOG_DIR_OUTPUT_LOW as GPIOSIM_HOG_DIR_OUTPUT_LOW,
+    gpiosim_pull_GPIOSIM_PULL_UP as GPIOSIM_PULL_UP,
+    gpiosim_pull_GPIOSIM_PULL_DOWN as GPIOSIM_PULL_DOWN,
+};
+
 /// Value settings.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Value {
@@ -25,12 +36,17 @@ pub enum Value {
 }
 
 impl Value {
-    pub(crate) fn new(val: u32) -> Result<Self> {
-        match val {
-            GPIOSIM_VALUE_INACTIVE => Ok(Value::InActive),
-            GPIOSIM_VALUE_ACTIVE => Ok(Value::Active),
-            _ => Err(Error::InvalidEnumValue("Value", val as u32)),
-        }
+    pub(crate) fn new(val: gpiosim_value) -> Result<Self> {
+        Ok(match val {
+            GPIOSIM_VALUE_INACTIVE => Value::InActive,
+            GPIOSIM_VALUE_ACTIVE => Value::Active,
+            GPIOSIM_VALUE_ERROR => {
+                return Err(Error::OperationFailed(
+                    OperationType::SimBankGetVal, errno::errno()
+                ))
+            }
+            _ => return Err(Error::InvalidEnumValue("Value", val as i32)),
+        })
     }
 }
 
@@ -46,12 +62,12 @@ pub enum Direction {
 }
 
 impl Direction {
-    fn val(self) -> i32 {
-        (match self {
+    fn val(self) -> gpiosim_direction {
+        match self {
             Direction::Input => GPIOSIM_HOG_DIR_INPUT,
             Direction::OutputHigh => GPIOSIM_HOG_DIR_OUTPUT_HIGH,
             Direction::OutputLow => GPIOSIM_HOG_DIR_OUTPUT_LOW,
-        }) as i32
+        }
     }
 }
 
@@ -65,10 +81,10 @@ pub enum Pull {
 }
 
 impl Pull {
-    fn val(self) -> i32 {
-        (match self {
+    fn val(self) -> gpiosim_pull {
+        match self {
             Pull::Up => GPIOSIM_PULL_UP,
             Pull::Down => GPIOSIM_PULL_DOWN,
-        }) as i32
+        }
     }
 }

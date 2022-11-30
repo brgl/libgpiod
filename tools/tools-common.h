@@ -110,11 +110,13 @@ bool resolve_lines_by_offset(struct line_resolver *resolver,
 bool resolve_done(struct line_resolver *resolver);
 void validate_resolution(struct line_resolver *resolver, const char *chip_id);
 void free_line_resolver(struct line_resolver *resolver);
-int get_line_offsets_and_values(struct line_resolver *resolver,
-		int chip_num, unsigned int *offsets, int *values);
+int get_line_offsets_and_values(struct line_resolver *resolver, int chip_num,
+				unsigned int *offsets,
+				enum gpiod_line_value *values);
 const char *get_chip_name(struct line_resolver *resolver, int chip_num);
 const char *get_line_name(struct line_resolver *resolver, int chip_num,
 			  unsigned int offset);
-void set_line_values(struct line_resolver *resolver, int chip_num, int *values);
+void set_line_values(struct line_resolver *resolver, int chip_num,
+		     enum gpiod_line_value *values);
 
 #endif /* __GPIOD_TOOLS_COMMON_H__ */

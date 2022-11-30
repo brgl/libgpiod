@@ -57,15 +57,16 @@ gpiod_line_request_get_offsets(struct gpiod_line_request *request,
 	       sizeof(*offsets) * request->num_lines);
 }
 
-GPIOD_API int gpiod_line_request_get_value(struct gpiod_line_request *request,
-					   unsigned int offset)
+GPIOD_API enum gpiod_line_value
+gpiod_line_request_get_value(struct gpiod_line_request *request,
+			     unsigned int offset)
 {
+	enum gpiod_line_value val;
 	unsigned int ret;
-	int val;
 
 	ret = gpiod_line_request_get_values_subset(request, 1, &offset, &val);
 	if (ret)
-		return -1;
+		return GPIOD_LINE_VALUE_ERROR;
 
 	return val;
 }
@@ -86,7 +87,8 @@ static int offset_to_bit(struct gpiod_line_request *request,
 GPIOD_API int
 gpiod_line_request_get_values_subset(struct gpiod_line_request *request,
 				     size_t num_values,
-				     const unsigned int *offsets, int *values)
+				     const unsigned int *offsets,
+				     enum gpiod_line_value *values)
 {
 	struct gpio_v2_line_values uapi_values;
 	uint64_t mask = 0, bits = 0;
@@ -123,14 +125,15 @@ gpiod_line_request_get_values_subset(struct gpiod_line_request *request,
 }
 
 GPIOD_API int gpiod_line_request_get_values(struct gpiod_line_request *request,
-					    int *values)
+					    enum gpiod_line_value *values)
 {
 	return gpiod_line_request_get_values_subset(request, request->num_lines,
 						    request->offsets, values);
 }
 
 GPIOD_API int gpiod_line_request_set_value(struct gpiod_line_request *request,
-					   unsigned int offset, int value)
+					   unsigned int offset,
+					   enum gpiod_line_value value)
 {
 	return gpiod_line_request_set_values_subset(request, 1,
 						    &offset, &value);
@@ -140,7 +143,7 @@ GPIOD_API int
 gpiod_line_request_set_values_subset(struct gpiod_line_request *request,
 				     size_t num_values,
 				     const unsigned int *offsets,
-				     const int *values)
+				     const enum gpiod_line_value *values)
 {
 	struct gpio_v2_line_values uapi_values;
 	uint64_t mask = 0, bits = 0;
@@ -166,7 +169,7 @@ gpiod_line_request_set_values_subset(struct gpiod_line_request *request,
 }
 
 GPIOD_API int gpiod_line_request_set_values(struct gpiod_line_request *request,
-					    const int *values)
+					    const enum gpiod_line_value *values)
 {
 	return gpiod_line_request_set_values_subset(request, request->num_lines,
 						    request->offsets, values);

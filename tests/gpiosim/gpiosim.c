@@ -1007,8 +1007,8 @@ GPIOSIM_API int gpiosim_bank_set_line_name(struct gpiosim_bank *bank,
 }
 
 GPIOSIM_API int gpiosim_bank_hog_line(struct gpiosim_bank *bank,
-				      unsigned int offset,
-				      const char *name, int direction)
+				      unsigned int offset, const char *name,
+				      enum gpiosim_direction direction)
 {
 	char buf[64], *dir;
 	int ret, fd;
@@ -1081,15 +1081,16 @@ static int sysfs_read_bank_attr(struct gpiosim_bank *bank, unsigned int offset,
 	return open_read_close(bank->sysfs_dir_fd, where, buf, bufsize);
 }
 
-GPIOSIM_API int gpiosim_bank_get_value(struct gpiosim_bank *bank,
-				       unsigned int offset)
+GPIOSIM_API enum
+gpiosim_value gpiosim_bank_get_value(struct gpiosim_bank *bank,
+				     unsigned int offset)
 {
 	char what[3];
 	int ret;
 
 	ret = sysfs_read_bank_attr(bank, offset, "value", what, sizeof(what));
 	if (ret)
-		return ret;
+		return GPIOSIM_VALUE_ERROR;
 
 	if (what[0] == '0')
 		return GPIOSIM_VALUE_INACTIVE;
@@ -1097,18 +1098,18 @@ GPIOSIM_API int gpiosim_bank_get_value(struct gpiosim_bank *bank,
 		return GPIOSIM_VALUE_ACTIVE;
 
 	errno = EIO;
-	return -1;
+	return GPIOSIM_VALUE_ERROR;
 }
 
-GPIOSIM_API int gpiosim_bank_get_pull(struct gpiosim_bank *bank,
-				      unsigned int offset)
+GPIOSIM_API enum gpiosim_pull
+gpiosim_bank_get_pull(struct gpiosim_bank *bank, unsigned int offset)
 {
 	char what[16];
 	int ret;
 
 	ret = sysfs_read_bank_attr(bank, offset, "pull", what, sizeof(what));
 	if (ret)
-		return ret;
+		return GPIOSIM_PULL_ERROR;
 
 	if (strcmp(what, "pull-down") == 0)
 		return GPIOSIM_PULL_DOWN;
@@ -1116,11 +1117,12 @@ GPIOSIM_API int gpiosim_bank_get_pull(struct gpiosim_bank *bank,
 		return GPIOSIM_PULL_UP;
 
 	errno = EIO;
-	return -1;
+	return GPIOSIM_PULL_ERROR;
 }
 
-GPIOSIM_API int gpiosim_bank_set_pull(struct gpiosim_bank *bank,
-				      unsigned int offset, int pull)
+GPIOSIM_API int
+gpiosim_bank_set_pull(struct gpiosim_bank *bank,
+		      unsigned int offset, enum gpiosim_pull pull)
 {
 	struct gpiosim_dev *dev = bank->dev;
 	char where[32], what[16];

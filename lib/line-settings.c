@@ -9,14 +9,14 @@
 #include "internal.h"
 
 struct gpiod_line_settings {
-	int direction;
-	int edge_detection;
-	int drive;
-	int bias;
+	enum gpiod_line_direction direction;
+	enum gpiod_line_edge edge_detection;
+	enum gpiod_line_drive drive;
+	enum gpiod_line_bias bias;
 	bool active_low;
-	int event_clock;
+	enum gpiod_line_event_clock event_clock;
 	long debounce_period_us;
-	int output_value;
+	enum gpiod_line_value output_value;
 };
 
 GPIOD_API struct gpiod_line_settings *gpiod_line_settings_new(void)
@@ -65,7 +65,7 @@ gpiod_line_settings_copy(struct gpiod_line_settings *settings)
 
 GPIOD_API int
 gpiod_line_settings_set_direction(struct gpiod_line_settings *settings,
-				  int direction)
+				  enum gpiod_line_direction direction)
 {
 	switch (direction) {
 	case GPIOD_LINE_DIRECTION_INPUT:
@@ -82,7 +82,7 @@ gpiod_line_settings_set_direction(struct gpiod_line_settings *settings,
 	return 0;
 }
 
-GPIOD_API int
+GPIOD_API enum gpiod_line_direction
 gpiod_line_settings_get_direction(struct gpiod_line_settings *settings)
 {
 	return settings->direction;
@@ -90,7 +90,7 @@ gpiod_line_settings_get_direction(struct gpiod_line_settings *settings)
 
 GPIOD_API int
 gpiod_line_settings_set_edge_detection(struct gpiod_line_settings *settings,
-				       int edge)
+				       enum gpiod_line_edge edge)
 {
 	switch (edge) {
 	case GPIOD_LINE_EDGE_NONE:
@@ -108,14 +108,15 @@ gpiod_line_settings_set_edge_detection(struct gpiod_line_settings *settings,
 	return 0;
 }
 
-GPIOD_API int
+GPIOD_API enum gpiod_line_edge
 gpiod_line_settings_get_edge_detection(struct gpiod_line_settings *settings)
 {
 	return settings->edge_detection;
 }
 
 GPIOD_API int
-gpiod_line_settings_set_bias(struct gpiod_line_settings *settings, int bias)
+gpiod_line_settings_set_bias(struct gpiod_line_settings *settings,
+			     enum gpiod_line_bias bias)
 {
 	switch (bias) {
 	case GPIOD_LINE_BIAS_AS_IS:
@@ -133,13 +134,15 @@ gpiod_line_settings_set_bias(struct gpiod_line_settings *settings, int bias)
 	return 0;
 }
 
-GPIOD_API int gpiod_line_settings_get_bias(struct gpiod_line_settings *settings)
+GPIOD_API enum gpiod_line_bias
+gpiod_line_settings_get_bias(struct gpiod_line_settings *settings)
 {
 	return settings->bias;
 }
 
 GPIOD_API int
-gpiod_line_settings_set_drive(struct gpiod_line_settings *settings, int drive)
+gpiod_line_settings_set_drive(struct gpiod_line_settings *settings,
+			      enum gpiod_line_drive drive)
 {
 	switch (drive) {
 	case GPIOD_LINE_DRIVE_PUSH_PULL:
@@ -156,7 +159,7 @@ gpiod_line_settings_set_drive(struct gpiod_line_settings *settings, int drive)
 	return 0;
 }
 
-GPIOD_API int
+GPIOD_API enum gpiod_line_drive
 gpiod_line_settings_get_drive(struct gpiod_line_settings *settings)
 {
 	return settings->drive;
@@ -190,7 +193,7 @@ gpiod_line_settings_get_debounce_period_us(struct gpiod_line_settings *settings)
 
 GPIOD_API int
 gpiod_line_settings_set_event_clock(struct gpiod_line_settings *settings,
-				    int event_clock)
+				    enum gpiod_line_event_clock event_clock)
 {
 	switch (event_clock) {
 	case GPIOD_LINE_EVENT_CLOCK_MONOTONIC:
@@ -207,7 +210,7 @@ gpiod_line_settings_set_event_clock(struct gpiod_line_settings *settings,
 	return 0;
 }
 
-GPIOD_API int
+GPIOD_API enum gpiod_line_event_clock
 gpiod_line_settings_get_event_clock(struct gpiod_line_settings *settings)
 {
 	return settings->event_clock;
@@ -215,7 +218,7 @@ gpiod_line_settings_get_event_clock(struct gpiod_line_settings *settings)
 
 GPIOD_API int
 gpiod_line_settings_set_output_value(struct gpiod_line_settings *settings,
-				     int value)
+				     enum gpiod_line_value value)
 {
 	switch (value) {
 	case GPIOD_LINE_VALUE_INACTIVE:
@@ -231,7 +234,7 @@ gpiod_line_settings_set_output_value(struct gpiod_line_settings *settings,
 	return 0;
 }
 
-GPIOD_API int
+GPIOD_API enum gpiod_line_value
 gpiod_line_settings_get_output_value(struct gpiod_line_settings *settings)
 {
 	return settings->output_value;

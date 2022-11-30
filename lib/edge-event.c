@@ -13,7 +13,7 @@
 #define EVENT_BUFFER_MAX_CAPACITY (GPIO_V2_LINES_MAX * 16)
 
 struct gpiod_edge_event {
-	int event_type;
+	enum gpiod_edge_event_type event_type;
 	uint64_t timestamp;
 	unsigned int line_offset;
 	unsigned long global_seqno;
@@ -49,7 +49,8 @@ gpiod_edge_event_copy(struct gpiod_edge_event *event)
 	return copy;
 }
 
-GPIOD_API int gpiod_edge_event_get_event_type(struct gpiod_edge_event *event)
+GPIOD_API enum gpiod_edge_event_type
+gpiod_edge_event_get_event_type(struct gpiod_edge_event *event)
 {
 	return event->event_type;
 }

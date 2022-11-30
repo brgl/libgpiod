@@ -194,7 +194,7 @@ static void set_kernel_output_values(uint64_t *mask, uint64_t *vals,
 				     struct gpiod_line_config *config)
 {
 	struct per_line_config *per_line;
-	int value;
+	enum gpiod_line_value value;
 	size_t i;
 
 	gpiod_line_mask_zero(mask);
@@ -292,6 +292,8 @@ static uint64_t make_kernel_flags(struct gpiod_line_settings *settings)
 	case GPIOD_LINE_DIRECTION_OUTPUT:
 		flags |= GPIO_V2_LINE_FLAG_OUTPUT;
 		break;
+	default:
+		break;
 	}
 
 	switch (gpiod_line_settings_get_edge_detection(settings)) {
@@ -311,6 +313,8 @@ static uint64_t make_kernel_flags(struct gpiod_line_settings *settings)
 			   GPIO_V2_LINE_FLAG_INPUT);
 		flags &= ~GPIOD_LINE_DIRECTION_OUTPUT;
 		break;
+	default:
+		break;
 	}
 
 	switch (gpiod_line_settings_get_drive(settings)) {
@@ -319,6 +323,8 @@ static uint64_t make_kernel_flags(struct gpiod_line_settings *settings)
 		break;
 	case GPIOD_LINE_DRIVE_OPEN_SOURCE:
 		flags |= GPIO_V2_LINE_FLAG_OPEN_SOURCE;
+		break;
+	default:
 		break;
 	}
 
@@ -332,6 +338,8 @@ static uint64_t make_kernel_flags(struct gpiod_line_settings *settings)
 	case GPIOD_LINE_BIAS_PULL_DOWN:
 		flags |= GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN;
 		break;
+	default:
+		break;
 	}
 
 	if (gpiod_line_settings_get_active_low(settings))
@@ -343,6 +351,8 @@ static uint64_t make_kernel_flags(struct gpiod_line_settings *settings)
 		break;
 	case GPIOD_LINE_EVENT_CLOCK_HTE:
 		flags |= GPIO_V2_LINE_FLAG_EVENT_CLOCK_HTE;
+		break;
+	default:
 		break;
 	}
 

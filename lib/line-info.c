@@ -12,12 +12,12 @@ struct gpiod_line_info {
 	char name[GPIO_MAX_NAME_SIZE];
 	bool used;
 	char consumer[GPIO_MAX_NAME_SIZE];
-	int direction;
+	enum gpiod_line_direction direction;
 	bool active_low;
-	int bias;
-	int drive;
-	int edge;
-	int event_clock;
+	enum gpiod_line_bias bias;
+	enum gpiod_line_drive drive;
+	enum gpiod_line_edge edge;
+	enum gpiod_line_event_clock event_clock;
 	bool debounced;
 	unsigned long debounce_period_us;
 };
@@ -64,7 +64,8 @@ GPIOD_API const char *gpiod_line_info_get_consumer(struct gpiod_line_info *info)
 	return info->consumer[0] == '\0' ? NULL : info->consumer;
 }
 
-GPIOD_API int gpiod_line_info_get_direction(struct gpiod_line_info *info)
+GPIOD_API enum gpiod_line_direction
+gpiod_line_info_get_direction(struct gpiod_line_info *info)
 {
 	return info->direction;
 }
@@ -74,22 +75,26 @@ GPIOD_API bool gpiod_line_info_is_active_low(struct gpiod_line_info *info)
 	return info->active_low;
 }
 
-GPIOD_API int gpiod_line_info_get_bias(struct gpiod_line_info *info)
+GPIOD_API enum gpiod_line_bias
+gpiod_line_info_get_bias(struct gpiod_line_info *info)
 {
 	return info->bias;
 }
 
-GPIOD_API int gpiod_line_info_get_drive(struct gpiod_line_info *info)
+GPIOD_API enum gpiod_line_drive
+gpiod_line_info_get_drive(struct gpiod_line_info *info)
 {
 	return info->drive;
 }
 
-GPIOD_API int gpiod_line_info_get_edge_detection(struct gpiod_line_info *info)
+GPIOD_API enum gpiod_line_edge
+gpiod_line_info_get_edge_detection(struct gpiod_line_info *info)
 {
 	return info->edge;
 }
 
-GPIOD_API int gpiod_line_info_get_event_clock(struct gpiod_line_info *info)
+GPIOD_API enum gpiod_line_event_clock
+gpiod_line_info_get_event_clock(struct gpiod_line_info *info)
 {
 	return info->event_clock;
 }

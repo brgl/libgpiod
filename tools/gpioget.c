@@ -17,8 +17,8 @@ struct config {
 	bool numeric;
 	bool strict;
 	bool unquoted;
-	int bias;
-	int direction;
+	enum gpiod_line_bias bias;
+	enum gpiod_line_direction direction;
 	unsigned int hold_period_us;
 	const char *chip_id;
 	const char *consumer;
@@ -137,11 +137,12 @@ int main(int argc, char **argv)
 	struct gpiod_request_config *req_cfg;
 	struct gpiod_line_request *request;
 	struct gpiod_line_config *line_cfg;
-	int i, num_lines, ret, *values;
 	struct line_resolver *resolver;
+	enum gpiod_line_value *values;
 	struct resolved_line *line;
 	struct gpiod_chip *chip;
 	unsigned int *offsets;
+	int i, num_lines, ret;
 	struct config cfg;
 	const char *fmt;
 
