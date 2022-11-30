@@ -28,8 +28,7 @@ gpiosim_ext = Extension(
 )
 
 extensions = [gpiod_ext]
-with_tests = bool(environ["GPIOD_WITH_TESTS"])
-if with_tests:
+if "GPIOD_WITH_TESTS" in environ and environ["GPIOD_WITH_TESTS"] == "1":
     extensions.append(gpiosim_ext)
 
 with open("gpiod/version.py", "r") as fd:
