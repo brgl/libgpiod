@@ -39,4 +39,9 @@ setup(
     packages=find_packages(include=["gpiod"]),
     ext_modules=extensions,
     version=__version__,
+    author="Bartosz Golaszewski",
+    author_email="brgl@bgdev.pl",
+    description="Python bindings for libgpiod",
+    platforms=["linux"],
+    license="LGPLv2.1",
 )
