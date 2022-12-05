@@ -519,6 +519,8 @@ GPIOD_TEST_CASE(seqno)
 	g_assert_cmpuint(gpiod_edge_event_get_line_offset(event), ==, 3);
 	g_assert_cmpuint(gpiod_edge_event_get_global_seqno(event), ==, 2);
 	g_assert_cmpuint(gpiod_edge_event_get_line_seqno(event), ==, 1);
+
+	g_thread_join(thread);
 }
 
 GPIOD_TEST_CASE(event_copy)
