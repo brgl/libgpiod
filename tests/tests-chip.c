@@ -80,10 +80,11 @@ GPIOD_TEST_CASE(find_line_bad)
 
 	g_autoptr(GPIOSimChip) sim = NULL;
 	g_autoptr(struct_gpiod_chip) chip = NULL;
+	g_autoptr(GVariant) vnames = gpiod_test_package_line_names(names);
 
 	sim = g_gpiosim_chip_new(
 			"num-lines", 8,
-			"line-names", gpiod_test_package_line_names(names),
+			"line-names", vnames,
 			 NULL);
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
@@ -106,10 +107,11 @@ GPIOD_TEST_CASE(find_line_good)
 
 	g_autoptr(GPIOSimChip) sim = NULL;
 	g_autoptr(struct_gpiod_chip) chip = NULL;
+	g_autoptr(GVariant) vnames = gpiod_test_package_line_names(names);
 
 	sim = g_gpiosim_chip_new(
 			"num-lines", 8,
-			"line-names", gpiod_test_package_line_names(names),
+			"line-names", vnames,
 			NULL);
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
@@ -131,10 +133,11 @@ GPIOD_TEST_CASE(find_line_duplicate)
 
 	g_autoptr(GPIOSimChip) sim = NULL;
 	g_autoptr(struct_gpiod_chip) chip = NULL;
+	g_autoptr(GVariant) vnames = gpiod_test_package_line_names(names);
 
 	sim = g_gpiosim_chip_new(
 			"num-lines", 8,
-			"line-names", gpiod_test_package_line_names(names),
+			"line-names", vnames,
 			NULL);
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
