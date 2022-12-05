@@ -413,6 +413,21 @@ struct gpiosim_bank {
 	size_t num_lines;
 };
 
+static inline struct gpiosim_ctx *to_gpiosim_ctx(struct refcount *ref)
+{
+	return container_of(ref, struct gpiosim_ctx, refcnt);
+}
+
+static inline struct gpiosim_dev *to_gpiosim_dev(struct refcount *ref)
+{
+	return container_of(ref, struct gpiosim_dev, refcnt);
+}
+
+static inline struct gpiosim_bank *to_gpiosim_bank(struct refcount *ref)
+{
+	return container_of(ref, struct gpiosim_bank, refcnt);
+}
+
 static int ctx_open_configfs_dir(struct gpiosim_ctx *ctx, const char *cfs_path)
 {
 	char *path;
@@ -504,7 +519,7 @@ out_free_ctx:
 
 static void ctx_release(struct refcount *ref)
 {
-	struct gpiosim_ctx *ctx = container_of(ref, struct gpiosim_ctx, refcnt);
+	struct gpiosim_ctx *ctx = to_gpiosim_ctx(ref);
 
 	close(ctx->cfs_dir_fd);
 
@@ -560,7 +575,7 @@ GPIOSIM_API void gpiosim_ctx_unref(struct gpiosim_ctx *ctx)
 
 static void dev_release(struct refcount *ref)
 {
-	struct gpiosim_dev *dev = container_of(ref, struct gpiosim_dev, refcnt);
+	struct gpiosim_dev *dev = to_gpiosim_dev(ref);
 	struct gpiosim_ctx *ctx = dev->ctx;
 
 	if (dev->live)
@@ -824,8 +839,7 @@ GPIOSIM_API bool gpiosim_dev_is_live(struct gpiosim_dev *dev)
 
 static void bank_release(struct refcount *ref)
 {
-	struct gpiosim_bank *bank = container_of(ref, struct gpiosim_bank,
-						 refcnt);
+	struct gpiosim_bank *bank = to_gpiosim_bank(ref);
 	struct gpiosim_dev *dev = bank->dev;
 	unsigned int i;
 	char buf[64];
