@@ -27,9 +27,17 @@ gpiosim_ext = Extension(
     extra_compile_args=["-Wall", "-Wextra"],
 )
 
+procname_ext = Extension(
+    "tests.procname._ext",
+    sources=["tests/procname/ext.c"],
+    define_macros=[("_GNU_SOURCE", "1")],
+    extra_compile_args=["-Wall", "-Wextra"],
+)
+
 extensions = [gpiod_ext]
 if "GPIOD_WITH_TESTS" in environ and environ["GPIOD_WITH_TESTS"] == "1":
     extensions.append(gpiosim_ext)
+    extensions.append(procname_ext)
 
 with open("gpiod/version.py", "r") as fd:
     exec(fd.read())

@@ -13,4 +13,8 @@ from .tests_line_settings import *
 from .tests_module import *
 from .tests_line_request import *
 
+from . import procname
+
+procname.set_process_name("python-gpiod")
+
 unittest.main()
