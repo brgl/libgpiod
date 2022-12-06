@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mount.h>
+#include <sys/prctl.h>
 #include <sys/random.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -371,11 +372,14 @@ out_unref_kmod:
 
 static char *configfs_make_item(int at, int id)
 {
-	char *item_name;
+	char *item_name, prname[17];
 	int ret;
 
-	ret = asprintf(&item_name, "%s.%u.%d",
-		       program_invocation_short_name, getpid(), id);
+	ret = prctl(PR_GET_NAME, prname);
+	if (ret)
+		return NULL;
+
+	ret = asprintf(&item_name, "%s.%u.%d", prname, getpid(), id);
 	if (ret < 0)
 		return NULL;
 
