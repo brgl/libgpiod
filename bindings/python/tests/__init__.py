@@ -4,12 +4,12 @@
 import os
 import unittest
 
-from packaging import version
+from setuptools._distutils.version import LooseVersion
 
-required_kernel_version = "5.19.0"
-current_version = os.uname().release.split("-")[0]
+required_kernel_version = LooseVersion("5.19.0")
+current_version = LooseVersion(os.uname().release.split("-")[0])
 
-if version.parse(current_version) < version.parse(required_kernel_version):
+if current_version < required_kernel_version:
     raise NotImplementedError(
         "linux kernel version must be at least {} - got {}".format(
             required_kernel_version, current_version
