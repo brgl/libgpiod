@@ -768,8 +768,10 @@ static void interact(struct gpiod_line_request **requests,
 		fflush(stdout);
 
 		line = readline(PROMPT);
-		if (!line || line[0] == '\0')
+		if (!line || line[0] == '\0') {
+			free(line);
 			continue;
+		}
 
 		for (i = strlen(line) - 1; (i > 0) && isspace(line[i]); i--)
 			line[i] = '\0';
