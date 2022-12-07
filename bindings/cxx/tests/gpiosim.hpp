@@ -51,7 +51,7 @@ private:
 class chip_builder
 {
 public:
-	enum class hog_direction {
+	enum class direction {
 		INPUT = 1,
 		OUTPUT_HIGH,
 		OUTPUT_LOW
@@ -68,7 +68,7 @@ public:
 	chip_builder& set_num_lines(::std::size_t num_lines);
 	chip_builder& set_label(const ::std::string& label);
 	chip_builder& set_line_name(unsigned int offset, const ::std::string& name);
-	chip_builder& set_hog(unsigned int offset, const ::std::string& name, hog_direction direction);
+	chip_builder& set_hog(unsigned int offset, const ::std::string& name, direction direction);
 
 	chip build();
 

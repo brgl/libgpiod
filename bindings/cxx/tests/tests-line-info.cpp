@@ -9,7 +9,7 @@
 #include "gpiosim.hpp"
 
 using ::gpiosim::make_sim;
-using hog_dir = ::gpiosim::chip_builder::hog_direction;
+using hog_dir = ::gpiosim::chip_builder::direction;
 using direction = ::gpiod::line::direction;
 using edge = ::gpiod::line::edge;
 using bias = ::gpiod::line::bias;

@@ -92,7 +92,7 @@ int main(int argc UNUSED, char **argv UNUSED)
 	printf("Hog a line on bank #2\n");
 
 	ret = gpiosim_bank_hog_line(bank1, 3, "xyz",
-				    GPIOSIM_HOG_DIR_OUTPUT_HIGH);
+				    GPIOSIM_DIRECTION_OUTPUT_HIGH);
 	if (ret) {
 		perror("Unable to hog a line");
 		return EXIT_FAILURE;

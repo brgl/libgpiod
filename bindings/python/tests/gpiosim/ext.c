@@ -28,15 +28,15 @@ static const struct module_const module_constants[] = {
 	},
 	{
 		.name = "DIRECTION_INPUT",
-		.val = GPIOSIM_HOG_DIR_INPUT,
+		.val = GPIOSIM_DIRECTION_INPUT,
 	},
 	{
 		.name = "DIRECTION_OUTPUT_HIGH",
-		.val = GPIOSIM_HOG_DIR_OUTPUT_HIGH,
+		.val = GPIOSIM_DIRECTION_OUTPUT_HIGH,
 	},
 	{
 		.name = "DIRECTION_OUTPUT_LOW",
-		.val = GPIOSIM_HOG_DIR_OUTPUT_LOW,
+		.val = GPIOSIM_DIRECTION_OUTPUT_LOW,
 	},
 	{ }
 };

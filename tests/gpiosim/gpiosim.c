@@ -1010,13 +1010,13 @@ GPIOSIM_API int gpiosim_bank_hog_line(struct gpiosim_bank *bank,
 	int ret, fd;
 
 	switch (direction) {
-	case GPIOSIM_HOG_DIR_INPUT:
+	case GPIOSIM_DIRECTION_INPUT:
 		dir = "input";
 		break;
-	case GPIOSIM_HOG_DIR_OUTPUT_HIGH:
+	case GPIOSIM_DIRECTION_OUTPUT_HIGH:
 		dir = "output-high";
 		break;
-	case GPIOSIM_HOG_DIR_OUTPUT_LOW:
+	case GPIOSIM_DIRECTION_OUTPUT_LOW:
 		dir = "output-low";
 		break;
 	default:

@@ -17,10 +17,10 @@ const ::std::map<chip::pull, gpiosim_pull> pull_mapping = {
 	{ chip::pull::PULL_DOWN,	GPIOSIM_PULL_DOWN }
 };
 
-const ::std::map<chip_builder::hog_direction, gpiosim_direction> hog_dir_mapping = {
-	{ chip_builder::hog_direction::INPUT,		GPIOSIM_HOG_DIR_INPUT },
-	{ chip_builder::hog_direction::OUTPUT_HIGH,	GPIOSIM_HOG_DIR_OUTPUT_HIGH },
-	{ chip_builder::hog_direction::OUTPUT_LOW,	GPIOSIM_HOG_DIR_OUTPUT_LOW }
+const ::std::map<chip_builder::direction, gpiosim_direction> hog_dir_mapping = {
+	{ chip_builder::direction::INPUT,	GPIOSIM_DIRECTION_INPUT },
+	{ chip_builder::direction::OUTPUT_HIGH,	GPIOSIM_DIRECTION_OUTPUT_HIGH },
+	{ chip_builder::direction::OUTPUT_LOW,	GPIOSIM_DIRECTION_OUTPUT_LOW }
 };
 
 const ::std::map<gpiosim_value, chip::value> value_mapping = {
@@ -168,7 +168,7 @@ struct chip_builder::impl
 	::std::size_t num_lines;
 	::std::string label;
 	::std::map<unsigned int, ::std::string> line_names;
-	::std::map<unsigned int, ::std::pair<::std::string, hog_direction>> hogs;
+	::std::map<unsigned int, ::std::pair<::std::string, direction>> hogs;
 };
 
 chip_builder::chip_builder()
@@ -216,7 +216,7 @@ chip_builder& chip_builder::set_line_name(unsigned int offset, const ::std::stri
 	return *this;
 }
 
-chip_builder& chip_builder::set_hog(unsigned int offset, const ::std::string& name, hog_direction direction)
+chip_builder& chip_builder::set_hog(unsigned int offset, const ::std::string& name, direction direction)
 {
 	this->_m_priv->hogs[offset] = { name, direction };
 

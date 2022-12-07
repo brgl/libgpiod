@@ -28,9 +28,9 @@ enum gpiosim_pull {
 };
 
 enum gpiosim_direction {
-	GPIOSIM_HOG_DIR_INPUT = 1,
-	GPIOSIM_HOG_DIR_OUTPUT_HIGH,
-	GPIOSIM_HOG_DIR_OUTPUT_LOW,
+	GPIOSIM_DIRECTION_INPUT = 1,
+	GPIOSIM_DIRECTION_OUTPUT_HIGH,
+	GPIOSIM_DIRECTION_OUTPUT_LOW,
 };
 
 struct gpiosim_ctx *gpiosim_ctx_new(void);

@@ -127,14 +127,14 @@ static void g_gpiosim_chip_set_property(GObject *obj, guint prop_id,
 		while (g_variant_iter_loop(iter, "(usi)",
 					   &offset, &name, &vdir)) {
 			switch (vdir) {
-			case G_GPIOSIM_HOG_DIR_INPUT:
-				dir = GPIOSIM_HOG_DIR_INPUT;
+			case G_GPIOSIM_DIRECTION_INPUT:
+				dir = GPIOSIM_DIRECTION_INPUT;
 				break;
-			case G_GPIOSIM_HOG_DIR_OUTPUT_HIGH:
-				dir = GPIOSIM_HOG_DIR_OUTPUT_HIGH;
+			case G_GPIOSIM_DIRECTION_OUTPUT_HIGH:
+				dir = GPIOSIM_DIRECTION_OUTPUT_HIGH;
 				break;
-			case G_GPIOSIM_HOG_DIR_OUTPUT_LOW:
-				dir = GPIOSIM_HOG_DIR_OUTPUT_LOW;
+			case G_GPIOSIM_DIRECTION_OUTPUT_LOW:
+				dir = GPIOSIM_DIRECTION_OUTPUT_LOW;
 				break;
 			default:
 				g_error("Invalid hog direction value: %d",

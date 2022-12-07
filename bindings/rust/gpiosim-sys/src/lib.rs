@@ -19,9 +19,9 @@ use crate::{
     gpiosim_value_GPIOSIM_VALUE_INACTIVE as GPIOSIM_VALUE_INACTIVE,
     gpiosim_value_GPIOSIM_VALUE_ACTIVE as GPIOSIM_VALUE_ACTIVE,
     gpiosim_value_GPIOSIM_VALUE_ERROR as GPIOSIM_VALUE_ERROR,
-    gpiosim_direction_GPIOSIM_HOG_DIR_INPUT as GPIOSIM_HOG_DIR_INPUT,
-    gpiosim_direction_GPIOSIM_HOG_DIR_OUTPUT_HIGH as GPIOSIM_HOG_DIR_OUTPUT_HIGH,
-    gpiosim_direction_GPIOSIM_HOG_DIR_OUTPUT_LOW as GPIOSIM_HOG_DIR_OUTPUT_LOW,
+    gpiosim_direction_GPIOSIM_DIRECTION_INPUT as GPIOSIM_DIRECTION_INPUT,
+    gpiosim_direction_GPIOSIM_DIRECTION_OUTPUT_HIGH as GPIOSIM_DIRECTION_OUTPUT_HIGH,
+    gpiosim_direction_GPIOSIM_DIRECTION_OUTPUT_LOW as GPIOSIM_DIRECTION_OUTPUT_LOW,
     gpiosim_pull_GPIOSIM_PULL_UP as GPIOSIM_PULL_UP,
     gpiosim_pull_GPIOSIM_PULL_DOWN as GPIOSIM_PULL_DOWN,
 };
@@ -64,9 +64,9 @@ pub enum Direction {
 impl Direction {
     fn val(self) -> gpiosim_direction {
         match self {
-            Direction::Input => GPIOSIM_HOG_DIR_INPUT,
-            Direction::OutputHigh => GPIOSIM_HOG_DIR_OUTPUT_HIGH,
-            Direction::OutputLow => GPIOSIM_HOG_DIR_OUTPUT_LOW,
+            Direction::Input => GPIOSIM_DIRECTION_INPUT,
+            Direction::OutputHigh => GPIOSIM_DIRECTION_OUTPUT_HIGH,
+            Direction::OutputLow => GPIOSIM_DIRECTION_OUTPUT_LOW,
         }
     }
 }

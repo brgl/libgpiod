@@ -164,7 +164,7 @@ struct gpiod_test_line_name {
 struct gpiod_test_hog {
 	guint offset;
 	const gchar *name;
-	GPIOSimHogDir direction;
+	GPIOSimDirection direction;
 };
 
 GVariant *

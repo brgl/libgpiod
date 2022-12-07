@@ -51,12 +51,12 @@ GPIOD_TEST_CASE(line_info_basic_properties)
 		{
 			.offset = 3,
 			.name = "hog3",
-			.direction = G_GPIOSIM_HOG_DIR_OUTPUT_HIGH,
+			.direction = G_GPIOSIM_DIRECTION_OUTPUT_HIGH,
 		},
 		{
 			.offset = 4,
 			.name = "hog4",
-			.direction = G_GPIOSIM_HOG_DIR_OUTPUT_LOW,
+			.direction = G_GPIOSIM_DIRECTION_OUTPUT_LOW,
 		},
 		{ }
 	};
