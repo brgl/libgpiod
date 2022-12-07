@@ -16,8 +16,8 @@ GPIOD_TEST_CASE(default_config)
 	config = gpiod_test_create_request_config_or_fail();
 
 	g_assert_null(gpiod_request_config_get_consumer(config));
-	g_assert_cmpuint(gpiod_request_config_get_event_buffer_size(config),
-			 ==, 0);
+	g_assert_cmpuint(gpiod_request_config_get_event_buffer_size(config), ==,
+			 0);
 }
 
 GPIOD_TEST_CASE(set_consumer)
@@ -27,8 +27,8 @@ GPIOD_TEST_CASE(set_consumer)
 	config = gpiod_test_create_request_config_or_fail();
 
 	gpiod_request_config_set_consumer(config, "foobar");
-	g_assert_cmpstr(gpiod_request_config_get_consumer(config),
-			==, "foobar");
+	g_assert_cmpstr(gpiod_request_config_get_consumer(config), ==,
+			"foobar");
 }
 
 GPIOD_TEST_CASE(set_event_buffer_size)
@@ -38,6 +38,6 @@ GPIOD_TEST_CASE(set_event_buffer_size)
 	config = gpiod_test_create_request_config_or_fail();
 
 	gpiod_request_config_set_event_buffer_size(config, 128);
-	g_assert_cmpuint(gpiod_request_config_get_event_buffer_size(config),
-			 ==, 128);
+	g_assert_cmpuint(gpiod_request_config_get_event_buffer_size(config), ==,
+			 128);
 }

@@ -156,8 +156,8 @@ GPIOD_TEST_CASE(default_output_value)
 	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
 
 	for (i = 0; i < 4; i++)
-		g_assert_cmpint(g_gpiosim_chip_get_value(sim, offsets[i]),
-				==, GPIOD_LINE_VALUE_ACTIVE);
+		g_assert_cmpint(g_gpiosim_chip_get_value(sim, offsets[i]), ==,
+				GPIOD_LINE_VALUE_ACTIVE);
 
 	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 2), ==,
 			GPIOD_LINE_VALUE_INACTIVE);
@@ -189,7 +189,8 @@ GPIOD_TEST_CASE(read_all_values)
 
 	for (i = 0; i < 5; i++)
 		g_gpiosim_chip_set_pull(sim, offsets[i],
-			pulls[i] ? G_GPIOSIM_PULL_UP : G_GPIOSIM_PULL_DOWN);
+					pulls[i] ? G_GPIOSIM_PULL_UP :
+						   G_GPIOSIM_PULL_DOWN);
 
 	ret = gpiod_line_request_get_values(request, values);
 	g_assert_cmpint(ret, ==, 0);
@@ -224,7 +225,8 @@ GPIOD_TEST_CASE(request_multiple_values_but_read_one)
 
 	for (i = 0; i < 5; i++)
 		g_gpiosim_chip_set_pull(sim, offsets[i],
-			pulls[i] ? G_GPIOSIM_PULL_UP : G_GPIOSIM_PULL_DOWN);
+					pulls[i] ? G_GPIOSIM_PULL_UP :
+						   G_GPIOSIM_PULL_DOWN);
 
 	ret = gpiod_line_request_get_value(request, 5);
 	g_assert_cmpint(ret, ==, 1);
@@ -265,8 +267,8 @@ GPIOD_TEST_CASE(set_all_values)
 	gpiod_test_return_if_failed();
 
 	for (i = 0; i < 5; i++)
-		g_assert_cmpint(g_gpiosim_chip_get_value(sim, offsets[i]),
-				==, values[i]);
+		g_assert_cmpint(g_gpiosim_chip_get_value(sim, offsets[i]), ==,
+				values[i]);
 }
 
 GPIOD_TEST_CASE(set_values_subset_of_lines)
@@ -297,17 +299,17 @@ GPIOD_TEST_CASE(set_values_subset_of_lines)
 
 	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
 
-	ret = gpiod_line_request_set_values_subset(request, 3,
-						   offsets_to_set, values);
+	ret = gpiod_line_request_set_values_subset(request, 3, offsets_to_set,
+						   values);
 	g_assert_cmpint(ret, ==, 0);
 	gpiod_test_return_if_failed();
 
-	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 0),
-			==, GPIOD_LINE_VALUE_ACTIVE);
-	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 1),
-			==, GPIOD_LINE_VALUE_INACTIVE);
-	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 3),
-			==, GPIOD_LINE_VALUE_ACTIVE);
+	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 0), ==,
+			GPIOD_LINE_VALUE_ACTIVE);
+	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 1), ==,
+			GPIOD_LINE_VALUE_INACTIVE);
+	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 3), ==,
+			GPIOD_LINE_VALUE_ACTIVE);
 }
 
 GPIOD_TEST_CASE(set_line_after_requesting)
@@ -358,8 +360,7 @@ GPIOD_TEST_CASE(request_survives_parent_chip)
 
 	gpiod_line_settings_set_direction(settings,
 					  GPIOD_LINE_DIRECTION_OUTPUT);
-	gpiod_line_settings_set_output_value(settings,
-					     GPIOD_LINE_VALUE_ACTIVE);
+	gpiod_line_settings_set_output_value(settings, GPIOD_LINE_VALUE_ACTIVE);
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 

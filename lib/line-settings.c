@@ -114,9 +114,8 @@ gpiod_line_settings_get_edge_detection(struct gpiod_line_settings *settings)
 	return settings->edge_detection;
 }
 
-GPIOD_API int
-gpiod_line_settings_set_bias(struct gpiod_line_settings *settings,
-			     enum gpiod_line_bias bias)
+GPIOD_API int gpiod_line_settings_set_bias(struct gpiod_line_settings *settings,
+					   enum gpiod_line_bias bias)
 {
 	switch (bias) {
 	case GPIOD_LINE_BIAS_AS_IS:

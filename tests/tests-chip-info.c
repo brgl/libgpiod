@@ -48,4 +48,3 @@ GPIOD_TEST_CASE(get_num_lines)
 
 	g_assert_cmpuint(gpiod_chip_info_get_num_lines(info), ==, 16);
 }
-

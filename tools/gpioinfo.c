@@ -100,7 +100,7 @@ static int parse_config(int argc, char **argv, struct config *cfg)
  * Does not die on non-unique lines.
  */
 static bool resolve_line(struct line_resolver *resolver,
-			  struct gpiod_line_info *info, int chip_num)
+			 struct gpiod_line_info *info, int chip_num)
 {
 	struct resolved_line *line;
 	bool resolved = false;
@@ -114,8 +114,7 @@ static bool resolve_line(struct line_resolver *resolver,
 		line = &resolver->lines[i];
 
 		/* already resolved by offset? */
-		if (line->resolved &&
-		    (line->offset == offset) &&
+		if (line->resolved && (line->offset == offset) &&
 		    (line->chip_num == chip_num)) {
 			resolved = true;
 		}
@@ -187,9 +186,8 @@ static void list_lines(struct line_resolver *resolver, struct gpiod_chip *chip,
 	if ((chip_num == 0) && (cfg->chip_id && !cfg->by_name))
 		resolve_lines_by_offset(resolver, num_lines);
 
-	for (offset = 0;
-	     ((offset < num_lines) &&
-	      !(resolver->num_lines && resolve_done(resolver)));
+	for (offset = 0; ((offset < num_lines) &&
+			  !(resolver->num_lines && resolve_done(resolver)));
 	     offset++) {
 		info = gpiod_chip_get_line_info(chip, offset);
 		if (!info)
@@ -238,7 +236,7 @@ int main(int argc, char **argv)
 		cfg.by_name = true;
 
 	num_chips = chip_paths(cfg.chip_id, &paths);
-	if (cfg.chip_id  && (num_chips == 0))
+	if (cfg.chip_id && (num_chips == 0))
 		die("cannot find GPIO chip character device '%s'", cfg.chip_id);
 
 	resolver = resolver_init(argc, argv, num_chips, cfg.strict,

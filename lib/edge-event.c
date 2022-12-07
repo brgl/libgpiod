@@ -131,7 +131,7 @@ gpiod_edge_event_buffer_free(struct gpiod_edge_event_buffer *buffer)
 
 GPIOD_API struct gpiod_edge_event *
 gpiod_edge_event_buffer_get_event(struct gpiod_edge_event_buffer *buffer,
-				   unsigned long index)
+				  unsigned long index)
 {
 	if (index >= buffer->num_events) {
 		errno = EINVAL;
@@ -179,9 +179,9 @@ int gpiod_edge_event_buffer_read_fd(int fd,
 		event = &buffer->events[i];
 
 		event->line_offset = curr->offset;
-		event->event_type = curr->id == GPIO_V2_LINE_EVENT_RISING_EDGE
-					? GPIOD_EDGE_EVENT_RISING_EDGE
-					: GPIOD_EDGE_EVENT_FALLING_EDGE;
+		event->event_type = curr->id == GPIO_V2_LINE_EVENT_RISING_EDGE ?
+					    GPIOD_EDGE_EVENT_RISING_EDGE :
+					    GPIOD_EDGE_EVENT_FALLING_EDGE;
 		event->timestamp = curr->timestamp_ns;
 		event->global_seqno = curr->seqno;
 		event->line_seqno = curr->line_seqno;

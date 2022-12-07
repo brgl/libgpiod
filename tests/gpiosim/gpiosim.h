@@ -37,8 +37,7 @@ struct gpiosim_ctx *gpiosim_ctx_new(void);
 struct gpiosim_ctx *gpiosim_ctx_ref(struct gpiosim_ctx *ctx);
 void gpiosim_ctx_unref(struct gpiosim_ctx *ctx);
 
-struct gpiosim_dev *
-gpiosim_dev_new(struct gpiosim_ctx *ctx);
+struct gpiosim_dev *gpiosim_dev_new(struct gpiosim_ctx *ctx);
 struct gpiosim_dev *gpiosim_dev_ref(struct gpiosim_dev *dev);
 void gpiosim_dev_unref(struct gpiosim_dev *dev);
 struct gpiosim_ctx *gpiosim_dev_get_ctx(struct gpiosim_dev *dev);
@@ -48,8 +47,7 @@ int gpiosim_dev_enable(struct gpiosim_dev *dev);
 int gpiosim_dev_disable(struct gpiosim_dev *dev);
 bool gpiosim_dev_is_live(struct gpiosim_dev *dev);
 
-struct gpiosim_bank*
-gpiosim_bank_new(struct gpiosim_dev *dev);
+struct gpiosim_bank *gpiosim_bank_new(struct gpiosim_dev *dev);
 struct gpiosim_bank *gpiosim_bank_ref(struct gpiosim_bank *bank);
 void gpiosim_bank_unref(struct gpiosim_bank *bank);
 struct gpiosim_dev *gpiosim_bank_get_dev(struct gpiosim_bank *bank);

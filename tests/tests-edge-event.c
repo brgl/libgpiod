@@ -116,8 +116,7 @@ GPIOD_TEST_CASE(read_both_events)
 	line_cfg = gpiod_test_create_line_config_or_fail();
 	buffer = gpiod_test_create_edge_event_buffer_or_fail(64);
 
-	gpiod_line_settings_set_direction(settings,
-					  GPIOD_LINE_DIRECTION_INPUT);
+	gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
 	gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_BOTH);
 
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
@@ -144,8 +143,8 @@ GPIOD_TEST_CASE(read_both_events)
 	g_assert_nonnull(event);
 	gpiod_test_join_thread_and_return_if_failed(thread);
 
-	g_assert_cmpint(gpiod_edge_event_get_event_type(event),
-			==, GPIOD_EDGE_EVENT_RISING_EDGE);
+	g_assert_cmpint(gpiod_edge_event_get_event_type(event), ==,
+			GPIOD_EDGE_EVENT_RISING_EDGE);
 	g_assert_cmpuint(gpiod_edge_event_get_line_offset(event), ==, 2);
 	ts_rising = gpiod_edge_event_get_timestamp_ns(event);
 
@@ -164,8 +163,8 @@ GPIOD_TEST_CASE(read_both_events)
 	g_assert_nonnull(event);
 	gpiod_test_join_thread_and_return_if_failed(thread);
 
-	g_assert_cmpint(gpiod_edge_event_get_event_type(event),
-			==, GPIOD_EDGE_EVENT_FALLING_EDGE);
+	g_assert_cmpint(gpiod_edge_event_get_event_type(event), ==,
+			GPIOD_EDGE_EVENT_FALLING_EDGE);
 	g_assert_cmpuint(gpiod_edge_event_get_line_offset(event), ==, 2);
 	ts_falling = gpiod_edge_event_get_timestamp_ns(event);
 
@@ -193,8 +192,7 @@ GPIOD_TEST_CASE(read_rising_edge_event)
 	line_cfg = gpiod_test_create_line_config_or_fail();
 	buffer = gpiod_test_create_edge_event_buffer_or_fail(64);
 
-	gpiod_line_settings_set_direction(settings,
-					  GPIOD_LINE_DIRECTION_INPUT);
+	gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
 	gpiod_line_settings_set_edge_detection(settings,
 					       GPIOD_LINE_EDGE_RISING);
 
@@ -222,8 +220,8 @@ GPIOD_TEST_CASE(read_rising_edge_event)
 	g_assert_nonnull(event);
 	gpiod_test_join_thread_and_return_if_failed(thread);
 
-	g_assert_cmpint(gpiod_edge_event_get_event_type(event),
-			==, GPIOD_EDGE_EVENT_RISING_EDGE);
+	g_assert_cmpint(gpiod_edge_event_get_event_type(event), ==,
+			GPIOD_EDGE_EVENT_RISING_EDGE);
 	g_assert_cmpuint(gpiod_edge_event_get_line_offset(event), ==, 2);
 
 	/* Second event. */
@@ -253,8 +251,7 @@ GPIOD_TEST_CASE(read_falling_edge_event)
 	line_cfg = gpiod_test_create_line_config_or_fail();
 	buffer = gpiod_test_create_edge_event_buffer_or_fail(64);
 
-	gpiod_line_settings_set_direction(settings,
-					  GPIOD_LINE_DIRECTION_INPUT);
+	gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
 	gpiod_line_settings_set_edge_detection(settings,
 					       GPIOD_LINE_EDGE_FALLING);
 
@@ -282,8 +279,8 @@ GPIOD_TEST_CASE(read_falling_edge_event)
 	g_assert_nonnull(event);
 	gpiod_test_join_thread_and_return_if_failed(thread);
 
-	g_assert_cmpint(gpiod_edge_event_get_event_type(event),
-			==, GPIOD_EDGE_EVENT_FALLING_EDGE);
+	g_assert_cmpint(gpiod_edge_event_get_event_type(event), ==,
+			GPIOD_EDGE_EVENT_FALLING_EDGE);
 	g_assert_cmpuint(gpiod_edge_event_get_line_offset(event), ==, 2);
 
 	/* No more events. */
@@ -315,8 +312,7 @@ GPIOD_TEST_CASE(read_rising_edge_event_polled)
 	line_cfg = gpiod_test_create_line_config_or_fail();
 	buffer = gpiod_test_create_edge_event_buffer_or_fail(64);
 
-	gpiod_line_settings_set_direction(settings,
-					  GPIOD_LINE_DIRECTION_INPUT);
+	gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
 	gpiod_line_settings_set_edge_detection(settings,
 					       GPIOD_LINE_EDGE_RISING);
 
@@ -353,8 +349,8 @@ GPIOD_TEST_CASE(read_rising_edge_event_polled)
 	g_assert_nonnull(event);
 	gpiod_test_join_thread_and_return_if_failed(thread);
 
-	g_assert_cmpint(gpiod_edge_event_get_event_type(event),
-			==, GPIOD_EDGE_EVENT_RISING_EDGE);
+	g_assert_cmpint(gpiod_edge_event_get_event_type(event), ==,
+			GPIOD_EDGE_EVENT_RISING_EDGE);
 	g_assert_cmpuint(gpiod_edge_event_get_line_offset(event), ==, 2);
 
 	/* Second event. */
@@ -389,8 +385,7 @@ GPIOD_TEST_CASE(read_both_events_blocking)
 	line_cfg = gpiod_test_create_line_config_or_fail();
 	buffer = gpiod_test_create_edge_event_buffer_or_fail(64);
 
-	gpiod_line_settings_set_direction(settings,
-					  GPIOD_LINE_DIRECTION_INPUT);
+	gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
 	gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_BOTH);
 
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
@@ -413,8 +408,8 @@ GPIOD_TEST_CASE(read_both_events_blocking)
 	g_assert_nonnull(event);
 	gpiod_test_join_thread_and_return_if_failed(thread);
 
-	g_assert_cmpint(gpiod_edge_event_get_event_type(event),
-			==, GPIOD_EDGE_EVENT_RISING_EDGE);
+	g_assert_cmpint(gpiod_edge_event_get_event_type(event), ==,
+			GPIOD_EDGE_EVENT_RISING_EDGE);
 	g_assert_cmpuint(gpiod_edge_event_get_line_offset(event), ==, 2);
 
 	/* Second event. */
@@ -428,8 +423,8 @@ GPIOD_TEST_CASE(read_both_events_blocking)
 	g_assert_nonnull(event);
 	gpiod_test_join_thread_and_return_if_failed(thread);
 
-	g_assert_cmpint(gpiod_edge_event_get_event_type(event),
-			==, GPIOD_EDGE_EVENT_FALLING_EDGE);
+	g_assert_cmpint(gpiod_edge_event_get_event_type(event), ==,
+			GPIOD_EDGE_EVENT_FALLING_EDGE);
 	g_assert_cmpuint(gpiod_edge_event_get_line_offset(event), ==, 2);
 
 	g_thread_join(thread);
@@ -469,8 +464,7 @@ GPIOD_TEST_CASE(seqno)
 	line_cfg = gpiod_test_create_line_config_or_fail();
 	buffer = gpiod_test_create_edge_event_buffer_or_fail(64);
 
-	gpiod_line_settings_set_direction(settings,
-					  GPIOD_LINE_DIRECTION_INPUT);
+	gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
 	gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_BOTH);
 
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 2,
@@ -543,8 +537,7 @@ GPIOD_TEST_CASE(event_copy)
 	line_cfg = gpiod_test_create_line_config_or_fail();
 	buffer = gpiod_test_create_edge_event_buffer_or_fail(64);
 
-	gpiod_line_settings_set_direction(settings,
-					  GPIOD_LINE_DIRECTION_INPUT);
+	gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
 	gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_BOTH);
 
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
@@ -589,8 +582,7 @@ GPIOD_TEST_CASE(reading_more_events_than_the_queue_contains_doesnt_block)
 	line_cfg = gpiod_test_create_line_config_or_fail();
 	buffer = gpiod_test_create_edge_event_buffer_or_fail(64);
 
-	gpiod_line_settings_set_direction(settings,
-					  GPIOD_LINE_DIRECTION_INPUT);
+	gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
 	gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_BOTH);
 
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,

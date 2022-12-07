@@ -199,7 +199,7 @@ GPIOD_TEST_CASE(request_reconfigure_release_events)
 }
 
 GPIOD_TEST_CASE(chip_fd_can_be_polled)
-{\
+{
 	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 8, NULL);
 	g_autoptr(struct_gpiod_chip) chip = NULL;
 	g_autoptr(struct_gpiod_line_info) info = NULL;

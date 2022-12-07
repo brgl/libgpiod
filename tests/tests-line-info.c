@@ -139,8 +139,7 @@ GPIOD_TEST_CASE(direction_settings)
 	offset = 1;
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
-	gpiod_line_settings_set_direction(settings,
-					  GPIOD_LINE_DIRECTION_AS_IS);
+	gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_AS_IS);
 	offset = 2;
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
@@ -204,7 +203,8 @@ GPIOD_TEST_CASE(edge_detection_settings)
 	offset = 0;
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
-	gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_RISING);
+	gpiod_line_settings_set_edge_detection(settings,
+					       GPIOD_LINE_EDGE_RISING);
 	offset = 1;
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
@@ -251,7 +251,8 @@ GPIOD_TEST_CASE(bias_settings)
 	settings = gpiod_test_create_line_settings_or_fail();
 	line_cfg = gpiod_test_create_line_config_or_fail();
 
-	gpiod_line_settings_set_direction(settings,GPIOD_LINE_DIRECTION_OUTPUT);
+	gpiod_line_settings_set_direction(settings,
+					  GPIOD_LINE_DIRECTION_OUTPUT);
 	offset = 0;
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
@@ -351,8 +352,8 @@ GPIOD_TEST_CASE(debounce_period)
 	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
 	info = gpiod_test_get_line_info_or_fail(chip, 5);
 
-	g_assert_cmpuint(gpiod_line_info_get_debounce_period_us(info),
-			 ==, 1000);
+	g_assert_cmpuint(gpiod_line_info_get_debounce_period_us(info), ==,
+			 1000);
 }
 
 GPIOD_TEST_CASE(event_clock)
@@ -393,7 +394,7 @@ GPIOD_TEST_CASE(event_clock)
 	}
 
 	gpiod_test_return_if_failed();
-	
+
 	info0 = gpiod_test_get_line_info_or_fail(chip, 0);
 	info1 = gpiod_test_get_line_info_or_fail(chip, 1);
 	info2 = gpiod_test_get_line_info_or_fail(chip, 2);

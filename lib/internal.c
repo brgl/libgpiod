@@ -29,8 +29,8 @@ bool gpiod_check_gpiochip_device(const char *path, bool set_errno)
 	 * Is it a symbolic link? We have to resolve it before checking
 	 * the rest.
 	 */
-	realname = S_ISLNK(statbuf.st_mode) ? realpath(path, NULL)
-					    : strdup(path);
+	realname = S_ISLNK(statbuf.st_mode) ? realpath(path, NULL) :
+					      strdup(path);
 	if (realname == NULL)
 		goto out;
 

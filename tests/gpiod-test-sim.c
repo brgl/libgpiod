@@ -193,35 +193,44 @@ static void g_gpiosim_chip_class_init(GPIOSimChipClass *chip_class)
 	class->dispose = g_gpiosim_chip_dispose;
 	class->finalize = g_gpiosim_chip_finalize;
 
-	g_object_class_install_property(class, G_GPIOSIM_CHIP_PROP_DEV_PATH,
+	g_object_class_install_property(
+		class, G_GPIOSIM_CHIP_PROP_DEV_PATH,
 		g_param_spec_string("dev-path", "Device path",
-			"Character device filesystem path.", NULL,
-			G_PARAM_READABLE));
+				    "Character device filesystem path.", NULL,
+				    G_PARAM_READABLE));
 
-	g_object_class_install_property(class, G_GPIOSIM_CHIP_PROP_NAME,
-		g_param_spec_string("name", "Chip name",
+	g_object_class_install_property(
+		class, G_GPIOSIM_CHIP_PROP_NAME,
+		g_param_spec_string(
+			"name", "Chip name",
 			"Name of this chip device as set by the kernel.", NULL,
 			G_PARAM_READABLE));
 
-	g_object_class_install_property(class, G_GPIOSIM_CHIP_PROP_NUM_LINES,
+	g_object_class_install_property(
+		class, G_GPIOSIM_CHIP_PROP_NUM_LINES,
 		g_param_spec_uint("num-lines", "Number of lines",
-			"Number of lines this simulated chip exposes.",
-			1, G_MAXUINT, 1,
-			G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+				  "Number of lines this simulated chip exposes.",
+				  1, G_MAXUINT, 1,
+				  G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
-	g_object_class_install_property(class, G_GPIOSIM_CHIP_PROP_LABEL,
+	g_object_class_install_property(
+		class, G_GPIOSIM_CHIP_PROP_LABEL,
 		g_param_spec_string("label", "Chip label",
-			"Label of this simulated chip.", NULL,
-			G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+				    "Label of this simulated chip.", NULL,
+				    G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
-	g_object_class_install_property(class, G_GPIOSIM_CHIP_PROP_LINE_NAMES,
-		g_param_spec_variant("line-names", "Line names",
+	g_object_class_install_property(
+		class, G_GPIOSIM_CHIP_PROP_LINE_NAMES,
+		g_param_spec_variant(
+			"line-names", "Line names",
 			"List of names of the lines exposed by this chip",
 			(GVariantType *)"a(us)", NULL,
 			G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
-	g_object_class_install_property(class, G_GPIOSIM_CHIP_PROP_HOGS,
-		g_param_spec_variant("hogs", "Line hogs",
+	g_object_class_install_property(
+		class, G_GPIOSIM_CHIP_PROP_HOGS,
+		g_param_spec_variant(
+			"hogs", "Line hogs",
 			"List of hogged lines and their directions.",
 			(GVariantType *)"a(usi)", NULL,
 			G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));

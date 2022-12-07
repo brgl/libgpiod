@@ -102,7 +102,8 @@ bool chip_path_lookup(const char *id, char **path_ptr);
 int chip_paths(const char *id, char ***paths_ptr);
 int all_chip_paths(char ***paths_ptr);
 struct line_resolver *resolve_lines(int num_lines, char **lines,
-		const char *chip_id, bool strict, bool by_name);
+				    const char *chip_id, bool strict,
+				    bool by_name);
 struct line_resolver *resolver_init(int num_lines, char **lines, int num_chips,
 				    bool strict, bool by_name);
 bool resolve_lines_by_offset(struct line_resolver *resolver,

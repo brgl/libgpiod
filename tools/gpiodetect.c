@@ -74,8 +74,7 @@ static int print_chip_info(const char *path)
 	if (!info)
 		die_perror("unable to read info for '%s'", path);
 
-	printf("%s [%s] (%zu lines)\n",
-	       gpiod_chip_info_get_name(info),
+	printf("%s [%s] (%zu lines)\n", gpiod_chip_info_get_name(info),
 	       gpiod_chip_info_get_label(info),
 	       gpiod_chip_info_get_num_lines(info));
 

@@ -278,7 +278,6 @@ static bool parse_line_values(int num_lines, char **lvs, char **lines,
 				*value = '\0';
 				value++;
 			}
-
 		}
 
 		if (!value) {
@@ -352,8 +351,8 @@ static void wait_fd(int fd)
  * offset and values are scratch pads for working.
  */
 static void apply_values(struct gpiod_line_request **requests,
-			 struct line_resolver *resolver,
-			 unsigned int *offsets, enum gpiod_line_value *values)
+			 struct line_resolver *resolver, unsigned int *offsets,
+			 enum gpiod_line_value *values)
 {
 	int i;
 
@@ -380,9 +379,10 @@ static void toggle_all_lines(struct line_resolver *resolver)
  * offset and values are scratch pads for working.
  */
 static void toggle_sequence(int toggles, unsigned int *toggle_periods,
-			 struct gpiod_line_request **requests,
-			 struct line_resolver *resolver,
-			 unsigned int *offsets, enum gpiod_line_value *values)
+			    struct gpiod_line_request **requests,
+			    struct line_resolver *resolver,
+			    unsigned int *offsets,
+			    enum gpiod_line_value *values)
 {
 	int i = 0;
 
@@ -537,7 +537,7 @@ static bool valid_lines(struct line_resolver *resolver, int num_lines,
 		}
 	}
 
-	return  ret;
+	return ret;
 }
 
 static void print_interactive_help(void)
@@ -639,8 +639,7 @@ static char *complete_line_id(const char *text, int state)
 		id = completion_context->lines[idx].id;
 		idx++;
 
-		if ((strncmp(id, text, len) == 0) &&
-		    (!in_line_buffer(id)))
+		if ((strncmp(id, text, len) == 0) && (!in_line_buffer(id)))
 			return strdup(id);
 	}
 
@@ -708,16 +707,14 @@ static char **tab_completion(const char *text, int start, int end)
 	rl_completion_append_character = ' ';
 
 	for (cmd_start = 0;
-	     isspace(rl_line_buffer[cmd_start]) && cmd_start < end;
-	     cmd_start++)
+	     isspace(rl_line_buffer[cmd_start]) && cmd_start < end; cmd_start++)
 		;
 
 	if (cmd_start == start)
 		matches = rl_completion_matches(text, complete_command);
 
 	for (cmd_end = cmd_start + 1;
-	     !isspace(rl_line_buffer[cmd_end]) && cmd_end < end;
-	     cmd_end++)
+	     !isspace(rl_line_buffer[cmd_end]) && cmd_end < end; cmd_end++)
 		;
 
 	len = cmd_end - cmd_start;
@@ -731,7 +728,8 @@ static char **tab_completion(const char *text, int start, int end)
 	}
 
 	if ((len == 3 && strncmp("get ", &rl_line_buffer[cmd_start], 4) == 0) ||
-	    (len == 6 && strncmp("toggle ", &rl_line_buffer[cmd_start], 7) == 0))
+	    (len == 6 &&
+	     strncmp("toggle ", &rl_line_buffer[cmd_start], 7) == 0))
 		matches = rl_completion_matches(text, complete_line_id);
 
 	return matches;
@@ -740,9 +738,9 @@ static char **tab_completion(const char *text, int start, int end)
 #define PROMPT "gpioset> "
 
 static void interact(struct gpiod_line_request **requests,
-		    struct line_resolver *resolver,
-		    char **lines, unsigned int *offsets,
-		    enum gpiod_line_value *values, bool unquoted)
+		     struct line_resolver *resolver, char **lines,
+		     unsigned int *offsets, enum gpiod_line_value *values,
+		     bool unquoted)
 {
 	int num_words, num_lines, max_words, period_us, i;
 	char *line, **words, *line_buf;
@@ -788,8 +786,8 @@ static void interact(struct gpiod_line_request **requests,
 				print_all_line_values(resolver, unquoted);
 			else if (parse_line_ids(num_lines, &words[1], lines) &&
 				 valid_lines(resolver, num_lines, lines))
-				print_line_values(resolver, num_lines,
-						  lines, unquoted);
+				print_line_values(resolver, num_lines, lines,
+						  unquoted);
 			goto cmd_ok;
 		}
 		if (strcmp(words[0], "set") == 0) {
@@ -844,8 +842,7 @@ static void interact(struct gpiod_line_request **requests,
 		}
 
 		printf("unknown command: '%s'\n", words[0]);
-		printf("Try the 'help' command\n")
-			;
+		printf("Try the 'help' command\n");
 
 cmd_ok:
 		for (i = 0; isspace(line[i]); i++)
@@ -932,16 +929,16 @@ int main(int argc, char **argv)
 		die_perror("unable to allocate the line config structure");
 
 	for (i = 0; i < resolver->num_chips; i++) {
-		num_lines = get_line_offsets_and_values(resolver, i,
-							offsets, values);
+		num_lines = get_line_offsets_and_values(resolver, i, offsets,
+							values);
 
 		gpiod_line_config_reset(line_cfg);
 		for (j = 0; j < num_lines; j++) {
 			gpiod_line_settings_set_output_value(settings,
 							     values[j]);
 
-			ret = gpiod_line_config_add_line_settings(line_cfg,
-					 &offsets[j], 1, settings);
+			ret = gpiod_line_config_add_line_settings(
+				line_cfg, &offsets[j], 1, settings);
 			if (ret)
 				die_perror("unable to add line settings");
 		}
@@ -1007,4 +1004,3 @@ int main(int argc, char **argv)
 
 	return EXIT_SUCCESS;
 }
-

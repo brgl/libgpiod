@@ -26,7 +26,7 @@ GPIOD_TEST_CASE(default_config)
 			GPIOD_LINE_DRIVE_PUSH_PULL);
 	g_assert_false(gpiod_line_settings_get_active_low(settings));
 	g_assert_cmpuint(gpiod_line_settings_get_debounce_period_us(settings),
-			==, 0);
+			 ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_event_clock(settings), ==,
 			GPIOD_LINE_EVENT_CLOCK_MONOTONIC);
 	g_assert_cmpint(gpiod_line_settings_get_output_value(settings), ==,
@@ -110,26 +110,22 @@ GPIOD_TEST_CASE(set_bias)
 
 	settings = gpiod_test_create_line_settings_or_fail();
 
-	ret = gpiod_line_settings_set_bias(settings,
-					   GPIOD_LINE_BIAS_DISABLED);
+	ret = gpiod_line_settings_set_bias(settings, GPIOD_LINE_BIAS_DISABLED);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_bias(settings), ==,
 			GPIOD_LINE_BIAS_DISABLED);
 
-	ret = gpiod_line_settings_set_bias(settings,
-					   GPIOD_LINE_BIAS_AS_IS);
+	ret = gpiod_line_settings_set_bias(settings, GPIOD_LINE_BIAS_AS_IS);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_bias(settings), ==,
 			GPIOD_LINE_BIAS_AS_IS);
 
-	ret = gpiod_line_settings_set_bias(settings,
-					   GPIOD_LINE_BIAS_PULL_DOWN);
+	ret = gpiod_line_settings_set_bias(settings, GPIOD_LINE_BIAS_PULL_DOWN);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_bias(settings), ==,
 			GPIOD_LINE_BIAS_PULL_DOWN);
 
-	ret = gpiod_line_settings_set_bias(settings,
-					   GPIOD_LINE_BIAS_PULL_UP);
+	ret = gpiod_line_settings_set_bias(settings, GPIOD_LINE_BIAS_PULL_UP);
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_bias(settings), ==,
 			GPIOD_LINE_BIAS_PULL_UP);
@@ -312,7 +308,7 @@ GPIOD_TEST_CASE(reset_settings)
 			GPIOD_LINE_DRIVE_PUSH_PULL);
 	g_assert_false(gpiod_line_settings_get_active_low(settings));
 	g_assert_cmpuint(gpiod_line_settings_get_debounce_period_us(settings),
-			==, 0);
+			 ==, 0);
 	g_assert_cmpint(gpiod_line_settings_get_event_clock(settings), ==,
 			GPIOD_LINE_EVENT_CLOCK_MONOTONIC);
 	g_assert_cmpint(gpiod_line_settings_get_output_value(settings), ==,

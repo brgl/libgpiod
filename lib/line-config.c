@@ -63,8 +63,8 @@ GPIOD_API void gpiod_line_config_reset(struct gpiod_line_config *config)
 	memset(config, 0, sizeof(*config));
 }
 
-static struct per_line_config *
-find_config(struct gpiod_line_config *config, unsigned int offset)
+static struct per_line_config *find_config(struct gpiod_line_config *config,
+					   unsigned int offset)
 {
 	struct per_line_config *per_line;
 	size_t i;
@@ -79,11 +79,9 @@ find_config(struct gpiod_line_config *config, unsigned int offset)
 	return &config->line_configs[config->num_configs++];
 }
 
-GPIOD_API int
-gpiod_line_config_add_line_settings(struct gpiod_line_config *config,
-				    const unsigned int *offsets,
-				    size_t num_offsets,
-				    struct gpiod_line_settings *settings)
+GPIOD_API int gpiod_line_config_add_line_settings(
+	struct gpiod_line_config *config, const unsigned int *offsets,
+	size_t num_offsets, struct gpiod_line_settings *settings)
 {
 	struct per_line_config *per_line;
 	struct settings_node *node;
@@ -139,10 +137,9 @@ gpiod_line_config_get_line_settings(struct gpiod_line_config *config,
 	return NULL;
 }
 
-GPIOD_API int
-gpiod_line_config_get_offsets(struct gpiod_line_config *config,
-			      size_t *num_offsets,
-			      unsigned int **offsets)
+GPIOD_API int gpiod_line_config_get_offsets(struct gpiod_line_config *config,
+					    size_t *num_offsets,
+					    unsigned int **offsets)
 {
 	unsigned int *offs;
 	size_t i;
@@ -182,7 +179,7 @@ static bool has_at_least_one_output_direction(struct gpiod_line_config *config)
 
 	for (i = 0; i < config->num_configs; i++) {
 		if (gpiod_line_settings_get_direction(
-				config->line_configs[i].node->settings) ==
+			    config->line_configs[i].node->settings) ==
 		    GPIOD_LINE_DIRECTION_OUTPUT)
 			return true;
 	}
@@ -204,15 +201,15 @@ static void set_kernel_output_values(uint64_t *mask, uint64_t *vals,
 		per_line = &config->line_configs[i];
 
 		if (gpiod_line_settings_get_direction(
-				per_line->node->settings) !=
+			    per_line->node->settings) !=
 		    GPIOD_LINE_DIRECTION_OUTPUT)
 			continue;
 
 		gpiod_line_mask_set_bit(mask, i);
 		value = gpiod_line_settings_get_output_value(
-						per_line->node->settings);
-		gpiod_line_mask_assign_bit(vals, i,
-				value == GPIOD_LINE_VALUE_ACTIVE ? 1 : 0);
+			per_line->node->settings);
+		gpiod_line_mask_assign_bit(
+			vals, i, value == GPIOD_LINE_VALUE_ACTIVE ? 1 : 0);
 	}
 }
 
@@ -299,18 +296,18 @@ static uint64_t make_kernel_flags(struct gpiod_line_settings *settings)
 	switch (gpiod_line_settings_get_edge_detection(settings)) {
 	case GPIOD_LINE_EDGE_FALLING:
 		flags |= (GPIO_V2_LINE_FLAG_EDGE_FALLING |
-			   GPIO_V2_LINE_FLAG_INPUT);
+			  GPIO_V2_LINE_FLAG_INPUT);
 		flags &= ~GPIOD_LINE_DIRECTION_OUTPUT;
 		break;
 	case GPIOD_LINE_EDGE_RISING:
 		flags |= (GPIO_V2_LINE_FLAG_EDGE_RISING |
-			   GPIO_V2_LINE_FLAG_INPUT);
+			  GPIO_V2_LINE_FLAG_INPUT);
 		flags &= ~GPIOD_LINE_DIRECTION_OUTPUT;
 		break;
 	case GPIOD_LINE_EDGE_BOTH:
 		flags |= (GPIO_V2_LINE_FLAG_EDGE_FALLING |
-			   GPIO_V2_LINE_FLAG_EDGE_RISING |
-			   GPIO_V2_LINE_FLAG_INPUT);
+			  GPIO_V2_LINE_FLAG_EDGE_RISING |
+			  GPIO_V2_LINE_FLAG_INPUT);
 		flags &= ~GPIOD_LINE_DIRECTION_OUTPUT;
 		break;
 	default:
@@ -360,7 +357,7 @@ static uint64_t make_kernel_flags(struct gpiod_line_settings *settings)
 }
 
 static bool settings_equal(struct gpiod_line_settings *left,
-			 struct gpiod_line_settings *right)
+			   struct gpiod_line_settings *right)
 {
 	if (gpiod_line_settings_get_direction(left) !=
 	    gpiod_line_settings_get_direction(right))

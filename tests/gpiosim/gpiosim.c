@@ -213,8 +213,7 @@ static void list_del(struct list_head *entry)
 	((type *)(__mptr - offsetof(type, member))); \
 })
 
-#define list_entry(ptr, type, member) \
-	container_of(ptr, type, member)
+#define list_entry(ptr, type, member) container_of(ptr, type, member)
 
 #define list_first_entry(ptr, type, member) \
 	list_entry((ptr)->next, type, member)
@@ -222,8 +221,7 @@ static void list_del(struct list_head *entry)
 #define list_next_entry(pos, member) \
 	list_entry((pos)->member.next, typeof(*(pos)), member)
 
-#define list_entry_is_head(pos, head, member) \
-	(&pos->member == (head))
+#define list_entry_is_head(pos, head, member) (&pos->member == (head))
 
 #define list_for_each_entry(pos, head, member) \
 	for (pos = list_first_entry(head, typeof(*pos), member); \
@@ -334,9 +332,9 @@ again:
 				goto out_unref_module;
 			}
 
-			ret = kmod_module_probe_insert_module(module,
-						KMOD_PROBE_IGNORE_LOADED,
-						NULL, NULL, NULL, NULL);
+			ret = kmod_module_probe_insert_module(
+				module, KMOD_PROBE_IGNORE_LOADED, NULL, NULL,
+				NULL, NULL);
 			if (ret)
 				goto out_unref_module;
 
@@ -577,8 +575,7 @@ static void dev_release(struct refcount *ref)
 	free(dev);
 }
 
-GPIOSIM_API struct gpiosim_dev *
-gpiosim_dev_new(struct gpiosim_ctx *ctx)
+GPIOSIM_API struct gpiosim_dev *gpiosim_dev_new(struct gpiosim_ctx *ctx)
 {
 	int configfs_fd, ret, id;
 	struct gpiosim_dev *dev;
@@ -855,8 +852,7 @@ static void bank_release(struct refcount *ref)
 	free(bank);
 }
 
-GPIOSIM_API struct gpiosim_bank*
-gpiosim_bank_new(struct gpiosim_dev *dev)
+GPIOSIM_API struct gpiosim_bank *gpiosim_bank_new(struct gpiosim_dev *dev)
 {
 	struct gpiosim_bank *bank;
 	int configfs_fd, id;

@@ -210,7 +210,7 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 		else
 			cfg->event_clock = GPIOD_LINE_EVENT_CLOCK_MONOTONIC;
 	} else if ((cfg->event_clock == GPIOD_LINE_EVENT_CLOCK_REALTIME) &&
-		 (cfg->timestamp_fmt == 0)) {
+		   (cfg->timestamp_fmt == 0)) {
 		cfg->timestamp_fmt = 1;
 	}
 
@@ -234,8 +234,8 @@ static void print_banner(int num_lines, char **lines)
 }
 
 static void event_print_formatted(struct gpiod_edge_event *event,
-			struct line_resolver *resolver, int chip_num,
-			struct config *cfg)
+				  struct line_resolver *resolver, int chip_num,
+				  struct config *cfg)
 {
 	const char *lname, *prev, *curr;
 	unsigned int offset;
@@ -381,8 +381,8 @@ int main(int argc, char **argv)
 		gpiod_line_settings_set_active_low(settings, true);
 
 	if (cfg.debounce_period_us)
-		gpiod_line_settings_set_debounce_period_us(settings,
-					cfg.debounce_period_us);
+		gpiod_line_settings_set_debounce_period_us(
+			settings, cfg.debounce_period_us);
 
 	gpiod_line_settings_set_event_clock(settings, cfg.event_clock);
 	gpiod_line_settings_set_edge_detection(settings, cfg.edges);
@@ -484,4 +484,3 @@ done:
 
 	return EXIT_SUCCESS;
 }
-

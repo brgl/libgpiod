@@ -216,7 +216,7 @@ static uint64_t monotonic_to_realtime(uint64_t evtime)
 	clock_gettime(CLOCK_REALTIME, &ts);
 	after = ts.tv_nsec + ((uint64_t)ts.tv_sec) * 1000000000;
 
-	evtime += (after/2 - mono + before/2);
+	evtime += (after / 2 - mono + before / 2);
 
 	return evtime;
 }
@@ -230,7 +230,7 @@ static void event_print_formatted(struct gpiod_info_event *event,
 	unsigned int offset;
 	uint64_t evtime;
 	int evtype;
-	char  fmt;
+	char fmt;
 
 	info = gpiod_info_event_get_line_info(event);
 	evtime = gpiod_info_event_get_timestamp_ns(event);
@@ -310,8 +310,8 @@ end:
 }
 
 static void event_print_human_readable(struct gpiod_info_event *event,
-			struct line_resolver *resolver, int chip_num,
-			struct config *cfg)
+				       struct line_resolver *resolver,
+				       int chip_num, struct config *cfg)
 {
 	struct gpiod_line_info *info;
 	unsigned int offset;
@@ -397,7 +397,7 @@ int main(int argc, char **argv)
 		for (j = 0; j < resolver->num_lines; j++)
 			if ((resolver->lines[j].chip_num == i) &&
 			    !gpiod_chip_watch_line_info(
-					chip, resolver->lines[j].offset))
+				    chip, resolver->lines[j].offset))
 				die_perror("unable to watch line on chip '%s'",
 					   resolver->chips[i].path);
 

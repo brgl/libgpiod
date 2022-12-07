@@ -214,10 +214,10 @@ void print_event_time(uint64_t evtime, int format)
 			tz = "Z";
 		}
 		strftime(tbuf, TIME_BUFFER_SIZE, "%FT%T", &t);
-		printf("%s.%09"PRIu64"%s", tbuf, evtime % 1000000000, tz);
+		printf("%s.%09" PRIu64 "%s", tbuf, evtime % 1000000000, tz);
 	} else {
-		printf("%"PRIu64".%09"PRIu64,
-		       evtime / 1000000000, evtime % 1000000000);
+		printf("%" PRIu64 ".%09" PRIu64, evtime / 1000000000,
+		       evtime % 1000000000);
 	}
 }
 
@@ -380,8 +380,7 @@ static int chip_dir_filter(const struct dirent *entry)
 	if (asprintf(&path, "/dev/%s", entry->d_name) < 0)
 		return 0;
 
-	if ((lstat(path, &sb) == 0) &&
-	    (!S_ISLNK(sb.st_mode)) &&
+	if ((lstat(path, &sb) == 0) && (!S_ISLNK(sb.st_mode)) &&
 	    gpiod_is_gpiochip_device(path))
 		ret = 1;
 
@@ -482,8 +481,7 @@ int all_chip_paths(char ***paths_ptr)
 }
 
 static bool resolve_line(struct line_resolver *resolver,
-			  struct gpiod_line_info *info,
-			  int chip_num)
+			 struct gpiod_line_info *info, int chip_num)
 {
 	struct resolved_line *line;
 	bool resolved = false;
@@ -495,8 +493,7 @@ static bool resolve_line(struct line_resolver *resolver,
 	for (i = 0; i < resolver->num_lines; i++) {
 		line = &resolver->lines[i];
 		/* already resolved by offset? */
-		if (line->resolved &&
-		    (line->offset == offset) &&
+		if (line->resolved && (line->offset == offset) &&
 		    (line->chip_num == chip_num)) {
 			line->info = info;
 			resolver->num_found++;
@@ -548,7 +545,6 @@ bool resolve_lines_by_offset(struct line_resolver *resolver,
 	return used;
 }
 
-
 bool resolve_done(struct line_resolver *resolver)
 {
 	return (!resolver->strict &&
@@ -588,7 +584,8 @@ struct line_resolver *resolver_init(int num_lines, char **lines, int num_chips,
 }
 
 struct line_resolver *resolve_lines(int num_lines, char **lines,
-			const char *chip_id, bool strict, bool by_name)
+				    const char *chip_id, bool strict,
+				    bool by_name)
 {
 	struct gpiod_chip_info *chip_info;
 	struct gpiod_line_info *line_info;
@@ -602,7 +599,7 @@ struct line_resolver *resolve_lines(int num_lines, char **lines,
 		by_name = true;
 
 	num_chips = chip_paths(chip_id, &paths);
-	if (chip_id  && (num_chips == 0))
+	if (chip_id && (num_chips == 0))
 		die("cannot find GPIO chip character device '%s'", chip_id);
 
 	resolver = resolver_init(num_lines, lines, num_chips, strict, by_name);
@@ -666,7 +663,7 @@ void validate_resolution(struct line_resolver *resolver, const char *chip_id)
 	bool valid = true;
 	int i, j;
 
-	for (i = 0 ; i < resolver->num_lines; i++) {
+	for (i = 0; i < resolver->num_lines; i++) {
 		line = &resolver->lines[i];
 		if (line->resolved) {
 			for (j = 0; j < i; j++) {
@@ -712,8 +709,8 @@ void free_line_resolver(struct line_resolver *resolver)
 	free(resolver);
 }
 
-int get_line_offsets_and_values(struct line_resolver *resolver,
-				int chip_num, unsigned int *offsets,
+int get_line_offsets_and_values(struct line_resolver *resolver, int chip_num,
+				unsigned int *offsets,
 				enum gpiod_line_value *values)
 {
 	struct resolved_line *line;
@@ -738,8 +735,8 @@ const char *get_chip_name(struct line_resolver *resolver, int chip_num)
 	return gpiod_chip_info_get_name(resolver->chips[chip_num].info);
 }
 
-const char *get_line_name(struct line_resolver *resolver,
-			  int chip_num, unsigned int offset)
+const char *get_line_name(struct line_resolver *resolver, int chip_num,
+			  unsigned int offset)
 {
 	struct resolved_line *line;
 	int i;
@@ -748,7 +745,8 @@ const char *get_line_name(struct line_resolver *resolver,
 		line = &resolver->lines[i];
 		if (line->info && (line->offset == offset) &&
 		    (line->chip_num == chip_num))
-			return gpiod_line_info_get_name(resolver->lines[i].info);
+			return gpiod_line_info_get_name(
+				resolver->lines[i].info);
 	}
 
 	return 0;
