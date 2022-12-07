@@ -13,13 +13,13 @@ namespace {
 const ::std::map<int, info_event::event_type> event_type_mapping = {
 	{ GPIOD_INFO_EVENT_LINE_REQUESTED,	info_event::event_type::LINE_REQUESTED },
 	{ GPIOD_INFO_EVENT_LINE_RELEASED,	info_event::event_type::LINE_RELEASED },
-	{ GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED,	info_event::event_type::LINE_CONFIG_CHANGED }
+	{ GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED,	info_event::event_type::LINE_CONFIG_CHANGED },
 };
 
 const ::std::map<info_event::event_type, ::std::string> event_type_names = {
 	{ info_event::event_type::LINE_REQUESTED,	"LINE_REQUESTED" },
 	{ info_event::event_type::LINE_RELEASED,	"LINE_RELEASED" },
-	{ info_event::event_type::LINE_CONFIG_CHANGED,	"LINE_CONFIG_CHANGED" }
+	{ info_event::event_type::LINE_CONFIG_CHANGED,	"LINE_CONFIG_CHANGED" },
 };
 
 } /* namespace */

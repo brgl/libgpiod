@@ -13,33 +13,33 @@ namespace {
 
 const ::std::map<int, line::direction> direction_mapping = {
 	{ GPIOD_LINE_DIRECTION_INPUT,		line::direction::INPUT },
-	{ GPIOD_LINE_DIRECTION_OUTPUT,		line::direction::OUTPUT }
+	{ GPIOD_LINE_DIRECTION_OUTPUT,		line::direction::OUTPUT },
 };
 
 const ::std::map<int, line::bias> bias_mapping = {
 	{ GPIOD_LINE_BIAS_UNKNOWN,		line::bias::UNKNOWN },
 	{ GPIOD_LINE_BIAS_DISABLED,		line::bias::DISABLED },
 	{ GPIOD_LINE_BIAS_PULL_UP,		line::bias::PULL_UP },
-	{ GPIOD_LINE_BIAS_PULL_DOWN,		line::bias::PULL_DOWN }
+	{ GPIOD_LINE_BIAS_PULL_DOWN,		line::bias::PULL_DOWN },
 };
 
 const ::std::map<int, line::drive> drive_mapping = {
 	{ GPIOD_LINE_DRIVE_PUSH_PULL,		line::drive::PUSH_PULL },
 	{ GPIOD_LINE_DRIVE_OPEN_DRAIN,		line::drive::OPEN_DRAIN },
-	{ GPIOD_LINE_DRIVE_OPEN_SOURCE,		line::drive::OPEN_SOURCE }
+	{ GPIOD_LINE_DRIVE_OPEN_SOURCE,		line::drive::OPEN_SOURCE },
 };
 
 const ::std::map<int, line::edge> edge_mapping = {
 	{ GPIOD_LINE_EDGE_NONE,			line::edge::NONE },
 	{ GPIOD_LINE_EDGE_RISING,		line::edge::RISING },
 	{ GPIOD_LINE_EDGE_FALLING,		line::edge::FALLING },
-	{ GPIOD_LINE_EDGE_BOTH,			line::edge::BOTH }
+	{ GPIOD_LINE_EDGE_BOTH,			line::edge::BOTH },
 };
 
 const ::std::map<int, line::clock> clock_mapping = {
 	{ GPIOD_LINE_CLOCK_MONOTONIC,		line::clock::MONOTONIC },
 	{ GPIOD_LINE_CLOCK_REALTIME,		line::clock::REALTIME },
-	{ GPIOD_LINE_CLOCK_HTE,			line::clock::HTE }
+	{ GPIOD_LINE_CLOCK_HTE,			line::clock::HTE },
 };
 
 } /* namespace */

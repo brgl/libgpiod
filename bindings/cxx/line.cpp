@@ -13,13 +13,13 @@ namespace {
 
 const ::std::map<line::value, ::std::string> value_names = {
 	{ line::value::INACTIVE,	"INACTIVE" },
-	{ line::value::ACTIVE,		"ACTIVE" }
+	{ line::value::ACTIVE,		"ACTIVE" },
 };
 
 const ::std::map<line::direction, ::std::string> direction_names = {
 	{ line::direction::AS_IS,	"AS_IS" },
 	{ line::direction::INPUT,	"INPUT" },
-	{ line::direction::OUTPUT,	"OUTPUT" }
+	{ line::direction::OUTPUT,	"OUTPUT" },
 };
 
 const ::std::map<line::bias, ::std::string> bias_names = {
@@ -27,26 +27,26 @@ const ::std::map<line::bias, ::std::string> bias_names = {
 	{ line::bias::UNKNOWN,		"UNKNOWN" },
 	{ line::bias::DISABLED,		"DISABLED" },
 	{ line::bias::PULL_UP,		"PULL_UP" },
-	{ line::bias::PULL_DOWN,	"PULL_DOWN" }
+	{ line::bias::PULL_DOWN,	"PULL_DOWN" },
 };
 
 const ::std::map<line::drive, ::std::string> drive_names = {
 	{ line::drive::PUSH_PULL,	"PUSH_PULL" },
 	{ line::drive::OPEN_DRAIN,	"OPEN_DRAIN" },
-	{ line::drive::OPEN_SOURCE,	"OPEN_SOURCE" }
+	{ line::drive::OPEN_SOURCE,	"OPEN_SOURCE" },
 };
 
 const ::std::map<line::edge, ::std::string> edge_names = {
 	{ line::edge::NONE,		"NONE" },
 	{ line::edge::RISING,		"RISING_EDGE" },
 	{ line::edge::FALLING,		"FALLING_EDGE" },
-	{ line::edge::BOTH,		"BOTH_EDGES" }
+	{ line::edge::BOTH,		"BOTH_EDGES" },
 };
 
 const ::std::map<line::clock, ::std::string> clock_names = {
 	{ line::clock::MONOTONIC,	"MONOTONIC" },
 	{ line::clock::REALTIME,	"REALTIME" },
-	{ line::clock::HTE,		"HTE" }
+	{ line::clock::HTE,		"HTE" },
 };
 
 } /* namespace */

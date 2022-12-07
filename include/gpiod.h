@@ -261,7 +261,7 @@ enum gpiod_line_direction {
 	/**< Request the line(s), but don't change direction. */
 	GPIOD_LINE_DIRECTION_INPUT,
 	/**< Direction is input - for reading the value of an externally driven GPIO line. */
-	GPIOD_LINE_DIRECTION_OUTPUT
+	GPIOD_LINE_DIRECTION_OUTPUT,
 	/**< Direction is output - for driving the GPIO line. */
 };
 
@@ -275,7 +275,7 @@ enum gpiod_line_edge {
 	/**< Line detects rising edge events. */
 	GPIOD_LINE_EDGE_FALLING,
 	/**< Line detects falling edge events. */
-	GPIOD_LINE_EDGE_BOTH
+	GPIOD_LINE_EDGE_BOTH,
 	/**< Line detects both rising and falling edge events. */
 };
 
@@ -291,7 +291,7 @@ enum gpiod_line_bias {
 	/**< The internal bias is disabled. */
 	GPIOD_LINE_BIAS_PULL_UP,
 	/**< The internal pull-up bias is enabled. */
-	GPIOD_LINE_BIAS_PULL_DOWN
+	GPIOD_LINE_BIAS_PULL_DOWN,
 	/**< The internal pull-down bias is enabled. */
 };
 
@@ -303,7 +303,7 @@ enum gpiod_line_drive {
 	/**< Drive setting is push-pull. */
 	GPIOD_LINE_DRIVE_OPEN_DRAIN,
 	/**< Line output is open-drain. */
-	GPIOD_LINE_DRIVE_OPEN_SOURCE
+	GPIOD_LINE_DRIVE_OPEN_SOURCE,
 	/**< Line output is open-source. */
 };
 
@@ -494,7 +494,7 @@ enum gpiod_info_event_type {
 	/**< Line has been requested. */
 	GPIOD_INFO_EVENT_LINE_RELEASED,
 	/**< Previously requested line has been released. */
-	GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED
+	GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED,
 	/**< Line configuration has changed. */
 };
 
@@ -1050,7 +1050,7 @@ int gpiod_line_request_read_edge_events(struct gpiod_line_request *request,
 enum gpiod_edge_event_type {
 	GPIOD_EDGE_EVENT_RISING_EDGE = 1,
 	/**< Rising edge event. */
-	GPIOD_EDGE_EVENT_FALLING_EDGE
+	GPIOD_EDGE_EVENT_FALLING_EDGE,
 	/**< Falling edge event. */
 };
 

@@ -16,12 +16,12 @@ class chip
 public:
 	enum class pull {
 		PULL_UP = 1,
-		PULL_DOWN
+		PULL_DOWN,
 	};
 
 	enum class value {
 		INACTIVE = 0,
-		ACTIVE = 1
+		ACTIVE = 1,
 	};
 
 	chip(const chip& other) = delete;
@@ -54,7 +54,7 @@ public:
 	enum class direction {
 		INPUT = 1,
 		OUTPUT_HIGH,
-		OUTPUT_LOW
+		OUTPUT_LOW,
 	};
 
 	chip_builder();

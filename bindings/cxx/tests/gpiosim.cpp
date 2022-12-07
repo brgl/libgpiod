@@ -14,18 +14,18 @@ namespace {
 
 const ::std::map<chip::pull, gpiosim_pull> pull_mapping = {
 	{ chip::pull::PULL_UP,		GPIOSIM_PULL_UP },
-	{ chip::pull::PULL_DOWN,	GPIOSIM_PULL_DOWN }
+	{ chip::pull::PULL_DOWN,	GPIOSIM_PULL_DOWN },
 };
 
 const ::std::map<chip_builder::direction, gpiosim_direction> hog_dir_mapping = {
 	{ chip_builder::direction::INPUT,	GPIOSIM_DIRECTION_INPUT },
 	{ chip_builder::direction::OUTPUT_HIGH,	GPIOSIM_DIRECTION_OUTPUT_HIGH },
-	{ chip_builder::direction::OUTPUT_LOW,	GPIOSIM_DIRECTION_OUTPUT_LOW }
+	{ chip_builder::direction::OUTPUT_LOW,	GPIOSIM_DIRECTION_OUTPUT_LOW },
 };
 
 const ::std::map<gpiosim_value, chip::value> value_mapping = {
 	{ GPIOSIM_VALUE_INACTIVE,	chip::value::INACTIVE },
-	{ GPIOSIM_VALUE_ACTIVE,		chip::value::ACTIVE }
+	{ GPIOSIM_VALUE_ACTIVE,		chip::value::ACTIVE },
 };
 
 template<class gpiosim_type, void free_func(gpiosim_type*)> struct deleter

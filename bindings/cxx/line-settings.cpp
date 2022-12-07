@@ -25,7 +25,7 @@ make_reverse_maping(const ::std::map<cxx_enum_type, c_enum_type>& mapping)
 const ::std::map<line::direction, gpiod_line_direction> direction_mapping = {
 	{ line::direction::AS_IS,	GPIOD_LINE_DIRECTION_AS_IS },
 	{ line::direction::INPUT,	GPIOD_LINE_DIRECTION_INPUT },
-	{ line::direction::OUTPUT,	GPIOD_LINE_DIRECTION_OUTPUT }
+	{ line::direction::OUTPUT,	GPIOD_LINE_DIRECTION_OUTPUT },
 };
 
 const ::std::map<gpiod_line_direction, line::direction>
@@ -35,7 +35,7 @@ const ::std::map<line::edge, gpiod_line_edge> edge_mapping = {
 	{ line::edge::NONE,		GPIOD_LINE_EDGE_NONE },
 	{ line::edge::FALLING,		GPIOD_LINE_EDGE_FALLING },
 	{ line::edge::RISING,		GPIOD_LINE_EDGE_RISING },
-	{ line::edge::BOTH,		GPIOD_LINE_EDGE_BOTH }
+	{ line::edge::BOTH,		GPIOD_LINE_EDGE_BOTH },
 };
 
 const ::std::map<gpiod_line_edge, line::edge> reverse_edge_mapping = make_reverse_maping(edge_mapping);
@@ -44,7 +44,7 @@ const ::std::map<line::bias, gpiod_line_bias> bias_mapping = {
 	{ line::bias::AS_IS,		GPIOD_LINE_BIAS_AS_IS },
 	{ line::bias::DISABLED,		GPIOD_LINE_BIAS_DISABLED },
 	{ line::bias::PULL_UP,		GPIOD_LINE_BIAS_PULL_UP },
-	{ line::bias::PULL_DOWN,	GPIOD_LINE_BIAS_PULL_DOWN }
+	{ line::bias::PULL_DOWN,	GPIOD_LINE_BIAS_PULL_DOWN },
 };
 
 const ::std::map<gpiod_line_bias, line::bias> reverse_bias_mapping = make_reverse_maping(bias_mapping);
@@ -52,7 +52,7 @@ const ::std::map<gpiod_line_bias, line::bias> reverse_bias_mapping = make_revers
 const ::std::map<line::drive, gpiod_line_drive> drive_mapping = {
 	{ line::drive::PUSH_PULL,	GPIOD_LINE_DRIVE_PUSH_PULL },
 	{ line::drive::OPEN_DRAIN,	GPIOD_LINE_DRIVE_OPEN_DRAIN },
-	{ line::drive::OPEN_SOURCE,	GPIOD_LINE_DRIVE_OPEN_SOURCE }
+	{ line::drive::OPEN_SOURCE,	GPIOD_LINE_DRIVE_OPEN_SOURCE },
 };
 
 const ::std::map<gpiod_line_drive, line::drive> reverse_drive_mapping = make_reverse_maping(drive_mapping);
@@ -60,7 +60,7 @@ const ::std::map<gpiod_line_drive, line::drive> reverse_drive_mapping = make_rev
 const ::std::map<line::clock, gpiod_line_clock> clock_mapping = {
 	{ line::clock::MONOTONIC,	GPIOD_LINE_CLOCK_MONOTONIC },
 	{ line::clock::REALTIME,	GPIOD_LINE_CLOCK_REALTIME },
-	{ line::clock::HTE,		GPIOD_LINE_CLOCK_HTE }
+	{ line::clock::HTE,		GPIOD_LINE_CLOCK_HTE },
 };
 
 const ::std::map<gpiod_line_clock, line::clock>
@@ -68,7 +68,7 @@ reverse_clock_mapping = make_reverse_maping(clock_mapping);
 
 const ::std::map<line::value, gpiod_line_value> value_mapping = {
 	{ line::value::INACTIVE,	GPIOD_LINE_VALUE_INACTIVE },
-	{ line::value::ACTIVE,		GPIOD_LINE_VALUE_ACTIVE }
+	{ line::value::ACTIVE,		GPIOD_LINE_VALUE_ACTIVE },
 };
 
 const ::std::map<gpiod_line_value, line::value> reverse_value_mapping = make_reverse_maping(value_mapping);

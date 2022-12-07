@@ -13,12 +13,12 @@ namespace {
 
 const ::std::map<int, edge_event::event_type> event_type_mapping = {
 	{ GPIOD_EDGE_EVENT_RISING_EDGE,		edge_event::event_type::RISING_EDGE },
-	{ GPIOD_EDGE_EVENT_FALLING_EDGE,	edge_event::event_type::FALLING_EDGE }
+	{ GPIOD_EDGE_EVENT_FALLING_EDGE,	edge_event::event_type::FALLING_EDGE },
 };
 
 const ::std::map<edge_event::event_type, ::std::string> event_type_names = {
 	{ edge_event::event_type::RISING_EDGE,		"RISING_EDGE" },
-	{ edge_event::event_type::FALLING_EDGE,		"FALLING_EDGE" }
+	{ edge_event::event_type::FALLING_EDGE,		"FALLING_EDGE" },
 };
 
 } /* namespace */

@@ -41,7 +41,7 @@ public:
 	{
 		RISING_EDGE = 1,
 		/**< This is a rising edge event. */
-		FALLING_EDGE
+		FALLING_EDGE,
 		/**< This is falling edge event. */
 	};
 

@@ -100,7 +100,7 @@ enum class direction
 	/**< Request the line(s), but don't change current direction. */
 	INPUT,
 	/**< Direction is input - we're reading the state of a GPIO line. */
-	OUTPUT
+	OUTPUT,
 	/**< Direction is output - we're driving the GPIO line. */
 };
 
@@ -115,7 +115,7 @@ enum class edge
 	/**< Line detects rising edge events. */
 	FALLING,
 	/**< Line detect falling edge events. */
-	BOTH
+	BOTH,
 	/**< Line detects both rising and falling edge events. */
 };
 
@@ -132,7 +132,7 @@ enum class bias
 	/**< The internal bias is disabled. */
 	PULL_UP,
 	/**< The internal pull-up bias is enabled. */
-	PULL_DOWN
+	PULL_DOWN,
 	/**< The internal pull-down bias is enabled. */
 };
 
@@ -145,7 +145,7 @@ enum class drive
 	/**< Drive setting is push-pull. */
 	OPEN_DRAIN,
 	/**< Line output is open-drain. */
-	OPEN_SOURCE
+	OPEN_SOURCE,
 	/**< Line output is open-source. */
 };
 

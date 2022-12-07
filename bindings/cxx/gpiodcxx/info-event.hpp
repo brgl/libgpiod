@@ -44,7 +44,7 @@ public:
 		/**< Line has been requested. */
 		LINE_RELEASED,
 		/**< Previously requested line has been released. */
-		LINE_CONFIG_CHANGED
+		LINE_CONFIG_CHANGED,
 		/**< Line configuration has changed. */
 	};
 
