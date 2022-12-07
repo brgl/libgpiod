@@ -14,4 +14,5 @@ EXTRA_DIST = \
 	line_info.py \
 	line.py \
 	line_request.py \
-	line_settings.py
+	line_settings.py \
+	version.py
