@@ -79,19 +79,22 @@ AC_DEFUN([HEADER_NOT_FOUND_CXX],
 # This is always checked (library needs this)
 AC_HEADER_STDC
 AC_FUNC_MALLOC
+AC_HEADER_STDBOOL
 AC_CHECK_FUNC([ioctl], [], [FUNC_NOT_FOUND_LIB([ioctl])])
-AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_LIB([asprintf])])
-AC_CHECK_FUNC([scandir], [], [FUNC_NOT_FOUND_LIB([scandir])])
-AC_CHECK_FUNC([alphasort], [], [FUNC_NOT_FOUND_LIB([alphasort])])
+AC_CHECK_FUNC([open], [], [FUNC_NOT_FOUND_LIB([open])])
+AC_CHECK_FUNC([close], [], [FUNC_NOT_FOUND_LIB([close])])
+AC_CHECK_FUNC([read], [], [FUNC_NOT_FOUND_LIB([read])])
 AC_CHECK_FUNC([ppoll], [], [FUNC_NOT_FOUND_LIB([ppoll])])
 AC_CHECK_FUNC([realpath], [], [FUNC_NOT_FOUND_LIB([realpath])])
-AC_CHECK_FUNC([prctl], [], [FUNC_NOT_FOUND_LIB([prctl])])
+AC_CHECK_FUNC([readlink], [], [FUNC_NOT_FOUND_LIB([readlink])])
+AC_CHECK_HEADERS([fcntl.h], [], [HEADER_NOT_FOUND_LIB([fcntl.h])])
 AC_CHECK_HEADERS([getopt.h], [], [HEADER_NOT_FOUND_LIB([getopt.h])])
 AC_CHECK_HEADERS([dirent.h], [], [HEADER_NOT_FOUND_LIB([dirent.h])])
-AC_CHECK_HEADERS([sys/poll.h], [], [HEADER_NOT_FOUND_LIB([sys/poll.h])])
+AC_CHECK_HEADERS([poll.h], [], [HEADER_NOT_FOUND_LIB([poll.h])])
 AC_CHECK_HEADERS([sys/sysmacros.h], [], [HEADER_NOT_FOUND_LIB([sys/sysmacros.h])])
-AC_CHECK_HEADERS([sys/prctl.h], [], [HEADER_NOT_FOUND_LIB([sys/prctl.h])])
-AC_CHECK_HEADERS([linux/version.h], [], [HEADER_NOT_FOUND_LIB([linux/version.h])])
+AC_CHECK_HEADERS([sys/ioctl.h], [], [HEADER_NOT_FOUND_LIB([sys/ioctl.h])])
+AC_CHECK_HEADERS([sys/stat.h], [], [HEADER_NOT_FOUND_LIB([sys/stat.h])])
+AC_CHECK_HEADERS([sys/types.h], [], [HEADER_NOT_FOUND_LIB([sys/types.h])])
 AC_CHECK_HEADERS([linux/const.h], [], [HEADER_NOT_FOUND_LIB([linux/const.h])])
 AC_CHECK_HEADERS([linux/ioctl.h], [], [HEADER_NOT_FOUND_LIB([linux/ioctl.h])])
 AC_CHECK_HEADERS([linux/types.h], [], [HEADER_NOT_FOUND_LIB([linux/types.h])])
@@ -117,6 +120,9 @@ if test "x$with_tools" = xtrue
 then
 	# These are only needed to build tools
 	AC_CHECK_FUNC([daemon], [], [FUNC_NOT_FOUND_TOOLS([daemon])])
+	AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_LIB([asprintf])])
+	AC_CHECK_FUNC([scandir], [], [FUNC_NOT_FOUND_LIB([scandir])])
+	AC_CHECK_FUNC([alphasort], [], [FUNC_NOT_FOUND_LIB([alphasort])])
 
 	if test "x$with_gpioset_interactive" = xtrue
 	then
@@ -154,6 +160,21 @@ then
 	# For core library tests
 	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.50])
 	PKG_CHECK_MODULES([GOBJECT], [gobject-2.0 >= 2.50])
+
+	AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_LIB([asprintf])])
+	AC_CHECK_FUNC([prctl], [], [FUNC_NOT_FOUND_LIB([prctl])])
+	AC_CHECK_FUNC([unlink], [], [FUNC_NOT_FOUND_LIB([unlink])])
+	AC_CHECK_FUNC([unlinkat], [], [FUNC_NOT_FOUND_LIB([unlinkat])])
+	AC_CHECK_FUNC([openat], [], [FUNC_NOT_FOUND_LIB([openat])])
+	AC_CHECK_FUNC([mkdirat], [], [FUNC_NOT_FOUND_LIB([mkdirat])])
+	AC_CHECK_FUNC([write], [], [FUNC_NOT_FOUND_LIB([write])])
+	AC_CHECK_HEADERS([sys/utsname.h], [], [HEADER_NOT_FOUND_LIB([sys/utsname.h])])
+	AC_CHECK_HEADERS([sys/mount.h], [], [HEADER_NOT_FOUND_LIB([sys/mount.h])])
+	AC_CHECK_HEADERS([sys/prctl.h], [], [HEADER_NOT_FOUND_LIB([sys/prctl.h])])
+	AC_CHECK_HEADERS([sys/random.h], [], [HEADER_NOT_FOUND_LIB([sys/random.h])])
+	AC_CHECK_HEADERS([linux/version.h], [], [HEADER_NOT_FOUND_LIB([linux/version.h])])
+	AC_CHECK_HEADERS([pthread.h], [], [HEADER_NOT_FOUND_LIB([pthread.h])])
+	AC_CHECK_LIB(pthread, pthread_mutex_lock, [], ERR_NOT_FOUND([pthread library], [tests]))
 
 	if test "x$with_tools" = xtrue
 	then
