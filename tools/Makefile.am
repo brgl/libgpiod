@@ -11,7 +11,7 @@ LDADD = libtools-common.la $(top_builddir)/lib/libgpiod.la
 
 if WITH_GPIOSET_INTERACTIVE
 
-AM_CFLAGS += -DGPIOSET_INTERACTIVE
+AM_CFLAGS += -DGPIOSET_INTERACTIVE $(LIBEDIT_CFLAGS)
 LDADD += $(LIBEDIT_LIBS)
 
 endif
