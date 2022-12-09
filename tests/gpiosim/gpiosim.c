@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2021-2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <libkmod.h>
 #include <libmount.h>
 #include <linux/version.h>
