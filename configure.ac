@@ -181,7 +181,7 @@ if test "x$with_bindings_cxx" = xtrue
 then
 	LT_LANG([C++])
 	# This needs autoconf-archive
-	AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
+	AX_CXX_COMPILE_STDCXX_17([ext], [mandatory])
 
 	if test "x$with_tests" = xtrue
 	then
@@ -190,12 +190,6 @@ then
 			AC_CHECK_HEADERS([catch2/catch.hpp], [], [HEADER_NOT_FOUND_CXX([catch2/catch.hpp])])
 			AC_LANG_POP([C++])
 		])
-	fi
-
-	if test "x$with_examples" = xtrue
-	then
-		# Examples use C++17 features
-		AX_CXX_COMPILE_STDCXX([17], [ext], [mandatory])
 	fi
 fi
 
