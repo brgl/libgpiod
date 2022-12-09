@@ -113,12 +113,16 @@ AC_ARG_ENABLE([gpioset-interactive],
 AM_CONDITIONAL([WITH_GPIOSET_INTERACTIVE],
 	[test "x$with_gpioset_interactive" = xtrue])
 
-AS_IF([test "x$with_tools" = xtrue],
-	[# These are only needed to build tools
+if test "x$with_tools" = xtrue
+then
+	# These are only needed to build tools
 	AC_CHECK_FUNC([daemon], [], [FUNC_NOT_FOUND_TOOLS([daemon])])
-	AS_IF([test "x$with_gpioset_interactive" = xtrue],
-		[PKG_CHECK_MODULES([LIBEDIT], [libedit >= 3.1])])
-	])
+
+	if test "x$with_gpioset_interactive" = xtrue
+	then
+		PKG_CHECK_MODULES([LIBEDIT], [libedit >= 3.1])
+	fi
+fi
 
 AC_ARG_ENABLE([tests],
 	[AS_HELP_STRING([--enable-tests],[enable libgpiod tests [default=no]])],
@@ -206,14 +210,21 @@ then
 	AM_PATH_PYTHON([3.0], [],
 		[AC_MSG_ERROR([python3 not found - needed for python bindings])])
 	AC_CHECK_PROG([has_python_config], [python3-config], [true], [false])
+
 	if test "x$has_python_config" = xfalse
 	then
 		AC_MSG_ERROR([python3-config not found - needed for python bindings])
 	fi
-	AS_IF([test -z "$PYTHON_CPPFLAGS"],
-		[AC_SUBST(PYTHON_CPPFLAGS, [`$PYTHON-config --includes`])])
-	AS_IF([test -z "$PYTHON_LIBS"],
-		[AC_SUBST(PYTHON_LIBS, [`$PYTHON-config --libs`])])
+
+	if test -z "$PYTHON_CPPFLAGS"
+	then
+		AC_SUBST(PYTHON_CPPFLAGS, [`$PYTHON-config --includes`])
+	fi
+
+	if test -z "$PYTHON_LIBS"
+	then
+		AC_SUBST(PYTHON_LIBS, [`$PYTHON-config --libs`])
+	fi
 fi
 
 AC_ARG_ENABLE([bindings-rust],
