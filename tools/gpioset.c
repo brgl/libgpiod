@@ -262,8 +262,7 @@ static enum gpiod_line_value parse_value(const char *option)
 static bool parse_line_values(int num_lines, char **lvs, char **lines,
 			      enum gpiod_line_value *values, bool interactive)
 {
-	char *value;
-	char *line;
+	char *value, *line;
 	int i;
 
 	for (i = 0; i < num_lines; i++) {
@@ -569,8 +568,7 @@ static void print_interactive_help(void)
  */
 static int split_words(char *line, int max_words, char **words)
 {
-	bool in_quotes = false;
-	bool in_word = false;
+	bool in_quotes = false, in_word = false;
 	int num_words = 0;
 
 	for (; (*line != '\0'); line++) {
