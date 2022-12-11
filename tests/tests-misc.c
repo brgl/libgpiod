@@ -70,7 +70,7 @@ GPIOD_TEST_CASE(version_string)
 	const gchar *ver;
 	gboolean ret;
 
-	ver = gpiod_version_string();
+	ver = gpiod_api_version();
 	g_assert_nonnull(ver);
 	gpiod_test_return_if_failed();
 

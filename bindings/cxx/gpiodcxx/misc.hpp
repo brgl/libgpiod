@@ -33,7 +33,7 @@ bool is_gpiochip_device(const ::std::filesystem::path& path);
  * @brief Get the human readable version string for libgpiod API
  * @return String containing the library version.
  */
-const ::std::string& version_string();
+const ::std::string& api_version();
 
 /**
  * @}

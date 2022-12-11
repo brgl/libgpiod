@@ -166,7 +166,7 @@ PyMODINIT_FUNC PyInit__ext(void)
 		return NULL;
 
 	ret = PyModule_AddStringConstant(module, "api_version",
-					 gpiod_version_string());
+					 gpiod_api_version());
 	if (ret) {
 		Py_DECREF(module);
 		return NULL;

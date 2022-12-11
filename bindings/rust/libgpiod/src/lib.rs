@@ -495,7 +495,7 @@ pub fn gpiochip_devices<P: AsRef<Path>>(path: &P) -> Result<Vec<chip::Chip>> {
 /// Get the API version of the libgpiod library as a human-readable string.
 pub fn libgpiod_version() -> Result<&'static str> {
     // SAFETY: The string returned by libgpiod is guaranteed to live forever.
-    let version = unsafe { gpiod::gpiod_version_string() };
+    let version = unsafe { gpiod::gpiod_api_version() };
 
     if version.is_null() {
         return Err(Error::NullString("GPIO library version"));

@@ -66,11 +66,11 @@ TEST_CASE("is_gpiochip_device() works", "[misc][chip]")
 	}
 }
 
-TEST_CASE("version_string() returns a valid API version", "[misc]")
+TEST_CASE("api_version() returns a valid API version", "[misc]")
 {
-	SECTION("check version_string() format")
+	SECTION("check api_version() format")
 	{
-		REQUIRE_THAT(::gpiod::version_string(),
+		REQUIRE_THAT(::gpiod::api_version(),
 			     regex_matcher("^[0-9][1-9]?\\.[0-9][1-9]?([\\.0-9]?|\\-devel)$"));
 	}
 }

@@ -10,7 +10,7 @@ GPIOD_API bool gpiod_is_gpiochip_device(const char *path)
 	return gpiod_check_gpiochip_device(path, false);
 }
 
-GPIOD_API const char *gpiod_version_string(void)
+GPIOD_API const char *gpiod_api_version(void)
 {
 	return GPIOD_VERSION_STR;
 }

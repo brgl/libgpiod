@@ -1182,7 +1182,7 @@ bool gpiod_is_gpiochip_device(const char *path);
  *	   version.  The pointer is valid for the lifetime of the program and
  *	   must not be freed by the caller.
  */
-const char *gpiod_version_string(void);
+const char *gpiod_api_version(void);
 
 /**
  * @}
