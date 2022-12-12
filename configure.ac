@@ -116,19 +116,17 @@ AC_ARG_ENABLE([gpioset-interactive],
 AM_CONDITIONAL([WITH_GPIOSET_INTERACTIVE],
 	[test "x$with_gpioset_interactive" = xtrue])
 
-if test "x$with_tools" = xtrue
-then
-	# These are only needed to build tools
+# FIXME Figure out why this AS_IF() cannot be dropped without causing the other
+# PKG_CHECK_MODULES() expansions fail to execute pkg-config.
+AS_IF([test "x$with_tools" = xtrue],
+	[# These are only needed to build tools
 	AC_CHECK_FUNC([daemon], [], [FUNC_NOT_FOUND_TOOLS([daemon])])
 	AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_LIB([asprintf])])
 	AC_CHECK_FUNC([scandir], [], [FUNC_NOT_FOUND_LIB([scandir])])
 	AC_CHECK_FUNC([alphasort], [], [FUNC_NOT_FOUND_LIB([alphasort])])
-
-	if test "x$with_gpioset_interactive" = xtrue
-	then
-		PKG_CHECK_MODULES([LIBEDIT], [libedit >= 3.1])
-	fi
-fi
+	AS_IF([test "x$with_gpioset_interactive" = xtrue],
+		[PKG_CHECK_MODULES([LIBEDIT], [libedit >= 3.1])])
+	])
 
 AC_ARG_ENABLE([tests],
 	[AS_HELP_STRING([--enable-tests],[enable libgpiod tests [default=no]])],
