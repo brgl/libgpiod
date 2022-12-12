@@ -392,7 +392,6 @@ request_release_line() {
 
 	run_tool gpioinfo
 
-    echo "$output"
 	output_contains_line "${GPIOSIM_CHIP_NAME[sim0]} - 4 lines:"
 	output_contains_line "${GPIOSIM_CHIP_NAME[sim1]} - 8 lines:"
 	output_regex_match "\\s+line\\s+0:\\s+unnamed\\s+input"
