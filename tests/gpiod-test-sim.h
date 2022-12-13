@@ -20,8 +20,6 @@ typedef enum {
 	G_GPIOSIM_DIRECTION_OUTPUT_LOW,
 } GPIOSimDirection;
 
-typedef struct _GPIOSimChip GPIOSimChip;
-
 G_DECLARE_FINAL_TYPE(GPIOSimChip, g_gpiosim_chip, G_GPIOSIM, CHIP, GObject);
 
 #define G_GPIOSIM_TYPE_CHIP (g_gpiosim_chip_get_type())
