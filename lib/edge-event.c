@@ -29,9 +29,6 @@ struct gpiod_edge_event_buffer {
 
 GPIOD_API void gpiod_edge_event_free(struct gpiod_edge_event *event)
 {
-	if (!event)
-		return;
-
 	free(event);
 }
 

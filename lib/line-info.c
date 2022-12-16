@@ -24,9 +24,6 @@ struct gpiod_line_info {
 
 GPIOD_API void gpiod_line_info_free(struct gpiod_line_info *info)
 {
-	if (!info)
-		return;
-
 	free(info);
 }
 

@@ -28,9 +28,6 @@ GPIOD_API struct gpiod_request_config *gpiod_request_config_new(void)
 
 GPIOD_API void gpiod_request_config_free(struct gpiod_request_config *config)
 {
-	if (!config)
-		return;
-
 	free(config);
 }
 

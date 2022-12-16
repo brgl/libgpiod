@@ -15,9 +15,6 @@ struct gpiod_chip_info {
 
 GPIOD_API void gpiod_chip_info_free(struct gpiod_chip_info *info)
 {
-	if (!info)
-		return;
-
 	free(info);
 }
 
