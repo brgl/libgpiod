@@ -60,7 +60,7 @@ GPIOD_API void gpiod_chip_close(struct gpiod_chip *chip)
 	free(chip);
 }
 
-static int chip_read_chip_info(int fd, struct gpiochip_info *info)
+static int read_chip_info(int fd, struct gpiochip_info *info)
 {
 	int ret;
 
@@ -78,7 +78,7 @@ GPIOD_API struct gpiod_chip_info *gpiod_chip_get_info(struct gpiod_chip *chip)
 	struct gpiochip_info info;
 	int ret;
 
-	ret = chip_read_chip_info(chip->fd, &info);
+	ret = read_chip_info(chip->fd, &info);
 	if (ret < 0)
 		return NULL;
 
@@ -164,7 +164,7 @@ GPIOD_API int gpiod_chip_get_line_offset_from_name(struct gpiod_chip *chip,
 	unsigned int offset;
 	int ret;
 
-	ret = chip_read_chip_info(chip->fd, &chinfo);
+	ret = read_chip_info(chip->fd, &chinfo);
 	if (ret < 0)
 		return -1;
 
