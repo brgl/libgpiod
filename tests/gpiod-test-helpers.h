@@ -65,7 +65,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 
 #define gpiod_test_open_chip_or_fail(_path) \
 	({ \
-		struct gpiod_chip *_chip = gpiod_chip_open((_path)); \
+		struct gpiod_chip *_chip = gpiod_chip_open(_path); \
 		g_assert_nonnull(_chip); \
 		gpiod_test_return_if_failed(); \
 		_chip; \
@@ -82,7 +82,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 #define gpiod_test_get_line_info_or_fail(_chip, _offset) \
 	({ \
 		struct gpiod_line_info *_info = \
-				gpiod_chip_get_line_info((_chip), (_offset)); \
+				gpiod_chip_get_line_info(_chip, _offset); \
 		g_assert_nonnull(_info); \
 		gpiod_test_return_if_failed(); \
 		_info; \
@@ -118,10 +118,10 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 #define gpiod_test_line_config_add_line_settings_or_fail(_line_cfg, _offsets, \
 						_num_offsets, _settings) \
 	do { \
-		gint ret = gpiod_line_config_add_line_settings((_line_cfg), \
-							       (_offsets),  \
-							       (_num_offsets), \
-							       (_settings)); \
+		gint ret = gpiod_line_config_add_line_settings(_line_cfg, \
+							       _offsets,  \
+							       _num_offsets, \
+							       _settings); \
 		g_assert_cmpint(ret, ==, 0); \
 		gpiod_test_return_if_failed(); \
 	} while (0)
@@ -138,8 +138,8 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 #define gpiod_test_request_lines_or_fail(_chip, _req_cfg, _line_cfg) \
 	({ \
 		struct gpiod_line_request *_request = \
-			gpiod_chip_request_lines((_chip), \
-						 (_req_cfg), (_line_cfg)); \
+			gpiod_chip_request_lines(_chip, \
+						 _req_cfg, _line_cfg); \
 		g_assert_nonnull(_request); \
 		gpiod_test_return_if_failed(); \
 		_request; \
@@ -147,14 +147,14 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 
 #define gpiod_test_reconfigure_lines_or_fail(_request, _line_cfg) \
 	do { \
-		gint ret = gpiod_line_request_reconfigure_lines((_request), \
-								(_line_cfg)); \
+		gint ret = gpiod_line_request_reconfigure_lines(_request, \
+								_line_cfg); \
 		g_assert_cmpint(ret, ==, 0); \
 		gpiod_test_return_if_failed(); \
 	} while (0)
 
 #define gpiod_test_expect_errno(_expected) \
-	g_assert_cmpint((_expected), ==, errno)
+	g_assert_cmpint(_expected, ==, errno)
 
 struct gpiod_test_line_name {
 	guint offset;
