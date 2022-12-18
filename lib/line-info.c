@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // SPDX-FileCopyrightText: 2021 Bartosz Golaszewski <brgl@bgdev.pl>
 
+#include <assert.h>
 #include <gpiod.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,6 +33,8 @@ gpiod_line_info_copy(struct gpiod_line_info *info)
 {
 	struct gpiod_line_info *copy;
 
+	assert(info);
+
 	copy = malloc(sizeof(*info));
 	if (!copy)
 		return NULL;
@@ -43,67 +46,91 @@ gpiod_line_info_copy(struct gpiod_line_info *info)
 
 GPIOD_API unsigned int gpiod_line_info_get_offset(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->offset;
 }
 
 GPIOD_API const char *gpiod_line_info_get_name(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->name[0] == '\0' ? NULL : info->name;
 }
 
 GPIOD_API bool gpiod_line_info_is_used(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->used;
 }
 
 GPIOD_API const char *gpiod_line_info_get_consumer(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->consumer[0] == '\0' ? NULL : info->consumer;
 }
 
 GPIOD_API enum gpiod_line_direction
 gpiod_line_info_get_direction(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->direction;
 }
 
 GPIOD_API bool gpiod_line_info_is_active_low(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->active_low;
 }
 
 GPIOD_API enum gpiod_line_bias
 gpiod_line_info_get_bias(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->bias;
 }
 
 GPIOD_API enum gpiod_line_drive
 gpiod_line_info_get_drive(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->drive;
 }
 
 GPIOD_API enum gpiod_line_edge
 gpiod_line_info_get_edge_detection(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->edge;
 }
 
 GPIOD_API enum gpiod_line_clock
 gpiod_line_info_get_event_clock(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->event_clock;
 }
 
 GPIOD_API bool gpiod_line_info_is_debounced(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->debounced;
 }
 
 GPIOD_API unsigned long
 gpiod_line_info_get_debounce_period_us(struct gpiod_line_info *info)
 {
+	assert(info);
+
 	return info->debounce_period_us;
 }
 

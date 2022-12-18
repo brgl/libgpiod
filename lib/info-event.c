@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // SPDX-FileCopyrightText: 2021 Bartosz Golaszewski <brgl@bgdev.pl>
 
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,18 +65,24 @@ GPIOD_API void gpiod_info_event_free(struct gpiod_info_event *event)
 GPIOD_API enum gpiod_info_event_type
 gpiod_info_event_get_event_type(struct gpiod_info_event *event)
 {
+	assert(event);
+
 	return event->event_type;
 }
 
 GPIOD_API uint64_t
 gpiod_info_event_get_timestamp_ns(struct gpiod_info_event *event)
 {
+	assert(event);
+
 	return event->timestamp;
 }
 
 GPIOD_API struct gpiod_line_info *
 gpiod_info_event_get_line_info(struct gpiod_info_event *event)
 {
+	assert(event);
+
 	return event->info;
 }
 

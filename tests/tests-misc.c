@@ -59,6 +59,12 @@ GPIOD_TEST_CASE(is_gpiochip_link_good)
 	g_assert_cmpint(ret, ==, 0);
 }
 
+GPIOD_TEST_CASE(is_gpiochip_null_path)
+{
+	g_assert_false(gpiod_is_gpiochip_device(NULL));
+	gpiod_test_expect_errno(0);
+}
+
 GPIOD_TEST_CASE(version_string)
 {
 	static const gchar *const pattern = "^[0-9][1-9]?\\.[0-9][1-9]?([\\.0-9]?|\\-devel)$";

@@ -21,6 +21,11 @@ bool gpiod_check_gpiochip_device(const char *path, bool set_errno)
 	bool ret = false;
 	int rv;
 
+	if (!path) {
+		errno = EINVAL;
+		goto out;
+	}
+
 	rv = lstat(path, &statbuf);
 	if (rv)
 		goto out;

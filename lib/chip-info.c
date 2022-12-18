@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+#include <assert.h>
 #include <gpiod.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,16 +21,22 @@ GPIOD_API void gpiod_chip_info_free(struct gpiod_chip_info *info)
 
 GPIOD_API const char *gpiod_chip_info_get_name(struct gpiod_chip_info *info)
 {
+	assert(info);
+
 	return info->name;
 }
 
 GPIOD_API const char *gpiod_chip_info_get_label(struct gpiod_chip_info *info)
 {
+	assert(info);
+
 	return info->label;
 }
 
 GPIOD_API size_t gpiod_chip_info_get_num_lines(struct gpiod_chip_info *info)
 {
+	assert(info);
+
 	return info->num_lines;
 }
 

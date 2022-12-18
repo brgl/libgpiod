@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+#include <assert.h>
 #include <errno.h>
 #include <gpiod.h>
 #include <stdlib.h>
@@ -53,12 +54,17 @@ static void free_refs(struct gpiod_line_config *config)
 
 GPIOD_API void gpiod_line_config_free(struct gpiod_line_config *config)
 {
+	if (!config)
+		return;
+
 	free_refs(config);
 	free(config);
 }
 
 GPIOD_API void gpiod_line_config_reset(struct gpiod_line_config *config)
 {
+	assert(config);
+
 	free_refs(config);
 	memset(config, 0, sizeof(*config));
 }
@@ -86,6 +92,13 @@ GPIOD_API int gpiod_line_config_add_line_settings(
 	struct per_line_config *per_line;
 	struct settings_node *node;
 	size_t i;
+
+	assert(config);
+
+	if (!offsets || num_offsets == 0) {
+		errno = EINVAL;
+		return -1;
+	}
 
 	if ((config->num_configs + num_offsets) > LINES_MAX) {
 		errno = E2BIG;
@@ -125,6 +138,8 @@ gpiod_line_config_get_line_settings(struct gpiod_line_config *config,
 	struct per_line_config *per_line;
 	size_t i;
 
+	assert(config);
+
 	for (i = 0; i < config->num_configs; i++) {
 		per_line = &config->line_configs[i];
 
@@ -143,6 +158,13 @@ GPIOD_API int gpiod_line_config_get_offsets(struct gpiod_line_config *config,
 {
 	unsigned int *offs;
 	size_t i;
+
+	assert(config);
+
+	if (!num_offsets || !offsets) {
+		errno = EINVAL;
+		return -1;
+	}
 
 	*num_offsets = config->num_configs;
 	*offsets = NULL;

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // SPDX-FileCopyrightText: 2021 Bartosz Golaszewski <brgl@bgdev.pl>
 
+#include <assert.h>
 #include <errno.h>
 #include <gpiod.h>
 #include <stdlib.h>
@@ -37,6 +38,8 @@ gpiod_edge_event_copy(struct gpiod_edge_event *event)
 {
 	struct gpiod_edge_event *copy;
 
+	assert(event);
+
 	copy = malloc(sizeof(*event));
 	if (!copy)
 		return NULL;
@@ -49,30 +52,40 @@ gpiod_edge_event_copy(struct gpiod_edge_event *event)
 GPIOD_API enum gpiod_edge_event_type
 gpiod_edge_event_get_event_type(struct gpiod_edge_event *event)
 {
+	assert(event);
+
 	return event->event_type;
 }
 
 GPIOD_API uint64_t
 gpiod_edge_event_get_timestamp_ns(struct gpiod_edge_event *event)
 {
+	assert(event);
+
 	return event->timestamp;
 }
 
 GPIOD_API unsigned int
 gpiod_edge_event_get_line_offset(struct gpiod_edge_event *event)
 {
+	assert(event);
+
 	return event->line_offset;
 }
 
 GPIOD_API unsigned long
 gpiod_edge_event_get_global_seqno(struct gpiod_edge_event *event)
 {
+	assert(event);
+
 	return event->global_seqno;
 }
 
 GPIOD_API unsigned long
 gpiod_edge_event_get_line_seqno(struct gpiod_edge_event *event)
 {
+	assert(event);
+
 	return event->line_seqno;
 }
 
@@ -112,6 +125,8 @@ gpiod_edge_event_buffer_new(size_t capacity)
 GPIOD_API size_t
 gpiod_edge_event_buffer_get_capacity(struct gpiod_edge_event_buffer *buffer)
 {
+	assert(buffer);
+
 	return buffer->capacity;
 }
 
@@ -130,6 +145,8 @@ GPIOD_API struct gpiod_edge_event *
 gpiod_edge_event_buffer_get_event(struct gpiod_edge_event_buffer *buffer,
 				  unsigned long index)
 {
+	assert(buffer);
+
 	if (index >= buffer->num_events) {
 		errno = EINVAL;
 		return NULL;
@@ -141,6 +158,8 @@ gpiod_edge_event_buffer_get_event(struct gpiod_edge_event_buffer *buffer,
 GPIOD_API size_t
 gpiod_edge_event_buffer_get_num_events(struct gpiod_edge_event_buffer *buffer)
 {
+	assert(buffer);
+
 	return buffer->num_events;
 }
 
@@ -152,6 +171,11 @@ int gpiod_edge_event_buffer_read_fd(int fd,
 	struct gpiod_edge_event *event;
 	size_t i;
 	ssize_t rd;
+
+	if (!buffer) {
+		errno = EINVAL;
+		return -1;
+	}
 
 	memset(buffer->event_data, 0,
 	       sizeof(*buffer->event_data) * buffer->capacity);

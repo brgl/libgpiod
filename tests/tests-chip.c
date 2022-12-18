@@ -47,6 +47,15 @@ GPIOD_TEST_CASE(open_chip_not_a_gpio_device)
 	gpiod_test_expect_errno(ENODEV);
 }
 
+GPIOD_TEST_CASE(open_chip_null_path)
+{
+	g_autoptr(struct_gpiod_chip) chip = NULL;
+
+	chip = gpiod_chip_open(NULL);
+	g_assert_null(chip);
+	gpiod_test_expect_errno(EINVAL);
+}
+
 GPIOD_TEST_CASE(get_chip_path)
 {
 	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new(NULL);
@@ -144,4 +153,17 @@ GPIOD_TEST_CASE(find_line_duplicate)
 
 	g_assert_cmpint(gpiod_chip_get_line_offset_from_name(chip, "baz"),
 			==, 2);
+}
+
+GPIOD_TEST_CASE(find_line_null_name)
+{
+	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new(NULL);
+	g_autoptr(struct_gpiod_chip) chip = NULL;
+	gint ret;
+
+	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
+
+	ret = gpiod_chip_get_line_offset_from_name(chip, NULL);
+	g_assert_cmpint(ret, ==, -1);
+	gpiod_test_expect_errno(EINVAL);
 }

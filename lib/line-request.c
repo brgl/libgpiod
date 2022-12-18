@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // SPDX-FileCopyrightText: 2021 Bartosz Golaszewski <brgl@bgdev.pl>
 
+#include <assert.h>
 #include <errno.h>
 #include <gpiod.h>
 #include <stdlib.h>
@@ -46,6 +47,8 @@ GPIOD_API void gpiod_line_request_release(struct gpiod_line_request *request)
 GPIOD_API size_t
 gpiod_line_request_get_num_lines(struct gpiod_line_request *request)
 {
+	assert(request);
+
 	return request->num_lines;
 }
 
@@ -53,6 +56,11 @@ GPIOD_API void
 gpiod_line_request_get_offsets(struct gpiod_line_request *request,
 			       unsigned int *offsets)
 {
+	assert(request);
+
+	if (!offsets)
+		return;
+
 	memcpy(offsets, request->offsets,
 	       sizeof(*offsets) * request->num_lines);
 }
@@ -63,6 +71,8 @@ gpiod_line_request_get_value(struct gpiod_line_request *request,
 {
 	enum gpiod_line_value val;
 	unsigned int ret;
+
+	assert(request);
 
 	ret = gpiod_line_request_get_values_subset(request, 1, &offset, &val);
 	if (ret)
@@ -75,6 +85,8 @@ static int offset_to_bit(struct gpiod_line_request *request,
 			 unsigned int offset)
 {
 	size_t i;
+
+	assert(request);
 
 	for (i = 0; i < request->num_lines; i++) {
 		if (offset == request->offsets[i])
@@ -94,6 +106,13 @@ gpiod_line_request_get_values_subset(struct gpiod_line_request *request,
 	uint64_t mask = 0, bits = 0;
 	size_t i;
 	int bit, ret;
+
+	assert(request);
+
+	if (!offsets || !values) {
+		errno = EINVAL;
+		return -1;
+	}
 
 	uapi_values.bits = 0;
 
@@ -127,6 +146,8 @@ gpiod_line_request_get_values_subset(struct gpiod_line_request *request,
 GPIOD_API int gpiod_line_request_get_values(struct gpiod_line_request *request,
 					    enum gpiod_line_value *values)
 {
+	assert(request);
+
 	return gpiod_line_request_get_values_subset(request, request->num_lines,
 						    request->offsets, values);
 }
@@ -150,6 +171,13 @@ gpiod_line_request_set_values_subset(struct gpiod_line_request *request,
 	size_t i;
 	int bit;
 
+	assert(request);
+
+	if (!offsets || !values) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	for (i = 0; i < num_values; i++) {
 		bit = offset_to_bit(request, offsets[i]);
 		if (bit < 0) {
@@ -171,6 +199,8 @@ gpiod_line_request_set_values_subset(struct gpiod_line_request *request,
 GPIOD_API int gpiod_line_request_set_values(struct gpiod_line_request *request,
 					    const enum gpiod_line_value *values)
 {
+	assert(request);
+
 	return gpiod_line_request_set_values_subset(request, request->num_lines,
 						    request->offsets, values);
 }
@@ -198,6 +228,13 @@ gpiod_line_request_reconfigure_lines(struct gpiod_line_request *request,
 	struct gpio_v2_line_request uapi_cfg;
 	int ret;
 
+	assert(request);
+
+	if (!config) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	memset(&uapi_cfg, 0, sizeof(uapi_cfg));
 
 	ret = gpiod_line_config_to_uapi(config, &uapi_cfg);
@@ -219,6 +256,8 @@ gpiod_line_request_reconfigure_lines(struct gpiod_line_request *request,
 
 GPIOD_API int gpiod_line_request_get_fd(struct gpiod_line_request *request)
 {
+	assert(request);
+
 	return request->fd;
 }
 
@@ -226,6 +265,8 @@ GPIOD_API int
 gpiod_line_request_wait_edge_events(struct gpiod_line_request *request,
 				    int64_t timeout_ns)
 {
+	assert(request);
+
 	return gpiod_poll_fd(request->fd, timeout_ns);
 }
 
@@ -234,5 +275,7 @@ gpiod_line_request_read_edge_events(struct gpiod_line_request *request,
 				    struct gpiod_edge_event_buffer *buffer,
 				    size_t max_events)
 {
+	assert(request);
+
 	return gpiod_edge_event_buffer_read_fd(request->fd, buffer, max_events);
 }

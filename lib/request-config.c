@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // SPDX-FileCopyrightText: 2021 Bartosz Golaszewski <brgl@bgdev.pl>
 
+#include <assert.h>
 #include <errno.h>
 #include <gpiod.h>
 #include <stdlib.h>
@@ -35,13 +36,21 @@ GPIOD_API void
 gpiod_request_config_set_consumer(struct gpiod_request_config *config,
 				  const char *consumer)
 {
-	strncpy(config->consumer, consumer, GPIO_MAX_NAME_SIZE - 1);
-	config->consumer[GPIO_MAX_NAME_SIZE - 1] = '\0';
+	assert(config);
+
+	if (!consumer) {
+		config->consumer[0] = '\0';
+	} else {
+		strncpy(config->consumer, consumer, GPIO_MAX_NAME_SIZE - 1);
+		config->consumer[GPIO_MAX_NAME_SIZE - 1] = '\0';
+	}
 }
 
 GPIOD_API const char *
 gpiod_request_config_get_consumer(struct gpiod_request_config *config)
 {
+	assert(config);
+
 	return config->consumer[0] == '\0' ? NULL : config->consumer;
 }
 
@@ -49,12 +58,16 @@ GPIOD_API void
 gpiod_request_config_set_event_buffer_size(struct gpiod_request_config *config,
 					   size_t event_buffer_size)
 {
+	assert(config);
+
 	config->event_buffer_size = event_buffer_size;
 }
 
 GPIOD_API size_t
 gpiod_request_config_get_event_buffer_size(struct gpiod_request_config *config)
 {
+	assert(config);
+
 	return config->event_buffer_size;
 }
 

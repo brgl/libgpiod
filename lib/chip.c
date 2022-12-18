@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // SPDX-FileCopyrightText: 2021 Bartosz Golaszewski <brgl@bgdev.pl>
 
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <gpiod.h>
@@ -20,6 +21,11 @@ GPIOD_API struct gpiod_chip *gpiod_chip_open(const char *path)
 {
 	struct gpiod_chip *chip;
 	int fd;
+
+	if (!path) {
+		errno = EINVAL;
+		return NULL;
+	}
 
 	if (!gpiod_check_gpiochip_device(path, true))
 		return NULL;
@@ -78,6 +84,8 @@ GPIOD_API struct gpiod_chip_info *gpiod_chip_get_info(struct gpiod_chip *chip)
 	struct gpiochip_info info;
 	int ret;
 
+	assert(chip);
+
 	ret = read_chip_info(chip->fd, &info);
 	if (ret < 0)
 		return NULL;
@@ -87,6 +95,8 @@ GPIOD_API struct gpiod_chip_info *gpiod_chip_get_info(struct gpiod_chip *chip)
 
 GPIOD_API const char *gpiod_chip_get_path(struct gpiod_chip *chip)
 {
+	assert(chip);
+
 	return chip->path;
 }
 
@@ -114,6 +124,8 @@ chip_get_line_info(struct gpiod_chip *chip, unsigned int offset, bool watch)
 	struct gpio_v2_line_info info;
 	int ret;
 
+	assert(chip);
+
 	ret = chip_read_line_info(chip->fd, offset, &info, watch);
 	if (ret)
 		return NULL;
@@ -136,23 +148,31 @@ gpiod_chip_watch_line_info(struct gpiod_chip *chip, unsigned int offset)
 GPIOD_API int gpiod_chip_unwatch_line_info(struct gpiod_chip *chip,
 					   unsigned int offset)
 {
+	assert(chip);
+
 	return ioctl(chip->fd, GPIO_GET_LINEINFO_UNWATCH_IOCTL, &offset);
 }
 
 GPIOD_API int gpiod_chip_get_fd(struct gpiod_chip *chip)
 {
+	assert(chip);
+
 	return chip->fd;
 }
 
 GPIOD_API int gpiod_chip_wait_info_event(struct gpiod_chip *chip,
 					 int64_t timeout_ns)
 {
+	assert(chip);
+
 	return gpiod_poll_fd(chip->fd, timeout_ns);
 }
 
 GPIOD_API struct gpiod_info_event *
 gpiod_chip_read_info_event(struct gpiod_chip *chip)
 {
+	assert(chip);
+
 	return gpiod_info_event_read_fd(chip->fd);
 }
 
@@ -163,6 +183,13 @@ GPIOD_API int gpiod_chip_get_line_offset_from_name(struct gpiod_chip *chip,
 	struct gpiochip_info chinfo;
 	unsigned int offset;
 	int ret;
+
+	assert(chip);
+
+	if (!name) {
+		errno = EINVAL;
+		return -1;
+	}
 
 	ret = read_chip_info(chip->fd, &chinfo);
 	if (ret < 0)
@@ -189,6 +216,13 @@ gpiod_chip_request_lines(struct gpiod_chip *chip,
 	struct gpio_v2_line_request uapi_req;
 	struct gpiod_line_request *request;
 	int ret;
+
+	assert(chip);
+
+	if (!line_cfg) {
+		errno = EINVAL;
+		return NULL;
+	}
 
 	memset(&uapi_req, 0, sizeof(uapi_req));
 

@@ -134,6 +134,26 @@ GPIOD_TEST_CASE(too_many_attrs)
 	g_assert_cmpint(errno, ==, E2BIG);
 }
 
+GPIOD_TEST_CASE(null_settings)
+{
+	static const guint offsets[] = { 0, 1, 2, 3 };
+
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+	g_autoptr(struct_gpiod_line_settings) settings = NULL;
+
+	config = gpiod_test_create_line_config_or_fail();
+
+	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 4,
+							 NULL);
+
+	settings = gpiod_line_config_get_line_settings(config, 2);
+	g_assert_nonnull(settings);
+	gpiod_test_return_if_failed();
+
+	g_assert_cmpint(gpiod_line_settings_get_drive(settings), ==,
+			GPIOD_LINE_DIRECTION_AS_IS);
+}
+
 GPIOD_TEST_CASE(reset_config)
 {
 	static const guint offsets[] = { 0, 1, 2, 3 };
@@ -213,4 +233,17 @@ GPIOD_TEST_CASE(get_0_offsets)
 	g_assert_cmpint(ret, ==, 0);
 	g_assert_cmpuint(num_offsets, ==, 0);
 	g_assert_null(offsets);
+}
+
+GPIOD_TEST_CASE(get_null_offsets)
+{
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+	g_autofree guint *offsets = NULL;
+	gint ret;
+
+	config = gpiod_test_create_line_config_or_fail();
+
+	ret = gpiod_line_config_get_offsets(config, NULL, &offsets);
+	g_assert_cmpint(ret, ==, -1);
+	gpiod_test_expect_errno(EINVAL);
 }
