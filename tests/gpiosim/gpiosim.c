@@ -1058,7 +1058,8 @@ GPIOSIM_API int gpiosim_bank_hog_line(struct gpiosim_bank *bank,
 		dir = "output-low";
 		break;
 	default:
-		return -EINVAL;
+		errno = EINVAL;
+		return -1;
 	}
 
 	if (!dev_check_pending(bank->dev))
