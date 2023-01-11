@@ -22,8 +22,9 @@ extern "C" {
  * This is the complete documentation of the public API made available to
  * users of libgpiod.
  *
- * <p>The API is logically split into several parts such as: GPIO chip & line
- * operators, GPIO events handling etc.
+ * <p>The API is logically split into several sections. For each opaque data
+ * class, there's a set of functions for manipulating it. Together they can be
+ * thought of as objects and their methods in OOP parlance.
  *
  * <p>General note on error handling: all functions exported by libgpiod that
  * can fail, set errno to one of the error values defined in errno.h upon
@@ -34,10 +35,13 @@ extern "C" {
  * codes for every function as they propagate errors from the underlying libc
  * functions.
  *
- * <p>In general libgpiod functions are not NULL-aware and it's expected that
- * users pass valid pointers to objects as arguments. An exception to this rule
- * are the functions that free/close/release resources - which work when passed
- * a NULL-pointer as argument. Other exceptions are documented.
+ * <p>In general libgpiod functions are NULL-aware. For functions that are
+ * logically methods of data classes - ones that take a pointer to the object
+ * of that class as the first argument - passing a NULL pointer will result in
+ * the program aborting the execution. For non-methods, init functions and
+ * methods that take a pointer as any of the subsequent arguments, the handling
+ * of a NULL-pointer depends on the implementation and may range from gracefully
+ * handling it, ignoring it or returning an error.
  */
 
 struct gpiod_chip;
@@ -260,7 +264,8 @@ enum gpiod_line_direction {
 	GPIOD_LINE_DIRECTION_AS_IS = 1,
 	/**< Request the line(s), but don't change direction. */
 	GPIOD_LINE_DIRECTION_INPUT,
-	/**< Direction is input - for reading the value of an externally driven GPIO line. */
+	/**< Direction is input - for reading the value of an externally driven
+	 *   GPIO line. */
 	GPIOD_LINE_DIRECTION_OUTPUT,
 	/**< Direction is output - for driving the GPIO line. */
 };
@@ -908,8 +913,8 @@ gpiod_line_request_get_value(struct gpiod_line_request *request,
  * @param offsets Array of offsets identifying the subset of requested lines
  *		  from which to read values.
  * @param values Array in which the values will be stored.  Must be sized
- *		 to hold \p num_values entries.  Each value is associated with the
- *		 line identified by the corresponding entry in \p offsets.
+ *		 to hold \p num_values entries. Each value is associated with
+ *		 the line identified by the corresponding entry in \p offsets.
  * @return 0 on success, -1 on failure.
  */
 int gpiod_line_request_get_values_subset(struct gpiod_line_request *request,
