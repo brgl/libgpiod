@@ -2,22 +2,22 @@
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 
 lib_LTLIBRARIES = libgpiodcxx.la
-libgpiodcxx_la_SOURCES =	\
-	chip.cpp		\
-	chip-info.cpp		\
-	edge-event-buffer.cpp	\
-	edge-event.cpp		\
-	exception.cpp		\
-	info-event.cpp		\
-	internal.cpp		\
-	internal.hpp		\
-	line.cpp		\
-	line-config.cpp		\
-	line-info.cpp		\
-	line-request.cpp	\
-	line-settings.cpp	\
-	misc.cpp		\
-	request-builder.cpp	\
+libgpiodcxx_la_SOURCES = \
+	chip.cpp \
+	chip-info.cpp \
+	edge-event-buffer.cpp \
+	edge-event.cpp \
+	exception.cpp \
+	info-event.cpp \
+	internal.cpp \
+	internal.hpp \
+	line.cpp \
+	line-config.cpp \
+	line-info.cpp \
+	line-request.cpp \
+	line-settings.cpp \
+	misc.cpp \
+	request-builder.cpp \
 	request-config.cpp
 
 libgpiodcxx_la_CXXFLAGS = -Wall -Wextra -g -std=gnu++17

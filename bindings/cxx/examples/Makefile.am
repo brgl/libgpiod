@@ -6,12 +6,12 @@ AM_CXXFLAGS += -Wall -Wextra -g -std=gnu++17
 AM_LDFLAGS = -lgpiodcxx -L$(top_builddir)/bindings/cxx/
 
 noinst_PROGRAMS = \
-		gpiodetectcxx \
-		gpiofindcxx \
-		gpiogetcxx \
-		gpioinfocxx \
-		gpiomoncxx \
-		gpiosetcxx
+	gpiodetectcxx \
+	gpiofindcxx \
+	gpiogetcxx \
+	gpioinfocxx \
+	gpiomoncxx \
+	gpiosetcxx
 
 gpiodetectcxx_SOURCES = gpiodetectcxx.cpp
 

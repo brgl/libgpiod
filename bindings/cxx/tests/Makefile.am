@@ -12,21 +12,21 @@ AM_LDFLAGS += -pthread
 
 bin_PROGRAMS = gpiod-cxx-test
 
-gpiod_cxx_test_SOURCES =			\
-		check-kernel.cpp		\
-		gpiod-cxx-test-main.cpp		\
-		gpiosim.cpp			\
-		gpiosim.hpp			\
-		helpers.cpp			\
-		helpers.hpp			\
-		tests-chip.cpp			\
-		tests-chip-info.cpp		\
-		tests-edge-event.cpp		\
-		tests-info-event.cpp		\
-		tests-line.cpp			\
-		tests-line-config.cpp		\
-		tests-line-info.cpp		\
-		tests-line-request.cpp		\
-		tests-line-settings.cpp		\
-		tests-misc.cpp			\
-		tests-request-config.cpp
+gpiod_cxx_test_SOURCES = \
+	check-kernel.cpp \
+	gpiod-cxx-test-main.cpp \
+	gpiosim.cpp \
+	gpiosim.hpp \
+	helpers.cpp \
+	helpers.hpp \
+	tests-chip.cpp \
+	tests-chip-info.cpp \
+	tests-edge-event.cpp \
+	tests-info-event.cpp \
+	tests-line.cpp \
+	tests-line-config.cpp \
+	tests-line-info.cpp \
+	tests-line-request.cpp \
+	tests-line-settings.cpp \
+	tests-misc.cpp \
+	tests-request-config.cpp
