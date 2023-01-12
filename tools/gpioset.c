@@ -870,9 +870,9 @@ int main(int argc, char **argv)
 	struct gpiod_line_config *line_cfg;
 	struct line_resolver *resolver;
 	enum gpiod_line_value *values;
-	int i, j, num_lines, ret;
 	struct gpiod_chip *chip;
 	unsigned int *offsets;
+	int i, num_lines, ret;
 	struct config cfg;
 	char **lines;
 
@@ -933,15 +933,16 @@ int main(int argc, char **argv)
 							values);
 
 		gpiod_line_config_reset(line_cfg);
-		for (j = 0; j < num_lines; j++) {
-			gpiod_line_settings_set_output_value(settings,
-							     values[j]);
 
-			ret = gpiod_line_config_add_line_settings(
-				line_cfg, &offsets[j], 1, settings);
-			if (ret)
-				die_perror("unable to add line settings");
-		}
+		ret = gpiod_line_config_add_line_settings(line_cfg, offsets,
+							  num_lines, settings);
+		if (ret)
+			die_perror("unable to add line settings");
+
+		ret = gpiod_line_config_set_output_values(line_cfg,
+							  values, num_lines);
+		if (ret)
+			die_perror("unable to set output values");
 
 		chip = gpiod_chip_open(resolver->chips[i].path);
 		if (!chip)
