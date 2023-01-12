@@ -46,9 +46,7 @@ GPIOD_TEST_CASE(get_line_settings)
 	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 4,
 							 settings);
 
-	retrieved = gpiod_line_config_get_line_settings(config, 2);
-	g_assert_nonnull(retrieved);
-	gpiod_test_return_if_failed();
+	retrieved = gpiod_test_line_config_get_line_settings_or_fail(config, 2);
 
 	g_assert_cmpint(gpiod_line_settings_get_direction(settings), ==,
 			GPIOD_LINE_DIRECTION_INPUT);
@@ -146,9 +144,7 @@ GPIOD_TEST_CASE(null_settings)
 	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 4,
 							 NULL);
 
-	settings = gpiod_line_config_get_line_settings(config, 2);
-	g_assert_nonnull(settings);
-	gpiod_test_return_if_failed();
+	settings = gpiod_test_line_config_get_line_settings_or_fail(config, 2);
 
 	g_assert_cmpint(gpiod_line_settings_get_drive(settings), ==,
 			GPIOD_LINE_DIRECTION_AS_IS);
@@ -171,9 +167,8 @@ GPIOD_TEST_CASE(reset_config)
 	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 4,
 							 settings);
 
-	retrieved0 = gpiod_line_config_get_line_settings(config, 2);
-	g_assert_nonnull(retrieved0);
-	gpiod_test_return_if_failed();
+	retrieved0 = gpiod_test_line_config_get_line_settings_or_fail(config,
+								      2);
 
 	g_assert_cmpint(gpiod_line_settings_get_direction(retrieved0), ==,
 			GPIOD_LINE_DIRECTION_INPUT);

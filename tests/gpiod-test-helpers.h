@@ -126,6 +126,16 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 		gpiod_test_return_if_failed(); \
 	} while (0)
 
+#define gpiod_test_line_config_get_line_settings_or_fail(_line_cfg, _offset) \
+	({ \
+		struct gpiod_line_settings *_settings = \
+			gpiod_line_config_get_line_settings(_line_cfg, \
+							    _offset); \
+		g_assert_nonnull(_settings); \
+		gpiod_test_return_if_failed(); \
+		_settings; \
+	})
+
 #define gpiod_test_create_request_config_or_fail() \
 	({ \
 		struct gpiod_request_config *_config = \
