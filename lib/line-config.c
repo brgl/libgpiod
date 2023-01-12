@@ -25,6 +25,8 @@ struct per_line_config {
 struct gpiod_line_config {
 	struct per_line_config line_configs[LINES_MAX];
 	size_t num_configs;
+	enum gpiod_line_value output_values[LINES_MAX];
+	size_t num_output_values;
 	struct settings_node *sref_list;
 };
 
@@ -136,21 +138,58 @@ GPIOD_API struct gpiod_line_settings *
 gpiod_line_config_get_line_settings(struct gpiod_line_config *config,
 				    unsigned int offset)
 {
+	struct gpiod_line_settings *settings;
 	struct per_line_config *per_line;
 	size_t i;
+	int ret;
 
 	assert(config);
 
 	for (i = 0; i < config->num_configs; i++) {
 		per_line = &config->line_configs[i];
 
-		if (per_line->offset == offset)
-			return gpiod_line_settings_copy(
+		if (per_line->offset == offset) {
+			settings = gpiod_line_settings_copy(
 					per_line->node->settings);
+			if (!settings)
+				return NULL;
+
+			/*
+			 * If a global output value was set for this line - use
+			 * it and override the one stored in settings.
+			 */
+			if (config->num_output_values > i) {
+				ret = gpiod_line_settings_set_output_value(
+						settings,
+						config->output_values[i]);
+				if (ret) {
+					gpiod_line_settings_free(settings);
+					return NULL;
+				}
+			}
+
+			return settings;
+		}
 	}
 
 	errno = ENOENT;
 	return NULL;
+}
+
+GPIOD_API int
+gpiod_line_config_set_output_values(struct gpiod_line_config *config,
+				    const enum gpiod_line_value *values,
+				    size_t num_values)
+{
+	if (num_values > LINES_MAX) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	memcpy(config->output_values, values, num_values * sizeof(*values));
+	config->num_output_values = num_values;
+
+	return 0;
 }
 
 GPIOD_API size_t
@@ -206,6 +245,13 @@ static bool has_at_least_one_output_direction(struct gpiod_line_config *config)
 	return false;
 }
 
+static void set_output_value(uint64_t *vals, size_t bit,
+			     enum gpiod_line_value value)
+{
+	gpiod_line_mask_assign_bit(vals, bit,
+				   value == GPIOD_LINE_VALUE_ACTIVE ? 1 : 0);
+}
+
 static void set_kernel_output_values(uint64_t *mask, uint64_t *vals,
 				     struct gpiod_line_config *config)
 {
@@ -227,8 +273,14 @@ static void set_kernel_output_values(uint64_t *mask, uint64_t *vals,
 		gpiod_line_mask_set_bit(mask, i);
 		value = gpiod_line_settings_get_output_value(
 			per_line->node->settings);
-		gpiod_line_mask_assign_bit(
-			vals, i, value == GPIOD_LINE_VALUE_ACTIVE ? 1 : 0);
+		set_output_value(vals, i, value);
+	}
+
+	/* "Global" output values override the ones from per-line settings. */
+	for (i = 0; i < config->num_output_values; i++) {
+		gpiod_line_mask_set_bit(mask, i);
+		value = config->output_values[i];
+		set_output_value(vals, i, value);
 	}
 }
 

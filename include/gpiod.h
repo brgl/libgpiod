@@ -786,6 +786,31 @@ gpiod_line_config_get_line_settings(struct gpiod_line_config *config,
 				    unsigned int offset);
 
 /**
+ * @brief Set output values for a number of lines.
+ * @param config Line config object.
+ * @param values Buffer containing the output values.
+ * @param num_values Number of values in the buffer.
+ * @return 0 on success, -1 on error.
+ *
+ * This is a helper that allows users to set multiple (potentially different)
+ * output values at once while using the same line settings object. Instead of
+ * modifying the output value in the settings object and calling
+ * ::gpiod_line_config_add_line_settings multiple times, we can specify the
+ * settings, add them for a set of offsets and then call this function to
+ * set the output values.
+ *
+ * Values set by this function override whatever values were specified in the
+ * regular line settings.
+ *
+ * Each value must be associated with the line identified by the corresponding
+ * entry in the offset array filled by
+ * ::gpiod_line_request_get_requested_offsets.
+ */
+int gpiod_line_config_set_output_values(struct gpiod_line_config *config,
+					const enum gpiod_line_value *values,
+					size_t num_values);
+
+/**
  * @brief Get the number of configured line offsets.
  * @param config Line config object.
  * @return Number of offsets for which line settings have been added.

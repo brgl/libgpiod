@@ -280,3 +280,70 @@ GPIOD_TEST_CASE(get_more_offsets_than_configured)
 	g_assert_cmpuint(retrieved[2], ==, 2);
 	g_assert_cmpuint(retrieved[3], ==, 3);
 }
+
+GPIOD_TEST_CASE(set_global_output_values)
+{
+	static const guint offsets[] = { 0, 1, 2, 3 };
+	static const enum gpiod_line_value values[] = {
+		GPIOD_LINE_VALUE_ACTIVE,
+		GPIOD_LINE_VALUE_INACTIVE,
+		GPIOD_LINE_VALUE_ACTIVE,
+		GPIOD_LINE_VALUE_INACTIVE,
+	};
+
+	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 4, NULL);
+	g_autoptr(struct_gpiod_line_settings) settings = NULL;
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+	g_autoptr(struct_gpiod_line_request) request = NULL;
+	g_autoptr(struct_gpiod_chip) chip = NULL;
+
+	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
+	settings = gpiod_test_create_line_settings_or_fail();
+	config = gpiod_test_create_line_config_or_fail();
+
+	gpiod_line_settings_set_direction(settings,
+					  GPIOD_LINE_DIRECTION_OUTPUT);
+	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 4,
+							 settings);
+	gpiod_test_line_config_set_output_values_or_fail(config, values, 4);
+
+	request = gpiod_test_request_lines_or_fail(chip, NULL, config);
+
+	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 0), ==,
+			GPIOD_LINE_VALUE_ACTIVE);
+	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 1), ==,
+			GPIOD_LINE_VALUE_INACTIVE);
+	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 2), ==,
+			GPIOD_LINE_VALUE_ACTIVE);
+	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 3), ==,
+			GPIOD_LINE_VALUE_INACTIVE);
+}
+
+GPIOD_TEST_CASE(read_back_global_output_values)
+{
+	static const guint offsets[] = { 0, 1, 2, 3 };
+	static const enum gpiod_line_value values[] = {
+		GPIOD_LINE_VALUE_ACTIVE,
+		GPIOD_LINE_VALUE_INACTIVE,
+		GPIOD_LINE_VALUE_ACTIVE,
+		GPIOD_LINE_VALUE_INACTIVE,
+	};
+
+	g_autoptr(struct_gpiod_line_settings) settings = NULL;
+	g_autoptr(struct_gpiod_line_settings) retrieved = NULL;
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+
+	settings = gpiod_test_create_line_settings_or_fail();
+	config = gpiod_test_create_line_config_or_fail();
+
+	gpiod_line_settings_set_direction(settings,
+					  GPIOD_LINE_DIRECTION_OUTPUT);
+	gpiod_line_settings_set_output_value(settings, GPIOD_LINE_VALUE_ACTIVE);
+	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 4,
+							 settings);
+	gpiod_test_line_config_set_output_values_or_fail(config, values, 4);
+
+	retrieved = gpiod_test_line_config_get_line_settings_or_fail(config, 1);
+	g_assert_cmpint(gpiod_line_settings_get_output_value(retrieved), ==,
+			GPIOD_LINE_VALUE_INACTIVE);
+}
