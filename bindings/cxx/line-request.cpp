@@ -118,7 +118,7 @@ GPIOD_CXX_API void line_request::get_values(const line::offsets& offsets, line::
 	int ret = ::gpiod_line_request_get_values_subset(
 					this->_m_priv->request.get(),
 					offsets.size(), this->_m_priv->offset_buf.data(),
-					reinterpret_cast<gpiod_line_value*>(values.data()));
+					reinterpret_cast<::gpiod_line_value*>(values.data()));
 	if (ret)
 		throw_from_errno("unable to retrieve line values");
 }
@@ -161,7 +161,7 @@ GPIOD_CXX_API line_request& line_request::set_values(const line::offsets& offset
 	int ret = ::gpiod_line_request_set_values_subset(
 					this->_m_priv->request.get(),
 					offsets.size(), this->_m_priv->offset_buf.data(),
-					reinterpret_cast<const enum gpiod_line_value*>(values.data()));
+					reinterpret_cast<const ::gpiod_line_value*>(values.data()));
 	if (ret)
 		throw_from_errno("unable to set line values");
 
