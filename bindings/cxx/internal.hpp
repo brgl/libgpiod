@@ -31,6 +31,7 @@ map_enum_c_to_cxx(c_enum_type value, const ::std::map<c_enum_type, cxx_enum_type
 }
 
 void throw_from_errno(const ::std::string& what);
+::gpiod_line_value map_output_value(line::value value);
 
 template<class T, void F(T*)> struct deleter
 {

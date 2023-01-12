@@ -100,6 +100,21 @@ GPIOD_CXX_API line_config& line_config::add_line_settings(const line::offsets& o
 	return *this;
 }
 
+GPIOD_CXX_API line_config& line_config::set_output_values(const line::values& values)
+{
+	::std::vector<::gpiod_line_value> mapped_values(values.size());
+
+	for (unsigned int i = 0; i < values.size(); i++)
+		mapped_values[i] = map_output_value(values[i]);
+
+	auto ret = ::gpiod_line_config_set_output_values(this->_m_priv->config.get(),
+							 mapped_values.data(), mapped_values.size());
+	if (ret)
+		throw_from_errno("unable to set output values");
+
+	return *this;
+}
+
 GPIOD_CXX_API ::std::map<line::offset, line_settings> line_config::get_line_settings() const
 {
 	::std::size_t num_offsets = ::gpiod_line_config_get_num_configured_offsets(

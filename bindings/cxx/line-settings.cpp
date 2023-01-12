@@ -139,6 +139,11 @@ cxx_enum_type get_mapped_value(::gpiod_line_settings* settings,
 
 } /* namespace */
 
+::gpiod_line_value map_output_value(line::value value)
+{
+	return do_map_value(value, value_mapping);
+}
+
 line_settings::impl::impl()
 	: settings(make_line_settings())
 {

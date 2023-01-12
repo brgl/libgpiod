@@ -77,6 +77,13 @@ public:
 	line_config& add_line_settings(const line::offsets& offsets, const line_settings& settings);
 
 	/**
+	 * @brief Set output values for a number of lines.
+	 * @param values Buffer containing the output values.
+	 * @return Reference to self.
+	 */
+	line_config& set_output_values(const line::values& values);
+
+	/**
 	 * @brief Get a mapping of offsets to line settings stored by this
 	 *        object.
 	 * @return Map in which keys represent line offsets and values are
