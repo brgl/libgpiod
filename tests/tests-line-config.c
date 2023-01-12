@@ -175,9 +175,9 @@ GPIOD_TEST_CASE(reset_config)
 	g_assert_nonnull(retrieved0);
 	gpiod_test_return_if_failed();
 
-	g_assert_cmpint(gpiod_line_settings_get_direction(settings), ==,
+	g_assert_cmpint(gpiod_line_settings_get_direction(retrieved0), ==,
 			GPIOD_LINE_DIRECTION_INPUT);
-	g_assert_cmpint(gpiod_line_settings_get_bias(settings), ==,
+	g_assert_cmpint(gpiod_line_settings_get_bias(retrieved0), ==,
 			GPIOD_LINE_BIAS_PULL_DOWN);
 
 	gpiod_line_config_reset(config);
