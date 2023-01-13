@@ -6,10 +6,12 @@ from .chip_info import ChipInfo
 from .exception import ChipClosedError
 from .info_event import InfoEvent
 from .internal import poll_fd
+from .line import Value
 from .line_info import LineInfo
 from .line_settings import LineSettings, _line_settings_to_ext
 from .line_request import LineRequest
 from collections import Counter
+from collections.abc import Iterable
 from datetime import timedelta
 from errno import ENOENT
 from select import select
@@ -221,6 +223,7 @@ class Chip:
         config: dict[tuple[Union[int, str]], Optional[LineSettings]],
         consumer: Optional[str] = None,
         event_buffer_size: Optional[int] = None,
+        output_values: Optional[dict[tuple[Union[int, str]], Value]] = None,
     ) -> LineRequest:
         """
         Request a set of lines for exclusive usage.
@@ -234,6 +237,10 @@ class Chip:
             Consumer string to use for this request.
           event_buffer_size:
             Size of the kernel edge event buffer to configure for this request.
+          output_values:
+            Dictionary mapping offsets or names to line.Value. This can be used
+            to set the desired output values globally while reusing LineSettings
+            for more lines.
 
         Returns:
           New LineRequest object.
@@ -260,10 +267,20 @@ class Chip:
                     )
                 )
 
+        # If we have global output values - map line names to offsets
+        if output_values:
+            mapped_output_values = {
+                self.line_offset_from_id(line): value
+                for line, value in output_values.items()
+            }
+        else:
+            mapped_output_values = None
+
         for lines, settings in config.items():
             offsets = list()
             name_map = dict()
             offset_map = dict()
+            global_output_values = list()
 
             if isinstance(lines, int) or isinstance(lines, str):
                 lines = (lines,)
@@ -271,6 +288,16 @@ class Chip:
             for line in lines:
                 offset = self.line_offset_from_id(line)
                 offsets.append(offset)
+
+                # If there's a global output value for this offset, store it in the
+                # list for later.
+                if mapped_output_values:
+                    global_output_values.append(
+                        mapped_output_values[offset]
+                        if offset in mapped_output_values
+                        else Value.INACTIVE
+                    )
+
                 if isinstance(line, str):
                     name_map[line] = offset
                     offset_map[offset] = line
@@ -278,6 +305,9 @@ class Chip:
             line_cfg.add_line_settings(
                 offsets, _line_settings_to_ext(settings or LineSettings())
             )
+
+        if len(global_output_values):
+            line_cfg.set_output_values(global_output_values)
 
         req_internal = self._chip.request_lines(line_cfg, consumer, event_buffer_size)
         request = LineRequest(req_internal)

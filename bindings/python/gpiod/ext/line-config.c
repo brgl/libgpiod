@@ -89,10 +89,74 @@ line_config_add_line_settings(line_config_object *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *
+line_config_set_output_values(line_config_object *self, PyObject *args)
+{
+	PyObject *values, *iter, *next, *val_stripped;
+	enum gpiod_line_value *valbuf;
+	Py_ssize_t num_values, pos;
+	int ret;
+
+	values = PyTuple_GetItem(args, 0);
+	if (!values)
+		return NULL;
+
+	num_values = PyObject_Size(values);
+	if (num_values < 0)
+		return NULL;
+
+	valbuf = PyMem_Calloc(num_values, sizeof(*valbuf));
+	if (!valbuf)
+		return PyErr_NoMemory();
+
+	iter = PyObject_GetIter(values);
+	if (!iter) {
+		PyMem_Free(valbuf);
+		return NULL;
+	}
+
+	for (pos = 0;; pos++) {
+		next = PyIter_Next(iter);
+		if (!next) {
+			Py_DECREF(iter);
+			break;
+		}
+
+		val_stripped = PyObject_GetAttrString(next, "value");
+		Py_DECREF(next);
+		if (!val_stripped) {
+			PyMem_Free(valbuf);
+			Py_DECREF(iter);
+			return NULL;
+		}
+
+		valbuf[pos] = PyLong_AsLong(val_stripped);
+		Py_DECREF(val_stripped);
+		if (PyErr_Occurred()) {
+			PyMem_Free(valbuf);
+			Py_DECREF(iter);
+			return NULL;
+		}
+	}
+
+	ret = gpiod_line_config_set_output_values(self->cfg,
+						  valbuf, num_values);
+	PyMem_Free(valbuf);
+	if (ret)
+		return Py_gpiod_SetErrFromErrno();	
+
+	Py_RETURN_NONE;
+}
+
 static PyMethodDef line_config_methods[] = {
 	{
 		.ml_name = "add_line_settings",
 		.ml_meth = (PyCFunction)line_config_add_line_settings,
+		.ml_flags = METH_VARARGS,
+	},
+	{
+		.ml_name = "set_output_values",
+		.ml_meth = (PyCFunction)line_config_set_output_values,
 		.ml_flags = METH_VARARGS,
 	},
 	{ }

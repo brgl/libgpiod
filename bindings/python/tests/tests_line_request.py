@@ -402,6 +402,61 @@ class LineRequestConsumerString(TestCase):
             self.assertEqual(info.consumer, "?")
 
 
+class LineRequestSetOutputValues(TestCase):
+    def setUp(self):
+        self.sim = gpiosim.Chip(
+            num_lines=4, line_names={0: "foo", 1: "bar", 2: "baz", 3: "xyz"}
+        )
+
+    def tearDown(self):
+        del self.sim
+
+    def test_request_with_globally_set_output_values(self):
+        with gpiod.request_lines(
+            self.sim.dev_path,
+            config={(0, 1, 2, 3): gpiod.LineSettings(direction=Direction.OUTPUT)},
+            output_values={
+                0: Value.ACTIVE,
+                1: Value.INACTIVE,
+                2: Value.ACTIVE,
+                3: Value.INACTIVE,
+            },
+        ) as request:
+            self.assertEqual(self.sim.get_value(0), SimVal.ACTIVE)
+            self.assertEqual(self.sim.get_value(1), SimVal.INACTIVE)
+            self.assertEqual(self.sim.get_value(2), SimVal.ACTIVE)
+            self.assertEqual(self.sim.get_value(3), SimVal.INACTIVE)
+
+    def test_request_with_globally_set_output_values_with_mapping(self):
+        with gpiod.request_lines(
+            self.sim.dev_path,
+            config={(0, 1, 2, 3): gpiod.LineSettings(direction=Direction.OUTPUT)},
+            output_values={"baz": Value.ACTIVE, "foo": Value.ACTIVE},
+        ) as request:
+            self.assertEqual(self.sim.get_value(0), SimVal.ACTIVE)
+            self.assertEqual(self.sim.get_value(1), SimVal.INACTIVE)
+            self.assertEqual(self.sim.get_value(2), SimVal.ACTIVE)
+            self.assertEqual(self.sim.get_value(3), SimVal.INACTIVE)
+
+    def test_request_with_globally_set_output_values_bad_mapping(self):
+        with self.assertRaises(FileNotFoundError):
+            with gpiod.request_lines(
+                self.sim.dev_path,
+                config={(0, 1, 2, 3): gpiod.LineSettings(direction=Direction.OUTPUT)},
+                output_values={"foobar": Value.ACTIVE},
+            ) as request:
+                pass
+
+    def test_request_with_globally_set_output_values_bad_offset(self):
+        with self.assertRaises(ValueError):
+            with gpiod.request_lines(
+                self.sim.dev_path,
+                config={(0, 1, 2, 3): gpiod.LineSettings(direction=Direction.OUTPUT)},
+                output_values={5: Value.ACTIVE},
+            ) as request:
+                pass
+
+
 class ReconfigureRequestedLines(TestCase):
     def setUp(self):
         self.sim = gpiosim.Chip(num_lines=8, line_names={3: "foo", 4: "bar", 6: "baz"})
