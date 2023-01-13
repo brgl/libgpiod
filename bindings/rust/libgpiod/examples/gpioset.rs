@@ -54,7 +54,7 @@ fn main() -> Result<()> {
     let rconfig = request::Config::new()?;
     rconfig.set_consumer(&args[0])?;
 
-    chip.request_lines(&rconfig, &lconfig)?;
+    chip.request_lines(Some(&rconfig), &lconfig)?;
 
     // Wait for keypress, let user verify line status.
     stdin().read_exact(&mut [0u8]).unwrap();

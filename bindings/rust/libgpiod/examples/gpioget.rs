@@ -37,7 +37,7 @@ fn main() -> Result<()> {
     let rconfig = request::Config::new()?;
     rconfig.set_consumer(&args[0])?;
 
-    let request = chip.request_lines(&rconfig, &lconfig)?;
+    let request = chip.request_lines(Some(&rconfig), &lconfig)?;
     let map = request.values()?;
 
     println!("{:?}", map);

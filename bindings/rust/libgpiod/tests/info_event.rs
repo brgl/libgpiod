@@ -32,7 +32,7 @@ mod info_event {
             let request = chip
                 .lock()
                 .unwrap()
-                .request_lines(&rconfig, &lconfig1)
+                .request_lines(Some(&rconfig), &lconfig1)
                 .unwrap();
 
             // Signal the parent to continue

@@ -41,7 +41,7 @@ fn main() -> Result<()> {
     let rconfig = request::Config::new()?;
 
     let mut buffer = request::Buffer::new(1)?;
-    let request = chip.request_lines(&rconfig, &lconfig)?;
+    let request = chip.request_lines(Some(&rconfig), &lconfig)?;
 
     loop {
         match request.wait_edge_events(None) {

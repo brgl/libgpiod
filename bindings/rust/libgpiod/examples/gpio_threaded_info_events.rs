@@ -40,7 +40,7 @@ fn request_reconfigure_line(
         let request = chip
             .lock()
             .unwrap()
-            .request_lines(&rconfig, &lconfig)
+            .request_lines(Some(&rconfig), &lconfig)
             .unwrap();
 
         // Signal the parent to continue

@@ -11,6 +11,7 @@ use std::cmp::Ordering;
 use std::ffi::{CStr, CString};
 use std::os::{raw::c_char, unix::prelude::AsRawFd};
 use std::path::Path;
+use std::ptr;
 use std::str;
 use std::sync::Arc;
 use std::time::Duration;
@@ -195,13 +196,18 @@ impl Chip {
     /// Request a set of lines for exclusive usage.
     pub fn request_lines(
         &self,
-        rconfig: &request::Config,
+        rconfig: Option<&request::Config>,
         lconfig: &line::Config,
     ) -> Result<request::Request> {
+        let req_cfg = match rconfig {
+            Some(cfg) => cfg.config,
+            _ => ptr::null(),
+        } as *mut gpiod::gpiod_request_config;
+
         // SAFETY: The `gpiod_line_request` returned by libgpiod is guaranteed to live as long
         // as the `struct Request`.
         let request = unsafe {
-            gpiod::gpiod_chip_request_lines(self.ichip.chip, rconfig.config, lconfig.config)
+            gpiod::gpiod_chip_request_lines(self.ichip.chip, req_cfg, lconfig.config)
         };
 
         if request.is_null() {

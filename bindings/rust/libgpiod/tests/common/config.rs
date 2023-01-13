@@ -106,7 +106,7 @@ impl TestConfig {
     pub(crate) fn request_lines(&mut self) -> Result<()> {
         let chip = Chip::open(&self.sim.lock().unwrap().dev_path())?;
 
-        self.request = Some(chip.request_lines(&self.rconfig, &self.lconfig)?);
+        self.request = Some(chip.request_lines(Some(&self.rconfig), &self.lconfig)?);
         self.chip = Some(chip);
 
         Ok(())
