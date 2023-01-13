@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     }
 
     let mut lsettings = line::Settings::new()?;
-    let lconfig = line::Config::new()?;
+    let mut lconfig = line::Config::new()?;
     let mut offsets = Vec::<Offset>::new();
 
     for arg in &args[2..] {
@@ -34,7 +34,7 @@ fn main() -> Result<()> {
     let path = format!("/dev/gpiochip{}", args[1]);
     let chip = Chip::open(&path)?;
 
-    let rconfig = request::Config::new()?;
+    let mut rconfig = request::Config::new()?;
     rconfig.set_consumer(&args[0])?;
 
     let request = chip.request_lines(Some(&rconfig), &lconfig)?;

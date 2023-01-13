@@ -27,7 +27,7 @@ mod request_config {
         #[test]
         fn initialized() {
             const CONSUMER: &str = "foobar";
-            let rconfig = request::Config::new().unwrap();
+            let mut rconfig = request::Config::new().unwrap();
             rconfig.set_consumer(CONSUMER).unwrap();
             rconfig.set_event_buffer_size(64);
 

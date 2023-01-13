@@ -33,7 +33,7 @@ mod line_config {
             .unwrap();
 
         // Add settings for multiple lines
-        let lconfig = line::Config::new().unwrap();
+        let mut lconfig = line::Config::new().unwrap();
         lconfig.add_line_settings(&[0, 1, 2], lsettings1).unwrap();
         lconfig.add_line_settings(&[4, 5], lsettings2).unwrap();
 

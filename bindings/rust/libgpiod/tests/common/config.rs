@@ -43,7 +43,7 @@ impl TestConfig {
         }
     }
 
-    pub(crate) fn rconfig_set_consumer(&self, consumer: &str) {
+    pub(crate) fn rconfig_set_consumer(&mut self, consumer: &str) {
         self.rconfig.set_consumer(consumer).unwrap();
     }
 
@@ -100,7 +100,7 @@ impl TestConfig {
     pub(crate) fn lconfig_add_settings(&mut self, offsets: &[Offset]) {
         self.lconfig
             .add_line_settings(offsets, self.lsettings.take().unwrap())
-            .unwrap()
+            .unwrap();
     }
 
     pub(crate) fn request_lines(&mut self) -> Result<()> {
@@ -128,8 +128,8 @@ impl TestConfig {
         self.lsettings.as_mut().unwrap()
     }
 
-    pub(crate) fn request(&self) -> &request::Request {
-        self.request.as_ref().unwrap()
+    pub(crate) fn request(&mut self) -> &mut request::Request {
+        self.request.as_mut().unwrap()
     }
 }
 

@@ -24,7 +24,7 @@ fn main() -> Result<()> {
     }
 
     let mut lsettings = line::Settings::new()?;
-    let lconfig = line::Config::new()?;
+    let mut lconfig = line::Config::new()?;
     let mut offsets = Vec::<Offset>::new();
 
     for arg in &args[2..] {

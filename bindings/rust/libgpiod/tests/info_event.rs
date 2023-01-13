@@ -24,12 +24,12 @@ mod info_event {
 
     fn request_reconfigure_line(chip: Arc<Mutex<Chip>>, tx: Sender<()>, rx: Receiver<()>) {
         thread::spawn(move || {
-            let lconfig1 = line::Config::new().unwrap();
+            let mut lconfig1 = line::Config::new().unwrap();
             let lsettings = line::Settings::new().unwrap();
             lconfig1.add_line_settings(&[7], lsettings).unwrap();
             let rconfig = request::Config::new().unwrap();
 
-            let request = chip
+            let mut request = chip
                 .lock()
                 .unwrap()
                 .request_lines(Some(&rconfig), &lconfig1)
@@ -41,7 +41,7 @@ mod info_event {
             // Wait for parent to signal
             rx.recv().expect("Could not receive from channel");
 
-            let lconfig2 = line::Config::new().unwrap();
+            let mut lconfig2 = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings.set_direction(Direction::Output).unwrap();
             lconfig2.add_line_settings(&[7], lsettings).unwrap();

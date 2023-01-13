@@ -40,7 +40,7 @@ impl Config {
     ///
     /// If the consumer string is too long, it will be truncated to the max
     /// accepted length.
-    pub fn set_consumer(&self, consumer: &str) -> Result<()> {
+    pub fn set_consumer(&mut self, consumer: &str) -> Result<&mut Self> {
         let consumer = CString::new(consumer).map_err(|_| Error::InvalidString)?;
 
         // SAFETY: `gpiod_request_config` is guaranteed to be valid here.
@@ -51,7 +51,7 @@ impl Config {
             )
         }
 
-        Ok(())
+        Ok(self)
     }
 
     /// Get the consumer name configured in the request config.
@@ -73,9 +73,11 @@ impl Config {
     }
 
     /// Set the size of the kernel event buffer for the request.
-    pub fn set_event_buffer_size(&self, size: usize) {
+    pub fn set_event_buffer_size(&mut self, size: usize) -> &mut Self {
         // SAFETY: `gpiod_request_config` is guaranteed to be valid here.
         unsafe { gpiod::gpiod_request_config_set_event_buffer_size(self.config, size as c_ulong) }
+
+        self
     }
 
     /// Get the edge event buffer size setting for the request config.

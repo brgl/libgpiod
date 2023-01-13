@@ -32,12 +32,12 @@ fn request_reconfigure_line(
     rx: Receiver<()>,
 ) {
     thread::spawn(move || {
-        let lconfig = line::Config::new().unwrap();
+        let mut lconfig = line::Config::new().unwrap();
         let lsettings = line::Settings::new().unwrap();
         lconfig.add_line_settings(&[offset], lsettings).unwrap();
         let rconfig = request::Config::new().unwrap();
 
-        let request = chip
+        let mut request = chip
             .lock()
             .unwrap()
             .request_lines(Some(&rconfig), &lconfig)
@@ -49,7 +49,7 @@ fn request_reconfigure_line(
         // Wait for parent to signal
         rx.recv().expect("Could not receive from channel");
 
-        let lconfig = line::Config::new().unwrap();
+        let mut lconfig = line::Config::new().unwrap();
         let mut lsettings = line::Settings::new().unwrap();
         lsettings.set_direction(Direction::Output).unwrap();
         lconfig.add_line_settings(&[offset], lsettings).unwrap();

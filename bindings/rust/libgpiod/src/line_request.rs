@@ -98,7 +98,7 @@ impl Request {
     }
 
     /// Set the value of a single line associated with the request.
-    pub fn set_value(&self, offset: Offset, value: Value) -> Result<()> {
+    pub fn set_value(&mut self, offset: Offset, value: Value) -> Result<&mut Self> {
         // SAFETY: `gpiod_line_request` is guaranteed to be valid here.
         let ret =
             unsafe { gpiod::gpiod_line_request_set_value(self.request, offset, value.value()) };
@@ -109,12 +109,12 @@ impl Request {
                 errno::errno(),
             ))
         } else {
-            Ok(())
+            Ok(self)
         }
     }
 
     /// Set values of a subset of lines associated with the request.
-    pub fn set_values_subset(&self, map: ValueMap) -> Result<()> {
+    pub fn set_values_subset(&mut self, map: ValueMap) -> Result<&mut Self> {
         let mut offsets = Vec::new();
         let mut values = Vec::new();
 
@@ -139,12 +139,12 @@ impl Request {
                 errno::errno(),
             ))
         } else {
-            Ok(())
+            Ok(self)
         }
     }
 
     /// Set values of all lines associated with the request.
-    pub fn set_values(&self, values: &[Value]) -> Result<()> {
+    pub fn set_values(&mut self, values: &[Value]) -> Result<&mut Self> {
         if values.len() != self.num_lines() as usize {
             return Err(Error::InvalidArguments);
         }
@@ -164,12 +164,12 @@ impl Request {
                 errno::errno(),
             ))
         } else {
-            Ok(())
+            Ok(self)
         }
     }
 
     /// Update the configuration of lines associated with the line request.
-    pub fn reconfigure_lines(&self, lconfig: &line::Config) -> Result<()> {
+    pub fn reconfigure_lines(&mut self, lconfig: &line::Config) -> Result<&mut Self> {
         // SAFETY: `gpiod_line_request` is guaranteed to be valid here.
         let ret =
             unsafe { gpiod::gpiod_line_request_reconfigure_lines(self.request, lconfig.config) };
@@ -180,7 +180,7 @@ impl Request {
                 errno::errno(),
             ))
         } else {
-            Ok(())
+            Ok(self)
         }
     }
 

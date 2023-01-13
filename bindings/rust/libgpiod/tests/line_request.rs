@@ -123,7 +123,7 @@ mod line_request {
             // Value read properly after reconfigure
             let mut lsettings = line::Settings::new().unwrap();
             lsettings.set_active_low(true);
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             lconfig.add_line_settings(&offsets, lsettings).unwrap();
             request.reconfigure_lines(&lconfig).unwrap();
             assert_eq!(request.value(7).unwrap(), Value::InActive);
@@ -153,22 +153,21 @@ mod line_request {
             config.lconfig_val(Some(Direction::Output), Some(Value::InActive));
             config.lconfig_add_settings(&offsets);
             config.request_lines().unwrap();
-            let request = config.request();
 
             // Set single value
-            request.set_value(1, Value::Active).unwrap();
+            config.request().set_value(1, Value::Active).unwrap();
             assert_eq!(config.sim_val(0).unwrap(), SimValue::InActive);
             assert_eq!(config.sim_val(1).unwrap(), SimValue::Active);
             assert_eq!(config.sim_val(3).unwrap(), SimValue::InActive);
             assert_eq!(config.sim_val(4).unwrap(), SimValue::InActive);
-            request.set_value(1, Value::InActive).unwrap();
+            config.request().set_value(1, Value::InActive).unwrap();
             assert_eq!(config.sim_val(1).unwrap(), SimValue::InActive);
 
             // Set values of subset
             let mut map = ValueMap::new();
             map.insert(4, Value::Active);
             map.insert(3, Value::Active);
-            request.set_values_subset(map).unwrap();
+            config.request().set_values_subset(map).unwrap();
             assert_eq!(config.sim_val(0).unwrap(), SimValue::InActive);
             assert_eq!(config.sim_val(1).unwrap(), SimValue::InActive);
             assert_eq!(config.sim_val(3).unwrap(), SimValue::Active);
@@ -177,12 +176,12 @@ mod line_request {
             let mut map = ValueMap::new();
             map.insert(4, Value::InActive);
             map.insert(3, Value::InActive);
-            request.set_values_subset(map).unwrap();
+            config.request().set_values_subset(map).unwrap();
             assert_eq!(config.sim_val(3).unwrap(), SimValue::InActive);
             assert_eq!(config.sim_val(4).unwrap(), SimValue::InActive);
 
             // Set all values
-            request
+            config.request()
                 .set_values(&[
                     Value::Active,
                     Value::InActive,
@@ -194,7 +193,7 @@ mod line_request {
             assert_eq!(config.sim_val(1).unwrap(), SimValue::InActive);
             assert_eq!(config.sim_val(3).unwrap(), SimValue::Active);
             assert_eq!(config.sim_val(4).unwrap(), SimValue::InActive);
-            request
+            config.request()
                 .set_values(&[
                     Value::InActive,
                     Value::InActive,
@@ -251,7 +250,7 @@ mod line_request {
             // Reconfigure
             let mut lsettings = line::Settings::new().unwrap();
             lsettings.set_direction(Direction::Input).unwrap();
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
 
             // The uAPI config has only 10 attribute slots, this should pass.
             for offset in offsets {
@@ -285,10 +284,8 @@ mod line_request {
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.bias().unwrap(), None);
 
-            let request = config.request();
-
             // Reconfigure
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings
                 .set_prop(&[
@@ -297,11 +294,11 @@ mod line_request {
                 ])
                 .unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.bias().unwrap(), Some(Bias::PullUp));
 
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings
                 .set_prop(&[
@@ -310,11 +307,11 @@ mod line_request {
                 ])
                 .unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.bias().unwrap(), Some(Bias::PullDown));
 
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings
                 .set_prop(&[
@@ -323,7 +320,7 @@ mod line_request {
                 ])
                 .unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.bias().unwrap(), Some(Bias::Disabled));
         }
@@ -336,10 +333,8 @@ mod line_request {
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.drive().unwrap(), Drive::PushPull);
 
-            let request = config.request();
-
             // Reconfigure
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings
                 .set_prop(&[
@@ -348,11 +343,11 @@ mod line_request {
                 ])
                 .unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.drive().unwrap(), Drive::PushPull);
 
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings
                 .set_prop(&[
@@ -361,11 +356,11 @@ mod line_request {
                 ])
                 .unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.drive().unwrap(), Drive::OpenDrain);
 
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings
                 .set_prop(&[
@@ -374,7 +369,7 @@ mod line_request {
                 ])
                 .unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.drive().unwrap(), Drive::OpenSource);
         }
@@ -387,10 +382,8 @@ mod line_request {
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.edge_detection().unwrap(), None);
 
-            let request = config.request();
-
             // Reconfigure
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings
                 .set_prop(&[
@@ -399,11 +392,11 @@ mod line_request {
                 ])
                 .unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.edge_detection().unwrap(), Some(Edge::Both));
 
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings
                 .set_prop(&[
@@ -412,11 +405,11 @@ mod line_request {
                 ])
                 .unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.edge_detection().unwrap(), Some(Edge::Rising));
 
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings
                 .set_prop(&[
@@ -425,7 +418,7 @@ mod line_request {
                 ])
                 .unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.edge_detection().unwrap(), Some(Edge::Falling));
         }
@@ -438,22 +431,20 @@ mod line_request {
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.event_clock().unwrap(), EventClock::Monotonic);
 
-            let request = config.request();
-
             // Reconfigure
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings.set_event_clock(EventClock::Monotonic).unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.event_clock().unwrap(), EventClock::Monotonic);
 
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings.set_event_clock(EventClock::Realtime).unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
-            request.reconfigure_lines(&lconfig).unwrap();
+            config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
             assert_eq!(info.event_clock().unwrap(), EventClock::Realtime);
         }
@@ -470,7 +461,7 @@ mod line_request {
             let request = config.request();
 
             // Reconfigure
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings.set_event_clock(EventClock::HTE).unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
@@ -491,7 +482,7 @@ mod line_request {
             let request = config.request();
 
             // Reconfigure
-            let lconfig = line::Config::new().unwrap();
+            let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings
                 .set_prop(&[

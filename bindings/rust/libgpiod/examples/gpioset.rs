@@ -24,7 +24,7 @@ fn main() -> Result<()> {
         return Err(Error::InvalidArguments);
     }
 
-    let lconfig = line::Config::new()?;
+    let mut lconfig = line::Config::new()?;
 
     for arg in &args[2..] {
         let pair: Vec<&str> = arg.split('=').collect();
@@ -51,7 +51,7 @@ fn main() -> Result<()> {
     let path = format!("/dev/gpiochip{}", args[1]);
     let chip = Chip::open(&path)?;
 
-    let rconfig = request::Config::new()?;
+    let mut rconfig = request::Config::new()?;
     rconfig.set_consumer(&args[0])?;
 
     chip.request_lines(Some(&rconfig), &lconfig)?;
