@@ -120,7 +120,7 @@ struct info_event::impl
 struct line_settings::impl
 {
 	impl();
-	impl(const impl& other) = delete;
+	impl(const impl& other);
 	impl(impl&& other) = delete;
 	impl& operator=(const impl& other) = delete;
 	impl& operator=(impl&& other) = delete;

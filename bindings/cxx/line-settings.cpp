@@ -86,6 +86,15 @@ line_settings_ptr make_line_settings()
 	return settings;
 }
 
+line_settings_ptr copy_line_settings(const line_settings_ptr& ptr)
+{
+	line_settings_ptr settings(::gpiod_line_settings_copy(ptr.get()));
+	if (!settings)
+		throw_from_errno("Unable to copy the line settings object");
+
+	return settings;
+}
+
 template<class key_type, class value_type, class exception_type>
 value_type map_setting(const key_type& key, const ::std::map<key_type, value_type>& mapping)
 {
@@ -136,8 +145,20 @@ line_settings::impl::impl()
 
 }
 
+line_settings::impl::impl(const impl& other)
+	: settings(copy_line_settings(other.settings))
+{
+
+}
+
 GPIOD_CXX_API line_settings::line_settings()
 	: _m_priv(new impl)
+{
+
+}
+
+GPIOD_CXX_API line_settings::line_settings(const line_settings& other)
+	: _m_priv(new impl(*other._m_priv))
 {
 
 }
@@ -151,6 +172,13 @@ GPIOD_CXX_API line_settings::line_settings(line_settings&& other) noexcept
 GPIOD_CXX_API line_settings::~line_settings()
 {
 
+}
+
+GPIOD_CXX_API line_settings& line_settings::operator=(const line_settings& other)
+{
+	this->_m_priv.reset(new impl(*other._m_priv));
+
+	return *this;
 }
 
 GPIOD_CXX_API line_settings& line_settings::operator=(line_settings&& other)

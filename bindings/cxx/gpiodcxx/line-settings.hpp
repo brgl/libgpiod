@@ -38,7 +38,11 @@ public:
 	 */
 	line_settings();
 
-	line_settings(const line_settings& other) = delete;
+	/**
+	 * @brief Copy constructor.
+	 * @param other Object to copy.
+	 */
+	line_settings(const line_settings& other);
 
 	/**
 	 * @brief Move constructor.
@@ -48,7 +52,12 @@ public:
 
 	~line_settings();
 
-	line_settings& operator=(const line_settings& other) = delete;
+	/**
+	 * @brief Copy assignment operator.
+	 * @param other Object to copy.
+	 * @return Reference to self.
+	 */
+	line_settings& operator=(const line_settings& other);
 
 	/**
 	 * @brief Move assignment operator.

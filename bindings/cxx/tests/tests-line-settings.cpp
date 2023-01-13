@@ -124,6 +124,49 @@ TEST_CASE("line_settings mutators work", "[line-settings]")
 	}
 }
 
+TEST_CASE("line_settings can be moved and copied", "[line-settings]")
+{
+	::gpiod::line_settings settings;
+
+	settings
+		.set_direction(direction::INPUT)
+		.set_edge_detection(edge::BOTH);
+
+	SECTION("copy constructor works")
+	{
+		auto copy(settings);
+		settings.set_direction(direction::OUTPUT);
+		settings.set_edge_detection(edge::NONE);
+		REQUIRE(copy.direction() == direction::INPUT);
+		REQUIRE(copy.edge_detection() == edge::BOTH);
+	}
+
+	SECTION("assignment operator works")
+	{
+		::gpiod::line_settings copy;
+		copy = settings;
+		settings.set_direction(direction::OUTPUT);
+		settings.set_edge_detection(edge::NONE);
+		REQUIRE(copy.direction() == direction::INPUT);
+		REQUIRE(copy.edge_detection() == edge::BOTH);
+	}
+
+	SECTION("move constructor works")
+	{
+		auto copy(::std::move(settings));
+		REQUIRE(copy.direction() == direction::INPUT);
+		REQUIRE(copy.edge_detection() == edge::BOTH);
+	}
+
+	SECTION("move assignment operator works")
+	{
+		::gpiod::line_settings copy;
+		copy = ::std::move(settings);
+		REQUIRE(copy.direction() == direction::INPUT);
+		REQUIRE(copy.edge_detection() == edge::BOTH);
+	}
+}
+
 TEST_CASE("line_settings stream insertion operator works", "[line-settings]")
 {
 	::gpiod::line_settings settings;
