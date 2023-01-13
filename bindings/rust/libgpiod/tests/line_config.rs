@@ -5,9 +5,11 @@
 mod common;
 
 mod line_config {
+    use libgpiod::chip::Chip;
     use libgpiod::line::{
         self, Bias, Direction, Drive, Edge, EventClock, SettingKind, SettingVal, Value,
     };
+    use gpiosim_sys::Sim;
 
     #[test]
     fn settings() {
@@ -74,6 +76,66 @@ mod line_config {
         assert_eq!(
             lsettings.prop(SettingKind::OutputValue).unwrap(),
             SettingVal::OutputValue(Value::Active)
+        );
+    }
+
+    #[test]
+    fn set_global_output_values() {
+        let sim = Sim::new(Some(4), None, true).unwrap();
+        let mut settings = line::Settings::new().unwrap();
+        settings.set_direction(Direction::Output).unwrap();
+
+        let mut config = line::Config::new().unwrap();
+        config
+            .add_line_settings(&[0, 1, 2, 3], settings)
+            .unwrap()
+            .set_output_values(&[
+                Value::Active,
+                Value::InActive,
+                Value::Active,
+                Value::InActive
+            ])
+            .unwrap();
+
+        let chip = Chip::open(&sim.dev_path()).unwrap();
+        let _request = chip.request_lines(None, &config);
+
+        assert_eq!(sim.val(0).unwrap(), gpiosim_sys::Value::Active);
+        assert_eq!(sim.val(1).unwrap(), gpiosim_sys::Value::InActive);
+        assert_eq!(sim.val(2).unwrap(), gpiosim_sys::Value::Active);
+        assert_eq!(sim.val(3).unwrap(), gpiosim_sys::Value::InActive);
+    }
+
+    #[test]
+    fn read_back_global_output_values() {
+        let mut settings = line::Settings::new().unwrap();
+        settings
+            .set_direction(Direction::Output)
+            .unwrap()
+            .set_output_value(Value::Active)
+            .unwrap();
+
+        let mut config = line::Config::new().unwrap();
+        config
+            .add_line_settings(&[0, 1, 2, 3], settings)
+            .unwrap()
+            .set_output_values(&[
+                Value::Active,
+                Value::InActive,
+                Value::Active,
+                Value::InActive,
+            ])
+            .unwrap();
+
+        assert_eq!(
+            config
+                .line_settings()
+                .unwrap()
+                .get(1)
+                .unwrap()
+                .output_value()
+                .unwrap(),
+            Value::InActive
         );
     }
 }

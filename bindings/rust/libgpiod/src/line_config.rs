@@ -6,7 +6,7 @@ use std::os::raw::c_ulong;
 
 use super::{
     gpiod,
-    line::{Offset, Settings, SettingsMap},
+    line::{Offset, Settings, SettingsMap, Value},
     Error, OperationType, Result,
 };
 
@@ -69,6 +69,28 @@ impl Config {
         if ret == -1 {
             Err(Error::OperationFailed(
                 OperationType::LineConfigAddSettings,
+                errno::errno(),
+            ))
+        } else {
+            Ok(self)
+        }
+    }
+
+    /// Set output values for a number of lines.
+    pub fn set_output_values(&mut self, values: &[Value]) -> Result<&mut Self> {
+        let mut mapped_values = Vec::new();
+        for value in values {
+            mapped_values.push(value.value());
+        }
+
+        let ret = unsafe {
+            gpiod::gpiod_line_config_set_output_values(self.config, mapped_values.as_ptr(),
+                                                       values.len() as u64)
+        };
+
+        if ret == -1 {
+            Err(Error::OperationFailed(
+                OperationType::LineConfigSetOutputValues,
                 errno::errno(),
             ))
         } else {

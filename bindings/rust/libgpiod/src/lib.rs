@@ -71,6 +71,7 @@ pub enum OperationType {
     InfoEventGetLineInfo,
     LineConfigNew,
     LineConfigAddSettings,
+    LineConfigSetOutputValues,
     LineConfigGetOffsets,
     LineConfigGetSettings,
     LineRequestReconfigLines,
