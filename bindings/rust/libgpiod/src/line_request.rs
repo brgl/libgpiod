@@ -106,7 +106,7 @@ impl Request {
         }
     }
 
-    /// Get values of a subset of lines associated with the request.
+    /// Set values of a subset of lines associated with the request.
     pub fn set_values_subset(&self, map: ValueMap) -> Result<()> {
         let mut offsets = Vec::new();
         let mut values = Vec::new();
@@ -136,7 +136,7 @@ impl Request {
         }
     }
 
-    /// Get values of all lines associated with the request.
+    /// Set values of all lines associated with the request.
     pub fn set_values(&self, values: &[Value]) -> Result<()> {
         if values.len() != self.num_lines() as usize {
             return Err(Error::InvalidArguments);
