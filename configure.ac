@@ -215,7 +215,7 @@ AM_CONDITIONAL([WITH_BINDINGS_PYTHON], [test "x$with_bindings_python" = xtrue])
 
 if test "x$with_bindings_python" = xtrue
 then
-	AM_PATH_PYTHON([3.0], [],
+	AM_PATH_PYTHON([3.9], [],
 		[AC_MSG_ERROR([python3 not found - needed for python bindings])])
 	AC_CHECK_PROG([has_python_config], [python3-config], [true], [false])
 
