@@ -1,18 +1,21 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-from os import environ
+from os import environ, path
 from setuptools import setup, Extension, find_packages
+
+def src(filename):
+    return path.join(path.dirname(__file__), filename)
 
 gpiod_ext = Extension(
     "gpiod._ext",
     sources=[
-        "gpiod/ext/chip.c",
-        "gpiod/ext/common.c",
-        "gpiod/ext/line-config.c",
-        "gpiod/ext/line-settings.c",
-        "gpiod/ext/module.c",
-        "gpiod/ext/request.c",
+        src("gpiod/ext/chip.c"),
+        src("gpiod/ext/common.c"),
+        src("gpiod/ext/line-config.c"),
+        src("gpiod/ext/line-settings.c"),
+        src("gpiod/ext/module.c"),
+        src("gpiod/ext/request.c"),
     ],
     define_macros=[("_GNU_SOURCE", "1")],
     libraries=["gpiod"],
@@ -21,7 +24,7 @@ gpiod_ext = Extension(
 
 gpiosim_ext = Extension(
     "tests.gpiosim._ext",
-    sources=["tests/gpiosim/ext.c"],
+    sources=[src("tests/gpiosim/ext.c")],
     define_macros=[("_GNU_SOURCE", "1")],
     libraries=["gpiosim"],
     extra_compile_args=["-Wall", "-Wextra"],
@@ -29,7 +32,7 @@ gpiosim_ext = Extension(
 
 procname_ext = Extension(
     "tests.procname._ext",
-    sources=["tests/procname/ext.c"],
+    sources=[src("tests/procname/ext.c")],
     define_macros=[("_GNU_SOURCE", "1")],
     extra_compile_args=["-Wall", "-Wextra"],
 )
@@ -39,7 +42,7 @@ if "GPIOD_WITH_TESTS" in environ and environ["GPIOD_WITH_TESTS"] == "1":
     extensions.append(gpiosim_ext)
     extensions.append(procname_ext)
 
-with open("gpiod/version.py", "r") as fd:
+with open(src("gpiod/version.py"), "r") as fd:
     exec(fd.read())
 
 setup(
