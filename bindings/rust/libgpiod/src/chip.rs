@@ -206,9 +206,8 @@ impl Chip {
 
         // SAFETY: The `gpiod_line_request` returned by libgpiod is guaranteed to live as long
         // as the `struct Request`.
-        let request = unsafe {
-            gpiod::gpiod_chip_request_lines(self.ichip.chip, req_cfg, lconfig.config)
-        };
+        let request =
+            unsafe { gpiod::gpiod_chip_request_lines(self.ichip.chip, req_cfg, lconfig.config) };
 
         if request.is_null() {
             return Err(Error::OperationFailed(

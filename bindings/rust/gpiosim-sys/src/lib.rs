@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2022 Linaro Ltd.
 // SPDX-FileCopyrightTest: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
-use libgpiod::{Error, Result, OperationType};
+use libgpiod::{Error, OperationType, Result};
 
 #[allow(non_camel_case_types, non_upper_case_globals)]
 #[cfg_attr(test, allow(deref_nullptr, non_snake_case))]
@@ -16,14 +16,14 @@ mod sim;
 pub use sim::*;
 
 use crate::{
-    gpiosim_value_GPIOSIM_VALUE_INACTIVE as GPIOSIM_VALUE_INACTIVE,
-    gpiosim_value_GPIOSIM_VALUE_ACTIVE as GPIOSIM_VALUE_ACTIVE,
-    gpiosim_value_GPIOSIM_VALUE_ERROR as GPIOSIM_VALUE_ERROR,
     gpiosim_direction_GPIOSIM_DIRECTION_INPUT as GPIOSIM_DIRECTION_INPUT,
     gpiosim_direction_GPIOSIM_DIRECTION_OUTPUT_HIGH as GPIOSIM_DIRECTION_OUTPUT_HIGH,
     gpiosim_direction_GPIOSIM_DIRECTION_OUTPUT_LOW as GPIOSIM_DIRECTION_OUTPUT_LOW,
-    gpiosim_pull_GPIOSIM_PULL_UP as GPIOSIM_PULL_UP,
     gpiosim_pull_GPIOSIM_PULL_DOWN as GPIOSIM_PULL_DOWN,
+    gpiosim_pull_GPIOSIM_PULL_UP as GPIOSIM_PULL_UP,
+    gpiosim_value_GPIOSIM_VALUE_ACTIVE as GPIOSIM_VALUE_ACTIVE,
+    gpiosim_value_GPIOSIM_VALUE_ERROR as GPIOSIM_VALUE_ERROR,
+    gpiosim_value_GPIOSIM_VALUE_INACTIVE as GPIOSIM_VALUE_INACTIVE,
 };
 
 /// Value settings.
@@ -42,7 +42,8 @@ impl Value {
             GPIOSIM_VALUE_ACTIVE => Value::Active,
             GPIOSIM_VALUE_ERROR => {
                 return Err(Error::OperationFailed(
-                    OperationType::SimBankGetVal, errno::errno()
+                    OperationType::SimBankGetVal,
+                    errno::errno(),
                 ))
             }
             _ => return Err(Error::InvalidEnumValue("Value", val as i32)),
