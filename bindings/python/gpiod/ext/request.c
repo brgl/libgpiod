@@ -41,7 +41,7 @@ static PyObject *
 request_num_lines(request_object *self, void *Py_UNUSED(ignored))
 {
 	return PyLong_FromUnsignedLong(
-			gpiod_line_request_get_num_lines(self->request));
+			gpiod_line_request_get_num_requested_lines(self->request));
 }
 
 static PyObject *request_offsets(request_object *self, void *Py_UNUSED(ignored))
@@ -51,13 +51,13 @@ static PyObject *request_offsets(request_object *self, void *Py_UNUSED(ignored))
 	size_t num_lines, i;
 	int ret;
 
-	num_lines = gpiod_line_request_get_num_lines(self->request);
+	num_lines = gpiod_line_request_get_num_requested_lines(self->request);
 
 	offsets = PyMem_Calloc(num_lines, sizeof(unsigned int));
 	if (!offsets)
 		return PyErr_NoMemory();
 
-	gpiod_line_request_get_offsets(self->request, offsets);
+	gpiod_line_request_get_requested_offsets(self->request, offsets, num_lines);
 
 	lines = PyList_New(num_lines);
 	if (!lines) {
@@ -365,7 +365,7 @@ PyObject *Py_gpiod_MakeRequestObject(struct gpiod_line_request *request,
 	unsigned int *offsets;
 	size_t num_lines;
 
-	num_lines = gpiod_line_request_get_num_lines(request);
+	num_lines = gpiod_line_request_get_num_requested_lines(request);
 
 	req_obj = PyObject_New(request_object, &request_type);
 	if (!req_obj)

@@ -786,18 +786,28 @@ gpiod_line_config_get_line_settings(struct gpiod_line_config *config,
 				    unsigned int offset);
 
 /**
+ * @brief Get the number of configured line offsets.
+ * @param config Line config object.
+ * @return Number of offsets for which line settings have been added.
+ */
+size_t
+gpiod_line_config_get_num_configured_offsets(struct gpiod_line_config *config);
+
+/**
  * @brief Get configured offsets.
  * @param config Line config object.
- * @param num_offsets Pointer to a variable in which the number of line offsets
- *                    will be stored.
- * @param offsets Pointer to a pointer which will be set to point to an array
- *                containing the configured offsets. The array will be allocated
- *                using malloc() and must be freed using free().
- * @return 0 on success, -1 on failure.
+ * @param offsets Array to store offsets.
+ * @param max_offsets Number of offsets that can be stored in the offsets array.
+ * @return Number of offsets stored in the offsets array.
+ *
+ * If max_offsets is lower than the number of lines actually requested (this
+ * value can be retrieved using ::gpiod_line_config_get_num_configured_offsets),
+ * then only up to max_lines offsets will be stored in offsets.
  */
-int gpiod_line_config_get_offsets(struct gpiod_line_config *config,
-				  size_t *num_offsets,
-				  unsigned int **offsets);
+size_t
+gpiod_line_config_get_configured_offsets(struct gpiod_line_config *config,
+					 unsigned int *offsets,
+					 size_t max_offsets);
 
 /**
  * @}
@@ -885,16 +895,24 @@ void gpiod_line_request_release(struct gpiod_line_request *request);
  * @param request Line request object.
  * @return Number of requested lines.
  */
-size_t gpiod_line_request_get_num_lines(struct gpiod_line_request *request);
+size_t
+gpiod_line_request_get_num_requested_lines(struct gpiod_line_request *request);
 
 /**
  * @brief Get the offsets of the lines in the request.
  * @param request Line request object.
- * @param offsets Array to store offsets. Must be sized to hold the number of
- *		  lines returned by ::gpiod_line_request_get_num_lines.
+ * @param offsets Array to store offsets.
+ * @param max_offsets Number of offsets that can be stored in the offsets array.
+ * @return Number of offsets stored in the offsets array.
+ *
+ * If max_offsets is lower than the number of lines actually requested (this
+ * value can be retrieved using ::gpiod_line_request_get_num_requested_lines),
+ * then only up to max_lines offsets will be stored in offsets.
  */
-void gpiod_line_request_get_offsets(struct gpiod_line_request *request,
-				    unsigned int *offsets);
+size_t
+gpiod_line_request_get_requested_offsets(struct gpiod_line_request *request,
+					 unsigned int *offsets,
+					 size_t max_offsets);
 
 /**
  * @brief Get the value of a single requested line.
@@ -926,11 +944,11 @@ int gpiod_line_request_get_values_subset(struct gpiod_line_request *request,
  * @brief Get the values of all requested lines.
  * @param request GPIO line request.
  * @param values Array in which the values will be stored. Must be sized to
- *		 hold the number of lines returned by
- *		 ::gpiod_line_request_get_num_lines.
+ *		 hold the number of lines filled by
+ *		 ::gpiod_line_request_get_num_requested_lines.
  *		 Each value is associated with the line identified by the
- *		 corresponding entry in the offset array returned by
- *		 ::gpiod_line_request_get_offsets.
+ *		 corresponding entry in the offset array filled by
+ *		 ::gpiod_line_request_get_requested_offsets.
  * @return 0 on success, -1 on failure.
  */
 int gpiod_line_request_get_values(struct gpiod_line_request *request,
@@ -967,11 +985,11 @@ int gpiod_line_request_set_values_subset(struct gpiod_line_request *request,
  * @brief Set the values of all lines associated with a request.
  * @param request GPIO line request.
  * @param values Array containing the values to set. Must be sized to
- *		 contain the number of lines returned by
- *		 ::gpiod_line_request_get_num_lines.
+ *		 contain the number of lines filled by
+ *		 ::gpiod_line_request_get_num_requested_lines.
  *		 Each value is associated with the line identified by the
- *		 corresponding entry in the offset array returned by
- *		 ::gpiod_line_request_get_offsets.
+ *		 corresponding entry in the offset array filled by
+ *		 ::gpiod_line_request_get_requested_offsets.
  */
 int gpiod_line_request_set_values(struct gpiod_line_request *request,
 				  const enum gpiod_line_value *values);

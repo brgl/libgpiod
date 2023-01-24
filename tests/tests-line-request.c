@@ -45,9 +45,10 @@ GPIOD_TEST_CASE(request_fails_with_duplicate_offsets)
 
 	request = gpiod_chip_request_lines(chip, NULL, line_cfg);
 	g_assert_nonnull(request);
-	num_requested_offsets = gpiod_line_request_get_num_lines(request);
+	num_requested_offsets =
+			gpiod_line_request_get_num_requested_lines(request);
 	g_assert_cmpuint(num_requested_offsets, ==, 3);
-	gpiod_line_request_get_offsets(request, requested_offsets);
+	gpiod_line_request_get_requested_offsets(request, requested_offsets, 4);
 	g_assert_cmpuint(requested_offsets[0], ==, 0);
 	g_assert_cmpuint(requested_offsets[1], ==, 2);
 	g_assert_cmpuint(requested_offsets[2], ==, 3);
@@ -401,9 +402,10 @@ GPIOD_TEST_CASE(num_lines_and_offsets)
 
 	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
 
-	g_assert_cmpuint(gpiod_line_request_get_num_lines(request), ==, 8);
+	g_assert_cmpuint(gpiod_line_request_get_num_requested_lines(request),
+			 ==, 8);
 	gpiod_test_return_if_failed();
-	gpiod_line_request_get_offsets(request, read_back);
+	gpiod_line_request_get_requested_offsets(request, read_back, 8);
 	for (i = 0; i < 8; i++)
 		g_assert_cmpuint(read_back[i], ==, offsets[i]);
 }
@@ -577,4 +579,43 @@ GPIOD_TEST_CASE(request_with_bias_set_to_pull_up)
 
 	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 3), ==,
 			GPIOD_LINE_VALUE_ACTIVE);
+}
+
+GPIOD_TEST_CASE(get_requested_offsets_less_and_more)
+{
+	static const guint offsets[] = { 0, 1, 2, 3 };
+
+	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 8, NULL);
+	g_autoptr(struct_gpiod_chip) chip = NULL;
+	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
+	g_autoptr(struct_gpiod_line_request) request = NULL;
+	size_t num_retrieved;
+	guint retrieved[6];
+
+	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
+	line_cfg = gpiod_test_create_line_config_or_fail();
+
+	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 4,
+							 NULL);
+
+	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+
+	num_retrieved = gpiod_line_request_get_requested_offsets(request,
+								 retrieved, 3);
+
+	g_assert_cmpuint(num_retrieved, ==, 3);
+	g_assert_cmpuint(retrieved[0], ==, 0);
+	g_assert_cmpuint(retrieved[1], ==, 1);
+	g_assert_cmpuint(retrieved[2], ==, 2);
+
+	memset(retrieved, 0, sizeof(retrieved));
+
+	num_retrieved = gpiod_line_request_get_requested_offsets(request,
+								 retrieved, 6);
+
+	g_assert_cmpuint(num_retrieved, ==, 4);
+	g_assert_cmpuint(retrieved[0], ==, 0);
+	g_assert_cmpuint(retrieved[1], ==, 1);
+	g_assert_cmpuint(retrieved[2], ==, 2);
+	g_assert_cmpuint(retrieved[3], ==, 3);
 }

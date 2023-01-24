@@ -6,6 +6,7 @@
 #include <gpiod.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "internal.h"
 
@@ -152,36 +153,32 @@ gpiod_line_config_get_line_settings(struct gpiod_line_config *config,
 	return NULL;
 }
 
-GPIOD_API int gpiod_line_config_get_offsets(struct gpiod_line_config *config,
-					    size_t *num_offsets,
-					    unsigned int **offsets)
+GPIOD_API size_t
+gpiod_line_config_get_num_configured_offsets(struct gpiod_line_config *config)
 {
-	unsigned int *offs;
-	size_t i;
+	assert(config);
+
+	return config->num_configs;
+}
+
+GPIOD_API size_t
+gpiod_line_config_get_configured_offsets(struct gpiod_line_config *config,
+					 unsigned int *offsets,
+					 size_t max_offsets)
+{
+	size_t num_offsets, i;
 
 	assert(config);
 
-	if (!num_offsets || !offsets) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	*num_offsets = config->num_configs;
-	*offsets = NULL;
-
-	if (!config->num_configs)
+	if (!offsets || !max_offsets || !config->num_configs)
 		return 0;
 
-	offs = calloc(config->num_configs, sizeof(unsigned int));
-	if (!offs)
-		return -1;
+	num_offsets = MIN(config->num_configs, max_offsets);
 
-	for (i = 0; i < config->num_configs; i++)
-		offs[i] = config->line_configs[i].offset;
+	for (i = 0; i < num_offsets; i++)
+		offsets[i] = config->line_configs[i].offset;
 
-	*offsets = offs;
-
-	return 0;
+	return num_offsets;
 }
 
 static void set_offsets(struct gpiod_line_config *config,

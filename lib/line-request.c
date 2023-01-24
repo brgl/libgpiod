@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/param.h>
 #include <unistd.h>
 
 #include "internal.h"
@@ -45,24 +46,30 @@ GPIOD_API void gpiod_line_request_release(struct gpiod_line_request *request)
 }
 
 GPIOD_API size_t
-gpiod_line_request_get_num_lines(struct gpiod_line_request *request)
+gpiod_line_request_get_num_requested_lines(struct gpiod_line_request *request)
 {
 	assert(request);
 
 	return request->num_lines;
 }
 
-GPIOD_API void
-gpiod_line_request_get_offsets(struct gpiod_line_request *request,
-			       unsigned int *offsets)
+GPIOD_API size_t
+gpiod_line_request_get_requested_offsets(struct gpiod_line_request *request,
+					 unsigned int *offsets,
+					 size_t max_offsets)
 {
+	size_t num_offsets;
+
 	assert(request);
 
-	if (!offsets)
-		return;
+	if (!offsets || !max_offsets)
+		return 0;
 
-	memcpy(offsets, request->offsets,
-	       sizeof(*offsets) * request->num_lines);
+	num_offsets = MIN(request->num_lines, max_offsets);
+
+	memcpy(offsets, request->offsets, sizeof(*offsets) * num_offsets);
+
+	return num_offsets;
 }
 
 GPIOD_API enum gpiod_line_value

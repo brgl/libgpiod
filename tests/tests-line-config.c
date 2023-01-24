@@ -185,10 +185,8 @@ GPIOD_TEST_CASE(get_offsets)
 {
 	g_autoptr(struct_gpiod_line_settings) settings = NULL;
 	g_autoptr(struct_gpiod_line_config) config = NULL;
-	g_autofree guint *config_offs = NULL;
-	guint offsets[8];
+	guint offsets[8], offsets_in[4];
 	size_t num_offsets;
-	gint ret;
 
 	settings = gpiod_test_create_line_settings_or_fail();
 	config = gpiod_test_create_line_config_or_fail();
@@ -206,39 +204,79 @@ GPIOD_TEST_CASE(get_offsets)
 	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 2,
 							 settings);
 
-	ret = gpiod_line_config_get_offsets(config, &num_offsets, &config_offs);
-	g_assert_cmpint(ret, ==, 0);
+	num_offsets = gpiod_line_config_get_configured_offsets(config,
+							       offsets_in, 4);
 	g_assert_cmpuint(num_offsets, ==, 4);
-	g_assert_cmpuint(config_offs[0], ==, 2);
-	g_assert_cmpuint(config_offs[1], ==, 4);
-	g_assert_cmpuint(config_offs[2], ==, 6);
-	g_assert_cmpuint(config_offs[3], ==, 7);
+	g_assert_cmpuint(offsets_in[0], ==, 2);
+	g_assert_cmpuint(offsets_in[1], ==, 4);
+	g_assert_cmpuint(offsets_in[2], ==, 6);
+	g_assert_cmpuint(offsets_in[3], ==, 7);
 }
 
 GPIOD_TEST_CASE(get_0_offsets)
 {
 	g_autoptr(struct_gpiod_line_config) config = NULL;
-	g_autofree guint *offsets = NULL;
 	size_t num_offsets;
-	gint ret;
+	guint offsets[3];
 
 	config = gpiod_test_create_line_config_or_fail();
 
-	ret = gpiod_line_config_get_offsets(config, &num_offsets, &offsets);
-	g_assert_cmpint(ret, ==, 0);
+	num_offsets = gpiod_line_config_get_configured_offsets(config,
+							       offsets, 0);
 	g_assert_cmpuint(num_offsets, ==, 0);
-	g_assert_null(offsets);
 }
 
 GPIOD_TEST_CASE(get_null_offsets)
 {
 	g_autoptr(struct_gpiod_line_config) config = NULL;
-	g_autofree guint *offsets = NULL;
-	gint ret;
+	size_t num_offsets;
 
 	config = gpiod_test_create_line_config_or_fail();
 
-	ret = gpiod_line_config_get_offsets(config, NULL, &offsets);
-	g_assert_cmpint(ret, ==, -1);
-	gpiod_test_expect_errno(EINVAL);
+	num_offsets = gpiod_line_config_get_configured_offsets(config,
+							       NULL, 10);
+	g_assert_cmpuint(num_offsets, ==, 0);
+}
+
+GPIOD_TEST_CASE(get_less_offsets_than_configured)
+{
+	static const guint offsets[] = { 0, 1, 2, 3 };
+
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+	size_t num_retrieved;
+	guint retrieved[3];
+
+	config = gpiod_test_create_line_config_or_fail();
+
+	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 4,
+							 NULL);
+
+	num_retrieved = gpiod_line_config_get_configured_offsets(config,
+								 retrieved, 3);
+	g_assert_cmpuint(num_retrieved, ==, 3);
+	g_assert_cmpuint(retrieved[0], ==, 0);
+	g_assert_cmpuint(retrieved[1], ==, 1);
+	g_assert_cmpuint(retrieved[2], ==, 2);
+}
+
+GPIOD_TEST_CASE(get_more_offsets_than_configured)
+{
+	static const guint offsets[] = { 0, 1, 2, 3 };
+
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+	size_t num_retrieved;
+	guint retrieved[8];
+
+	config = gpiod_test_create_line_config_or_fail();
+
+	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 4,
+							 NULL);
+
+	num_retrieved = gpiod_line_config_get_configured_offsets(config,
+								 retrieved, 8);
+	g_assert_cmpuint(num_retrieved, ==, 4);
+	g_assert_cmpuint(retrieved[0], ==, 0);
+	g_assert_cmpuint(retrieved[1], ==, 1);
+	g_assert_cmpuint(retrieved[2], ==, 2);
+	g_assert_cmpuint(retrieved[3], ==, 3);
 }

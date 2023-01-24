@@ -18,7 +18,7 @@ void line_request::impl::throw_if_released() const
 void line_request::impl::set_request_ptr(line_request_ptr& ptr)
 {
 	this->request = ::std::move(ptr);
-	this->offset_buf.resize(::gpiod_line_request_get_num_lines(this->request.get()));
+	this->offset_buf.resize(::gpiod_line_request_get_num_requested_lines(this->request.get()));
 }
 
 void line_request::impl::fill_offset_buf(const line::offsets& offsets)
@@ -67,7 +67,7 @@ GPIOD_CXX_API ::std::size_t line_request::num_lines() const
 {
 	this->_m_priv->throw_if_released();
 
-	return ::gpiod_line_request_get_num_lines(this->_m_priv->request.get());
+	return ::gpiod_line_request_get_num_requested_lines(this->_m_priv->request.get());
 }
 
 GPIOD_CXX_API line::offsets line_request::offsets() const
@@ -78,7 +78,7 @@ GPIOD_CXX_API line::offsets line_request::offsets() const
 	::std::vector<unsigned int> buf(num_lines);
 	line::offsets offsets(num_lines);
 
-	::gpiod_line_request_get_offsets(this->_m_priv->request.get(), buf.data());
+	::gpiod_line_request_get_requested_offsets(this->_m_priv->request.get(), buf.data(), buf.size());
 
 	for (unsigned int i = 0; i < num_lines; i++)
 		offsets[i] = buf[i];

@@ -2,12 +2,11 @@
 // SPDX-FileCopyrightText: 2022 Linaro Ltd.
 // SPDX-FileCopyrightTest: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
-use std::os::raw::{c_ulong, c_void};
-use std::slice;
+use std::os::raw::c_ulong;
 
 use super::{
     gpiod,
-    line::{Offset, Settings},
+    line::{Offset, Settings, SettingsMap},
     Error, OperationType, Result,
 };
 
@@ -77,51 +76,37 @@ impl Config {
         }
     }
 
-    /// Get line settings for offset.
-    pub fn line_settings(&self, offset: Offset) -> Result<Settings> {
-        // SAFETY: `gpiod_line_config` is guaranteed to be valid here.
-        let settings = unsafe { gpiod::gpiod_line_config_get_line_settings(self.config, offset) };
+    /// Get a mapping of offsets to line settings stored by this object.
+    pub fn line_settings(&self) -> Result<SettingsMap> {
+        let mut map = SettingsMap::new();
+        // SAFETY: gpiod_line_config is guaranteed to be valid here
+        let num_lines = unsafe { gpiod::gpiod_line_config_get_num_configured_offsets(self.config) };
+        let mut offsets = vec![0; num_lines as usize];
 
-        if settings.is_null() {
-            return Err(Error::OperationFailed(
-                OperationType::LineConfigGetSettings,
-                errno::errno(),
-            ));
-        }
-
-        Ok(Settings::new_with_settings(settings))
-    }
-
-    /// Get configured offsets.
-    pub fn offsets(&self) -> Result<Vec<Offset>> {
-        let mut num: u64 = 0;
-        let mut ptr: *mut Offset = std::ptr::null_mut();
-
-        // SAFETY: The `ptr` array returned by libgpiod is guaranteed to live as long
-        // as it is not explicitly freed with `free()`.
-        let ret = unsafe {
-            gpiod::gpiod_line_config_get_offsets(
+        // SAFETY: gpiod_line_config is guaranteed to be valid here.
+        let num_stored = unsafe {
+            gpiod::gpiod_line_config_get_configured_offsets(
                 self.config,
-                &mut num as *mut _ as *mut _,
-                &mut ptr,
+                offsets.as_mut_ptr(),
+                num_lines,
             )
         };
 
-        if ret == -1 {
-            return Err(Error::OperationFailed(
-                OperationType::LineConfigGetOffsets,
-                errno::errno(),
-            ));
+        for offset in &offsets[0..num_stored as usize] {
+            // SAFETY: `gpiod_line_config` is guaranteed to be valid here.
+            let settings =
+                unsafe { gpiod::gpiod_line_config_get_line_settings(self.config, *offset) };
+            if settings.is_null() {
+                return Err(Error::OperationFailed(
+                    OperationType::LineConfigGetSettings,
+                    errno::errno(),
+                ));
+            }
+
+            map.insert(*offset as u64, Settings::new_with_settings(settings));
         }
 
-        // SAFETY: The `ptr` array returned by libgpiod is guaranteed to live as long
-        // as it is not explicitly freed with `free()`.
-        let offsets = unsafe { slice::from_raw_parts(ptr as *const Offset, num as usize).to_vec() };
-
-        // SAFETY: The `ptr` array is guaranteed to be valid here.
-        unsafe { libc::free(ptr as *mut c_void) };
-
-        Ok(offsets)
+        Ok(map)
     }
 }
 

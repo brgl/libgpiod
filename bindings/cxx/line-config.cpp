@@ -102,31 +102,27 @@ GPIOD_CXX_API line_config& line_config::add_line_settings(const line::offsets& o
 
 GPIOD_CXX_API ::std::map<line::offset, line_settings> line_config::get_line_settings() const
 {
+	::std::size_t num_offsets = ::gpiod_line_config_get_num_configured_offsets(
+								this->_m_priv->config.get());
 	::std::map<line::offset, line_settings> settings_map;
-	::std::size_t num_offsets;
-	unsigned int *offsets_ptr;
-	int ret;
-
-	ret = ::gpiod_line_config_get_offsets(this->_m_priv->config.get(),
-					      &num_offsets, &offsets_ptr);
-	if (ret)
-		throw_from_errno("unable to retrieve line offsets");
+	::std::vector<unsigned int> offsets(num_offsets);
 
 	if (num_offsets == 0)
 		return settings_map;
 
-	::std::unique_ptr<unsigned int, malloc_deleter> offsets(offsets_ptr);
+	::gpiod_line_config_get_configured_offsets(this->_m_priv->config.get(),
+					offsets.data(), num_offsets);
 
 	for (size_t i = 0; i < num_offsets; i++) {
 		line_settings settings;
 
 		settings._m_priv->settings.reset(::gpiod_line_config_get_line_settings(
 							this->_m_priv->config.get(),
-							offsets.get()[i]));
+							offsets[i]));
 		if (!settings._m_priv->settings)
 			throw_from_errno("unable to retrieve line settings");
 
-		settings_map[offsets.get()[i]] = ::std::move(settings);
+		settings_map[offsets[i]] = ::std::move(settings);
 	}
 
 	return settings_map;
