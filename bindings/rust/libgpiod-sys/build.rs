@@ -37,5 +37,5 @@ fn main() {
     generate_bindings();
 
     println!("cargo:rustc-link-search=./../../lib/.libs/");
-    println!("cargo:rustc-link-lib=static=gpiod");
+    println!("cargo:rustc-link-lib=gpiod");
 }
