@@ -204,9 +204,9 @@ then
 		AC_MSG_ERROR([python3-config not found - needed for python bindings])
 	fi
 	AS_IF([test -z "$PYTHON_CPPFLAGS"],
-		[AC_SUBST(PYTHON_CPPFLAGS, [`$PYTHON-config --includes`])])
+		[AC_SUBST(PYTHON_CPPFLAGS, [`python3-config --includes`])])
 	AS_IF([test -z "$PYTHON_LIBS"],
-		[AC_SUBST(PYTHON_LIBS, [`$PYTHON-config --libs`])])
+		[AC_SUBST(PYTHON_LIBS, [`python3-config --libs`])])
 fi
 
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
