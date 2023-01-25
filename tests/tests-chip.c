@@ -181,6 +181,7 @@ GPIOD_TEST_CASE(get_line, 0, { 16 })
 
 	line = gpiod_chip_get_line(chip, 3);
 	g_assert_nonnull(line);
+	gpiod_test_return_if_failed();
 	g_assert_cmpuint(gpiod_line_offset(line), ==, 3);
 }
 
