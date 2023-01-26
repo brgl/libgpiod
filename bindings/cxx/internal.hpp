@@ -18,8 +18,9 @@
 
 namespace gpiod {
 
-template<class cxx_enum_type, class c_enum_type> cxx_enum_type
-map_enum_c_to_cxx(c_enum_type value, const ::std::map<c_enum_type, cxx_enum_type>& mapping)
+template<class cxx_enum_type, class c_enum_type>
+cxx_enum_type get_mapped_value(c_enum_type value,
+			       const ::std::map<c_enum_type, cxx_enum_type>& mapping)
 {
 	try {
 		return mapping.at(value);

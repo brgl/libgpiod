@@ -95,31 +95,17 @@ line_settings_ptr copy_line_settings(const line_settings_ptr& ptr)
 	return settings;
 }
 
-template<class key_type, class value_type, class exception_type>
-value_type map_setting(const key_type& key, const ::std::map<key_type, value_type>& mapping)
-{
-	value_type ret;
-
-	try {
-		ret = mapping.at(key);
-	} catch (const ::std::out_of_range& err) {
-		/* FIXME Demangle the name. */
-		throw exception_type(::std::string("invalid value for ") +
-				     typeid(key_type).name());
-	}
-
-	return ret;
-}
-
 template<class cxx_enum_type, class c_enum_type>
 c_enum_type do_map_value(cxx_enum_type value, const ::std::map<cxx_enum_type, c_enum_type>& mapping)
-{
-	return map_setting<cxx_enum_type, c_enum_type, ::std::invalid_argument>(value, mapping);
+try {
+	return get_mapped_value(value, mapping);
+} catch (const bad_mapping& ex) {
+	throw ::std::invalid_argument(ex.what());
 }
 
 template<class cxx_enum_type, class c_enum_type, int set_func(::gpiod_line_settings*, c_enum_type)>
-void set_mapped_value(::gpiod_line_settings* settings, cxx_enum_type value,
-		      const ::std::map<cxx_enum_type, c_enum_type>& mapping)
+void set_mapped_prop(::gpiod_line_settings* settings, cxx_enum_type value,
+		     const ::std::map<cxx_enum_type, c_enum_type>& mapping)
 {
 	c_enum_type mapped_val = do_map_value(value, mapping);
 
@@ -129,12 +115,12 @@ void set_mapped_value(::gpiod_line_settings* settings, cxx_enum_type value,
 }
 
 template<class cxx_enum_type, class c_enum_type, c_enum_type get_func(::gpiod_line_settings*)>
-cxx_enum_type get_mapped_value(::gpiod_line_settings* settings,
-			  const ::std::map<c_enum_type, cxx_enum_type>& mapping)
+cxx_enum_type get_mapped_prop(::gpiod_line_settings* settings,
+			      const ::std::map<c_enum_type, cxx_enum_type>& mapping)
 {
 	auto mapped_val = get_func(settings);
 
-	return map_enum_c_to_cxx(mapped_val, mapping);
+	return get_mapped_value(mapped_val, mapping);
 }
 
 } /* namespace */
@@ -202,68 +188,68 @@ GPIOD_CXX_API line_settings& line_settings::reset(void) noexcept
 
 GPIOD_CXX_API line_settings& line_settings::set_direction(line::direction direction)
 {
-	set_mapped_value<line::direction, ::gpiod_line_direction,
-			 ::gpiod_line_settings_set_direction>(this->_m_priv->settings.get(),
-							      direction, direction_mapping);
+	set_mapped_prop<line::direction, ::gpiod_line_direction,
+			::gpiod_line_settings_set_direction>(this->_m_priv->settings.get(),
+							     direction, direction_mapping);
 
 	return *this;
 }
 
 GPIOD_CXX_API line::direction line_settings::direction() const
 {
-	return get_mapped_value<line::direction, ::gpiod_line_direction,
-				::gpiod_line_settings_get_direction>(
+	return get_mapped_prop<line::direction, ::gpiod_line_direction,
+			       ::gpiod_line_settings_get_direction>(
 							this->_m_priv->settings.get(),
 							reverse_direction_mapping);
 }
 
 GPIOD_CXX_API line_settings& line_settings::set_edge_detection(line::edge edge)
 {
-	set_mapped_value<line::edge, ::gpiod_line_edge,
-			 ::gpiod_line_settings_set_edge_detection>(this->_m_priv->settings.get(),
-								   edge, edge_mapping);
+	set_mapped_prop<line::edge, ::gpiod_line_edge,
+			::gpiod_line_settings_set_edge_detection>(this->_m_priv->settings.get(),
+								  edge, edge_mapping);
 
 	return *this;
 }
 
 GPIOD_CXX_API line::edge line_settings::edge_detection() const
 {
-	return get_mapped_value<line::edge, ::gpiod_line_edge,
-				::gpiod_line_settings_get_edge_detection>(
+	return get_mapped_prop<line::edge, ::gpiod_line_edge,
+			       ::gpiod_line_settings_get_edge_detection>(
 							this->_m_priv->settings.get(),
 							reverse_edge_mapping);
 }
 
 GPIOD_CXX_API line_settings& line_settings::set_bias(line::bias bias)
 {
-	set_mapped_value<line::bias, ::gpiod_line_bias,
-			 ::gpiod_line_settings_set_bias>(this->_m_priv->settings.get(),
-							 bias, bias_mapping);
+	set_mapped_prop<line::bias, ::gpiod_line_bias,
+			::gpiod_line_settings_set_bias>(this->_m_priv->settings.get(),
+							bias, bias_mapping);
 
 	return *this;
 }
 
 GPIOD_CXX_API line::bias line_settings::bias() const
 {
-	return get_mapped_value<line::bias, ::gpiod_line_bias,
-				::gpiod_line_settings_get_bias>(this->_m_priv->settings.get(),
+	return get_mapped_prop<line::bias, ::gpiod_line_bias,
+			       ::gpiod_line_settings_get_bias>(this->_m_priv->settings.get(),
 								reverse_bias_mapping);
 }
 
 GPIOD_CXX_API line_settings& line_settings::set_drive(line::drive drive)
 {
-	set_mapped_value<line::drive, ::gpiod_line_drive,
-			 ::gpiod_line_settings_set_drive>(this->_m_priv->settings.get(),
-							  drive, drive_mapping);
+	set_mapped_prop<line::drive, ::gpiod_line_drive,
+			::gpiod_line_settings_set_drive>(this->_m_priv->settings.get(),
+							 drive, drive_mapping);
 
 	return *this;
 }
 
 GPIOD_CXX_API line::drive line_settings::drive() const
 {
-	return get_mapped_value<line::drive, ::gpiod_line_drive,
-				::gpiod_line_settings_get_drive>(this->_m_priv->settings.get(),
-								 reverse_drive_mapping);
+	return get_mapped_prop<line::drive, ::gpiod_line_drive,
+			       ::gpiod_line_settings_get_drive>(this->_m_priv->settings.get(),
+								reverse_drive_mapping);
 }
 
 GPIOD_CXX_API line_settings& line_settings::set_active_low(bool active_low)
@@ -294,34 +280,34 @@ GPIOD_CXX_API ::std::chrono::microseconds line_settings::debounce_period() const
 
 GPIOD_CXX_API line_settings& line_settings::set_event_clock(line::clock event_clock)
 {
-	set_mapped_value<line::clock, ::gpiod_line_clock,
-			 ::gpiod_line_settings_set_event_clock>(this->_m_priv->settings.get(),
-								event_clock, clock_mapping);
+	set_mapped_prop<line::clock, ::gpiod_line_clock,
+			::gpiod_line_settings_set_event_clock>(this->_m_priv->settings.get(),
+							       event_clock, clock_mapping);
 
 	return *this;
 }
 
 GPIOD_CXX_API line::clock line_settings::event_clock() const
 {
-	return get_mapped_value<line::clock, ::gpiod_line_clock,
-				::gpiod_line_settings_get_event_clock>(
+	return get_mapped_prop<line::clock, ::gpiod_line_clock,
+			       ::gpiod_line_settings_get_event_clock>(
 							this->_m_priv->settings.get(),
 							reverse_clock_mapping);
 }
 
 GPIOD_CXX_API line_settings& line_settings::set_output_value(line::value value)
 {
-	set_mapped_value<line::value, ::gpiod_line_value,
-			 ::gpiod_line_settings_set_output_value>(this->_m_priv->settings.get(),
-								 value, value_mapping);
+	set_mapped_prop<line::value, ::gpiod_line_value,
+			::gpiod_line_settings_set_output_value>(this->_m_priv->settings.get(),
+								value, value_mapping);
 
 	return *this;
 }
 
 GPIOD_CXX_API line::value line_settings::output_value() const
 {
-	return get_mapped_value<line::value, ::gpiod_line_value,
-				::gpiod_line_settings_get_output_value>(
+	return get_mapped_prop<line::value, ::gpiod_line_value,
+			       ::gpiod_line_settings_get_output_value>(
 							this->_m_priv->settings.get(),
 							reverse_value_mapping);
 }

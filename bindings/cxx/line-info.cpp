@@ -114,7 +114,7 @@ GPIOD_CXX_API line::direction line_info::direction() const
 {
 	int direction = ::gpiod_line_info_get_direction(this->_m_priv->info.get());
 
-	return map_enum_c_to_cxx(direction, direction_mapping);
+	return get_mapped_value(direction, direction_mapping);
 }
 
 GPIOD_CXX_API bool line_info::active_low() const noexcept
