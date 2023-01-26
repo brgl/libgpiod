@@ -11,9 +11,9 @@ namespace gpiod {
 
 namespace {
 
-::gpiod_edge_event_buffer* make_edge_event_buffer(unsigned int capacity)
+edge_event_buffer_ptr make_edge_event_buffer(unsigned int capacity)
 {
-	::gpiod_edge_event_buffer* buffer = ::gpiod_edge_event_buffer_new(capacity);
+	edge_event_buffer_ptr buffer(::gpiod_edge_event_buffer_new(capacity));
 	if (!buffer)
 		throw_from_errno("unable to allocate the edge event buffer");
 

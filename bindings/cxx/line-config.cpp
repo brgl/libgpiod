@@ -14,9 +14,9 @@ namespace gpiod {
 
 namespace {
 
-::gpiod_line_config* make_line_config()
+line_config_ptr make_line_config()
 {
-	::gpiod_line_config *config = ::gpiod_line_config_new();
+	line_config_ptr config(::gpiod_line_config_new());
 	if (!config)
 		throw_from_errno("Unable to allocate the line config object");
 
