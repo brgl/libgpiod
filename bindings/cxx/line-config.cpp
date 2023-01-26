@@ -23,14 +23,6 @@ namespace {
 	return config;
 }
 
-struct malloc_deleter
-{
-	void operator()(void* ptr)
-	{
-		::free(ptr);
-	}
-};
-
 } /* namespace */
 
 line_config::impl::impl()
