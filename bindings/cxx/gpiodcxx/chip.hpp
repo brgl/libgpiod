@@ -44,7 +44,7 @@ public:
 
 	/**
 	 * @brief Instantiates a new chip object by opening the device file
-	 *        indicated by the path argument.
+	 *        indicated by the \p path argument.
 	 * @param path Path to the device file to open.
 	 */
 	explicit chip(const ::std::filesystem::path& path);

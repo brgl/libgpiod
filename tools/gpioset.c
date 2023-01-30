@@ -254,8 +254,8 @@ static enum gpiod_line_value parse_value(const char *option)
  * Parse line id and values from lvs into lines and values.
  *
  * Accepted forms:
- *	'line=value'
- *	'"line"=value'
+ *     'line=value'
+ *     '"line"=value'
  *
  * If line id is quoted then it is returned unquoted.
  */
