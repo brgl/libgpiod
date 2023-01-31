@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if GPIOSET_INTERACTIVE
+#ifdef GPIOSET_INTERACTIVE
 #include <editline/readline.h>
 #endif
 
