@@ -24,7 +24,7 @@ gpiod_test_package_line_names(const struct gpiod_test_line_name *names)
 		g_variant_builder_add(builder, "(us)",
 				      name->offset, name->name);
 
-	ret = g_variant_new("a(us)", builder);
+	ret = g_variant_ref_sink(g_variant_new("a(us)", builder));
 	g_variant_builder_unref(builder);
 
 	return ret;
@@ -42,7 +42,7 @@ GVariant *gpiod_test_package_hogs(const struct gpiod_test_hog *hogs)
 		g_variant_builder_add(builder, "(usi)",
 				      hog->offset, hog->name, hog->direction);
 
-	ret = g_variant_new("a(usi)", builder);
+	ret = g_variant_ref_sink(g_variant_new("a(usi)", builder));
 	g_variant_builder_unref(builder);
 
 	return ret;
