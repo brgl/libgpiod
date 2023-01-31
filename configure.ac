@@ -29,7 +29,7 @@ AC_SUBST(ABI_VERSION, [4.1.2])
 # Have a separate ABI version for C++ bindings:
 AC_SUBST(ABI_CXX_VERSION, [2.1.1])
 # ABI version for libgpiosim (we need this since it can be installed if we
-# enable install-tests).
+# enable tests).
 AC_SUBST(ABI_GPIOSIM_VERSION, [0.1.0])
 
 AC_CONFIG_AUX_DIR([autostuff])
