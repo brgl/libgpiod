@@ -53,6 +53,8 @@ static void g_gpiosim_chip_constructed(GObject *obj)
 	if (ret)
 		g_error("Error while trying to enable the simulated GPIO device: %s",
 			g_strerror(errno));
+
+	G_OBJECT_CLASS(g_gpiosim_chip_parent_class)->constructed(obj);
 }
 
 static void g_gpiosim_chip_get_property(GObject *obj, guint prop_id,
