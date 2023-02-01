@@ -4,6 +4,7 @@
 #ifndef __GPIOD_TEST_SIM_H__
 #define __GPIOD_TEST_SIM_H__
 
+#include <gio/gio.h>
 #include <glib.h>
 #include <glib-object.h>
 
@@ -20,20 +21,51 @@ typedef enum {
 	G_GPIOSIM_DIRECTION_OUTPUT_LOW,
 } GPIOSimDirection;
 
+#define G_GPIOSIM_ERROR g_gpiosim_error_quark()
+
+typedef enum {
+	G_GPIOSIM_ERR_CTX_INIT_FAILED = 1,
+	G_GPIOSIM_ERR_CHIP_INIT_FAILED,
+	G_GPIOSIM_ERR_CHIP_ENABLE_FAILED,
+	G_GPIOSIM_ERR_GET_VALUE_FAILED,
+} GPIOSimError;
+
+GQuark g_gpiosim_error_quark(void);
+
 G_DECLARE_FINAL_TYPE(GPIOSimChip, g_gpiosim_chip, G_GPIOSIM, CHIP, GObject);
 
-#define G_GPIOSIM_TYPE_CHIP (g_gpiosim_chip_get_type())
-#define G_GPIOSIM_CHIP(obj) \
-	(G_TYPE_CHECK_INSTANCE_CAST((obj), G_GPIOSIM_TYPE_CHIP, GPIOSimChip))
+#define G_GPIOSIM_CHIP_TYPE (g_gpiosim_chip_get_type())
+#define G_GPIOSIM_CHIP_OBJ(obj) \
+	(G_TYPE_CHECK_INSTANCE_CAST((obj), G_GPIOSIM_CHIP_TYPE, GPIOSimChip))
 
 #define g_gpiosim_chip_new(...) \
-	G_GPIOSIM_CHIP(g_object_new(G_GPIOSIM_TYPE_CHIP, __VA_ARGS__))
+	({ \
+		g_autoptr(GError) _err = NULL; \
+		GPIOSimChip *_chip = G_GPIOSIM_CHIP_OBJ( \
+					g_initable_new(G_GPIOSIM_CHIP_TYPE, \
+						       NULL, &_err, \
+						       __VA_ARGS__)); \
+		g_assert_no_error(_err); \
+		if (g_test_failed()) \
+			return; \
+		_chip; \
+	})
 
 const gchar *g_gpiosim_chip_get_dev_path(GPIOSimChip *self);
 const gchar *g_gpiosim_chip_get_name(GPIOSimChip *self);
 
-gint g_gpiosim_chip_get_value(GPIOSimChip *self, guint offset);
+gint _g_gpiosim_chip_get_value(GPIOSimChip *self, guint offset, GError **err);
 void g_gpiosim_chip_set_pull(GPIOSimChip *self, guint offset, GPIOSimPull pull);
+
+#define g_gpiosim_chip_get_value(self, offset) \
+	({ \
+		g_autoptr(GError) _err = NULL; \
+		gint _val = _g_gpiosim_chip_get_value(self, offset, &_err); \
+		g_assert_no_error(_err); \
+		if (g_test_failed()) \
+			return; \
+		_val; \
+	})
 
 G_END_DECLS
 

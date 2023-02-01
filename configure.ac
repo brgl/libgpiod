@@ -153,7 +153,7 @@ then
 
 	# For core library tests
 	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.50])
-	PKG_CHECK_MODULES([GOBJECT], [gobject-2.0 >= 2.50])
+	PKG_CHECK_MODULES([GIO], [gio-2.0 >= 2.50])
 
 	AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_LIB([asprintf])])
 	AC_CHECK_FUNC([prctl], [], [FUNC_NOT_FOUND_LIB([prctl])])

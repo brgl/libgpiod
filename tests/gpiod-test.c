@@ -18,7 +18,7 @@
 
 static GList *tests;
 
-static void check_kernel(void)
+static gboolean check_kernel(void)
 {
 	guint major, minor, release;
 	struct utsname un;
@@ -27,23 +27,29 @@ static void check_kernel(void)
 	g_debug("checking linux kernel version");
 
 	ret = uname(&un);
-	if (ret)
-		g_error("unable to read the kernel release version: %s",
-			g_strerror(errno));
+	if (ret) {
+		g_critical("unable to read the kernel release version: %s",
+			   g_strerror(errno));
+		return FALSE;
+	}
 
 	ret = sscanf(un.release, "%u.%u.%u", &major, &minor, &release);
-	if (ret != 3)
-		g_error("error reading kernel release version");
+	if (ret != 3) {
+		g_critical("error reading kernel release version");
+		return FALSE;
+	}
 
-	if (KERNEL_VERSION(major, minor, release) < MIN_KERNEL_VERSION)
-		g_error("linux kernel version must be at least v%u.%u.%u - got v%u.%u.%u",
-			MIN_KERNEL_MAJOR, MIN_KERNEL_MINOR, MIN_KERNEL_RELEASE,
-			major, minor, release);
+	if (KERNEL_VERSION(major, minor, release) < MIN_KERNEL_VERSION) {
+		g_critical("linux kernel version must be at least v%u.%u.%u - got v%u.%u.%u",
+			   MIN_KERNEL_MAJOR, MIN_KERNEL_MINOR, MIN_KERNEL_RELEASE,
+			   major, minor, release);
+		return FALSE;
+	}
 
 	g_debug("kernel release is v%u.%u.%u - ok to run tests",
 		major, minor, release);
 
-	return;
+	return TRUE;
 }
 
 static void test_func_wrapper(gconstpointer data)
@@ -68,7 +74,8 @@ int main(gint argc, gchar **argv)
 	g_debug("running libgpiod test suite");
 	g_debug("%u tests registered", g_list_length(tests));
 
-	check_kernel();
+	if (!check_kernel())
+		return 1;
 
 	g_list_foreach(tests, add_test_from_list, NULL);
 	g_list_free(tests);
