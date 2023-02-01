@@ -158,7 +158,7 @@ static void g_gpiosim_chip_set_property(GObject *obj, guint prop_id,
 	}
 }
 
-static void g_gpiosim_chip_dispose(GObject *obj)
+static void g_gpiosim_chip_finalize(GObject *obj)
 {
 	GPIOSimChip *self = G_GPIOSIM_CHIP(obj);
 	struct gpiosim_dev *dev;
@@ -174,12 +174,6 @@ static void g_gpiosim_chip_dispose(GObject *obj)
 	}
 
 	gpiosim_dev_unref(dev);
-}
-
-static void g_gpiosim_chip_finalize(GObject *obj)
-{
-	GPIOSimChip *self = G_GPIOSIM_CHIP(obj);
-
 	gpiosim_bank_unref(self->bank);
 
 	G_OBJECT_CLASS(g_gpiosim_chip_parent_class)->finalize(obj);
@@ -192,7 +186,6 @@ static void g_gpiosim_chip_class_init(GPIOSimChipClass *chip_class)
 	class->constructed = g_gpiosim_chip_constructed;
 	class->get_property = g_gpiosim_chip_get_property;
 	class->set_property = g_gpiosim_chip_set_property;
-	class->dispose = g_gpiosim_chip_dispose;
 	class->finalize = g_gpiosim_chip_finalize;
 
 	g_object_class_install_property(
