@@ -147,7 +147,6 @@ AC_DEFUN([FUNC_NOT_FOUND_TESTS],
 if test "x$with_tests" = xtrue
 then
 	# For libgpiosim
-	AC_CHECK_FUNC([qsort], [], [FUNC_NOT_FOUND_TESTS([qsort])])
 	PKG_CHECK_MODULES([KMOD], [libkmod >= 18])
 	PKG_CHECK_MODULES([MOUNT], [mount >= 2.33.1])
 
