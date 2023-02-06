@@ -66,7 +66,7 @@ static void add_test_from_list(gpointer element, gpointer data G_GNUC_UNUSED)
 	g_test_add_data_func(test->path, test, test_func_wrapper);
 }
 
-int main(gint argc, gchar **argv)
+int main(int argc, char **argv)
 {
 	g_test_init(&argc, &argv, NULL);
 	g_test_set_nonfatal_assertions();
