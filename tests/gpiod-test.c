@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <linux/version.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 
@@ -75,7 +76,7 @@ int main(int argc, char **argv)
 	g_debug("%u tests registered", g_list_length(tests));
 
 	if (!check_kernel())
-		return 1;
+		return EXIT_FAILURE;
 
 	g_list_foreach(tests, add_test_from_list, NULL);
 	g_list_free(tests);
