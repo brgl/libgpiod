@@ -1,5 +1,22 @@
 # SPDX-License-Identifier: CC-BY-SA-4.0
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
+# SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+
+libgpiod v2.0
+=============
+
+This is a major release that breaks compatiblity with the v1.6.x series. The
+entire data model has been overhauled in order to make using the library more
+intuitive and less cumbersome, while also making the code future-proof and
+extensible. Please refer to the documentation for details.
+
+New features:
+- rework the entire API: core C library as well as C++ and Python bindings
+- rework the command-line tools in order to make them more line-name-oriented
+- drop gpiofind as tools can now resolve line names on their own
+- add the interactive mode to gpioset
+- add Rust bindings
+- make tests work with the gpio-sim kernel module
 
 libgpiod v1.6
 =============
