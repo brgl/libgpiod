@@ -7,9 +7,7 @@
 #include <gpiod.h>
 #include <Python.h>
 
-PyObject *_Py_gpiod_SetErrFromErrno(const char *filename);
-#define Py_gpiod_SetErrFromErrno() _Py_gpiod_SetErrFromErrno(__FILE__)
-
+PyObject *Py_gpiod_SetErrFromErrno(void);
 PyObject *Py_gpiod_GetGlobalType(const char *type_name);
 unsigned int Py_gpiod_PyLongAsUnsignedInt(PyObject *pylong);
 void Py_gpiod_dealloc(PyObject *self);

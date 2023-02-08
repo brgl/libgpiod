@@ -15,7 +15,7 @@ void Py_gpiod_dealloc(PyObject *self)
 	PyObject_Del(self);
 }
 
-PyObject *_Py_gpiod_SetErrFromErrno(const char *filename)
+PyObject *Py_gpiod_SetErrFromErrno(void)
 {
 	PyObject *exc;
 
@@ -61,7 +61,7 @@ PyObject *_Py_gpiod_SetErrFromErrno(const char *filename)
 		break;
 	}
 
-	return PyErr_SetFromErrnoWithFilename(exc, filename);
+	return PyErr_SetFromErrno(exc);
 }
 
 PyObject *Py_gpiod_GetGlobalType(const char *type_name)
