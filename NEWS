@@ -1,3 +1,15 @@
+libgpiod v1.6.4
+===============
+
+Bug fixes:
+- fix a typo in bats dependency test
+- fix an unterminated double quote in configure
+- fix a null-pointer dereference in error path in tests
+- fix a build issue related to the AM_PATH_PYTHON() automake macro
+
+Improvements:
+- check for the timeout program before running the gpio-tools tests
+
 libgpiod v1.6.3
 ===============
 
