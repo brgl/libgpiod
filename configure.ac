@@ -161,6 +161,7 @@ then
 	AC_CHECK_FUNC([openat], [], [FUNC_NOT_FOUND_LIB([openat])])
 	AC_CHECK_FUNC([mkdirat], [], [FUNC_NOT_FOUND_LIB([mkdirat])])
 	AC_CHECK_FUNC([write], [], [FUNC_NOT_FOUND_LIB([write])])
+	AC_CHECK_FUNC([twalk_r], [], [FUNC_NOT_FOUND_LIB([twalk_r])])
 	AC_CHECK_HEADERS([sys/utsname.h], [], [HEADER_NOT_FOUND_LIB([sys/utsname.h])])
 	AC_CHECK_HEADERS([sys/mount.h], [], [HEADER_NOT_FOUND_LIB([sys/mount.h])])
 	AC_CHECK_HEADERS([sys/prctl.h], [], [HEADER_NOT_FOUND_LIB([sys/prctl.h])])
