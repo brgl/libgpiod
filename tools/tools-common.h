@@ -43,7 +43,7 @@ struct resolved_line {
 	int chip_num;
 
 	/* offset of line on chip */
-	uint offset;
+	unsigned int offset;
 
 	/* line value for gpioget/set */
 	int value;
