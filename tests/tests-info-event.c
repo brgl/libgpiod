@@ -206,7 +206,6 @@ GPIOD_TEST_CASE(chip_fd_can_be_polled)
 	g_autoptr(struct_gpiod_info_event) event = NULL;
 	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
 	g_autoptr(struct_gpiod_line_settings) settings = NULL;
-	g_autoptr(struct_gpiod_line_request) request = NULL;
 	g_autoptr(GThread) thread = NULL;
 	struct gpiod_line_info *evinfo;
 	struct request_ctx ctx;

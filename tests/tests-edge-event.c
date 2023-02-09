@@ -526,7 +526,6 @@ GPIOD_TEST_CASE(event_copy)
 	g_autoptr(struct_gpiod_line_settings) settings = NULL;
 	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
 	g_autoptr(struct_gpiod_line_request) request = NULL;
-	g_autoptr(GThread) thread = NULL;
 	g_autoptr(struct_gpiod_edge_event_buffer) buffer = NULL;
 	g_autoptr(struct_gpiod_edge_event) copy = NULL;
 	struct gpiod_edge_event *event;
@@ -573,7 +572,6 @@ GPIOD_TEST_CASE(reading_more_events_than_the_queue_contains_doesnt_block)
 	g_autoptr(struct_gpiod_line_settings) settings = NULL;
 	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
 	g_autoptr(struct_gpiod_line_request) request = NULL;
-	g_autoptr(GThread) thread = NULL;
 	g_autoptr(struct_gpiod_edge_event_buffer) buffer = NULL;
 	gint ret;
 
