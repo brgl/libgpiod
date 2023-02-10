@@ -154,6 +154,7 @@ then
 	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.50])
 	PKG_CHECK_MODULES([GIO], [gio-2.0 >= 2.50])
 
+	AC_CHECK_FUNC([atexit], [], [FUNC_NOT_FOUND_LIB([atexit])])
 	AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_LIB([asprintf])])
 	AC_CHECK_FUNC([prctl], [], [FUNC_NOT_FOUND_LIB([prctl])])
 	AC_CHECK_FUNC([unlink], [], [FUNC_NOT_FOUND_LIB([unlink])])
@@ -162,6 +163,9 @@ then
 	AC_CHECK_FUNC([mkdirat], [], [FUNC_NOT_FOUND_LIB([mkdirat])])
 	AC_CHECK_FUNC([write], [], [FUNC_NOT_FOUND_LIB([write])])
 	AC_CHECK_FUNC([twalk_r], [], [FUNC_NOT_FOUND_LIB([twalk_r])])
+	AC_CHECK_FUNC([tsearch], [], [FUNC_NOT_FOUND_LIB([tsearch])])
+	AC_CHECK_FUNC([tdestroy], [], [FUNC_NOT_FOUND_LIB([tdestroy])])
+	AC_CHECK_FUNC([tdelete], [], [FUNC_NOT_FOUND_LIB([tdelete])])
 	AC_CHECK_HEADERS([sys/utsname.h], [], [HEADER_NOT_FOUND_LIB([sys/utsname.h])])
 	AC_CHECK_HEADERS([sys/mount.h], [], [HEADER_NOT_FOUND_LIB([sys/mount.h])])
 	AC_CHECK_HEADERS([sys/prctl.h], [], [HEADER_NOT_FOUND_LIB([sys/prctl.h])])
