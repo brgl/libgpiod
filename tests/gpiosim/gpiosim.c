@@ -23,6 +23,7 @@
 #include "gpiosim.h"
 
 #define GPIOSIM_API		__attribute__((visibility("default")))
+#define UNUSED			__attribute__((unused))
 #define ARRAY_SIZE(x)		(sizeof(x) / sizeof(*(x)))
 #define MIN_KERNEL_VERSION	KERNEL_VERSION(5, 17, 4)
 
@@ -30,15 +31,15 @@ static pthread_mutex_t id_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_once_t id_init_once = PTHREAD_ONCE_INIT;
 static void *id_root;
 
-struct id_find_next_ctx {
+struct {
 	int lowest;
 	bool found;
-};
+} id_find_next_ctx;
 
-struct id_del_ctx {
+struct {
 	int id;
 	int *idp;
-};
+} id_del_ctx;
 
 static void id_cleanup(void)
 {
@@ -62,40 +63,38 @@ static int id_compare(const void *p1, const void *p2)
 	return 0;
 }
 
-static void id_find_next(const void *node, VISIT which, void *data)
+static void id_find_next(const void *node, VISIT which, int depth UNUSED)
 {
-	struct id_find_next_ctx *ctx = data;
 	int *id = *(int **)node;
 
-	if (ctx->found)
+	if (id_find_next_ctx.found)
 		return;
 
 	switch (which) {
 	case postorder:
 	case leaf:
-		if (*id != ctx->lowest)
-			ctx->found = true;
+		if (*id != id_find_next_ctx.lowest)
+			id_find_next_ctx.found = true;
 		else
-			ctx->lowest++;
+			id_find_next_ctx.lowest++;
 		break;
 	default:
 		break;
 	};
 }
 
-static void id_del(const void *node, VISIT which, void *data)
+static void id_del(const void *node, VISIT which, int depth UNUSED)
 {
-	struct id_del_ctx *ctx = data;
 	int *id = *(int **)node;
 
-	if (ctx->idp)
+	if (id_del_ctx.idp)
 		return;
 
 	switch (which) {
 	case postorder:
 	case leaf:
-		if (*id == ctx->id)
-			ctx->idp = id;
+		if (*id == id_del_ctx.id)
+			id_del_ctx.idp = id;
 		break;
 	default:
 		break;
@@ -104,18 +103,17 @@ static void id_del(const void *node, VISIT which, void *data)
 
 static int id_alloc(void)
 {
-	struct id_find_next_ctx ctx;
 	void *ret;
 	int *id;
 
 	pthread_once(&id_init_once, id_schedule_cleanup);
 
-	ctx.lowest = 0;
-	ctx.found = false;
-
 	pthread_mutex_lock(&id_lock);
 
-	twalk_r(id_root, id_find_next, &ctx);
+	id_find_next_ctx.lowest = 0;
+	id_find_next_ctx.found = false;
+
+	twalk(id_root, id_find_next);
 
 	id = malloc(sizeof(*id));
 	if (!id) {
@@ -123,7 +121,7 @@ static int id_alloc(void)
 		return -1;
 	}
 
-	*id = ctx.lowest;
+	*id = id_find_next_ctx.lowest;
 
 	ret = tsearch(id, &id_root, id_compare);
 	if (!ret) {
@@ -140,17 +138,15 @@ static int id_alloc(void)
 
 static void id_free(int id)
 {
-	struct id_del_ctx ctx;
-
-	ctx.id = id;
-	ctx.idp = NULL;
+	id_del_ctx.id = id;
+	id_del_ctx.idp = NULL;
 
 	pthread_mutex_lock(&id_lock);
 
-	twalk_r(id_root, id_del, &ctx);
-	if (ctx.idp) {
-		tdelete(ctx.idp, &id_root, id_compare);
-		free(ctx.idp);
+	twalk(id_root, id_del);
+	if (id_del_ctx.idp) {
+		tdelete(id_del_ctx.idp, &id_root, id_compare);
+		free(id_del_ctx.idp);
 	}
 
 	pthread_mutex_unlock(&id_lock);

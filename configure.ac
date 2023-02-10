@@ -162,7 +162,7 @@ then
 	AC_CHECK_FUNC([openat], [], [FUNC_NOT_FOUND_LIB([openat])])
 	AC_CHECK_FUNC([mkdirat], [], [FUNC_NOT_FOUND_LIB([mkdirat])])
 	AC_CHECK_FUNC([write], [], [FUNC_NOT_FOUND_LIB([write])])
-	AC_CHECK_FUNC([twalk_r], [], [FUNC_NOT_FOUND_LIB([twalk_r])])
+	AC_CHECK_FUNC([twalk], [], [FUNC_NOT_FOUND_LIB([twalk])])
 	AC_CHECK_FUNC([tsearch], [], [FUNC_NOT_FOUND_LIB([tsearch])])
 	AC_CHECK_FUNC([tdestroy], [], [FUNC_NOT_FOUND_LIB([tdestroy])])
 	AC_CHECK_FUNC([tdelete], [], [FUNC_NOT_FOUND_LIB([tdelete])])
