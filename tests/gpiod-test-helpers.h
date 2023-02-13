@@ -176,19 +176,18 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 #define gpiod_test_expect_errno(_expected) \
 	g_assert_cmpint(_expected, ==, errno)
 
-struct gpiod_test_line_name {
+typedef struct {
 	guint offset;
 	const gchar *name;
-};
+} GPIOSimLineName;
 
-struct gpiod_test_hog {
+typedef struct {
 	guint offset;
 	const gchar *name;
 	GPIOSimDirection direction;
-};
+} GPIOSimHog;
 
-GVariant *
-gpiod_test_package_line_names(const struct gpiod_test_line_name *names);
-GVariant *gpiod_test_package_hogs(const struct gpiod_test_hog *hogs);
+GVariant *gpiod_test_package_line_names(const GPIOSimLineName *names);
+GVariant *gpiod_test_package_hogs(const GPIOSimHog *hogs);
 
 #endif /* __GPIOD_TEST_HELPERS_H__ */

@@ -12,10 +12,10 @@
 #include "gpiod-test-helpers.h"
 
 GVariant *
-gpiod_test_package_line_names(const struct gpiod_test_line_name *names)
+gpiod_test_package_line_names(const GPIOSimLineName *names)
 {
 	g_autoptr(GVariantBuilder) builder = NULL;
-	const struct gpiod_test_line_name *name;
+	const GPIOSimLineName *name;
 
 	builder = g_variant_builder_new(G_VARIANT_TYPE("a(us)"));
 
@@ -26,10 +26,10 @@ gpiod_test_package_line_names(const struct gpiod_test_line_name *names)
 	return g_variant_ref_sink(g_variant_new("a(us)", builder));
 }
 
-GVariant *gpiod_test_package_hogs(const struct gpiod_test_hog *hogs)
+GVariant *gpiod_test_package_hogs(const GPIOSimHog *hogs)
 {
 	g_autoptr(GVariantBuilder) builder = NULL;
-	const struct gpiod_test_hog *hog;
+	const GPIOSimHog *hog;
 
 	builder = g_variant_builder_new(G_VARIANT_TYPE("a(usi)"));
 

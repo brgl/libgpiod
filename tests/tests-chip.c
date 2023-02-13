@@ -79,7 +79,7 @@ GPIOD_TEST_CASE(get_fd)
 
 GPIOD_TEST_CASE(find_line_bad)
 {
-	static const struct gpiod_test_line_name names[] = {
+	static const GPIOSimLineName names[] = {
 		{ .offset = 1, .name = "foo", },
 		{ .offset = 2, .name = "bar", },
 		{ .offset = 4, .name = "baz", },
@@ -106,7 +106,7 @@ GPIOD_TEST_CASE(find_line_bad)
 
 GPIOD_TEST_CASE(find_line_good)
 {
-	static const struct gpiod_test_line_name names[] = {
+	static const GPIOSimLineName names[] = {
 		{ .offset = 1, .name = "foo", },
 		{ .offset = 2, .name = "bar", },
 		{ .offset = 4, .name = "baz", },
@@ -132,7 +132,7 @@ GPIOD_TEST_CASE(find_line_good)
 /* Verify that for duplicated line names, the first one is returned. */
 GPIOD_TEST_CASE(find_line_duplicate)
 {
-	static const struct gpiod_test_line_name names[] = {
+	static const GPIOSimLineName names[] = {
 		{ .offset = 1, .name = "foo", },
 		{ .offset = 2, .name = "baz", },
 		{ .offset = 4, .name = "baz", },

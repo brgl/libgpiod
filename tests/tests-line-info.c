@@ -39,7 +39,7 @@ GPIOD_TEST_CASE(get_line_info_offset_out_of_range)
 
 GPIOD_TEST_CASE(line_info_basic_properties)
 {
-	static const struct gpiod_test_line_name names[] = {
+	static const GPIOSimLineName names[] = {
 		{ .offset = 1, .name = "foo", },
 		{ .offset = 2, .name = "bar", },
 		{ .offset = 4, .name = "baz", },
@@ -47,7 +47,7 @@ GPIOD_TEST_CASE(line_info_basic_properties)
 		{ }
 	};
 
-	static const struct gpiod_test_hog hogs[] = {
+	static const GPIOSimHog hogs[] = {
 		{
 			.offset = 3,
 			.name = "hog3",
