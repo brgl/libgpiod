@@ -17,7 +17,6 @@ all-local:
 		--library-dirs=$(top_builddir)/lib/.libs/:$(top_srcdir)/tests/gpiosim/.libs/
 
 install-exec-local:
-	GPIOD_WITH_TESTS= \
 	$(PYTHON) $(srcdir)/setup.py install --prefix=$(DESTDIR)$(prefix)
 
 SUBDIRS = gpiod
