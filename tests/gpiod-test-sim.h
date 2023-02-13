@@ -11,6 +11,12 @@
 G_BEGIN_DECLS
 
 typedef enum {
+	G_GPIOSIM_VALUE_ERROR = -1,
+	G_GPIOSIM_VALUE_INACTIVE = 0,
+	G_GPIOSIM_VALUE_ACTIVE = 1,
+} GPIOSimValue;
+
+typedef enum {
 	G_GPIOSIM_PULL_UP = 1,
 	G_GPIOSIM_PULL_DOWN,
 } GPIOSimPull;
@@ -54,7 +60,8 @@ G_DECLARE_FINAL_TYPE(GPIOSimChip, g_gpiosim_chip, G_GPIOSIM, CHIP, GObject);
 const gchar *g_gpiosim_chip_get_dev_path(GPIOSimChip *self);
 const gchar *g_gpiosim_chip_get_name(GPIOSimChip *self);
 
-gint _g_gpiosim_chip_get_value(GPIOSimChip *self, guint offset, GError **err);
+GPIOSimValue
+_g_gpiosim_chip_get_value(GPIOSimChip *self, guint offset, GError **err);
 void g_gpiosim_chip_set_pull(GPIOSimChip *self, guint offset, GPIOSimPull pull);
 
 #define g_gpiosim_chip_get_value(self, offset) \

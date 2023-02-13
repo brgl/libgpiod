@@ -416,25 +416,32 @@ const gchar *g_gpiosim_chip_get_name(GPIOSimChip *self)
 	return g_gpiosim_chip_get_string_prop(self, "name");
 }
 
-gint _g_gpiosim_chip_get_value(GPIOSimChip *chip, guint offset, GError **err)
+GPIOSimValue
+_g_gpiosim_chip_get_value(GPIOSimChip *chip, guint offset, GError **err)
 {
-	gint val;
+	enum gpiosim_value val;
 
 	val = gpiosim_bank_get_value(chip->bank, offset);
-	if (val < 0) {
+	switch (val) {
+	case GPIOSIM_VALUE_ERROR:
 		g_set_error(err, G_GPIOSIM_ERROR,
 			    G_GPIOSIM_ERR_GET_VALUE_FAILED,
 			    "Unable to read the line value: %s",
 			    g_strerror(errno));
-		return -1;
+		return G_GPIOSIM_VALUE_ERROR;
+	case GPIOSIM_VALUE_INACTIVE:
+		return G_GPIOSIM_VALUE_INACTIVE;
+	case GPIOSIM_VALUE_ACTIVE:
+		return G_GPIOSIM_VALUE_ACTIVE;
 	}
 
-	return val;
+	g_error("Invalid line value returned by gpiosim");
 }
 
 void g_gpiosim_chip_set_pull(GPIOSimChip *chip, guint offset, GPIOSimPull pull)
 {
-	gint ret, sim_pull;
+	enum gpiosim_pull sim_pull;
+	gint ret;
 
 	switch (pull) {
 	case G_GPIOSIM_PULL_DOWN:

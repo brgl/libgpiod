@@ -310,13 +310,13 @@ GPIOD_TEST_CASE(set_global_output_values)
 	request = gpiod_test_request_lines_or_fail(chip, NULL, config);
 
 	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 0), ==,
-			GPIOD_LINE_VALUE_ACTIVE);
+			G_GPIOSIM_VALUE_ACTIVE);
 	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 1), ==,
-			GPIOD_LINE_VALUE_INACTIVE);
+			G_GPIOSIM_VALUE_INACTIVE);
 	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 2), ==,
-			GPIOD_LINE_VALUE_ACTIVE);
+			G_GPIOSIM_VALUE_ACTIVE);
 	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 3), ==,
-			GPIOD_LINE_VALUE_INACTIVE);
+			G_GPIOSIM_VALUE_INACTIVE);
 }
 
 GPIOD_TEST_CASE(read_back_global_output_values)
