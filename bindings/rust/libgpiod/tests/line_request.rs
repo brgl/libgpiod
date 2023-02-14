@@ -181,7 +181,8 @@ mod line_request {
             assert_eq!(config.sim_val(4).unwrap(), SimValue::InActive);
 
             // Set all values
-            config.request()
+            config
+                .request()
                 .set_values(&[
                     Value::Active,
                     Value::InActive,
@@ -193,7 +194,8 @@ mod line_request {
             assert_eq!(config.sim_val(1).unwrap(), SimValue::InActive);
             assert_eq!(config.sim_val(3).unwrap(), SimValue::Active);
             assert_eq!(config.sim_val(4).unwrap(), SimValue::InActive);
-            config.request()
+            config
+                .request()
                 .set_values(&[
                     Value::InActive,
                     Value::InActive,

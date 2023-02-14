@@ -5,11 +5,11 @@
 mod common;
 
 mod line_config {
+    use gpiosim_sys::Sim;
     use libgpiod::chip::Chip;
     use libgpiod::line::{
         self, Bias, Direction, Drive, Edge, EventClock, SettingKind, SettingVal, Value,
     };
-    use gpiosim_sys::Sim;
 
     #[test]
     fn settings() {
@@ -93,7 +93,7 @@ mod line_config {
                 Value::Active,
                 Value::InActive,
                 Value::Active,
-                Value::InActive
+                Value::InActive,
             ])
             .unwrap();
 

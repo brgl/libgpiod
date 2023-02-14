@@ -55,7 +55,11 @@ impl Config {
     }
 
     /// Add line settings for a set of offsets.
-    pub fn add_line_settings(&mut self, offsets: &[Offset], settings: Settings) -> Result<&mut Self> {
+    pub fn add_line_settings(
+        &mut self,
+        offsets: &[Offset],
+        settings: Settings,
+    ) -> Result<&mut Self> {
         // SAFETY: `gpiod_line_config` is guaranteed to be valid here.
         let ret = unsafe {
             gpiod::gpiod_line_config_add_line_settings(
@@ -84,8 +88,11 @@ impl Config {
         }
 
         let ret = unsafe {
-            gpiod::gpiod_line_config_set_output_values(self.config, mapped_values.as_ptr(),
-                                                       values.len() as u64)
+            gpiod::gpiod_line_config_set_output_values(
+                self.config,
+                mapped_values.as_ptr(),
+                values.len() as u64,
+            )
         };
 
         if ret == -1 {
