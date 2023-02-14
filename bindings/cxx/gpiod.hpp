@@ -23,11 +23,7 @@
  * the declarations in exception.hpp in order to expose the symbols of classes
  * inheriting from standard exceptions.
  */
-#ifdef GPIOD_CXX_BUILD
 #define GPIOD_CXX_API __attribute__((visibility("default")))
-#else
-#define GPIOD_CXX_API __attribute__((visibility("hidden")))
-#endif
 
 #define __LIBGPIOD_GPIOD_CXX_INSIDE__
 #include "gpiodcxx/chip.hpp"
