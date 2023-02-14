@@ -2,8 +2,6 @@
 // SPDX-FileCopyrightText: 2022 Linaro Ltd.
 // SPDX-FileCopyrightTest: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
-use std::os::raw::c_ulong;
-
 use super::{
     gpiod,
     line::{Offset, Settings, SettingsMap, Value},
@@ -65,7 +63,7 @@ impl Config {
             gpiod::gpiod_line_config_add_line_settings(
                 self.config,
                 offsets.as_ptr(),
-                offsets.len() as c_ulong,
+                offsets.len(),
                 settings.settings,
             )
         };
@@ -91,7 +89,7 @@ impl Config {
             gpiod::gpiod_line_config_set_output_values(
                 self.config,
                 mapped_values.as_ptr(),
-                values.len() as u64,
+                values.len(),
             )
         };
 

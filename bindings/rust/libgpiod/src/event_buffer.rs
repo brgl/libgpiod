@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: 2022 Linaro Ltd.
 // SPDX-FileCopyrightTest: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
-use std::os::raw::c_ulong;
 use std::ptr;
 
 use super::{
@@ -74,7 +73,7 @@ impl Buffer {
     pub fn new(capacity: usize) -> Result<Self> {
         // SAFETY: The `gpiod_edge_event_buffer` returned by libgpiod is guaranteed to live as long
         // as the `struct Buffer`.
-        let buffer = unsafe { gpiod::gpiod_edge_event_buffer_new(capacity as c_ulong) };
+        let buffer = unsafe { gpiod::gpiod_edge_event_buffer_new(capacity) };
         if buffer.is_null() {
             return Err(Error::OperationFailed(
                 OperationType::EdgeEventBufferNew,

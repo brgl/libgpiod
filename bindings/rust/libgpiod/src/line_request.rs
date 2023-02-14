@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2022 Linaro Ltd.
 // SPDX-FileCopyrightTest: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
-use std::os::{raw::c_ulong, unix::prelude::AsRawFd};
+use std::os::unix::prelude::AsRawFd;
 use std::time::Duration;
 
 use super::{
@@ -40,7 +40,7 @@ impl Request {
             gpiod::gpiod_line_request_get_requested_offsets(
                 self.request,
                 offsets.as_mut_ptr(),
-                self.num_lines() as u64,
+                self.num_lines(),
             )
         };
         offsets.shrink_to(num_offsets as usize);
@@ -70,7 +70,7 @@ impl Request {
         let ret = unsafe {
             gpiod::gpiod_line_request_get_values_subset(
                 self.request,
-                offsets.len() as c_ulong,
+                offsets.len(),
                 offsets.as_ptr(),
                 values.as_mut_ptr(),
             )
@@ -127,7 +127,7 @@ impl Request {
         let ret = unsafe {
             gpiod::gpiod_line_request_set_values_subset(
                 self.request,
-                offsets.len() as c_ulong,
+                offsets.len(),
                 offsets.as_ptr(),
                 values.as_ptr(),
             )

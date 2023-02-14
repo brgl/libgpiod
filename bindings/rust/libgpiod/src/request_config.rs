@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightTest: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
 use std::ffi::{CStr, CString};
-use std::os::raw::{c_char, c_ulong};
+use std::os::raw::c_char;
 use std::str;
 
 use super::{gpiod, Error, OperationType, Result};
@@ -75,7 +75,7 @@ impl Config {
     /// Set the size of the kernel event buffer for the request.
     pub fn set_event_buffer_size(&mut self, size: usize) -> &mut Self {
         // SAFETY: `gpiod_request_config` is guaranteed to be valid here.
-        unsafe { gpiod::gpiod_request_config_set_event_buffer_size(self.config, size as c_ulong) }
+        unsafe { gpiod::gpiod_request_config_set_event_buffer_size(self.config, size) }
 
         self
     }
