@@ -518,6 +518,7 @@ class LineRequestSurvivesParentChip(TestCase):
 
         chip.close()
         self.assertEqual(req.get_values([0]), [Value.INACTIVE])
+        req.release()
 
 
 class LineRequestStringRepresentation(TestCase):
