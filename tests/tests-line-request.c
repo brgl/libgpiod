@@ -243,7 +243,7 @@ GPIOD_TEST_CASE(set_all_values)
 		GPIOD_LINE_VALUE_ACTIVE,
 		GPIOD_LINE_VALUE_ACTIVE
 	};
-	static const enum gpiod_line_value sim_values[] = {
+	static const GPIOSimValue sim_values[] = {
 		G_GPIOSIM_VALUE_ACTIVE,
 		G_GPIOSIM_VALUE_INACTIVE,
 		G_GPIOSIM_VALUE_ACTIVE,
