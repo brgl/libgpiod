@@ -13,8 +13,6 @@
 
 #include "gpiod.hpp"
 
-#define GPIOD_CXX_UNUSED	__attribute__((unused))
-
 namespace gpiod {
 
 template<class cxx_enum_type, class c_enum_type>

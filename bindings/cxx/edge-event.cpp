@@ -47,7 +47,7 @@ edge_event::impl_external::impl_external()
 }
 
 ::std::shared_ptr<edge_event::impl>
-edge_event::impl_external::copy(const ::std::shared_ptr<impl>& self GPIOD_CXX_UNUSED) const
+edge_event::impl_external::copy([[maybe_unused]] const ::std::shared_ptr<impl>& self) const
 {
 	::std::shared_ptr<impl> ret(new impl_managed);
 	impl_managed& managed = dynamic_cast<impl_managed&>(*ret);
