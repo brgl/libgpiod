@@ -14,7 +14,6 @@
 #include "gpiod.hpp"
 
 #define GPIOD_CXX_UNUSED	__attribute__((unused))
-#define GPIOD_CXX_NORETURN	__attribute__((noreturn))
 
 namespace gpiod {
 
