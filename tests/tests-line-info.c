@@ -19,8 +19,7 @@ GPIOD_TEST_CASE(get_line_info_good)
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
 
-	info = gpiod_chip_get_line_info(chip, 3);
-	g_assert_nonnull(info);
+	info = gpiod_test_get_line_info_or_fail(chip, 3);
 	g_assert_cmpuint(gpiod_line_info_get_offset(info), ==, 3);
 }
 
