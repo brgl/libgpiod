@@ -31,7 +31,7 @@ class line_info;
 /**
  * @brief Immutable object containing data about a single line info event.
  */
-class info_event
+class info_event final
 {
 public:
 

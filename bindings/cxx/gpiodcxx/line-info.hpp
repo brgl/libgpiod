@@ -31,7 +31,7 @@ class info_event;
  * @brief Contains an immutable snapshot of the line's state at the
  *        time when the object of this class was instantiated.
  */
-class line_info
+class line_info final
 {
 public:
 

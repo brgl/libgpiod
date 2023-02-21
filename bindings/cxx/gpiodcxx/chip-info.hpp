@@ -27,7 +27,7 @@ class chip;
 /**
  * @brief Represents an immutable snapshot of GPIO chip information.
  */
-class chip_info
+class chip_info final
 {
 public:
 

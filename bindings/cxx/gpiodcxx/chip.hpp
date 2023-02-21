@@ -38,7 +38,7 @@ class request_config;
 /**
  * @brief Represents a GPIO chip.
  */
-class chip
+class chip final
 {
 public:
 

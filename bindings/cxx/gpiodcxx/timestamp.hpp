@@ -26,7 +26,7 @@ namespace gpiod {
  * @brief Stores the edge and info event timestamps as returned by the kernel
  *        and allows to convert them to std::chrono::time_point.
  */
-class timestamp
+class timestamp final
 {
 public:
 

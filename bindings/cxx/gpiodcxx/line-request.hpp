@@ -34,7 +34,7 @@ class line_config;
 /**
  * @brief Stores the context of a set of requested GPIO lines.
  */
-class line_request
+class line_request final
 {
 public:
 

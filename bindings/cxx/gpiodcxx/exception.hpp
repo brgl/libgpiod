@@ -25,7 +25,7 @@ namespace gpiod {
 /**
  * @brief Exception thrown when an already closed chip is used.
  */
-class GPIOD_CXX_API chip_closed : public ::std::logic_error
+class GPIOD_CXX_API chip_closed final : public ::std::logic_error
 {
 public:
 
@@ -61,13 +61,13 @@ public:
 	 */
 	chip_closed& operator=(chip_closed&& other) noexcept;
 
-	virtual ~chip_closed();
+	~chip_closed();
 };
 
 /**
  * @brief Exception thrown when an already released line request is used.
  */
-class GPIOD_CXX_API request_released : public ::std::logic_error
+class GPIOD_CXX_API request_released final : public ::std::logic_error
 {
 public:
 
@@ -103,14 +103,14 @@ public:
 	 */
 	request_released& operator=(request_released&& other) noexcept;
 
-	virtual ~request_released();
+	~request_released();
 };
 
 /**
  * @brief Exception thrown when the core C library returns an invalid value
  *        for any of the line_info properties.
  */
-class GPIOD_CXX_API bad_mapping : public ::std::runtime_error
+class GPIOD_CXX_API bad_mapping final : public ::std::runtime_error
 {
 public:
 
@@ -146,7 +146,7 @@ public:
 	 */
 	bad_mapping& operator=(bad_mapping&& other) noexcept;
 
-	virtual ~bad_mapping();
+	~bad_mapping();
 };
 
 /**

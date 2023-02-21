@@ -30,7 +30,7 @@ class request_config;
 /**
  * @brief Intermediate object storing the configuration for a line request.
  */
-class request_builder
+class request_builder final
 {
 public:
 

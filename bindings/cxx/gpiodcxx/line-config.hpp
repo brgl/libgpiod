@@ -30,7 +30,7 @@ class line_settings;
  * @brief Contains a set of line config options used in line requests and
  *        reconfiguration.
  */
-class line_config
+class line_config final
 {
 public:
 

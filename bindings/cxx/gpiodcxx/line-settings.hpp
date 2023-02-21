@@ -29,7 +29,7 @@ class line_config;
 /**
  * @brief Stores GPIO line settings.
  */
-class line_settings
+class line_settings final
 {
 public:
 

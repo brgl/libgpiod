@@ -32,7 +32,7 @@ class chip;
  * @brief Stores a set of options passed to the kernel when making a line
  *        request.
  */
-class request_config
+class request_config final
 {
 public:
 

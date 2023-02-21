@@ -30,7 +30,7 @@ class edge_event_buffer;
 /**
  * @brief Immutable object containing data about a single edge event.
  */
-class edge_event
+class edge_event final
 {
 public:
 

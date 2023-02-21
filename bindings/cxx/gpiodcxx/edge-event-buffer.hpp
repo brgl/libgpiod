@@ -34,7 +34,7 @@ class line_request;
  * buffer which improves the performance by avoiding needless memory
  * allocations.
  */
-class edge_event_buffer
+class edge_event_buffer final
 {
 public:
 
