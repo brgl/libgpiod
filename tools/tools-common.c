@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <gpiod.h>
 #include <inttypes.h>
-#include <libgen.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
