@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <gpiod.h>
+#include <libgen.h>
 #include <limits.h>
 #include <linux/gpio.h>
 #include <poll.h>
