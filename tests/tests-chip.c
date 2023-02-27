@@ -155,6 +155,36 @@ GPIOD_TEST_CASE(find_line_duplicate)
 			==, 2);
 }
 
+GPIOD_TEST_CASE(find_line_non_standard_names)
+{
+	static const GPIOSimLineName names[] = {
+		{ .offset = 1, .name = "with whitespace", },
+		{ .offset = 2, .name = "[:-]chars", },
+		{ .offset = 3, .name = "l", },
+		{ .offset = 6, .name = "ALLCAPS", },
+		{ }
+	};
+
+	g_autoptr(GVariant) vnames = gpiod_test_package_line_names(names);
+	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 8,
+							"line-names", vnames,
+							NULL);
+
+	g_autoptr(struct_gpiod_chip) chip = NULL;
+
+	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
+
+	g_assert_cmpint(gpiod_chip_get_line_offset_from_name(chip,
+							     "with whitespace"),
+			 ==, 1);
+	g_assert_cmpint(gpiod_chip_get_line_offset_from_name(chip, "[:-]chars"),
+			==, 2);
+	g_assert_cmpint(gpiod_chip_get_line_offset_from_name(chip, "l"),
+			==, 3);
+	g_assert_cmpint(gpiod_chip_get_line_offset_from_name(chip, "ALLCAPS"),
+			==, 6);
+}
+
 GPIOD_TEST_CASE(find_line_null_name)
 {
 	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new(NULL);
