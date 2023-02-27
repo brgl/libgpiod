@@ -185,12 +185,12 @@ struct edge_event::impl
 	virtual ::std::shared_ptr<impl> copy(const ::std::shared_ptr<impl>& self) const = 0;
 };
 
-struct edge_event::impl_managed : public edge_event::impl
+struct edge_event::impl_managed final : public edge_event::impl
 {
 	impl_managed() = default;
 	impl_managed(const impl_managed& other) = delete;
 	impl_managed(impl_managed&& other) = delete;
-	virtual ~impl_managed() = default;
+	~impl_managed() = default;
 	impl_managed& operator=(const impl_managed& other) = delete;
 	impl_managed& operator=(impl_managed&& other) = delete;
 
@@ -200,12 +200,12 @@ struct edge_event::impl_managed : public edge_event::impl
 	edge_event_ptr event;
 };
 
-struct edge_event::impl_external : public edge_event::impl
+struct edge_event::impl_external final : public edge_event::impl
 {
 	impl_external();
 	impl_external(const impl_external& other) = delete;
 	impl_external(impl_external&& other) = delete;
-	virtual ~impl_external() = default;
+	~impl_external() = default;
 	impl_external& operator=(const impl_external& other) = delete;
 	impl_external& operator=(impl_external&& other) = delete;
 
