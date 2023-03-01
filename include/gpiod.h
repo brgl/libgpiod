@@ -688,7 +688,7 @@ gpiod_line_settings_get_debounce_period_us(
  * @return 0 on success, -1 on failure.
  */
 int gpiod_line_settings_set_event_clock(struct gpiod_line_settings *settings,
-				enum gpiod_line_clock event_clock);
+					enum gpiod_line_clock event_clock);
 
 /**
  * @brief Get event clock setting.
