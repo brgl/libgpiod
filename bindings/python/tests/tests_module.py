@@ -51,7 +51,7 @@ class IsGPIOChip(TestCase):
 
 class VersionString(TestCase):
 
-    VERSION_PATTERN = "^[0-9][1-9]?\\.[0-9][1-9]?(\\.[0-9]?|\\-devel|\\-rc[0-9])$"
+    VERSION_PATTERN = "^[0-9][1-9]?\\.[0-9][1-9]?((\\.[0-9])?|\\-devel|\\-rc[0-9])$"
 
     def test_api_version_string(self):
         self.assertRegex(gpiod.api_version, VersionString.VERSION_PATTERN)
