@@ -254,18 +254,7 @@ gpiod_line_settings_set_output_value(struct gpiod_line_settings *settings,
 {
 	assert(settings);
 
-	switch (value) {
-	case GPIOD_LINE_VALUE_INACTIVE:
-	case GPIOD_LINE_VALUE_ACTIVE:
-		settings->output_value = value;
-		break;
-	default:
-		settings->output_value = GPIOD_LINE_VALUE_INACTIVE;
-		errno = EINVAL;
-		return -1;
-	}
-
-	return 0;
+	return gpiod_set_output_value(value, &settings->output_value);
 }
 
 GPIOD_API enum gpiod_line_value

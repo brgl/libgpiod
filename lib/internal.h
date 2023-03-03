@@ -35,6 +35,8 @@ gpiod_info_event_from_uapi(struct gpio_v2_line_info_changed *uapi_evt);
 struct gpiod_info_event *gpiod_info_event_read_fd(int fd);
 
 int gpiod_poll_fd(int fd, int64_t timeout);
+int gpiod_set_output_value(enum gpiod_line_value in,
+			   enum gpiod_line_value *out);
 
 void gpiod_line_mask_zero(uint64_t *mask);
 void gpiod_line_mask_fill(uint64_t *mask);

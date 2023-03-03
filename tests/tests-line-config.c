@@ -347,3 +347,21 @@ GPIOD_TEST_CASE(read_back_global_output_values)
 	g_assert_cmpint(gpiod_line_settings_get_output_value(retrieved), ==,
 			GPIOD_LINE_VALUE_INACTIVE);
 }
+
+GPIOD_TEST_CASE(set_output_values_invalid_value)
+{
+	static const enum gpiod_line_value values[] = {
+		GPIOD_LINE_VALUE_ACTIVE,
+		GPIOD_LINE_VALUE_INACTIVE,
+		999,
+		GPIOD_LINE_VALUE_INACTIVE,
+	};
+
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+
+	config = gpiod_test_create_line_config_or_fail();
+
+	g_assert_cmpint(gpiod_line_config_set_output_values(config, values, 4),
+			==, -1);
+	gpiod_test_expect_errno(EINVAL);
+}

@@ -181,12 +181,23 @@ gpiod_line_config_set_output_values(struct gpiod_line_config *config,
 				    const enum gpiod_line_value *values,
 				    size_t num_values)
 {
+	size_t i;
+	int ret;
+
 	if (num_values > LINES_MAX) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	memcpy(config->output_values, values, num_values * sizeof(*values));
+	for (i = 0; i < num_values; i++) {
+		ret = gpiod_set_output_value(values[i],
+					     &config->output_values[i]);
+		if (ret) {
+			config->num_output_values = 0;
+			return ret;
+		}
+	}
+
 	config->num_output_values = num_values;
 
 	return 0;

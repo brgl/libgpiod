@@ -105,6 +105,22 @@ int gpiod_poll_fd(int fd, int64_t timeout_ns)
 	return 1;
 }
 
+int gpiod_set_output_value(enum gpiod_line_value in, enum gpiod_line_value *out)
+{
+	switch (in) {
+	case GPIOD_LINE_VALUE_INACTIVE:
+	case GPIOD_LINE_VALUE_ACTIVE:
+		*out = in;
+		break;
+	default:
+		*out = GPIOD_LINE_VALUE_INACTIVE;
+		errno = EINVAL;
+		return -1;
+	}
+
+	return 0;
+}
+
 void gpiod_line_mask_zero(uint64_t *mask)
 {
 	*mask = 0ULL;
