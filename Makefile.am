@@ -3,7 +3,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = include lib
+SUBDIRS = include lib contrib
 
 EXTRA_DIST = \
 	LICENSES/GPL-2.0-or-later.txt \
