@@ -34,7 +34,7 @@ struct config {
 
 static void print_help(void)
 {
-	printf("Usage: %s [OPTIONS] <line>...\n", get_progname());
+	printf("Usage: %s [OPTIONS] <line>...\n", get_prog_name());
 	printf("\n");
 	printf("Wait for events on GPIO lines and print them to standard output.\n");
 	printf("\n");
@@ -195,7 +195,7 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 			print_version();
 			exit(EXIT_SUCCESS);
 		case '?':
-			die("try %s --help", get_progname());
+			die("try %s --help", get_prog_name());
 		case 0:
 			break;
 		default:
@@ -360,6 +360,7 @@ int main(int argc, char **argv)
 	struct config cfg;
 	int ret, i, j;
 
+	set_prog_name(argv[0]);
 	i = parse_config(argc, argv, &cfg);
 	argc -= i;
 	argv += i;

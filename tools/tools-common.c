@@ -19,9 +19,28 @@
 
 #include "tools-common.h"
 
-const char *get_progname(void)
+static const char *prog_name = NULL;
+static const char *prog_short_name = NULL;
+
+void set_prog_name(const char *name)
 {
-	return program_invocation_name;
+	prog_name = name;
+	prog_short_name = name;
+	while (*name) {
+		if (*name++ == '/') {
+			prog_short_name = name;
+		}
+	}
+}
+
+const char *get_prog_name(void)
+{
+	return prog_name;
+}
+
+const char *get_prog_short_name(void)
+{
+	return prog_short_name;
 }
 
 void print_error(const char *fmt, ...)
@@ -29,7 +48,7 @@ void print_error(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	fprintf(stderr, "%s: ", program_invocation_name);
+	fprintf(stderr, "%s: ", get_prog_name());
 	vfprintf(stderr, fmt, va);
 	fprintf(stderr, "\n");
 	va_end(va);
@@ -40,7 +59,7 @@ void print_perror(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	fprintf(stderr, "%s: ", program_invocation_name);
+	fprintf(stderr, "%s: ", get_prog_name());
 	vfprintf(stderr, fmt, va);
 	fprintf(stderr, ": %s\n", strerror(errno));
 	va_end(va);
@@ -51,7 +70,7 @@ void die(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	fprintf(stderr, "%s: ", program_invocation_name);
+	fprintf(stderr, "%s: ", get_prog_name());
 	vfprintf(stderr, fmt, va);
 	fprintf(stderr, "\n");
 	va_end(va);
@@ -64,7 +83,7 @@ void die_perror(const char *fmt, ...)
 	va_list va;
 
 	va_start(va, fmt);
-	fprintf(stderr, "%s: ", program_invocation_name);
+	fprintf(stderr, "%s: ", get_prog_name());
 	vfprintf(stderr, fmt, va);
 	fprintf(stderr, ": %s\n", strerror(errno));
 	va_end(va);
@@ -74,8 +93,7 @@ void die_perror(const char *fmt, ...)
 
 void print_version(void)
 {
-	printf("%s (libgpiod) v%s\n",
-	       program_invocation_short_name, gpiod_api_version());
+	printf("%s (libgpiod) v%s\n", get_prog_short_name(), gpiod_api_version());
 	printf("Copyright (C) 2017-2023 Bartosz Golaszewski\n");
 	printf("License: GPL-2.0-or-later\n");
 	printf("This is free software: you are free to change and redistribute it.\n");

@@ -78,7 +78,9 @@ struct line_resolver {
 	struct resolved_line lines[];
 };
 
-const char *get_progname(void);
+void set_prog_name(const char *name);
+const char *get_prog_name(void);
+const char *get_prog_short_name(void);
 void print_error(const char *fmt, ...) PRINTF(1, 2);
 void print_perror(const char *fmt, ...) PRINTF(1, 2);
 void die(const char *fmt, ...) NORETURN PRINTF(1, 2);

@@ -12,7 +12,7 @@
 
 static void print_help(void)
 {
-	printf("Usage: %s [OPTIONS] [chip]...\n", get_progname());
+	printf("Usage: %s [OPTIONS] [chip]...\n", get_prog_name());
 	printf("\n");
 	printf("List GPIO chips, print their labels and number of GPIO lines.\n");
 	printf("\n");
@@ -51,7 +51,7 @@ static int parse_config(int argc, char **argv)
 			print_version();
 			exit(EXIT_SUCCESS);
 		case '?':
-			die("try %s --help", get_progname());
+			die("try %s --help", get_prog_name());
 		default:
 			abort();
 		}
@@ -89,6 +89,7 @@ int main(int argc, char **argv)
 	int num_chips, i, ret = EXIT_SUCCESS;
 	char **paths, *path;
 
+	set_prog_name(argv[0]);
 	i = parse_config(argc, argv);
 	argc -= i;
 	argv += i;
