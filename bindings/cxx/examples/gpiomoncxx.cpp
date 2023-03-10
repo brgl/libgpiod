@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 	}
 
 	::gpiod::line::offsets offsets;
-	offsets.reserve(argc);
+	offsets.reserve(argc - 2);
 	for (int i = 2; i < argc; i++)
 		offsets.push_back(::std::stoul(argv[i]));
 
