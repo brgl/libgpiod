@@ -30,7 +30,7 @@ GPIOD_API struct gpiod_chip *gpiod_chip_open(const char *path)
 	if (!gpiod_check_gpiochip_device(path, true))
 		return NULL;
 
-	fd = open(path, O_RDWR | O_CLOEXEC | O_NONBLOCK);
+	fd = open(path, O_RDWR | O_CLOEXEC);
 	if (fd < 0)
 		return NULL;
 
