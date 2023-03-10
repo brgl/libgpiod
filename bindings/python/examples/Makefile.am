@@ -7,4 +7,5 @@ EXTRA_DIST = \
 	gpioget.py \
 	gpioinfo.py \
 	gpiomon.py \
+	gpionotify.py \
 	gpioset.py
