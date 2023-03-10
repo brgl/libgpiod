@@ -9,6 +9,7 @@ EXTRA_DIST = \
 	gpioget.rs \
 	gpioinfo.rs \
 	gpiomon.rs \
+	gpionotify.rs \
 	gpioset.rs \
 	gpio_threaded_info_events.rs \
 	gpiowatch.rs
