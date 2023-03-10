@@ -3,7 +3,6 @@
 
 /* Simplified C++ reimplementation of the gpiomon tool. */
 
-#include <chrono>
 #include <cstdlib>
 #include <gpiod.hpp>
 #include <iostream>
