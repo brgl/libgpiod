@@ -6,4 +6,5 @@ gpiofindcxx
 gpiogetcxx
 gpioinfocxx
 gpiomoncxx
+gpionotifycxx
 gpiosetcxx
