@@ -184,7 +184,9 @@ gpiod_line_config_set_output_values(struct gpiod_line_config *config,
 	size_t i;
 	int ret;
 
-	if (num_values > LINES_MAX) {
+	assert(config);
+
+	if (!num_values || num_values > LINES_MAX || !values) {
 		errno = EINVAL;
 		return -1;
 	}
