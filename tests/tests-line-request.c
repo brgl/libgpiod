@@ -585,7 +585,7 @@ GPIOD_TEST_CASE(reconfigure_lines_different_offsets)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets1, 3,
 							 NULL);
 
-	ret = gpiod_line_request_reconfigure_lines(request, NULL);
+	ret = gpiod_line_request_reconfigure_lines(request, line_cfg);
 	g_assert_cmpint(ret, ==, -1);
 	gpiod_test_expect_errno(EINVAL);
 }
