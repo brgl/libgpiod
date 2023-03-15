@@ -39,7 +39,6 @@ int gpiod_set_output_value(enum gpiod_line_value in,
 			   enum gpiod_line_value *out);
 
 void gpiod_line_mask_zero(uint64_t *mask);
-void gpiod_line_mask_fill(uint64_t *mask);
 bool gpiod_line_mask_test_bit(const uint64_t *mask, int nr);
 void gpiod_line_mask_set_bit(uint64_t *mask, unsigned int nr);
 void gpiod_line_mask_assign_bit(uint64_t *mask, unsigned int nr, bool value);

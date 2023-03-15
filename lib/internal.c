@@ -126,11 +126,6 @@ void gpiod_line_mask_zero(uint64_t *mask)
 	*mask = 0ULL;
 }
 
-void gpiod_line_mask_fill(uint64_t *mask)
-{
-	*mask = UINT64_MAX;
-}
-
 bool gpiod_line_mask_test_bit(const uint64_t *mask, int nr)
 {
 	return *mask & (1ULL << nr);
