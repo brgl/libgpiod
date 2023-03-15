@@ -26,6 +26,19 @@ GPIOD_TEST_CASE(request_fails_with_no_offsets)
 	gpiod_test_expect_errno(EINVAL);
 }
 
+GPIOD_TEST_CASE(request_fails_with_no_line_config)
+{
+	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 4, NULL);
+	g_autoptr(struct_gpiod_chip) chip = NULL;
+	g_autoptr(struct_gpiod_line_request) request = NULL;
+
+	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
+
+	request = gpiod_chip_request_lines(chip, NULL, NULL);
+	g_assert_null(request);
+	gpiod_test_expect_errno(EINVAL);
+}
+
 GPIOD_TEST_CASE(request_fails_with_duplicate_offsets)
 {
 	static const guint offsets[] = { 0, 2, 2, 3 };
