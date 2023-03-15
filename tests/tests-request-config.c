@@ -29,6 +29,9 @@ GPIOD_TEST_CASE(set_consumer)
 	gpiod_request_config_set_consumer(config, "foobar");
 	g_assert_cmpstr(gpiod_request_config_get_consumer(config), ==,
 			"foobar");
+
+	gpiod_request_config_set_consumer(config, NULL);
+	g_assert_null(gpiod_request_config_get_consumer(config));
 }
 
 GPIOD_TEST_CASE(set_event_buffer_size)
