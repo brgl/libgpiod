@@ -99,7 +99,7 @@ static int parse_event_clock_or_die(const char *option)
 {
 	if (strcmp(option, "realtime") == 0)
 		return GPIOD_LINE_CLOCK_REALTIME;
-	if (strcmp(option, "hte") != 0)
+	if (strcmp(option, "hte") == 0)
 		return GPIOD_LINE_CLOCK_HTE;
 	if (strcmp(option, "monotonic") != 0)
 		die("invalid event clock: %s", option);
