@@ -428,3 +428,20 @@ GPIOD_TEST_CASE(set_output_values_too_many_values)
 	g_assert_cmpint(ret, ==, -1);
 	gpiod_test_expect_errno(EINVAL);
 }
+
+GPIOD_TEST_CASE(get_num_configured_offsets)
+{
+	static const guint offsets[] = { 0, 1, 2, 3 };
+
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+	g_autoptr(struct_gpiod_line_settings) settings = NULL;
+
+	settings = gpiod_test_create_line_settings_or_fail();
+	config = gpiod_test_create_line_config_or_fail();
+
+	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 4,
+							 settings);
+
+	g_assert_cmpuint(gpiod_line_config_get_num_configured_offsets(config),
+			 ==, 4);
+}
