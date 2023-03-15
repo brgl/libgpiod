@@ -150,6 +150,26 @@ GPIOD_TEST_CASE(null_settings)
 			GPIOD_LINE_DIRECTION_AS_IS);
 }
 
+GPIOD_TEST_CASE(null_and_0_offsets)
+{
+	static const guint offsets[] = { 0, 1, 2, 3 };
+
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+	g_autoptr(struct_gpiod_line_settings) settings = NULL;
+	gint ret;
+
+	config = gpiod_test_create_line_config_or_fail();
+	settings = gpiod_test_create_line_settings_or_fail();
+
+	ret = gpiod_line_config_add_line_settings(config, NULL, 4, settings);
+	g_assert_cmpint(ret, ==, -1);
+	gpiod_test_expect_errno(EINVAL);
+
+	ret = gpiod_line_config_add_line_settings(config, offsets, 0, settings);
+	g_assert_cmpint(ret, ==, -1);
+	gpiod_test_expect_errno(EINVAL);
+}
+
 GPIOD_TEST_CASE(reset_config)
 {
 	static const guint offsets[] = { 0, 1, 2, 3 };
