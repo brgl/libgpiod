@@ -459,8 +459,6 @@ GPIOD_TEST_CASE(active_low_read_value)
 
 GPIOD_TEST_CASE(reconfigure_lines)
 {
-	//static const guint offsets[] = { 0, 1, 2, 3 };
-
 	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 4, NULL);
 	g_autoptr(struct_gpiod_chip) chip = NULL;
 	g_autoptr(struct_gpiod_line_settings) settings = NULL;
