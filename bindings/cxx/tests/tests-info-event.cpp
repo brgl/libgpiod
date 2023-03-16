@@ -124,6 +124,8 @@ TEST_CASE("line info can be unwatched", "[info-event]")
 
 	chip.unwatch_line_info(5);
 
+	request.release();
+
 	REQUIRE_FALSE(chip.wait_info_event(::std::chrono::milliseconds(100)));
 }
 
