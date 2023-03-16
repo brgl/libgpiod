@@ -103,6 +103,30 @@ TEST_CASE("Lines can be watched", "[info-event][chip]")
 	}
 }
 
+TEST_CASE("line info can be unwatched", "[info-event]")
+{
+	auto sim = make_sim()
+		.set_num_lines(8)
+		.build();
+
+	::gpiod::chip chip(sim.dev_path());
+
+	auto info = chip.watch_line_info(5);
+
+	auto request = chip
+		.prepare_request()
+		.add_line_settings(5, ::gpiod::line_settings())
+		.do_request();
+
+	REQUIRE(chip.wait_info_event(::std::chrono::seconds(1)));
+	auto event = chip.read_info_event();
+	REQUIRE(event.type() == event_type::LINE_REQUESTED);
+
+	chip.unwatch_line_info(5);
+
+	REQUIRE_FALSE(chip.wait_info_event(::std::chrono::milliseconds(100)));
+}
+
 TEST_CASE("info_event can be copied and moved", "[info-event]")
 {
 	auto sim = make_sim().build();
