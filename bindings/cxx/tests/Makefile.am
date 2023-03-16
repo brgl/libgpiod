@@ -4,10 +4,8 @@
 AM_CXXFLAGS = -I$(top_srcdir)/bindings/cxx/ -I$(top_srcdir)/include
 AM_CXXFLAGS += -I$(top_srcdir)/tests/gpiosim/
 AM_CXXFLAGS += -Wall -Wextra -g -std=gnu++17 $(CATCH2_CFLAGS)
-AM_CXXFLAGS += $(PROFILING_CFLAGS)
 AM_LDFLAGS = -lgpiodcxx -L$(top_builddir)/bindings/cxx/
 AM_LDFLAGS += -lgpiosim -L$(top_builddir)/tests/gpiosim/
-AM_LDFLAGS += $(PROFILING_LDFLAGS)
 AM_LDFLAGS += -pthread
 
 bin_PROGRAMS = gpiod-cxx-test
