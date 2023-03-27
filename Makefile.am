@@ -35,7 +35,7 @@ SUBDIRS += bindings
 if HAS_DOXYGEN
 
 doc: Doxyfile
-	@doxygen Doxyfile
+	$(AM_V_GEN)doxygen Doxyfile
 .PHONY: doc
 
 clean-local:

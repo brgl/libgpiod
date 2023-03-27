@@ -12,7 +12,7 @@ dist_man1_MANS = \
 	gpionotify.man
 
 %.man: $(top_builddir)/tools/$(*F)
-	help2man $(top_builddir)/tools/$(*F) --include=$(srcdir)/template --output=$(builddir)/$@ --no-info
+	$(AM_V_GEN)help2man $(top_builddir)/tools/$(*F) --include=$(srcdir)/template --output=$(builddir)/$@ --no-info
 
 clean-local:
 	rm -f $(dist_man1_MANS)
