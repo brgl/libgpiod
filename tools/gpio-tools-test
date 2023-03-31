@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 
-# Switch to v5.17.0 once released
-MIN_KERNEL_VERSION="5.16.0"
+MIN_KERNEL_VERSION="5.17.4"
 BATS_SCRIPT="gpio-tools-test.bats"
 SOURCE_DIR="$(dirname ${BASH_SOURCE[0]})"
 
