@@ -282,7 +282,7 @@ GPIOD_TEST_CASE(unwatch_and_check_that_no_events_are_generated)
 	g_assert_nonnull(info);
 	gpiod_test_return_if_failed();
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	ret = gpiod_chip_wait_info_event(chip, 100000000);
 	g_assert_cmpint(ret, >, 0);

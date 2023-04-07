@@ -19,7 +19,7 @@ GPIOD_TEST_CASE(get_line_info_good)
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
 
-	info = gpiod_test_get_line_info_or_fail(chip, 3);
+	info = gpiod_test_chip_get_line_info_or_fail(chip, 3);
 	g_assert_cmpuint(gpiod_line_info_get_offset(info), ==, 3);
 }
 
@@ -74,8 +74,8 @@ GPIOD_TEST_CASE(line_info_basic_properties)
 			NULL);
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
-	info4 = gpiod_test_get_line_info_or_fail(chip, 4);
-	info6 = gpiod_test_get_line_info_or_fail(chip, 6);
+	info4 = gpiod_test_chip_get_line_info_or_fail(chip, 4);
+	info6 = gpiod_test_chip_get_line_info_or_fail(chip, 6);
 
 	g_assert_cmpuint(gpiod_line_info_get_offset(info4), ==, 4);
 	g_assert_cmpstr(gpiod_line_info_get_name(info4), ==, "baz");
@@ -104,7 +104,7 @@ GPIOD_TEST_CASE(copy_line_info)
 	g_autoptr(struct_gpiod_line_info) copy = NULL;
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
-	info = gpiod_test_get_line_info_or_fail(chip, 3);
+	info = gpiod_test_chip_get_line_info_or_fail(chip, 3);
 
 	copy = gpiod_line_info_copy(info);
 	g_assert_nonnull(copy);
@@ -143,10 +143,10 @@ GPIOD_TEST_CASE(direction_settings)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
-	info0 = gpiod_test_get_line_info_or_fail(chip, 0);
-	info1 = gpiod_test_get_line_info_or_fail(chip, 1);
-	info2 = gpiod_test_get_line_info_or_fail(chip, 2);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
+	info0 = gpiod_test_chip_get_line_info_or_fail(chip, 0);
+	info1 = gpiod_test_chip_get_line_info_or_fail(chip, 1);
+	info2 = gpiod_test_chip_get_line_info_or_fail(chip, 2);
 
 	g_assert_cmpint(gpiod_line_info_get_direction(info0), ==,
 			GPIOD_LINE_DIRECTION_OUTPUT);
@@ -175,8 +175,8 @@ GPIOD_TEST_CASE(active_high)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset,
 							 1, settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
-	info = gpiod_test_get_line_info_or_fail(chip, 5);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
+	info = gpiod_test_chip_get_line_info_or_fail(chip, 5);
 
 	g_assert_true(gpiod_line_info_is_active_low(info));
 }
@@ -217,11 +217,11 @@ GPIOD_TEST_CASE(edge_detection_settings)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
-	info0 = gpiod_test_get_line_info_or_fail(chip, 0);
-	info1 = gpiod_test_get_line_info_or_fail(chip, 1);
-	info2 = gpiod_test_get_line_info_or_fail(chip, 2);
-	info3 = gpiod_test_get_line_info_or_fail(chip, 3);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
+	info0 = gpiod_test_chip_get_line_info_or_fail(chip, 0);
+	info1 = gpiod_test_chip_get_line_info_or_fail(chip, 1);
+	info2 = gpiod_test_chip_get_line_info_or_fail(chip, 2);
+	info3 = gpiod_test_chip_get_line_info_or_fail(chip, 3);
 
 	g_assert_cmpint(gpiod_line_info_get_edge_detection(info0), ==,
 			GPIOD_LINE_EDGE_NONE);
@@ -268,11 +268,11 @@ GPIOD_TEST_CASE(bias_settings)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
-	info0 = gpiod_test_get_line_info_or_fail(chip, 0);
-	info1 = gpiod_test_get_line_info_or_fail(chip, 1);
-	info2 = gpiod_test_get_line_info_or_fail(chip, 2);
-	info3 = gpiod_test_get_line_info_or_fail(chip, 3);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
+	info0 = gpiod_test_chip_get_line_info_or_fail(chip, 0);
+	info1 = gpiod_test_chip_get_line_info_or_fail(chip, 1);
+	info2 = gpiod_test_chip_get_line_info_or_fail(chip, 2);
+	info3 = gpiod_test_chip_get_line_info_or_fail(chip, 3);
 
 	g_assert_cmpint(gpiod_line_info_get_bias(info0), ==,
 			GPIOD_LINE_BIAS_UNKNOWN);
@@ -314,10 +314,10 @@ GPIOD_TEST_CASE(drive_settings)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
-	info0 = gpiod_test_get_line_info_or_fail(chip, 0);
-	info1 = gpiod_test_get_line_info_or_fail(chip, 1);
-	info2 = gpiod_test_get_line_info_or_fail(chip, 2);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
+	info0 = gpiod_test_chip_get_line_info_or_fail(chip, 0);
+	info1 = gpiod_test_chip_get_line_info_or_fail(chip, 1);
+	info2 = gpiod_test_chip_get_line_info_or_fail(chip, 2);
 
 	g_assert_cmpint(gpiod_line_info_get_drive(info0), ==,
 			GPIOD_LINE_DRIVE_PUSH_PULL);
@@ -348,8 +348,8 @@ GPIOD_TEST_CASE(debounce_period)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
-	info = gpiod_test_get_line_info_or_fail(chip, 5);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
+	info = gpiod_test_chip_get_line_info_or_fail(chip, 5);
 
 	g_assert_cmpuint(gpiod_line_info_get_debounce_period_us(info), ==,
 			 1000);
@@ -394,9 +394,9 @@ GPIOD_TEST_CASE(event_clock)
 
 	gpiod_test_return_if_failed();
 
-	info0 = gpiod_test_get_line_info_or_fail(chip, 0);
-	info1 = gpiod_test_get_line_info_or_fail(chip, 1);
-	info2 = gpiod_test_get_line_info_or_fail(chip, 2);
+	info0 = gpiod_test_chip_get_line_info_or_fail(chip, 0);
+	info1 = gpiod_test_chip_get_line_info_or_fail(chip, 1);
+	info2 = gpiod_test_chip_get_line_info_or_fail(chip, 2);
 
 	g_assert_cmpint(gpiod_line_info_get_event_clock(info0), ==,
 			GPIOD_LINE_CLOCK_MONOTONIC);

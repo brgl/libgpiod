@@ -71,7 +71,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 		_chip; \
 	})
 
-#define gpiod_test_get_chip_info_or_fail(_chip) \
+#define gpiod_test_chip_get_info_or_fail(_chip) \
 	({ \
 		struct gpiod_chip_info *_info = gpiod_chip_get_info(_chip); \
 		g_assert_nonnull(_info); \
@@ -79,7 +79,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 		_info; \
 	})
 
-#define gpiod_test_get_line_info_or_fail(_chip, _offset) \
+#define gpiod_test_chip_get_line_info_or_fail(_chip, _offset) \
 	({ \
 		struct gpiod_line_info *_info = \
 				gpiod_chip_get_line_info(_chip, _offset); \
@@ -116,7 +116,8 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 	})
 
 #define gpiod_test_line_config_add_line_settings_or_fail(_line_cfg, _offsets, \
-						_num_offsets, _settings) \
+							 _num_offsets, \
+							 _settings) \
 	do { \
 		gint _ret = gpiod_line_config_add_line_settings(_line_cfg, \
 								_offsets,  \
@@ -155,7 +156,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 		_config; \
 	})
 
-#define gpiod_test_request_lines_or_fail(_chip, _req_cfg, _line_cfg) \
+#define gpiod_test_chip_request_lines_or_fail(_chip, _req_cfg, _line_cfg) \
 	({ \
 		struct gpiod_line_request *_request = \
 			gpiod_chip_request_lines(_chip, \
@@ -165,7 +166,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 		_request; \
 	})
 
-#define gpiod_test_reconfigure_lines_or_fail(_request, _line_cfg) \
+#define gpiod_test_line_request_reconfigure_lines_or_fail(_request, _line_cfg) \
 	do { \
 		gint _ret = gpiod_line_request_reconfigure_lines(_request, \
 								 _line_cfg); \

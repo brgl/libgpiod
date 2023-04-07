@@ -49,7 +49,7 @@ GPIOD_TEST_CASE(edge_event_wait_timeout)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	ret = gpiod_line_request_wait_edge_events(request, 1000000);
 	g_assert_cmpint(ret, ==, 0);
@@ -122,7 +122,7 @@ GPIOD_TEST_CASE(read_both_events)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	thread = g_thread_new("request-release",
 			      falling_and_rising_edge_events, sim);
@@ -199,7 +199,7 @@ GPIOD_TEST_CASE(read_rising_edge_event)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	thread = g_thread_new("edge-generator",
 			      falling_and_rising_edge_events, sim);
@@ -258,7 +258,7 @@ GPIOD_TEST_CASE(read_falling_edge_event)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	thread = g_thread_new("request-release",
 			      falling_and_rising_edge_events, sim);
@@ -319,7 +319,7 @@ GPIOD_TEST_CASE(read_rising_edge_event_polled)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	thread = g_thread_new("edge-generator",
 			      falling_and_rising_edge_events, sim);
@@ -391,7 +391,7 @@ GPIOD_TEST_CASE(read_both_events_blocking)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	thread = g_thread_new("request-release",
 			      falling_and_rising_edge_events, sim);
@@ -470,7 +470,7 @@ GPIOD_TEST_CASE(seqno)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 2,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	thread = g_thread_new("request-release",
 			      rising_edge_events_on_two_offsets, sim);
@@ -542,7 +542,7 @@ GPIOD_TEST_CASE(event_copy)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	g_gpiosim_chip_set_pull(sim, 2, G_GPIOSIM_PULL_UP);
 
@@ -586,7 +586,7 @@ GPIOD_TEST_CASE(reading_more_events_than_the_queue_contains_doesnt_block)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	g_gpiosim_chip_set_pull(sim, 2, G_GPIOSIM_PULL_UP);
 	g_usleep(500);
@@ -633,7 +633,7 @@ GPIOD_TEST_CASE(null_buffer)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	ret = gpiod_line_request_read_edge_events(request, NULL, 1);
 	g_assert_cmpint(ret, ==, -1);
@@ -664,7 +664,7 @@ GPIOD_TEST_CASE(get_edge_event_index_out_of_bounds)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	g_gpiosim_chip_set_pull(sim, 2, G_GPIOSIM_PULL_UP);
 	g_usleep(500);

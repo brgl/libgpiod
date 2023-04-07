@@ -327,7 +327,7 @@ GPIOD_TEST_CASE(set_global_output_values)
 							 settings);
 	gpiod_test_line_config_set_output_values_or_fail(config, values, 4);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, config);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, config);
 
 	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 0), ==,
 			G_GPIOSIM_VALUE_ACTIVE);

@@ -108,9 +108,10 @@ GPIOD_TEST_CASE(set_consumer)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 NULL);
 
-	request = gpiod_test_request_lines_or_fail(chip, req_cfg, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip,
+							req_cfg, line_cfg);
 
-	info = gpiod_test_get_line_info_or_fail(chip, offset);
+	info = gpiod_test_chip_get_line_info_or_fail(chip, offset);
 
 	g_assert_true(gpiod_line_info_is_used(info));
 	g_assert_cmpstr(gpiod_line_info_get_consumer(info), ==, consumer);
@@ -132,9 +133,9 @@ GPIOD_TEST_CASE(empty_consumer)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 NULL);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
-	info = gpiod_test_get_line_info_or_fail(chip, offset);
+	info = gpiod_test_chip_get_line_info_or_fail(chip, offset);
 
 	g_assert_cmpstr(gpiod_line_info_get_consumer(info), ==, "?");
 }
@@ -167,7 +168,7 @@ GPIOD_TEST_CASE(default_output_value)
 
 	g_gpiosim_chip_set_pull(sim, 2, G_GPIOSIM_PULL_DOWN);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	for (i = 0; i < 4; i++)
 		g_assert_cmpint(g_gpiosim_chip_get_value(sim, offsets[i]), ==,
@@ -199,7 +200,7 @@ GPIOD_TEST_CASE(read_all_values)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 5,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	for (i = 0; i < 5; i++)
 		g_gpiosim_chip_set_pull(sim, offsets[i],
@@ -235,7 +236,7 @@ GPIOD_TEST_CASE(request_multiple_values_but_read_one)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 5,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	for (i = 0; i < 5; i++)
 		g_gpiosim_chip_set_pull(sim, offsets[i],
@@ -281,7 +282,7 @@ GPIOD_TEST_CASE(set_all_values)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 5,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	ret = gpiod_line_request_set_values(request, values);
 	g_assert_cmpint(ret, ==, 0);
@@ -318,7 +319,7 @@ GPIOD_TEST_CASE(set_values_subset_of_lines)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 4,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	ret = gpiod_line_request_set_values_subset(request, 3, offsets_to_set,
 						   values);
@@ -354,7 +355,7 @@ GPIOD_TEST_CASE(set_line_after_requesting)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 4,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	gpiod_line_request_set_value(request, 1, GPIOD_LINE_VALUE_ACTIVE);
 
@@ -389,7 +390,7 @@ GPIOD_TEST_CASE(request_survives_parent_chip)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	g_assert_cmpint(gpiod_line_request_get_value(request, offset), ==,
 			GPIOD_LINE_VALUE_ACTIVE);
@@ -424,7 +425,7 @@ GPIOD_TEST_CASE(num_lines_and_offsets)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 8,
 							 NULL);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	g_assert_cmpuint(gpiod_line_request_get_num_requested_lines(request),
 			 ==, 8);
@@ -460,7 +461,7 @@ GPIOD_TEST_CASE(active_low_read_value)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	g_gpiosim_chip_set_pull(sim, 2, G_GPIOSIM_PULL_DOWN);
 	value = gpiod_line_request_get_value(request, 2);
@@ -499,7 +500,7 @@ GPIOD_TEST_CASE(reconfigure_lines)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 2,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 0), ==,
 			G_GPIOSIM_VALUE_ACTIVE);
@@ -554,7 +555,7 @@ GPIOD_TEST_CASE(reconfigure_lines_null_config)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 4,
 							 NULL);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	ret = gpiod_line_request_reconfigure_lines(request, NULL);
 	g_assert_cmpint(ret, ==, -1);
@@ -578,7 +579,7 @@ GPIOD_TEST_CASE(reconfigure_lines_different_offsets)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets0, 4,
 							 NULL);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	gpiod_line_config_reset(line_cfg);
 
@@ -613,7 +614,7 @@ GPIOD_TEST_CASE(request_lines_with_unordered_offsets)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 6,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	values[0] = 0;
 	values[1] = 1;
@@ -658,7 +659,7 @@ GPIOD_TEST_CASE(request_with_bias_set_to_pull_up)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 settings);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 3), ==,
 			G_GPIOSIM_VALUE_ACTIVE);
@@ -681,7 +682,7 @@ GPIOD_TEST_CASE(get_requested_offsets_less_and_more)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 4,
 							 NULL);
 
-	request = gpiod_test_request_lines_or_fail(chip, NULL, line_cfg);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
 	num_retrieved = gpiod_line_request_get_requested_offsets(request,
 								 retrieved, 3);
