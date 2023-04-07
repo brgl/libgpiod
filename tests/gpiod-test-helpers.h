@@ -88,6 +88,15 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(struct_gpiod_edge_event_buffer,
 		_info; \
 	})
 
+#define gpiod_test_chip_watch_line_info_or_fail(_chip, _offset) \
+	({ \
+		struct gpiod_line_info *_info = \
+				gpiod_chip_watch_line_info(_chip, _offset); \
+		g_assert_nonnull(_info); \
+		gpiod_test_return_if_failed(); \
+		_info; \
+	})
+
 #define gpiod_test_create_line_settings_or_fail() \
 	({ \
 		struct gpiod_line_settings *_settings = \

@@ -18,9 +18,7 @@ GPIOD_TEST_CASE(watching_info_events_returns_line_info)
 	g_autoptr(struct_gpiod_line_info) info = NULL;
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
-
-	info = gpiod_chip_watch_line_info(chip, 3);
-	g_assert_nonnull(info);
+	info = gpiod_test_chip_watch_line_info_or_fail(chip, 3);
 	g_assert_cmpuint(gpiod_line_info_get_offset(info), ==, 3);
 }
 
@@ -31,7 +29,6 @@ GPIOD_TEST_CASE(try_offset_out_of_range)
 	g_autoptr(struct_gpiod_line_info) info = NULL;
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
-
 	info = gpiod_chip_watch_line_info(chip, 10);
 	g_assert_null(info);
 	gpiod_test_expect_errno(EINVAL);
@@ -45,10 +42,7 @@ GPIOD_TEST_CASE(event_timeout)
 	gint ret;
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
-
-	info = gpiod_chip_watch_line_info(chip, 6);
-	g_assert_nonnull(info);
-	gpiod_test_return_if_failed();
+	info = gpiod_test_chip_watch_line_info_or_fail(chip, 6);
 
 	ret = gpiod_chip_wait_info_event(chip, 100000000);
 	g_assert_cmpint(ret, ==, 0);
@@ -121,9 +115,7 @@ GPIOD_TEST_CASE(request_reconfigure_release_events)
 	line_cfg = gpiod_test_create_line_config_or_fail();
 	settings = gpiod_test_create_line_settings_or_fail();
 
-	info = gpiod_chip_watch_line_info(chip, 3);
-	g_assert_nonnull(info);
-	gpiod_test_return_if_failed();
+	info = gpiod_test_chip_watch_line_info_or_fail(chip, 3);
 
 	g_assert_false(gpiod_line_info_is_used(info));
 
@@ -217,9 +209,7 @@ GPIOD_TEST_CASE(chip_fd_can_be_polled)
 	settings = gpiod_test_create_line_settings_or_fail();
 	line_cfg = gpiod_test_create_line_config_or_fail();
 
-	info = gpiod_chip_watch_line_info(chip, 3);
-	g_assert_nonnull(info);
-	gpiod_test_return_if_failed();
+	info = gpiod_test_chip_watch_line_info_or_fail(chip, 3);
 
 	g_assert_false(gpiod_line_info_is_used(info));
 
@@ -278,9 +268,7 @@ GPIOD_TEST_CASE(unwatch_and_check_that_no_events_are_generated)
 	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
 							 NULL);
 
-	info = gpiod_chip_watch_line_info(chip, 3);
-	g_assert_nonnull(info);
-	gpiod_test_return_if_failed();
+	info = gpiod_test_chip_watch_line_info_or_fail(chip, 3);
 
 	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
 
