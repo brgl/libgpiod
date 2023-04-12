@@ -4,6 +4,7 @@
 include setup.py
 
 recursive-include gpiod *.py
+recursive-include tests *.py
 
 recursive-include gpiod/ext *.c
 recursive-include gpiod/ext *.h
