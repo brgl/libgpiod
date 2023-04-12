@@ -7,3 +7,6 @@ recursive-include gpiod *.py
 
 recursive-include gpiod/ext *.c
 recursive-include gpiod/ext *.h
+
+recursive-include tests/gpiosim *.c
+recursive-include tests/procname *.c
