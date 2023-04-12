@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+
+include setup.py
+
+recursive-include gpiod *.py
+
+recursive-include gpiod/ext *.c
+recursive-include gpiod/ext *.h
