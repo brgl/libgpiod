@@ -46,7 +46,7 @@ with open(src("gpiod/version.py"), "r") as fd:
     exec(fd.read())
 
 setup(
-    name="gpiod",
+    name="libgpiod",
     packages=find_packages(include=["gpiod"]),
     ext_modules=extensions,
     version=__version__,
