@@ -48,9 +48,9 @@ GPIOD_TEST_CASE(get_line_settings)
 
 	retrieved = gpiod_test_line_config_get_line_settings_or_fail(config, 2);
 
-	g_assert_cmpint(gpiod_line_settings_get_direction(settings), ==,
+	g_assert_cmpint(gpiod_line_settings_get_direction(retrieved), ==,
 			GPIOD_LINE_DIRECTION_INPUT);
-	g_assert_cmpint(gpiod_line_settings_get_bias(settings), ==,
+	g_assert_cmpint(gpiod_line_settings_get_bias(retrieved), ==,
 			GPIOD_LINE_BIAS_PULL_DOWN);
 }
 
