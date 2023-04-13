@@ -79,8 +79,11 @@ static gpointer request_reconfigure_release_line(gpointer data)
 	gpiod_line_config_reset(ctx->line_cfg);
 	gpiod_line_settings_set_direction(ctx->settings,
 					  GPIOD_LINE_DIRECTION_OUTPUT);
-	gpiod_line_config_add_line_settings(ctx->line_cfg, &ctx->offset, 1,
-					    ctx->settings);
+	ret = gpiod_line_config_add_line_settings(ctx->line_cfg, &ctx->offset,
+						  1, ctx->settings);
+	g_assert_cmpint(ret, ==, 0);
+	if (g_test_failed())
+		return NULL;
 
 	ret = gpiod_line_request_reconfigure_lines(request, ctx->line_cfg);
 	g_assert_cmpint(ret, ==, 0);
