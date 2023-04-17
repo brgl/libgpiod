@@ -34,6 +34,6 @@ EXTRA_DIST = gpio-tools-test gpio-tools-test.bats
 
 if WITH_TESTS
 
-bin_SCRIPTS = gpio-tools-test gpio-tools-test.bats
+noinst_SCRIPTS = gpio-tools-test gpio-tools-test.bats
 
 endif

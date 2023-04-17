@@ -11,7 +11,7 @@ LDADD = $(top_builddir)/lib/libgpiod.la
 LDADD += $(top_builddir)/tests/gpiosim/libgpiosim.la
 LDADD += $(GLIB_LIBS) $(GIO_LIBS)
 
-bin_PROGRAMS = gpiod-test
+noinst_PROGRAMS = gpiod-test
 
 gpiod_test_SOURCES = \
 	gpiod-test.c \

@@ -8,7 +8,7 @@ AM_LDFLAGS = -lgpiodcxx -L$(top_builddir)/bindings/cxx/
 AM_LDFLAGS += -lgpiosim -L$(top_builddir)/tests/gpiosim/
 AM_LDFLAGS += -pthread
 
-bin_PROGRAMS = gpiod-cxx-test
+noinst_PROGRAMS = gpiod-cxx-test
 
 gpiod_cxx_test_SOURCES = \
 	check-kernel.cpp \
