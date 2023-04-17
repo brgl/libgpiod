@@ -4,5 +4,5 @@
 build/
 __pycache__/
 dist/
-gpiod.egg-info/
+*.egg-info/
 *.so
