@@ -11,12 +11,13 @@ endif
 
 all-local:
 	GPIOD_WITH_TESTS=$(BUILD_TESTS) \
-	$(PYTHON) $(srcdir)/setup.py build_ext --inplace \
+	$(PYTHON) setup.py build_ext --inplace \
 		--include-dirs=$(top_srcdir)/include/:$(top_srcdir)/tests/gpiosim/ \
 		--library-dirs=$(top_builddir)/lib/.libs/:$(top_srcdir)/tests/gpiosim/.libs/
 
 install-exec-local:
-	$(PYTHON) $(srcdir)/setup.py install --prefix=$(DESTDIR)$(prefix)
+	GPIOD_WITH_TESTS= \
+	$(PYTHON) setup.py install --prefix=$(DESTDIR)$(prefix)
 
 SUBDIRS = gpiod
 
