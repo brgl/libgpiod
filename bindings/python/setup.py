@@ -47,7 +47,7 @@ with open(src("gpiod/version.py"), "r") as fd:
 
 setup(
     name="libgpiod",
-    packages=find_packages(exclude=["tests"]),
+    packages=find_packages(exclude=["tests", "tests.*"]),
     ext_modules=extensions,
     version=__version__,
     author="Bartosz Golaszewski",
