@@ -1,8 +1,23 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-from os import environ
+from os import environ, path
 from setuptools import setup, Extension, find_packages
+from setuptools.command.build_ext import build_ext as orig_build_ext
+from shutil import rmtree
+
+
+class build_ext(orig_build_ext):
+    """
+    setuptools install all C extentions even if they're excluded in setup().
+    As a workaround - remove the tests directory right after all extensions
+    were built (and possibly copied to the source directory if inplace is set).
+    """
+
+    def run(self):
+        super().run()
+        rmtree(path.join(self.build_lib, "tests"), ignore_errors=True)
+
 
 gpiod_ext = Extension(
     "gpiod._ext",
@@ -46,6 +61,7 @@ setup(
     name="libgpiod",
     packages=find_packages(exclude=["tests", "tests.*"]),
     ext_modules=extensions,
+    cmdclass={"build_ext": build_ext},
     version=__version__,
     author="Bartosz Golaszewski",
     author_email="brgl@bgdev.pl",
