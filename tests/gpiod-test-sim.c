@@ -180,10 +180,52 @@ static gboolean g_gpiosim_chip_enable(GPIOSimChip *self)
 	return TRUE;
 }
 
+static gboolean g_gpiosim_ctx_init(GError **err)
+{
+	sim_ctx = gpiosim_ctx_new();
+	if (!sim_ctx) {
+		g_set_error(err, G_GPIOSIM_ERROR,
+			    G_GPIOSIM_ERR_CTX_INIT_FAILED,
+			    "Unable to initialize libgpiosim: %s",
+			    g_strerror(errno));
+		return FALSE;
+	}
+
+	atexit(g_gpiosim_ctx_unref);
+
+	return TRUE;
+}
+
 static void g_gpiosim_chip_constructed(GObject *obj)
 {
 	GPIOSimChip *self = G_GPIOSIM_CHIP(obj);
+	struct gpiosim_dev *dev;
 	gboolean ret;
+
+	if (!sim_ctx) {
+		ret = g_gpiosim_ctx_init(&self->construct_err);
+		if (!ret)
+			return;
+	}
+
+	dev = gpiosim_dev_new(sim_ctx);
+	if (!dev) {
+		g_set_error(&self->construct_err, G_GPIOSIM_ERROR,
+			    G_GPIOSIM_ERR_CHIP_INIT_FAILED,
+			    "Unable to instantiate new GPIO device: %s",
+			    g_strerror(errno));
+		return;
+	}
+
+	self->bank = gpiosim_bank_new(dev);
+	gpiosim_dev_unref(dev);
+	if (!self->bank) {
+		g_set_error(&self->construct_err, G_GPIOSIM_ERROR,
+			    G_GPIOSIM_ERR_CHIP_INIT_FAILED,
+			    "Unable to instantiate new GPIO bank: %s",
+			    g_strerror(errno));
+		return;
+	}
 
 	ret = g_gpiosim_chip_apply_properties(self);
 	if (!ret)
@@ -263,16 +305,12 @@ static void g_gpiosim_chip_dispose(GObject *obj)
 	G_OBJECT_CLASS(g_gpiosim_chip_parent_class)->dispose(obj);
 }
 
-static void g_gpiosim_chip_finalize(GObject *obj)
+static void g_gpiosim_disable_and_cleanup(struct gpiosim_bank *bank)
 {
-	GPIOSimChip *self = G_GPIOSIM_CHIP(obj);
 	struct gpiosim_dev *dev;
 	gint ret;
 
-	g_clear_error(&self->construct_err);
-	g_clear_pointer(&self->label, g_free);
-
-	dev = gpiosim_bank_get_dev(self->bank);
+	dev = gpiosim_bank_get_dev(bank);
 
 	if (gpiosim_dev_is_live(dev)) {
 		ret = gpiosim_dev_disable(dev);
@@ -282,7 +320,16 @@ static void g_gpiosim_chip_finalize(GObject *obj)
 	}
 
 	gpiosim_dev_unref(dev);
-	gpiosim_bank_unref(self->bank);
+	gpiosim_bank_unref(bank);
+}
+
+static void g_gpiosim_chip_finalize(GObject *obj)
+{
+	GPIOSimChip *self = G_GPIOSIM_CHIP(obj);
+
+	g_clear_error(&self->construct_err);
+	g_clear_pointer(&self->label, g_free);
+	g_clear_pointer(&self->bank, g_gpiosim_disable_and_cleanup);
 
 	G_OBJECT_CLASS(g_gpiosim_chip_parent_class)->finalize(obj);
 }
@@ -340,57 +387,13 @@ static void g_gpiosim_chip_class_init(GPIOSimChipClass *chip_class)
 			G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 }
 
-static gboolean g_gpiosim_ctx_init(GError **err)
-{
-	sim_ctx = gpiosim_ctx_new();
-	if (!sim_ctx) {
-		g_set_error(err, G_GPIOSIM_ERROR,
-			    G_GPIOSIM_ERR_CTX_INIT_FAILED,
-			    "Unable to initialize libgpiosim: %s",
-			    g_strerror(errno));
-		return FALSE;
-	}
-
-	atexit(g_gpiosim_ctx_unref);
-
-	return TRUE;
-}
-
 static void g_gpiosim_chip_init(GPIOSimChip *self)
 {
-	struct gpiosim_dev *dev;
-	int ret;
-
 	self->construct_err = NULL;
 	self->num_lines = 1;
 	self->label = NULL;
 	self->line_names = NULL;
 	self->hogs = NULL;
-
-	if (!sim_ctx) {
-		ret = g_gpiosim_ctx_init(&self->construct_err);
-		if (!ret)
-			return;
-	}
-
-	dev = gpiosim_dev_new(sim_ctx);
-	if (!dev) {
-		g_set_error(&self->construct_err, G_GPIOSIM_ERROR,
-			    G_GPIOSIM_ERR_CHIP_INIT_FAILED,
-			    "Unable to instantiate new GPIO device: %s",
-			    g_strerror(errno));
-		return;
-	}
-
-	self->bank = gpiosim_bank_new(dev);
-	gpiosim_dev_unref(dev);
-	if (!self->bank) {
-		g_set_error(&self->construct_err, G_GPIOSIM_ERROR,
-			    G_GPIOSIM_ERR_CHIP_INIT_FAILED,
-			    "Unable to instantiate new GPIO bank: %s",
-			    g_strerror(errno));
-		return;
-	}
 }
 
 static const gchar *
