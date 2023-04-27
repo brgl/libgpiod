@@ -39,34 +39,6 @@ GPIOD_TEST_CASE(request_fails_with_no_line_config)
 	gpiod_test_expect_errno(EINVAL);
 }
 
-GPIOD_TEST_CASE(request_fails_with_duplicate_offsets)
-{
-	static const guint offsets[] = { 0, 2, 2, 3 };
-
-	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 4, NULL);
-	g_autoptr(struct_gpiod_chip) chip = NULL;
-	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
-	g_autoptr(struct_gpiod_line_request) request = NULL;
-	size_t num_requested_offsets;
-	guint requested_offsets[3];
-
-	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
-	line_cfg = gpiod_test_create_line_config_or_fail();
-
-	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, offsets, 4,
-							 NULL);
-
-	request = gpiod_chip_request_lines(chip, NULL, line_cfg);
-	g_assert_nonnull(request);
-	num_requested_offsets =
-			gpiod_line_request_get_num_requested_lines(request);
-	g_assert_cmpuint(num_requested_offsets, ==, 3);
-	gpiod_line_request_get_requested_offsets(request, requested_offsets, 4);
-	g_assert_cmpuint(requested_offsets[0], ==, 0);
-	g_assert_cmpuint(requested_offsets[1], ==, 2);
-	g_assert_cmpuint(requested_offsets[2], ==, 3);
-}
-
 GPIOD_TEST_CASE(request_fails_with_offset_out_of_bounds)
 {
 	static const guint offsets[] = { 2, 6 };

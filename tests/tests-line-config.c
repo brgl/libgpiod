@@ -445,3 +445,26 @@ GPIOD_TEST_CASE(get_num_configured_offsets)
 	g_assert_cmpuint(gpiod_line_config_get_num_configured_offsets(config),
 			 ==, 4);
 }
+
+GPIOD_TEST_CASE(handle_duplicate_offsets)
+{
+	static const guint offsets[] = { 0, 2, 2, 3 };
+
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+	size_t num_retrieved;
+	guint retrieved[3];
+
+	config = gpiod_test_create_line_config_or_fail();
+
+	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 4,
+							 NULL);
+
+	g_assert_cmpuint(gpiod_line_config_get_num_configured_offsets(config),
+			 ==, 3);
+	num_retrieved = gpiod_line_config_get_configured_offsets(config,
+								 retrieved, 3);
+	g_assert_cmpuint(num_retrieved, ==, 3);
+	g_assert_cmpuint(retrieved[0], ==, 0);
+	g_assert_cmpuint(retrieved[1], ==, 2);
+	g_assert_cmpuint(retrieved[2], ==, 3);
+}
