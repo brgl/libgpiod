@@ -2,22 +2,5 @@
 # SPDX-FileCopyrightText: 2022 Linaro Ltd.
 # SPDX-FileCopyrightTest: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
-command = cargo build --release --lib
-
-if WITH_TESTS
-command += --tests
-endif
-
-if WITH_EXAMPLES
-command += --examples
-endif
-
-all:
-	$(command)
-
-clean:
-	cargo clean
-
 EXTRA_DIST = Cargo.toml
-
 SUBDIRS = gpiosim-sys libgpiod libgpiod-sys
