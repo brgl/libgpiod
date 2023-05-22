@@ -25,6 +25,10 @@
  */
 #define GPIOD_CXX_API __attribute__((visibility("default")))
 
+/**
+ * @endcond
+ */
+
 #define __LIBGPIOD_GPIOD_CXX_INSIDE__
 #include "gpiodcxx/chip.hpp"
 #include "gpiodcxx/chip-info.hpp"
@@ -40,9 +44,5 @@
 #include "gpiodcxx/request-builder.hpp"
 #include "gpiodcxx/request-config.hpp"
 #undef __LIBGPIOD_GPIOD_CXX_INSIDE__
-
-/**
- * @endcond
- */
 
 #endif /* __LIBGPIOD_GPIOD_CXX_HPP__ */
