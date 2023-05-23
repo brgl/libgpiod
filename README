@@ -275,8 +275,26 @@ were selected and help2man is available in the system.
 CONTRIBUTING
 ------------
 
-Contributions are welcome - please send patches and bug reports to
-linux-gpio@vger.kernel.org (add the [libgpiod] prefix to the e-mail subject
-line) and stick to the linux kernel coding style when submitting new code.
+Contributions are welcome - please send questions, patches and bug reports
+to the linux-gpio mailing list[2] by e-mailing to linux-gpio@vger.kernel.org
+(add the [libgpiod] prefix to the e-mail subject line).
+Note that the mailing list quietly drops HTML formatted e-mail, so be sure
+to send plain text[3].
+
+Code submissions should stick to the linux kernel coding style[4] and
+follow the kernel patch submission process[5] as applied to the libgpiod
+source tree.
+
+The mailing list archive[6] contains all the historical mails to the list,
+and is the place to check to ensure your e-mail has been received.
+Search for "libgpiod" to filter the list down to relevant messages.
+Those also provide examples of the expected formatting.
+Allow some time for your e-mail to propagate to the list before retrying,
+particularly if there are no e-mails in the list more recent than yours.
 
 [1] https://github.com/bats-core/bats-core
+[2] http://vger.kernel.org/vger-lists.html#linux-gpio
+[3] https://docs.kernel.org/process/email-clients.html
+[4] https://docs.kernel.org/process/coding-style.html
+[5] https://docs.kernel.org/process/submitting-patches.html
+[6] https://lore.kernel.org/linux-gpio/
