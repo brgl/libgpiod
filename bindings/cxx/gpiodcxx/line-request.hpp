@@ -176,7 +176,10 @@ public:
 	/**
 	 * @brief Wait for edge events on any of the lines requested with edge
 	 *        detection enabled.
-	 * @param timeout Wait time limit in nanoseconds.
+	 * @param timeout Wait time limit in nanoseconds. If set to 0, the
+	 *                function returns immediatelly. If set to a negative
+	 *                number, the function blocks indefinitely until an
+	 *                event becomes available.
 	 * @return True if at least one event is ready to be read. False if the
 	 *         wait timed out.
 	 */
