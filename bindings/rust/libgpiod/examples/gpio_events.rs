@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0 OR BSD-3-Clause
 // SPDX-FileCopyrightText: 2022 Linaro Ltd.
-// SPDX-FileCopyrightTest: 2022 Viresh Kumar <viresh.kumar@linaro.org>
+// SPDX-FileCopyrightText: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 //
 // Simplified Rust implementation to show handling of events, when the buffer
 // is read into multiple times. Based on gpiomon example.
