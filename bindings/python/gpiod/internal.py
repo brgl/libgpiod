@@ -7,9 +7,6 @@ from typing import Optional, Union
 
 
 def poll_fd(fd: int, timeout: Optional[Union[timedelta, float]] = None) -> bool:
-    if timeout is None:
-        timeout = 0.0
-
     if isinstance(timeout, timedelta):
         sec = timeout.total_seconds()
     else:

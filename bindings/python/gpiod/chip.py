@@ -195,7 +195,8 @@ class Chip:
         Args:
           timeout:
             Wait time limit represented as either a datetime.timedelta object
-            or the number of seconds stored in a float.
+            or the number of seconds stored in a float. If set to 0, the
+            method returns immediately, if set to None it blocks indefinitely.
 
         Returns:
           True if an info event is ready to be read from the chip, False if the

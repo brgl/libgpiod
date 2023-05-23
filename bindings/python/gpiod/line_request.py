@@ -178,7 +178,8 @@ class LineRequest:
         Args:
           timeout:
             Wait time limit expressed as either a datetime.timedelta object
-            or the number of seconds stored in a float.
+            or the number of seconds stored in a float. If set to 0, the
+            method returns immediately, if set to None it blocks indefinitely.
 
         Returns:
           True if events are ready to be read. False on timeout.
