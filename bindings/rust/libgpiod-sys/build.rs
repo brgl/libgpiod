@@ -2,8 +2,6 @@
 // SPDX-FileCopyrightText: 2022 Linaro Ltd.
 // SPDX-FileCopyrightText: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
-extern crate bindgen;
-
 use std::env;
 use std::path::PathBuf;
 
