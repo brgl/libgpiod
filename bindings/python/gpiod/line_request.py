@@ -11,6 +11,8 @@ from collections.abc import Iterable
 from datetime import timedelta
 from typing import Optional, Union
 
+__all__ = "LineRequest"
+
 
 class LineRequest:
     """

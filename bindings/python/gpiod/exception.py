@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+__all__ = ["ChipClosedError", "RequestReleasedError"]
+
 
 class ChipClosedError(Exception):
     """

@@ -5,6 +5,8 @@
 from . import _ext
 from enum import Enum
 
+__all__ = ["Value", "Direction", "Bias", "Drive", "Edge", "Clock"]
+
 
 class Value(Enum):
     """Logical line states."""

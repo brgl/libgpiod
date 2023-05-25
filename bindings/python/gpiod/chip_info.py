@@ -4,6 +4,8 @@
 
 from dataclasses import dataclass
 
+__all__ = "ChipInfo"
+
 
 @dataclass(frozen=True, repr=False)
 class ChipInfo:

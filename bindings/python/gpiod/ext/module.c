@@ -157,8 +157,8 @@ static PyTypeObject *types[] = {
 PyMODINIT_FUNC PyInit__ext(void)
 {
 	const struct module_const *modconst;
+	PyObject *module, *all;
 	PyTypeObject **type;
-	PyObject *module;
 	int ret;
 
 	module = PyModule_Create(&module_def);
@@ -167,6 +167,19 @@ PyMODINIT_FUNC PyInit__ext(void)
 
 	ret = PyModule_AddStringConstant(module, "api_version",
 					 gpiod_api_version());
+	if (ret) {
+		Py_DECREF(module);
+		return NULL;
+	}
+
+	all = PyList_New(0);
+	if (!all) {
+		Py_DECREF(module);
+		return NULL;
+	}
+
+	ret = PyModule_AddObjectRef(module, "__all__", all);
+	Py_DECREF(all);
 	if (ret) {
 		Py_DECREF(module);
 		return NULL;

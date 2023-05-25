@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import timedelta
 from gpiod.line import Direction, Bias, Drive, Edge, Clock
 
+__all__ = "LineInfo"
+
 
 @dataclass(frozen=True, init=False, repr=False)
 class LineInfo:
