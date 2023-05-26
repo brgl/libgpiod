@@ -18,3 +18,7 @@ edition = "2021"
 
 [build-dependencies]
 bindgen = "0.63"
+system-deps = "2.0"
+
+[package.metadata.system-deps]
+libgpiod = "2"

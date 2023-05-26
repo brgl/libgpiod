@@ -2,7 +2,13 @@
 # SPDX-FileCopyrightText: 2022 Linaro Ltd.
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-command = cargo build --release --lib
+# We do not want to build against the system libs when building with make. So we
+# specify the paths to the build directory of the C lib.
+command = SYSTEM_DEPS_LIBGPIOD_NO_PKG_CONFIG=1 \
+		SYSTEM_DEPS_LIBGPIOD_SEARCH_NATIVE="${PWD}/../../../lib/.libs/" \
+		SYSTEM_DEPS_LIBGPIOD_LIB=gpiod \
+		SYSTEM_DEPS_LIBGPIOD_INCLUDE="${PWD}/../../../include/"  \
+		cargo build --release --lib
 
 if WITH_TESTS
 command += --tests

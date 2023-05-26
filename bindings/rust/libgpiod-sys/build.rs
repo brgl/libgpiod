@@ -1,25 +1,44 @@
 // SPDX-License-Identifier: Apache-2.0 OR BSD-3-Clause
-// SPDX-FileCopyrightText: 2022 Linaro Ltd.
+// SPDX-FileCopyrightText: 2022-2023 Linaro Ltd.
 // SPDX-FileCopyrightText: 2022 Viresh Kumar <viresh.kumar@linaro.org>
+// SPDX-FileCopyrightText: 2023 Erik Schilling <erik.schilling@linaro.org>
 
 use std::env;
 use std::path::PathBuf;
 
-fn generate_bindings() {
+fn main() {
+    // Probe dependency info based on the metadata from Cargo.toml
+    // (and potentially other sources like environment, pkg-config, ...)
+    // https://docs.rs/system-deps/latest/system_deps/#overriding-build-flags
+    let libs = system_deps::Config::new().probe().unwrap();
+
     // Tell cargo to invalidate the built crate whenever following files change
-    println!("cargo:rerun-if-changed=../../../include/gpiod.h");
+    println!("cargo:rerun-if-changed=wrapper.h");
 
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
     // the resulting bindings.
-    let bindings = bindgen::Builder::default()
+    let mut builder = bindgen::Builder::default()
         // The input header we would like to generate
         // bindings for.
-        .header("../../../include/gpiod.h")
+        .header("wrapper.h")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
-        // Finish the builder and generate the bindings.
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks));
+
+    // Inform bindgen about the include paths identified by system_deps.
+    for (_name, lib) in libs {
+        for include_path in lib.include_paths {
+            builder = builder.clang_arg("-I").clang_arg(
+                include_path
+                    .to_str()
+                    .expect("Failed to convert include_path to &str!"),
+            );
+        }
+    }
+
+    // Finish the builder and generate the bindings.
+    let bindings = builder
         .generate()
         // Unwrap the Result and panic on failure.
         .expect("Unable to generate bindings");
@@ -29,11 +48,4 @@ fn generate_bindings() {
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
-}
-
-fn main() {
-    generate_bindings();
-
-    println!("cargo:rustc-link-search=./../../lib/.libs/");
-    println!("cargo:rustc-link-lib=gpiod");
 }

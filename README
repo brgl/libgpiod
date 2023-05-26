@@ -218,7 +218,9 @@ the PYTHON_CPPFLAGS and PYTHON_LIBS variables in order to point the build
 system to the correct locations. During native builds, the configure script
 can auto-detect the location of the development files.
 
-Rust bindings require cargo support.
+Rust bindings require cargo support. When building the Rust bindings along the
+C library using make, they will be automatically configured to build against the
+build results of the C library.
 
 TESTING
 -------

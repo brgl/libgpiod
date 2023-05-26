@@ -8,6 +8,14 @@ SPDX-FileCopyrightText: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 Automatically generated Rust FFI bindings via
 	[bindgen](https://github.com/rust-lang/rust-bindgen).
 
+## Build requirements
+
+A compatible variant of the C library needs to detectable using pkg-config.
+Alternatively, one can inform the build system about the location of the
+libs and headers by setting environment variables. The mechanism for that is
+documented in the
+[system_deps crate documentation](https://docs.rs/system-deps/6.1.0/system_deps/#overriding-build-flags).
+
 ## License
 
 This project is licensed under either of
