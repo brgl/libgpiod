@@ -983,6 +983,7 @@ int gpiod_line_request_get_values(struct gpiod_line_request *request,
  * @param request Line request object.
  * @param offset The offset of the line for which the value should be set.
  * @param value Value to set.
+ * @return 0 on success, -1 on failure.
  */
 int gpiod_line_request_set_value(struct gpiod_line_request *request,
 				 unsigned int offset,
@@ -1014,6 +1015,7 @@ int gpiod_line_request_set_values_subset(struct gpiod_line_request *request,
  *               Each value is associated with the line identified by the
  *               corresponding entry in the offset array filled by
  *               ::gpiod_line_request_get_requested_offsets.
+ * @return 0 on success, -1 on failure.
  */
 int gpiod_line_request_set_values(struct gpiod_line_request *request,
 				  const enum gpiod_line_value *values);
