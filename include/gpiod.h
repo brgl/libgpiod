@@ -1053,7 +1053,7 @@ int gpiod_line_request_get_fd(struct gpiod_line_request *request);
  *                   available.
  * @return 0 if wait timed out, -1 if an error occurred, 1 if an event is
  *         pending.
- *q
+ *
  * Lines must have edge detection set for edge events to be emitted.
  * By default edge detection is disabled.
  */
