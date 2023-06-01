@@ -154,7 +154,7 @@ gpiosim_cleanup() {
 		ls $BANKPATH/line* > /dev/null 2>&1
 		if [ "$?" = "0" ]
 		then
-			for LINE in $(find $BANKPATH/ | egrep "line[0-9]+$")
+			for LINE in $(find $BANKPATH/ | grep -E "line[0-9]+$")
 			do
 				test -e $LINE/hog && rmdir $LINE/hog
 				rmdir $LINE
