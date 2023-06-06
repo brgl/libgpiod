@@ -29,7 +29,7 @@ SUBDIRS += tests
 endif
 
 # Build bindings after core tests. When building tests for bindings, we need
-# libgpiomockup to be already present.
+# libgpiosim to be already present.
 SUBDIRS += bindings
 
 if HAS_DOXYGEN
