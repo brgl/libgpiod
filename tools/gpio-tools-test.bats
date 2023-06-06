@@ -141,6 +141,20 @@ gpiosim_check_value() {
 	[ "$VAL" = "$EXPECTED" ]
 }
 
+gpiosim_wait_value() {
+	local OFFSET=$2
+	local EXPECTED=$3
+	local DEVNAME=${GPIOSIM_DEV_NAME[$1]}
+	local CHIPNAME=${GPIOSIM_CHIP_NAME[$1]}
+	local PORT=$GPIOSIM_SYSFS/$DEVNAME/$CHIPNAME/sim_gpio$OFFSET/value
+
+	for i in {1..15}; do
+		[ "$(<$PORT)" = "$EXPECTED" ] && return
+		sleep 0.1
+	done
+	return 1
+}
+
 gpiosim_cleanup() {
 	for CHIP in ${!GPIOSIM_CHIP_NAME[@]}
 	do
@@ -1567,15 +1581,12 @@ request_release_line() {
 	gpiosim_check_value sim0 4 0
 	gpiosim_check_value sim0 7 0
 
-	sleep 1
-
-	gpiosim_check_value sim0 1 0
+	gpiosim_wait_value sim0 1 0
 	gpiosim_check_value sim0 4 1
 	gpiosim_check_value sim0 7 1
 
-	sleep 1
 
-	gpiosim_check_value sim0 1 1
+	gpiosim_wait_value sim0 1 1
 	gpiosim_check_value sim0 4 0
 	gpiosim_check_value sim0 7 0
 }
