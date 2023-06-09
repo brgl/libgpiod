@@ -44,15 +44,108 @@ extern "C" {
  * handling it, ignoring it or returning an error.
  */
 
+/**
+ * @struct gpiod_chip
+ * @{
+ *
+ * Refer to @ref chips for functions that operate on gpiod_chip.
+ *
+ * @}
+*/
 struct gpiod_chip;
+
+/**
+ * @struct gpiod_chip_info
+ * @{
+ *
+ * Refer to @ref chip_info for functions that operate on gpiod_chip_info.
+ *
+ * @}
+*/
 struct gpiod_chip_info;
+
+/**
+ * @struct gpiod_line_info
+ * @{
+ *
+ * Refer to @ref line_info for functions that operate on gpiod_line_info.
+ *
+ * @}
+*/
 struct gpiod_line_info;
+
+/**
+ * @struct gpiod_line_settings
+ * @{
+ *
+ * Refer to @ref line_settings for functions that operate on
+ * gpiod_line_settings.
+ *
+ * @}
+*/
 struct gpiod_line_settings;
+
+/**
+ * @struct gpiod_line_config
+ * @{
+ *
+ * Refer to @ref line_config for functions that operate on gpiod_line_config.
+ *
+ * @}
+*/
 struct gpiod_line_config;
+
+/**
+ * @struct gpiod_request_config
+ * @{
+ *
+ * Refer to @ref request_config for functions that operate on
+ * gpiod_request_config.
+ *
+ * @}
+*/
 struct gpiod_request_config;
+
+/**
+ * @struct gpiod_line_request
+ * @{
+ *
+ * Refer to @ref line_request for functions that operate on
+ * gpiod_line_request.
+ *
+ * @}
+*/
 struct gpiod_line_request;
+
+/**
+ * @struct gpiod_info_event
+ * @{
+ *
+ * Refer to @ref line_watch for functions that operate on gpiod_info_event.
+ *
+ * @}
+*/
 struct gpiod_info_event;
+
+/**
+ * @struct gpiod_edge_event
+ * @{
+ *
+ * Refer to @ref edge_event for functions that operate on gpiod_edge_event.
+ *
+ * @}
+*/
 struct gpiod_edge_event;
+
+/**
+ * @struct gpiod_edge_event_buffer
+ * @{
+ *
+ * Refer to @ref edge_event for functions that operate on
+ * gpiod_edge_event_buffer.
+ *
+ * @}
+*/
 struct gpiod_edge_event_buffer;
 
 /**
@@ -902,7 +995,7 @@ gpiod_request_config_get_event_buffer_size(struct gpiod_request_config *config);
 /**
  * @}
  *
- * @defgroup request_request Line request operations
+ * @defgroup line_request Line request operations
  * @{
  *
  * Functions allowing interactions with requested lines.
