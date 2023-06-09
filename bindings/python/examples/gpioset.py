@@ -21,16 +21,16 @@ if __name__ == "__main__":
         x, y = arg.split("=")
         return (x, Value(int(y)))
 
+    def make_settings(val):
+        return gpiod.LineSettings(direction=Direction.OUTPUT, output_value=val)
+
     lvs = [parse_value(arg) for arg in sys.argv[2:]]
-    lines = [x[0] for x in lvs]
-    values = dict(lvs)
+    config = dict([(l, make_settings(v)) for (l, v) in lvs])
 
     request = gpiod.request_lines(
         path,
         consumer="gpioset.py",
-        config={tuple(lines): gpiod.LineSettings(direction=Direction.OUTPUT)},
+        config=config,
     )
-
-    vals = request.set_values(values)
 
     input()
