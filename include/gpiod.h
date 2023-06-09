@@ -715,7 +715,7 @@ int gpiod_line_settings_set_output_value(struct gpiod_line_settings *settings,
 enum gpiod_line_value
 gpiod_line_settings_get_output_value(struct gpiod_line_settings *settings);
 
-/*
+/**
  * @}
  *
  * @defgroup line_config Line configuration objects
