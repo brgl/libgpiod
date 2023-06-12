@@ -106,6 +106,14 @@ request_builder::add_line_settings(const line::offsets& offsets, const line_sett
 	return *this;
 }
 
+GPIOD_CXX_API request_builder&
+request_builder::set_output_values(const line::values& values)
+{
+	this->_m_priv->line_cfg.set_output_values(values);
+
+	return *this;
+}
+
 GPIOD_CXX_API line_request request_builder::do_request()
 {
 	line_request_ptr request(::gpiod_chip_request_lines(

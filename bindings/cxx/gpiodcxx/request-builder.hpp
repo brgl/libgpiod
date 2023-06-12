@@ -115,6 +115,14 @@ public:
 	request_builder& add_line_settings(const line::offsets& offsets, const line_settings& settings);
 
 	/**
+	 * @brief Set output values for a number of lines in the line config
+	 *        stored by this object.
+	 * @param values Buffer containing the output values.
+	 * @return Reference to self.
+	 */
+	request_builder& set_output_values(const line::values& values);
+
+	/**
 	 * @brief Make the line request.
 	 * @return New line_request object.
 	 */
