@@ -2083,6 +2083,36 @@ request_release_line() {
 	num_lines_is 4
 }
 
+@test "gpiomon: with debounce-period" {
+	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
+	gpiosim_chip sim1 num_lines=8 line_name=3:baz line_name=4:xyz
+
+	dut_run gpiomon --banner --debounce-period 123us foo baz
+
+	run_tool gpioinfo
+
+	output_regex_match "\\s+line\\s+0:\\s+unnamed\\s+input"
+	output_regex_match \
+"\\s+line\\s+1:\\s+\"foo\"\\s+input edges=both debounce-period=123us"
+	output_regex_match \
+"\\s+line\\s+3:\\s+\"baz\"\\s+input edges=both debounce-period=123us"
+	status_is 0
+}
+
+@test "gpiomon: with idle-timeout" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	# redirect, as gpiomon exits
+	dut_run_redirect gpiomon --idle-timeout 10ms --chip $sim0 4
+
+	dut_wait
+	status_is 0
+	dut_read_redirect
+	num_lines_is 0
+}
+
 @test "gpiomon: multiple lines" {
 	gpiosim_chip sim0 num_lines=8
 
@@ -2296,6 +2326,28 @@ request_release_line() {
 	run_tool gpiomon --bias=bad -c $sim0 0 1
 
 	output_regex_match ".*invalid bias.*"
+	status_is 1
+}
+
+@test "gpiomon: with invalid debounce-period" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_tool gpiomon --debounce-period bad -c $sim0 0 1
+
+	output_regex_match ".*invalid period: bad"
+	status_is 1
+}
+
+@test "gpiomon: with invalid idle-timeout" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_tool gpiomon --idle-timeout bad -c $sim0 0 1
+
+	output_regex_match ".*invalid period: bad"
 	status_is 1
 }
 
@@ -2603,6 +2655,22 @@ request_release_line() {
 	num_lines_is 4
 }
 
+@test "gpionotify: with idle-timeout" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	# redirect, as gpionotify exits
+	dut_run_redirect gpionotify --idle-timeout 10ms --chip $sim0 3 4
+
+
+	dut_wait
+	status_is 0
+	dut_read_redirect
+
+	num_lines_is 0
+}
+
 @test "gpionotify: multiple lines" {
 	gpiosim_chip sim0 num_lines=8
 
@@ -2810,6 +2878,17 @@ request_release_line() {
 	run_tool gpionotify --chip $sim0 5
 
 	output_regex_match ".*offset 5 is out of range on chip '$sim0'"
+	status_is 1
+}
+
+@test "gpionotify: with invalid idle-timeout" {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_tool gpionotify --idle-timeout bad -c $sim0 0 1
+
+	output_regex_match ".*invalid period: bad"
 	status_is 1
 }
 
