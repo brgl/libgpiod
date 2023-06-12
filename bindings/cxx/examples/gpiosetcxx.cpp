@@ -44,9 +44,8 @@ int main(int argc, char **argv)
 			::gpiod::line_settings()
 				.set_direction(::gpiod::line::direction::OUTPUT)
 		)
+		.set_output_values(values)
 		.do_request();
-
-	request.set_values(values);
 
 	::std::cin.get();
 
