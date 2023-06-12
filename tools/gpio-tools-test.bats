@@ -148,9 +148,9 @@ gpiosim_wait_value() {
 	local CHIPNAME=${GPIOSIM_CHIP_NAME[$1]}
 	local PORT=$GPIOSIM_SYSFS/$DEVNAME/$CHIPNAME/sim_gpio$OFFSET/value
 
-	for i in {1..15}; do
+	for i in {1..30}; do
 		[ "$(<$PORT)" = "$EXPECTED" ] && return
-		sleep 0.1
+		sleep 0.01
 	done
 	return 1
 }
@@ -1575,7 +1575,7 @@ request_release_line() {
 	gpiosim_set_pull sim0 4 pull-up
 	gpiosim_set_pull sim0 7 pull-up
 
-	dut_run gpioset --banner --toggle 1s foo=1 bar=0 baz=0
+	dut_run gpioset --banner --toggle 100ms foo=1 bar=0 baz=0
 
 	gpiosim_check_value sim0 1 1
 	gpiosim_check_value sim0 4 0
@@ -1589,6 +1589,10 @@ request_release_line() {
 	gpiosim_wait_value sim0 1 1
 	gpiosim_check_value sim0 4 0
 	gpiosim_check_value sim0 7 0
+
+	gpiosim_wait_value sim0 1 0
+	gpiosim_check_value sim0 4 1
+	gpiosim_check_value sim0 7 1
 }
 
 @test "gpioset: toggle (terminated)" {
