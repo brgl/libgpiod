@@ -25,7 +25,7 @@ if __name__ == "__main__":
         return gpiod.LineSettings(direction=Direction.OUTPUT, output_value=val)
 
     lvs = [parse_value(arg) for arg in sys.argv[2:]]
-    config = dict([(l, make_settings(v)) for (l, v) in lvs])
+    config = dict((l, make_settings(v)) for (l, v) in lvs)
 
     request = gpiod.request_lines(
         path,
