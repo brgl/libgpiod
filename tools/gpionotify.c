@@ -23,6 +23,7 @@ struct config {
 	const char *chip_id;
 	const char *fmt;
 	int timestamp_fmt;
+	int timeout;
 };
 
 static void print_help(void)
@@ -43,6 +44,8 @@ static void print_help(void)
 	printf("\t\t\t(default is all events)\n");
 	printf("  -h, --help\t\tdisplay this help and exit\n");
 	printf("  -F, --format <fmt>\tspecify a custom output format\n");
+	printf("      --idle-timeout <period>\n");
+	printf("\t\t\texit gracefully if no events occur for the period specified\n");
 	printf("      --localtime\tconvert event timestamps to local time\n");
 	printf("  -n, --num-events <num>\n");
 	printf("\t\t\texit after processing num events\n");
@@ -52,6 +55,7 @@ static void print_help(void)
 	printf("      --utc\t\tconvert event timestamps to UTC\n");
 	printf("  -v, --version\t\toutput version information and exit\n");
 	print_chip_help();
+	print_period_help();
 	printf("\n");
 	printf("Format specifiers:\n");
 	printf("  %%o   GPIO line offset\n");
@@ -89,6 +93,7 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 		{ "event",	required_argument, NULL,	'e' },
 		{ "format",	required_argument, NULL,	'F' },
 		{ "help",	no_argument,	NULL,		'h' },
+		{ "idle-timeout",	required_argument,	NULL,		'i' },
 		{ "localtime",	no_argument,	&cfg->timestamp_fmt, 2 },
 		{ "num-events",	required_argument, NULL,	'n' },
 		{ "quiet",	no_argument,	NULL,		'q' },
@@ -103,6 +108,7 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 	int opti, optc;
 
 	memset(cfg, 0, sizeof(*cfg));
+	cfg->timeout = -1;
 
 	for (;;) {
 		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
@@ -124,6 +130,9 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 			break;
 		case 'F':
 			cfg->fmt = optarg;
+			break;
+		case 'i':
+			cfg->timeout = parse_period_or_die(optarg) / 1000;
 			break;
 		case 'n':
 			cfg->events_wanted = parse_uint_or_die(optarg);
@@ -362,7 +371,7 @@ static void event_print(struct gpiod_info_event *event,
 
 int main(int argc, char **argv)
 {
-	int i, j, events_done = 0, evtype;
+	int i, j, ret, events_done = 0, evtype;
 	struct line_resolver *resolver;
 	struct gpiod_info_event *event;
 	struct gpiod_chip **chips;
@@ -413,8 +422,12 @@ int main(int argc, char **argv)
 	for (;;) {
 		fflush(stdout);
 
-		if (poll(pollfds, resolver->num_chips, -1) < 0)
+		ret = poll(pollfds, resolver->num_chips, cfg.timeout);
+		if (ret < 0)
 			die_perror("error polling for events");
+
+		if (ret == 0)
+			goto done;
 
 		for (i = 0; i < resolver->num_chips; i++) {
 			if (pollfds[i].revents == 0)
