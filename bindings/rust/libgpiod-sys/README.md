@@ -16,6 +16,15 @@ libs and headers by setting environment variables. The mechanism for that is
 documented in the
 [system_deps crate documentation](https://docs.rs/system-deps/6.1.0/system_deps/#overriding-build-flags).
 
+If installing libgpiod is undesired, one can set the following environent
+variables in order to build against the intermediate build results of a `make`
+build of the C lib (paths are relative to the Cargo.toml):
+
+	export SYSTEM_DEPS_LIBGPIOD_NO_PKG_CONFIG=1
+	export SYSTEM_DEPS_LIBGPIOD_SEARCH_NATIVE="<PATH-TO-LIBGPIOD>/lib/.libs/"
+	export SYSTEM_DEPS_LIBGPIOD_LIB=gpiod
+	export SYSTEM_DEPS_LIBGPIOD_INCLUDE="<PATH-TO-LIBGPIOD>/include/"
+
 ## License
 
 This project is licensed under either of
