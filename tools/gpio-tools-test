@@ -54,4 +54,4 @@ modprobe gpio-sim || die "unable to load the gpio-sim module"
 mountpoint /sys/kernel/config/ > /dev/null 2> /dev/null || \
 	die "configfs not mounted at /sys/kernel/config/"
 
-exec $BATS_PATH $SOURCE_DIR/$BATS_SCRIPT ${1+"$@"}
+exec $BATS_PATH -F tap $SOURCE_DIR/$BATS_SCRIPT ${1+"$@"}
