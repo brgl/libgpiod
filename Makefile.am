@@ -16,6 +16,12 @@ EXTRA_DIST = \
 	LICENSES/LGPL-3.0-or-later.txt \
 	LICENSES/BSD-3-Clause.txt
 
+if WITH_EXAMPLES
+
+SUBDIRS += examples
+
+endif
+
 if WITH_TOOLS
 
 SUBDIRS += tools man
