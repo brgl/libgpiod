@@ -12,7 +12,11 @@ noinst_PROGRAMS = \
 	gpioinfocxx \
 	gpiomoncxx \
 	gpionotifycxx \
-	gpiosetcxx
+	gpiosetcxx \
+	async_watch_line_value \
+	get_line_value \
+	toggle_line_value \
+	watch_line_value
 
 gpiodetectcxx_SOURCES = gpiodetectcxx.cpp
 
@@ -27,3 +31,11 @@ gpiomoncxx_SOURCES = gpiomoncxx.cpp
 gpionotifycxx_SOURCES = gpionotifycxx.cpp
 
 gpiosetcxx_SOURCES = gpiosetcxx.cpp
+
+async_watch_line_value_SOURCES = async_watch_line_value.cpp
+
+get_line_value_SOURCES = get_line_value.cpp
+
+toggle_line_value_SOURCES = toggle_line_value.cpp
+
+watch_line_value_SOURCES = watch_line_value.cpp
