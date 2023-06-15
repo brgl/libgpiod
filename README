@@ -247,8 +247,8 @@ superuser privileges.
 The testing framework uses the GLib unit testing library so development package
 for GLib must be installed.
 
-The gpio-tools programs can be tested separately using the gpio-tools-test.bats
-script. It requires bats[1] to run and assumes that the tested executables are
+The gpio-tools programs can be tested separately using the gpio-tools-test.bash
+script. It requires shunit2[1] to run and assumes that the tested executables are
 in the same directory as the script.
 
 C++, Rust and Python bindings also include their own test-suites. All three
@@ -294,7 +294,7 @@ Those also provide examples of the expected formatting.
 Allow some time for your e-mail to propagate to the list before retrying,
 particularly if there are no e-mails in the list more recent than yours.
 
-[1] https://github.com/bats-core/bats-core
+[1] https://github.com/kward/shunit2
 [2] http://vger.kernel.org/vger-lists.html#linux-gpio
 [3] https://docs.kernel.org/process/email-clients.html
 [4] https://docs.kernel.org/process/coding-style.html

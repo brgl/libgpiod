@@ -1,72 +1,66 @@
-#!/usr/bin/env bats
+#!/bin/bash
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 # SPDX-FileCopyrightText: 2022 Kent Gibson <warthog618@gmail.com>
+# SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
 # Simple test harness for the gpio-tools.
 
-# Where output from the dut is stored
-DUT_OUTPUT=$BATS_TMPDIR/gpio-tools-test-output
+# Where output from the dut is stored (must be used together
+# with SHUNIT_TMPDIR).
+DUT_OUTPUT=gpio-tools-test-output
+
 # Save the PID of coprocess - otherwise we won't be able to wait for it
 # once it exits as the COPROC_PID will be cleared.
 DUT_PID=""
 
+SOURCE_DIR="$(dirname ${BASH_SOURCE[0]})"
+
 # mappings from local name to system chip name, path, dev name
-# -g required for the associative arrays, cos BATS...
-declare -g -A GPIOSIM_CHIP_NAME
-declare -g -A GPIOSIM_CHIP_PATH
-declare -g -A GPIOSIM_DEV_NAME
+declare -A GPIOSIM_CHIP_NAME
+declare -A GPIOSIM_CHIP_PATH
+declare -A GPIOSIM_DEV_NAME
 GPIOSIM_CONFIGFS="/sys/kernel/config/gpio-sim"
 GPIOSIM_SYSFS="/sys/devices/platform/"
 GPIOSIM_APP_NAME="gpio-tools-test"
 
-# Run the command in $* and return 0 if the command failed. The way we do it
-# here is a workaround for the way bats handles failing processes.
+MIN_KERNEL_VERSION="5.17.4"
+MIN_SHUNIT_VERSION="2.1.8"
+
+# Run the command in $* and fail the test if the command succeeds.
 assert_fail() {
 	$* || return 0
-	return 1
+	fail " '$*': command did not fail as expected"
 }
 
 # Check if the string in $2 matches against the pattern in $1.
 regex_matches() {
-	[[ $2 =~ $1 ]] || (echo "Mismatched: \"$2\"" && false)
+	[[ $2 =~ $1 ]]
+	assertEquals " '$2' did not match '$1':" "0" "$?"
 }
 
-# Iterate over all lines in the output of the last command invoked with bats'
-# 'run' or the coproc helper and check if at least one is equal to $1.
 output_contains_line() {
-	local LINE=$1
-
-	for line in "${lines[@]}"
-	do
-		test "$line" = "$LINE" && return 0
-	done
-	echo "Mismatched:"
-	echo "$output"
-	return 1
+	assertContains "$1" "$output"
 }
 
 output_is() {
-	test "$output" = "$1" || (echo "Mismatched: \"$output\"" && false)
+	assertEquals " output:" "$1" "$output"
 }
 
 num_lines_is() {
-	test ${#lines[@]} -eq $1 || (echo "Num lines is: ${#lines[@]}" && false)
+	[ "$1" -eq "0" ] || [ -z "$output" ] && return 0
+	local NUM_LINES=$(echo "$output" | wc -l)
+	assertEquals " number of lines:" "$1" "$NUM_LINES"
 }
 
 status_is() {
-	test "$status" -eq "$1"
+	assertEquals " status:" "$1" "$status"
 }
 
 # Same as above but match against the regex pattern in $1.
 output_regex_match() {
-	for line in "${lines[@]}"
-	do
-		[[ "$line" =~ $1 ]] && return 0
-	done
-	echo "Mismatched:"
-	echo "$output"
-	return 1
+	[[ "$output" =~ $1 ]]
+	assertEquals "0" "$?"
 }
 
 gpiosim_chip() {
@@ -189,17 +183,18 @@ gpiosim_cleanup() {
 run_tool() {
 	# Executables to test are expected to be in the same directory as the
 	# testing script.
-	run timeout 10s $BATS_TEST_DIRNAME/"$@"
+	output=$(timeout 10s $SOURCE_DIR/"$@" 2>&1)
+	status=$?
 }
 
 dut_run() {
-	coproc timeout 10s $BATS_TEST_DIRNAME/"$@" 2>&1
+	coproc timeout 10s $SOURCE_DIR/"$@" 2>&1
 	DUT_PID=$COPROC_PID
 	read -t1 -n1 -u ${COPROC[0]} DUT_FIRST_CHAR
 }
 
 dut_run_redirect() {
-	coproc timeout 10s $BATS_TEST_DIRNAME/"$@" > $DUT_OUTPUT 2>&1
+	coproc timeout 10s $SOURCE_DIR/"$@" > $SHUNIT_TMPDIR/$DUT_OUTPUT 2>&1
 	DUT_PID=$COPROC_PID
 	# give the process time to spin up
 	# FIXME - find a better solution
@@ -207,7 +202,7 @@ dut_run_redirect() {
 }
 
 dut_read_redirect() {
-	output=$(<$DUT_OUTPUT)
+	output=$(<$SHUNIT_TMPDIR/$DUT_OUTPUT)
         local ORIG_IFS="$IFS"
         IFS=$'\n' lines=($output)
         IFS="$ORIG_IFS"
@@ -253,7 +248,8 @@ dut_regex_match() {
 		LINE=${DUT_FIRST_CHAR}${LINE}
 		unset DUT_FIRST_CHAR
 	fi
-	[[ $LINE =~ $PATTERN ]] || (echo "Mismatched: \"$LINE\"" && false)
+	[[ $LINE =~ $PATTERN ]]
+	assertEquals "0" "$?"
 }
 
 dut_write() {
@@ -267,36 +263,34 @@ dut_kill() {
 }
 
 dut_wait() {
-	status="0"
-	# A workaround for the way bats handles command failures.
-	wait $DUT_PID || export status=$?
-	test "$status" -ne 0 || export status="0"
+	wait $DUT_PID
+	export status=$?
 	unset DUT_PID
 }
 
 dut_cleanup() {
         if [ -n "$DUT_PID" ]
         then
-		kill -SIGTERM $DUT_PID
+		kill -SIGTERM $DUT_PID 2> /dev/null
 		wait $DUT_PID || false
         fi
-        rm -f $DUT_OUTPUT
+        rm -f $SHUNIT_TMPDIR/$DUT_OUTPUT
 }
 
-teardown() {
+tearDown() {
 	dut_cleanup
 	gpiosim_cleanup
 }
 
 request_release_line() {
-	$BATS_TEST_DIRNAME/gpioget -c $* >/dev/null
+	$SOURCE_DIR/gpioget -c $* >/dev/null
 }
 
 #
 # gpiodetect test cases
 #
 
-@test "gpiodetect: all chips" {
+test_gpiodetect_all_chips() {
 	gpiosim_chip sim0 num_lines=4
 	gpiosim_chip sim1 num_lines=8
 	gpiosim_chip sim2 num_lines=16
@@ -325,7 +319,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpiodetect: a chip" {
+test_gpiodetect_a_chip() {
 	gpiosim_chip sim0 num_lines=4
 	gpiosim_chip sim1 num_lines=8
 	gpiosim_chip sim2 num_lines=16
@@ -367,7 +361,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpiodetect: multiple chips" {
+test_gpiodetect_multiple_chips() {
 	gpiosim_chip sim0 num_lines=4
 	gpiosim_chip sim1 num_lines=8
 	gpiosim_chip sim2 num_lines=16
@@ -388,7 +382,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpiodetect: with nonexistent chip" {
+test_gpiodetect_with_nonexistent_chip() {
 	run_tool gpiodetect nonexistent-chip
 
 	status_is 1
@@ -400,7 +394,7 @@ request_release_line() {
 # gpioinfo test cases
 #
 
-@test "gpioinfo: all chips" {
+test_gpioinfo_all_chips() {
 	gpiosim_chip sim0 num_lines=4
 	gpiosim_chip sim1 num_lines=8
 
@@ -422,7 +416,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioinfo: all chips with some used lines" {
+test_gpioinfo_all_chips_with_some_used_lines() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 	gpiosim_chip sim1 num_lines=8 line_name=3:baz line_name=4:xyz
 
@@ -440,7 +434,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioinfo: a chip" {
+test_gpioinfo_a_chip() {
 	gpiosim_chip sim0 num_lines=8
 	gpiosim_chip sim1 num_lines=4
 
@@ -492,7 +486,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioinfo: a line" {
+test_gpioinfo_a_line() {
 	gpiosim_chip sim0 num_lines=8 line_name=5:bar
 	gpiosim_chip sim1 num_lines=4 line_name=2:bar
 
@@ -529,7 +523,7 @@ request_release_line() {
 
 }
 
-@test "gpioinfo: first matching named line" {
+test_gpioinfo_first_matching_named_line() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
 				      line_name=3:foobar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
@@ -545,7 +539,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioinfo: multiple lines" {
+test_gpioinfo_multiple_lines() {
 	gpiosim_chip sim0 num_lines=8 line_name=5:bar
 	gpiosim_chip sim1 num_lines=4 line_name=2:baz
 
@@ -577,7 +571,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioinfo: line attribute menagerie" {
+test_gpioinfo_line_attribute_menagerie() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo
 	gpiosim_chip sim1 num_lines=8 line_name=3:baz
 
@@ -652,7 +646,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioinfo: with same line twice" {
+test_gpioinfo_with_same_line_twice() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -682,7 +676,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioinfo: all lines matching name" {
+test_gpioinfo_all_lines_matching_name() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
 				      line_name=3:foobar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
@@ -701,7 +695,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioinfo: with lines strictly by name" {
+test_gpioinfo_with_lines_strictly_by_name() {
 	# not suggesting this setup makes any sense
 	# - just test that we can deal with it
 	gpiosim_chip sim0 num_lines=8 line_name=1:6 line_name=6:1
@@ -724,7 +718,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioinfo: with nonexistent chip" {
+test_gpioinfo_with_nonexistent_chip() {
 	run_tool gpioinfo --chip nonexistent-chip
 
 	output_regex_match \
@@ -732,7 +726,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioinfo: with nonexistent line" {
+test_gpioinfo_with_nonexistent_line() {
 	gpiosim_chip sim0 num_lines=8
 
 	run_tool gpioinfo nonexistent-line
@@ -746,7 +740,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioinfo: with offset out of range" {
+test_gpioinfo_with_offset_out_of_range() {
 	gpiosim_chip sim0 num_lines=4
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -767,7 +761,7 @@ request_release_line() {
 # gpioget test cases
 #
 
-@test "gpioget: by name" {
+test_gpioget_by_name() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
 	gpiosim_set_pull sim0 1 pull-up
@@ -783,7 +777,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: by offset" {
+test_gpioget_by_offset() {
 	gpiosim_chip sim0 num_lines=8
 
 	gpiosim_set_pull sim0 1 pull-up
@@ -799,7 +793,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: by symlink" {
+test_gpioget_by_symlink() {
 	gpiosim_chip sim0 num_lines=8
 	gpiosim_chip_symlink sim0 .
 
@@ -811,7 +805,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: by chip and name" {
+test_gpioget_by_chip_and_name() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 	gpiosim_chip sim1 num_lines=8 line_name=3:foo
 
@@ -828,7 +822,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: first matching named line" {
+test_gpioget_first_matching_named_line() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
 				      line_name=3:foobar line_name=7:foobar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
@@ -843,7 +837,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: multiple lines" {
+test_gpioget_multiple_lines() {
 	gpiosim_chip sim0 num_lines=8
 
 	gpiosim_set_pull sim0 2 pull-up
@@ -858,7 +852,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: multiple lines by name and offset" {
+test_gpioget_multiple_lines_by_name_and_offset() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=6:bar
 	gpiosim_chip sim1 num_lines=8 line_name=1:baz line_name=3:bar
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -873,7 +867,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: multiple lines across multiple chips" {
+test_gpioget_multiple_lines_across_multiple_chips() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=4:xyz
 
@@ -886,7 +880,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: with numeric values" {
+test_gpioget_with_numeric_values() {
 	gpiosim_chip sim0 num_lines=8
 
 	gpiosim_set_pull sim0 2 pull-up
@@ -902,7 +896,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: with active-low" {
+test_gpioget_with_active_low() {
 	gpiosim_chip sim0 num_lines=8
 
 	gpiosim_set_pull sim0 2 pull-up
@@ -919,7 +913,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: with consumer" {
+test_gpioget_with_consumer() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 	gpiosim_chip sim1 num_lines=8 line_name=3:baz line_name=4:xyz
 
@@ -933,7 +927,7 @@ request_release_line() {
 	output_regex_match "baz requested gpio-tools-tests"
 }
 
-@test "gpioget: with pull-up" {
+test_gpioget_with_pull_up() {
 	gpiosim_chip sim0 num_lines=8
 
 	gpiosim_set_pull sim0 2 pull-up
@@ -950,7 +944,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: with pull-down" {
+test_gpioget_with_pull_down() {
 	gpiosim_chip sim0 num_lines=8
 
 	gpiosim_set_pull sim0 2 pull-up
@@ -967,7 +961,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: with direction as-is" {
+test_gpioget_with_direction_as_is() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1002,7 +996,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: with hold-period" {
+test_gpioget_with_hold_period() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
 	# only test parsing - testing the hold-period itself is tricky
@@ -1011,7 +1005,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: with strict named line check" {
+test_gpioget_with_strict_named_line_check() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
 				      line_name=3:foobar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
@@ -1024,7 +1018,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioget: with lines by offset" {
+test_gpioget_with_lines_by_offset() {
 	# not suggesting this setup makes any sense
 	# - just test that we can deal with it
 	gpiosim_chip sim0 num_lines=8 line_name=1:6 line_name=6:1
@@ -1043,7 +1037,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: with lines strictly by name" {
+test_gpioget_with_lines_strictly_by_name() {
 	# not suggesting this setup makes any sense
 	# - just test that we can deal with it
 	gpiosim_chip sim0 num_lines=8 line_name=1:6 line_name=6:1
@@ -1062,14 +1056,14 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioget: with no arguments" {
+test_gpioget_with_no_arguments() {
 	run_tool gpioget
 
 	output_regex_match ".*at least one GPIO line must be specified"
 	status_is 1
 }
 
-@test "gpioget: with chip but no line specified" {
+test_gpioget_with_chip_but_no_line_specified() {
 	gpiosim_chip sim0 num_lines=8
 
 	run_tool gpioget --chip ${GPIOSIM_CHIP_NAME[sim0]}
@@ -1078,7 +1072,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioget: with offset out of range" {
+test_gpioget_with_offset_out_of_range() {
 	gpiosim_chip sim0 num_lines=4
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
 
@@ -1089,14 +1083,14 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioget: with nonexistent line" {
+test_gpioget_with_nonexistent_line() {
 	run_tool gpioget nonexistent-line
 
 	output_regex_match ".*cannot find line 'nonexistent-line'"
 	status_is 1
 }
 
-@test "gpioget: with same line twice" {
+test_gpioget_with_same_line_twice() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
 
@@ -1131,7 +1125,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioget: with invalid bias" {
+test_gpioget_with_invalid_bias() {
 	gpiosim_chip sim0 num_lines=8
 
 	run_tool gpioget --bias=bad --chip ${GPIOSIM_CHIP_NAME[sim0]} 0 1
@@ -1140,7 +1134,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioget: with invalid hold-period" {
+test_gpioget_with_invalid_hold_period() {
 	gpiosim_chip sim0 num_lines=8
 
 	run_tool gpioget --hold-period=bad --chip ${GPIOSIM_CHIP_NAME[sim0]} 0
@@ -1153,7 +1147,7 @@ request_release_line() {
 # gpioset test cases
 #
 
-@test "gpioset: by name" {
+test_gpioset_by_name() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
 	dut_run gpioset --banner foo=1
@@ -1161,7 +1155,7 @@ request_release_line() {
 	gpiosim_check_value sim0 1 1
 }
 
-@test "gpioset: by offset" {
+test_gpioset_by_offset() {
 	gpiosim_chip sim0 num_lines=8
 
 	dut_run gpioset --banner --chip ${GPIOSIM_CHIP_NAME[sim0]} 1=1
@@ -1169,7 +1163,7 @@ request_release_line() {
 	gpiosim_check_value sim0 1 1
 }
 
-@test "gpioset: by symlink" {
+test_gpioset_by_symlink() {
 	gpiosim_chip sim0 num_lines=8
 	gpiosim_chip_symlink sim0 .
 
@@ -1178,7 +1172,7 @@ request_release_line() {
 	gpiosim_check_value sim0 1 1
 }
 
-@test "gpioset: by chip and name" {
+test_gpioset_by_chip_and_name() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 	gpiosim_chip sim1 num_lines=8 line_name=3:foo
 
@@ -1187,7 +1181,7 @@ request_release_line() {
 	gpiosim_check_value sim1 3 1
 }
 
-@test "gpioset: first matching named line" {
+test_gpioset_first_matching_named_line() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
 				      line_name=3:foobar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
@@ -1199,7 +1193,7 @@ request_release_line() {
 	gpiosim_check_value sim0 3 1
 }
 
-@test "gpioset: multiple lines" {
+test_gpioset_multiple_lines() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1216,7 +1210,7 @@ request_release_line() {
 	gpiosim_check_value sim0 7 1
 }
 
-@test "gpioset: multiple lines by name and offset" {
+test_gpioset_multiple_lines_by_name_and_offset() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 
 	dut_run gpioset --banner --chip ${GPIOSIM_CHIP_NAME[sim0]} 0=1 foo=1 bar=1 3=1
@@ -1228,7 +1222,7 @@ request_release_line() {
 }
 
 
-@test "gpioset: multiple lines across multiple chips" {
+test_gpioset_multiple_lines_across_multiple_chips() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=4:xyz
 
@@ -1240,7 +1234,7 @@ request_release_line() {
 	gpiosim_check_value sim1 4 1
 }
 
-@test "gpioset: with active-low" {
+test_gpioset_with_active_low() {
 	gpiosim_chip sim0 num_lines=8
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
 
@@ -1257,7 +1251,7 @@ request_release_line() {
 	gpiosim_check_value sim0 7 0
 }
 
-@test "gpioset: with consumer" {
+test_gpioset_with_consumer() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 	gpiosim_chip sim1 num_lines=8 line_name=3:baz line_name=4:xyz
 
@@ -1273,7 +1267,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioset: with push-pull" {
+test_gpioset_with_push_pull() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1291,7 +1285,7 @@ request_release_line() {
 	gpiosim_check_value sim0 7 1
 }
 
-@test "gpioset: with open-drain" {
+test_gpioset_with_open_drain() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1314,7 +1308,7 @@ request_release_line() {
 	gpiosim_check_value sim0 7 1
 }
 
-@test "gpioset: with open-source" {
+test_gpioset_with_open_source() {
 	gpiosim_chip sim0 num_lines=8
 
 	gpiosim_set_pull sim0 2 pull-up
@@ -1337,7 +1331,7 @@ request_release_line() {
 	gpiosim_check_value sim0 7 1
 }
 
-@test "gpioset: with pull-up" {
+test_gpioset_with_pull_up() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1355,7 +1349,7 @@ request_release_line() {
 	gpiosim_check_value sim0 7 1
 }
 
-@test "gpioset: with pull-down" {
+test_gpioset_with_pull_down() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1373,7 +1367,7 @@ request_release_line() {
 	gpiosim_check_value sim0 7 1
 }
 
-@test "gpioset: with value variants" {
+test_gpioset_with_value_variants() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1400,7 +1394,7 @@ request_release_line() {
 	gpiosim_check_value sim0 7 1
 }
 
-@test "gpioset: with hold-period" {
+test_gpioset_with_hold_period() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1418,7 +1412,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioset: interactive exit" {
+test_gpioset_interactive_exit() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1437,7 +1431,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioset: interactive help" {
+test_gpioset_interactive_help() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar \
 				      line_name=7:baz
 
@@ -1457,7 +1451,7 @@ request_release_line() {
 	output_regex_match ".*sleep <period>.*"
 }
 
-@test "gpioset: interactive get" {
+test_gpioset_interactive_get() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar \
 				      line_name=7:baz
 
@@ -1478,7 +1472,7 @@ request_release_line() {
 	output_regex_match "\"bar\"=inactive"
 }
 
-@test "gpioset: interactive get unquoted" {
+test_gpioset_interactive_get_unquoted() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar \
 				      line_name=7:baz
 
@@ -1499,7 +1493,7 @@ request_release_line() {
 	output_regex_match "bar=inactive"
 }
 
-@test "gpioset: interactive set" {
+test_gpioset_interactive_set() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar \
 				      line_name=7:baz
 
@@ -1519,7 +1513,7 @@ request_release_line() {
 	output_regex_match "\"foo\"=active \"bar\"=active \"baz\"=inactive"
 }
 
-@test "gpioset: interactive toggle" {
+test_gpioset_interactive_toggle() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar \
 				      line_name=7:baz
 
@@ -1551,7 +1545,7 @@ request_release_line() {
 	output_regex_match "\"foo\"=inactive\\s+\"bar\"=active\\s+\"baz\"=inactive\\s*"
 }
 
-@test "gpioset: interactive sleep" {
+test_gpioset_interactive_sleep() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar \
 				      line_name=7:baz
 
@@ -1568,7 +1562,7 @@ request_release_line() {
 	dut_readable
 }
 
-@test "gpioset: toggle (continuous)" {
+test_gpioset_toggle_continuous() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar \
 				      line_name=7:baz
 
@@ -1595,7 +1589,7 @@ request_release_line() {
 	gpiosim_check_value sim0 7 1
 }
 
-@test "gpioset: toggle (terminated)" {
+test_gpioset_toggle_terminated() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar \
 				      line_name=7:baz
 
@@ -1631,7 +1625,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpioset: with invalid toggle period" {
+test_gpioset_with_invalid_toggle_period() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar \
 				      line_name=7:baz
 
@@ -1641,7 +1635,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioset: with strict named line check" {
+test_gpioset_with_strict_named_line_check() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
 				      line_name=3:foobar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
@@ -1654,7 +1648,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioset: with lines by offset" {
+test_gpioset_with_lines_by_offset() {
 	# not suggesting this setup makes any sense
 	# - just test that we can deal with it
 	gpiosim_chip sim0 num_lines=8 line_name=1:6 line_name=6:1
@@ -1668,7 +1662,7 @@ request_release_line() {
 	gpiosim_check_value sim0 6 1
 }
 
-@test "gpioset: with lines strictly by name" {
+test_gpioset_with_lines_strictly_by_name() {
 	# not suggesting this setup makes any sense
 	# - just test that we can deal with it
 	gpiosim_chip sim0 num_lines=8 line_name=1:6 line_name=6:1
@@ -1682,7 +1676,7 @@ request_release_line() {
 	gpiosim_check_value sim0 6 0
 }
 
-@test "gpioset: interactive after SIGINT" {
+test_gpioset_interactive_after_SIGINT() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
 	dut_run gpioset -i foo=1
@@ -1693,7 +1687,7 @@ request_release_line() {
 	status_is 130
 }
 
-@test "gpioset: interactive after SIGTERM" {
+test_gpioset_interactive_after_SIGTERM() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
 	dut_run gpioset -i foo=1
@@ -1704,14 +1698,14 @@ request_release_line() {
 	status_is 143
 }
 
-@test "gpioset: with no arguments" {
+test_gpioset_with_no_arguments() {
 	run_tool gpioset
 
 	status_is 1
 	output_regex_match ".*at least one GPIO line value must be specified"
 }
 
-@test "gpioset: with chip but no line specified" {
+test_gpioset_with_chip_but_no_line_specified() {
 	gpiosim_chip sim0 num_lines=8
 
 	run_tool gpioset --chip ${GPIOSIM_CHIP_NAME[sim0]}
@@ -1720,7 +1714,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioset: with offset out of range" {
+test_gpioset_with_offset_out_of_range() {
 	gpiosim_chip sim0 num_lines=4
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1732,7 +1726,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioset: with invalid hold-period" {
+test_gpioset_with_invalid_hold_period() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1743,7 +1737,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioset: with invalid value" {
+test_gpioset_with_invalid_value() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1761,7 +1755,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioset: with invalid offset" {
+test_gpioset_with_invalid_offset() {
 	gpiosim_chip sim0 num_lines=8
 
 	run_tool gpioset --chip ${GPIOSIM_CHIP_NAME[sim0]} 4000000000=0
@@ -1770,7 +1764,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioset: with invalid bias" {
+test_gpioset_with_invalid_bias() {
 	gpiosim_chip sim0 num_lines=8
 
 	run_tool gpioset --bias=bad --chip ${GPIOSIM_CHIP_NAME[sim0]} 0=1 1=1
@@ -1779,7 +1773,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioset: with invalid drive" {
+test_gpioset_with_invalid_drive() {
 	gpiosim_chip sim0 num_lines=8
 
 	run_tool gpioset --drive=bad --chip ${GPIOSIM_CHIP_NAME[sim0]} 0=1 1=1
@@ -1788,7 +1782,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioset: with interactive and toggle" {
+test_gpioset_with_interactive_and_toggle() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1799,14 +1793,14 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpioset: with nonexistent line" {
+test_gpioset_with_nonexistent_line() {
 	run_tool gpioset nonexistent-line=0
 
 	output_regex_match ".*cannot find line 'nonexistent-line'"
 	status_is 1
 }
 
-@test "gpioset: with same line twice" {
+test_gpioset_with_same_line_twice() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1840,7 +1834,7 @@ request_release_line() {
 # gpiomon test cases
 #
 
-@test "gpiomon: by name" {
+test_gpiomon_by_name() {
 	gpiosim_chip sim0 num_lines=8 line_name=4:foo
 
 	gpiosim_set_pull sim0 4 pull-up
@@ -1855,7 +1849,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: by offset" {
+test_gpiomon_by_offset() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1872,7 +1866,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: by symlink" {
+test_gpiomon_by_symlink() {
 	gpiosim_chip sim0 num_lines=8
 	gpiosim_chip_symlink sim0 .
 
@@ -1891,7 +1885,7 @@ request_release_line() {
 }
 
 
-@test "gpiomon: by chip and name" {
+test_gpiomon_by_chip_and_name() {
 	gpiosim_chip sim0 num_lines=8 line_name=0:foo
 	gpiosim_chip sim1 num_lines=8 line_name=2:foo
 
@@ -1909,7 +1903,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: first matching named line" {
+test_gpiomon_first_matching_named_line() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
 				      line_name=3:foobar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
@@ -1924,7 +1918,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: rising edge" {
+test_gpiomon_rising_edge() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -1941,7 +1935,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: falling edge" {
+test_gpiomon_falling_edge() {
 	gpiosim_chip sim0 num_lines=8
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
 
@@ -1957,7 +1951,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: both edges" {
+test_gpiomon_both_edges() {
 	gpiosim_chip sim0 num_lines=8
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
 
@@ -1971,7 +1965,7 @@ request_release_line() {
 	dut_regex_match "[0-9]+\.[0-9]+\\s+falling\\s+$sim0 4"
 }
 
-@test "gpiomon: with pull-up" {
+test_gpiomon_with_pull_up() {
 	gpiosim_chip sim0 num_lines=8
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
 
@@ -1986,7 +1980,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: with pull-down" {
+test_gpiomon_with_pull_down() {
 	gpiosim_chip sim0 num_lines=8
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
 
@@ -2002,7 +1996,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: with active-low" {
+test_gpiomon_with_active_low() {
 	gpiosim_chip sim0 num_lines=8
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
 
@@ -2020,7 +2014,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: with consumer" {
+test_gpiomon_with_consumer() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 	gpiosim_chip sim1 num_lines=8 line_name=3:baz line_name=4:xyz
 
@@ -2036,7 +2030,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpiomon: with quiet mode" {
+test_gpiomon_with_quiet_mode() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2048,7 +2042,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: with unquoted" {
+test_gpiomon_with_unquoted() {
 	gpiosim_chip sim0 num_lines=8 line_name=4:foo
 
 	gpiosim_set_pull sim0 4 pull-up
@@ -2063,7 +2057,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: with num-events" {
+test_gpiomon_with_num_events() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2091,7 +2085,7 @@ request_release_line() {
 	num_lines_is 4
 }
 
-@test "gpiomon: with debounce-period" {
+test_gpiomon_with_debounce_period() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 	gpiosim_chip sim1 num_lines=8 line_name=3:baz line_name=4:xyz
 
@@ -2107,7 +2101,7 @@ request_release_line() {
 	status_is 0
 }
 
-@test "gpiomon: with idle-timeout" {
+test_gpiomon_with_idle_timeout() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2121,7 +2115,7 @@ request_release_line() {
 	num_lines_is 0
 }
 
-@test "gpiomon: multiple lines" {
+test_gpiomon_multiple_lines() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2139,7 +2133,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: multiple lines by name and offset" {
+test_gpiomon_multiple_lines_by_name_and_offset() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2157,7 +2151,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: multiple lines across multiple chips" {
+test_gpiomon_multiple_lines_across_multiple_chips() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=4:xyz
 
@@ -2174,7 +2168,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: exit after SIGINT" {
+test_gpiomon_exit_after_SIGINT() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2188,7 +2182,7 @@ request_release_line() {
 	status_is 130
 }
 
-@test "gpiomon: exit after SIGTERM" {
+test_gpiomon_exit_after_SIGTERM() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2202,14 +2196,14 @@ request_release_line() {
 	status_is 143
 }
 
-@test "gpiomon: with nonexistent line" {
+test_gpiomon_with_nonexistent_line() {
 	run_tool gpiomon nonexistent-line
 
 	status_is 1
 	output_regex_match ".*cannot find line 'nonexistent-line'"
 }
 
-@test "gpiomon: with same line twice" {
+test_gpiomon_with_same_line_twice() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2233,7 +2227,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpiomon: with strict named line check" {
+test_gpiomon_with_strict_named_line_check() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
 				      line_name=3:foobar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
@@ -2245,7 +2239,7 @@ request_release_line() {
 	output_regex_match ".*line 'foobar' is not unique"
 	status_is 1
 }
-@test "gpiomon: with lines by offset" {
+test_gpiomon_with_lines_by_offset() {
 	# not suggesting this setup makes any sense
 	# - just test that we can deal with it
 	gpiosim_chip sim0 num_lines=8 line_name=1:6 line_name=6:1
@@ -2272,7 +2266,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: with lines strictly by name" {
+test_gpiomon_with_lines_strictly_by_name() {
 	# not suggesting this setup makes sense
 	# - just test that we can deal with it
 	gpiosim_chip sim0 num_lines=8 line_name=1:42 line_name=6:13
@@ -2299,14 +2293,14 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpiomon: with no arguments" {
+test_gpiomon_with_no_arguments() {
 	run_tool gpiomon
 
 	output_regex_match ".*at least one GPIO line must be specified"
 	status_is 1
 }
 
-@test "gpiomon: with no line specified" {
+test_gpiomon_with_no_line_specified() {
 	gpiosim_chip sim0 num_lines=8
 
 	run_tool gpiomon --chip ${GPIOSIM_CHIP_NAME[sim0]}
@@ -2315,7 +2309,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpiomon: with offset out of range" {
+test_gpiomon_with_offset_out_of_range() {
 	gpiosim_chip sim0 num_lines=4
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2326,7 +2320,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpiomon: with invalid bias" {
+test_gpiomon_with_invalid_bias() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2337,7 +2331,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpiomon: with invalid debounce-period" {
+test_gpiomon_with_invalid_debounce_period() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2348,7 +2342,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpiomon: with invalid idle-timeout" {
+test_gpiomon_with_invalid_idle_timeout() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2359,7 +2353,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpiomon: with custom format (event type + offset)" {
+test_gpiomon_with_custom_format_event_type_offset() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2372,7 +2366,7 @@ request_release_line() {
 	output_is "1 4"
 }
 
-@test "gpiomon: with custom format (event type + offset joined)" {
+test_gpiomon_with_custom_format_event_type_offset_joined() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2385,7 +2379,7 @@ request_release_line() {
 	output_is "14"
 }
 
-@test "gpiomon: with custom format (edge, chip and line)" {
+test_gpiomon_with_custom_format_edge_chip_and_line() {
 	gpiosim_chip sim0 num_lines=8 line_name=4:baz
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2397,7 +2391,7 @@ request_release_line() {
 	dut_regex_match "1 4 rising $sim0 baz"
 }
 
-@test "gpiomon: with custom format (seconds timestamp)" {
+test_gpiomon_with_custom_format_seconds_timestamp() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2409,7 +2403,7 @@ request_release_line() {
 	dut_regex_match "1 4 [0-9]+\\.[0-9]+"
 }
 
-@test "gpiomon: with custom format (UTC timestamp)" {
+test_gpiomon_with_custom_format_UTC_timestamp() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2423,7 +2417,7 @@ request_release_line() {
 "[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]\\.[0-9]+Z 1 4"
 }
 
-@test "gpiomon: with custom format (localtime timestamp)" {
+test_gpiomon_with_custom_format_localtime_timestamp() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2437,7 +2431,7 @@ request_release_line() {
 "[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]\\.[0-9]+ 1 4"
 }
 
-@test "gpiomon: with custom format (double percent sign)" {
+test_gpiomon_with_custom_format_double_percent_sign() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2450,7 +2444,7 @@ request_release_line() {
 	output_is "start%end"
 }
 
-@test "gpiomon: with custom format (double percent sign + event type specifier)" {
+test_gpiomon_with_custom_format_double_percent_sign_event_type_specifier() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2463,7 +2457,7 @@ request_release_line() {
 	output_is "%e"
 }
 
-@test "gpiomon: with custom format (single percent sign)" {
+test_gpiomon_with_custom_format_single_percent_sign() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2476,7 +2470,7 @@ request_release_line() {
 	output_is "%"
 }
 
-@test "gpiomon: with custom format (single percent sign between other characters)" {
+test_gpiomon_with_custom_format_single_percent_sign_between_other_characters() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2489,7 +2483,7 @@ request_release_line() {
 	output_is "foo % bar"
 }
 
-@test "gpiomon: with custom format (unknown specifier)" {
+test_gpiomon_with_custom_format_unknown_specifier() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2506,7 +2500,7 @@ request_release_line() {
 # gpionotify test cases
 #
 
-@test "gpionotify: by name" {
+test_gpionotify_by_name() {
 	gpiosim_chip sim0 num_lines=8 line_name=4:foo
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2521,7 +2515,7 @@ request_release_line() {
 	# tools currently have no way to generate a reconfig event
 }
 
-@test "gpionotify: by offset" {
+test_gpionotify_by_offset() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2536,7 +2530,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: by symlink" {
+test_gpionotify_by_symlink() {
 	gpiosim_chip sim0 num_lines=8
 	gpiosim_chip_symlink sim0 .
 
@@ -2552,7 +2546,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: by chip and name" {
+test_gpionotify_by_chip_and_name() {
 	gpiosim_chip sim0 num_lines=8 line_name=4:foo
 	gpiosim_chip sim1 num_lines=8 line_name=2:foo
 
@@ -2568,7 +2562,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: first matching named line" {
+test_gpionotify_first_matching_named_line() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
 				      line_name=3:foobar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
@@ -2585,7 +2579,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: with requested" {
+test_gpionotify_with_requested() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2600,7 +2594,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: with released" {
+test_gpionotify_with_released() {
 	gpiosim_chip sim0 num_lines=8
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
 
@@ -2614,7 +2608,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: with quiet mode" {
+test_gpionotify_with_quiet_mode() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2626,7 +2620,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: with unquoted" {
+test_gpionotify_with_unquoted() {
 	gpiosim_chip sim0 num_lines=8 line_name=4:foo
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2640,7 +2634,7 @@ request_release_line() {
 	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+foo"
 }
 
-@test "gpionotify: with num-events" {
+test_gpionotify_with_num_events() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2663,7 +2657,7 @@ request_release_line() {
 	num_lines_is 4
 }
 
-@test "gpionotify: with idle-timeout" {
+test_gpionotify_with_idle_timeout() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2679,7 +2673,7 @@ request_release_line() {
 	num_lines_is 0
 }
 
-@test "gpionotify: multiple lines" {
+test_gpionotify_multiple_lines() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2702,7 +2696,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: multiple lines by name and offset" {
+test_gpionotify_multiple_lines_by_name_and_offset() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2725,7 +2719,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: multiple lines across multiple chips" {
+test_gpionotify_multiple_lines_across_multiple_chips() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=4:xyz
 
@@ -2754,7 +2748,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: exit after SIGINT" {
+test_gpionotify_exit_after_SIGINT() {
 	gpiosim_chip sim0 num_lines=8
 
 	dut_run gpionotify --banner --chip ${GPIOSIM_CHIP_NAME[sim0]} 4
@@ -2766,7 +2760,7 @@ request_release_line() {
 	status_is 130
 }
 
-@test "gpionotify: exit after SIGTERM" {
+test_gpionotify_exit_after_SIGTERM() {
 	gpiosim_chip sim0 num_lines=8
 
 	dut_run gpionotify --banner --chip ${GPIOSIM_CHIP_NAME[sim0]} 4
@@ -2778,14 +2772,14 @@ request_release_line() {
 	status_is 143
 }
 
-@test "gpionotify: with nonexistent line" {
+test_gpionotify_with_nonexistent_line() {
 	run_tool gpionotify nonexistent-line
 
 	status_is 1
 	output_regex_match ".*cannot find line 'nonexistent-line'"
 }
 
-@test "gpionotify: with same line twice" {
+test_gpionotify_with_same_line_twice() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2812,7 +2806,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpionotify: with strict named line check" {
+test_gpionotify_with_strict_named_line_check() {
 	gpiosim_chip sim0 num_lines=4 line_name=1:foo line_name=2:bar \
 				      line_name=3:foobar
 	gpiosim_chip sim1 num_lines=8 line_name=0:baz line_name=2:foobar \
@@ -2825,7 +2819,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpionotify: with lines by offset" {
+test_gpionotify_with_lines_by_offset() {
 	# not suggesting this setup makes any sense
 	# - just test that we can deal with it
 	gpiosim_chip sim0 num_lines=8 line_name=1:6 line_name=6:1
@@ -2844,7 +2838,7 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: with lines strictly by name" {
+test_gpionotify_with_lines_strictly_by_name() {
 	# not suggesting this setup makes any sense
 	# - just test that we can deal with it
 	gpiosim_chip sim0 num_lines=8 line_name=1:6 line_name=6:1
@@ -2862,14 +2856,14 @@ request_release_line() {
 	assert_fail dut_readable
 }
 
-@test "gpionotify: with no arguments" {
+test_gpionotify_with_no_arguments() {
 	run_tool gpionotify
 
 	output_regex_match ".*at least one GPIO line must be specified"
 	status_is 1
 }
 
-@test "gpionotify: with no line specified" {
+test_gpionotify_with_no_line_specified() {
 	gpiosim_chip sim0 num_lines=8
 
 	run_tool gpionotify --chip ${GPIOSIM_CHIP_NAME[sim0]}
@@ -2878,7 +2872,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpionotify: with offset out of range" {
+test_gpionotify_with_offset_out_of_range() {
 	gpiosim_chip sim0 num_lines=4
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2889,7 +2883,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpionotify: with invalid idle-timeout" {
+test_gpionotify_with_invalid_idle_timeout() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2900,7 +2894,7 @@ request_release_line() {
 	status_is 1
 }
 
-@test "gpionotify: with custom format (event type + offset)" {
+test_gpionotify_with_custom_format_event_type_offset() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2913,7 +2907,7 @@ request_release_line() {
 	output_is "1 4"
 }
 
-@test "gpionotify: with custom format (event type + offset joined)" {
+test_gpionotify_with_custom_format_event_type_offset_joined() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2926,7 +2920,7 @@ request_release_line() {
 	output_is "14"
 }
 
-@test "gpionotify: with custom format (event, chip and line)" {
+test_gpionotify_with_custom_format_event_chip_and_line() {
 	gpiosim_chip sim0 num_lines=8 line_name=4:baz
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2939,7 +2933,7 @@ request_release_line() {
 	dut_regex_match "2 4 released $sim0 baz"
 }
 
-@test "gpionotify: with custom format (seconds timestamp)" {
+test_gpionotify_with_custom_format_seconds_timestamp() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2952,7 +2946,7 @@ request_release_line() {
 	dut_regex_match "1 4 [0-9]+\\.[0-9]+"
 }
 
-@test "gpionotify: with custom format (UTC timestamp)" {
+test_gpionotify_with_custom_format_UTC_timestamp() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2966,7 +2960,7 @@ request_release_line() {
 "[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]\\.[0-9]+Z 2 4"
 }
 
-@test "gpionotify: with custom format (localtime timestamp)" {
+test_gpionotify_with_custom_format_localtime_timestamp() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2980,7 +2974,7 @@ request_release_line() {
 "[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]\\.[0-9]+ 2 4"
 }
 
-@test "gpionotify: with custom format (double percent sign)" {
+test_gpionotify_with_custom_format_double_percent_sign() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -2994,7 +2988,7 @@ request_release_line() {
 	output_is "start%end"
 }
 
-@test "gpionotify: with custom format (double percent sign + event type specifier)" {
+test_gpionotify_with_custom_format_double_percent_sign_event_type_specifier() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -3007,7 +3001,7 @@ request_release_line() {
 	output_is "%e"
 }
 
-@test "gpionotify: with custom format (single percent sign)" {
+test_gpionotify_with_custom_format_single_percent_sign() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -3020,7 +3014,7 @@ request_release_line() {
 	output_is "%"
 }
 
-@test "gpionotify: with custom format (single percent sign between other characters)" {
+test_gpionotify_with_custom_format_single_percent_sign_between_other_characters() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -3033,7 +3027,7 @@ request_release_line() {
 	output_is "foo % bar"
 }
 
-@test "gpionotify: with custom format (unknown specifier)" {
+test_gpionotify_with_custom_format_unknown_specifier() {
 	gpiosim_chip sim0 num_lines=8
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
@@ -3045,3 +3039,53 @@ request_release_line() {
 	dut_read
 	output_is "%x"
 }
+
+die() {
+	echo "$@" 1>&2
+	exit 1
+}
+
+# Must be done after we sources shunit2 as we need SHUNIT_VERSION to be set.
+oneTimeSetUp() {
+	test "$SHUNIT_VERSION" = "$MIN_SHUNIT_VERSION" && return 0
+	local FIRST=$(printf "$SHUNIT_VERSION\n$MIN_SHUNIT_VERSION\n" | sort -Vr | head -1)
+	test "$FIRST" = "$MIN_SHUNIT_VERSION" && \
+		die "minimum shunit version required is $MIN_SHUNIT_VERSION (current version is $SHUNIT_VERSION"
+}
+
+check_kernel() {
+	local REQUIRED=$1
+	local CURRENT=$(uname -r)
+
+	SORTED=$(printf "$REQUIRED\n$CURRENT" | sort -V | head -n 1)
+
+	if [ "$SORTED" != "$REQUIRED" ]
+	then
+		die "linux kernel version must be at least: v$REQUIRED - got: v$CURRENT"
+	fi
+}
+
+check_prog() {
+	local PROG=$1
+
+	which "$PROG" > /dev/null
+	if [ "$?" -ne "0" ]
+	then
+		die "$PROG not found - needed to run the tests"
+	fi
+}
+
+# Check all required non-coreutils tools
+check_prog shunit2
+check_prog modprobe
+check_prog timeout
+check_prog grep
+
+# Check if we're running a kernel at the required version or later
+check_kernel $MIN_KERNEL_VERSION
+
+modprobe gpio-sim || die "unable to load the gpio-sim module"
+mountpoint /sys/kernel/config/ > /dev/null 2> /dev/null || \
+	die "configfs not mounted at /sys/kernel/config/"
+
+. shunit2

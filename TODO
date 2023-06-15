@@ -47,7 +47,7 @@ standardized protocol, it will take much more effort to implement it correctly.
 The existing tab completion uses libedit's readline emulation layer which
 has a few limitations, including not being able to correctly handle quoted
 line names and being disabled when stdin/stdout are not a tty (which makes
-testing with gpio-tools-test.bats using coproc problematic).
+testing with gpio-tools-test.bash using coproc problematic).
 
 One approach that could address both these problems is to bypass the readline
 emulation and use the libedit API (histedit.h) directly.

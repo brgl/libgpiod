@@ -176,10 +176,10 @@ then
 
 	if test "x$with_tools" = xtrue
 	then
-		AC_CHECK_PROG([has_bats], [bats], [true], [false])
-		if test "x$has_bats" = "xfalse"
+		AC_CHECK_PROG([has_shunit2], [shunit2], [true], [false])
+		if test "x$has_shunit2" = "xfalse"
 		then
-			AC_MSG_NOTICE([bats not found - gpio-tools tests cannot be run])
+			AC_MSG_NOTICE([shunit2 not found - gpio-tools tests cannot be run])
 		fi
 	fi
 fi
