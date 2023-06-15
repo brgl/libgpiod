@@ -3,6 +3,7 @@
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
 EXTRA_DIST = \
+	get_line_value.rs \
 	gpiodetect.rs \
 	gpio_events.rs \
 	gpiofind.rs \
@@ -12,4 +13,6 @@ EXTRA_DIST = \
 	gpionotify.rs \
 	gpioset.rs \
 	gpio_threaded_info_events.rs \
-	gpiowatch.rs
+	gpiowatch.rs \
+	toggle_line_value.rs \
+	watch_line_value.rs
