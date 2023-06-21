@@ -2072,9 +2072,13 @@ request_release_line() {
 	dut_run_redirect gpiomon --num-events=4 --chip $sim0 4
 
 	gpiosim_set_pull sim0 4 pull-up
+	sleep 0.01
 	gpiosim_set_pull sim0 4 pull-down
+	sleep 0.01
 	gpiosim_set_pull sim0 4 pull-up
+	sleep 0.01
 	gpiosim_set_pull sim0 4 pull-down
+	sleep 0.01
 
 	dut_wait
 	status_is 0
