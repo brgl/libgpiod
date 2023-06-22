@@ -2665,7 +2665,6 @@ test_gpionotify_with_idle_timeout() {
 	# redirect, as gpionotify exits
 	dut_run_redirect gpionotify --idle-timeout 10ms --chip $sim0 3 4
 
-
 	dut_wait
 	status_is 0
 	dut_read_redirect
