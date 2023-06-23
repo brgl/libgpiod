@@ -64,12 +64,12 @@ close_chip:
 	return request;
 }
 
-static int print_value(enum gpiod_line_value value)
+static int print_value(unsigned int offset, enum gpiod_line_value value)
 {
 	if (value == GPIOD_LINE_VALUE_ACTIVE)
-		printf("Active\n");
+		printf("%d=Active\n", offset);
 	else if (value == GPIOD_LINE_VALUE_INACTIVE) {
-		printf("Inactive\n");
+		printf("%d=Inactive\n", offset);
 	} else {
 		fprintf(stderr, "error reading value: %s\n",
 			strerror(errno));
@@ -97,7 +97,10 @@ int main(void)
 	}
 
 	value = gpiod_line_request_get_value(request, line_offset);
-	ret = print_value(value);
+	ret = print_value(line_offset, value);
+
+	/* not strictly required here, but if the app wasn't exiting... */
+	gpiod_line_request_release(request);
 
 	return ret;
 }

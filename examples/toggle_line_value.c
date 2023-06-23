@@ -40,7 +40,7 @@ request_output_line(const char *chip_path, unsigned int offset,
 	ret = gpiod_line_config_add_line_settings(line_cfg, &offset, 1,
 						  settings);
 	if (ret)
-		goto free_settings;
+		goto free_line_config;
 
 	if (consumer) {
 		req_cfg = gpiod_request_config_new();
@@ -72,12 +72,15 @@ static enum gpiod_line_value toggle_line_value(enum gpiod_line_value value)
 						    GPIOD_LINE_VALUE_ACTIVE;
 }
 
-static void print_value(enum gpiod_line_value value)
+static const char * value_str(enum gpiod_line_value value)
 {
 	if (value == GPIOD_LINE_VALUE_ACTIVE)
-		printf("Active\n");
-	else
-		printf("Inactive\n");
+		return "Active";
+	else if (value == GPIOD_LINE_VALUE_INACTIVE) {
+		return "Inactive";
+	} else {
+		return "Unknown";
+	}
 }
 
 int main(void)
@@ -97,8 +100,8 @@ int main(void)
 		return EXIT_FAILURE;
 	}
 
-	while (1) {
-		print_value(value);
+	for (;;) {
+		printf("%d=%s\n", line_offset, value_str(value));
 		sleep(1);
 		value = toggle_line_value(value);
 		gpiod_line_request_set_value(request, line_offset, value);

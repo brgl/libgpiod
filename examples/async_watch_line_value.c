@@ -74,7 +74,7 @@ static const char *edge_event_type_str(struct gpiod_edge_event *event)
 {
 	switch (gpiod_edge_event_get_event_type(event)) {
 	case GPIOD_EDGE_EVENT_RISING_EDGE:
-		return "Rising ";
+		return "Rising";
 	case GPIOD_EDGE_EVENT_FALLING_EDGE:
 		return "Falling";
 	default:
@@ -117,7 +117,7 @@ int main(void)
 	pollfd.fd = gpiod_line_request_get_fd(request);
 	pollfd.events = POLLIN;
 
-	while (1) {
+	for (;;) {
 		ret = poll(&pollfd, 1, -1);
 		if (ret == -1) {
 			fprintf(stderr, "error waiting for edge events: %s\n",
@@ -134,7 +134,7 @@ int main(void)
 		for (i = 0; i < ret; i++) {
 			event = gpiod_edge_event_buffer_get_event(event_buffer,
 								  i);
-			printf("offset: %d, type: %s, event #%ld\n",
+			printf("offset: %d  type: %-7s  event #%ld\n",
 			       gpiod_edge_event_get_line_offset(event),
 			       edge_event_type_str(event),
 			       gpiod_edge_event_get_line_seqno(event));
