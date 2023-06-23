@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <gpiod.hpp>
+#include <iomanip>
 #include <iostream>
 
 namespace {
@@ -18,7 +19,7 @@ const char *edge_event_type_str(const ::gpiod::edge_event &event)
 {
 	switch (event.type()) {
 	case ::gpiod::edge_event::event_type::RISING_EDGE:
-		return "Rising ";
+		return "Rising";
 	case ::gpiod::edge_event::event_type::FALLING_EDGE:
 		return "Falling";
 	default:
@@ -61,11 +62,10 @@ int main(void)
 		request.read_edge_events(buffer);
 
 		for (const auto &event : buffer)
-			::std::cout << "offset: " << event.line_offset()
-				    << ", type: " << edge_event_type_str(event)
-				    << ", event #" << event.line_seqno()
+			::std::cout << "line: " << event.line_offset()
+				    << "  type: " << ::std::setw(7)
+				    << ::std::left << edge_event_type_str(event)
+				    << "  event #" << event.line_seqno()
 				    << ::std::endl;
 	}
-
-	return EXIT_SUCCESS;
 }

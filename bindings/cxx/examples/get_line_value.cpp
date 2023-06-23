@@ -10,7 +10,7 @@
 
 namespace {
 
-/* example configuration - customize to suit your situation */
+/* Example configuration - customize to suit your situation */
 const ::std::filesystem::path chip_path("/dev/gpiochip0");
 const ::gpiod::line::offset line_offset = 5;
 
@@ -18,17 +18,21 @@ const ::gpiod::line::offset line_offset = 5;
 
 int main(void)
 {
-	auto request =
-		::gpiod::chip(chip_path)
-			.prepare_request()
-			.set_consumer("get-line-value")
-			.add_line_settings(
-				line_offset,
-				::gpiod::line_settings().set_direction(
-					::gpiod::line::direction::INPUT))
-			.do_request();
+	auto request = ::gpiod::chip(chip_path)
+			       .prepare_request()
+			       .set_consumer("get-line-value")
+			       .add_line_settings(
+				       line_offset,
+				       ::gpiod::line_settings().set_direction(
+					       ::gpiod::line::direction::INPUT))
+			       .do_request();
 
-	::std::cout << request.get_value(line_offset) << ::std::endl;
+	::std::cout << line_offset << "="
+		    << (request.get_value(line_offset) ==
+					::gpiod::line::value::ACTIVE ?
+				"Active" :
+				"Inactive")
+		    << ::std::endl;
 
 	return EXIT_SUCCESS;
 }

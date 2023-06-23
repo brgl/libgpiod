@@ -7,6 +7,7 @@
 #include <cstring>
 #include <filesystem>
 #include <gpiod.hpp>
+#include <iomanip>
 #include <iostream>
 #include <poll.h>
 
@@ -79,10 +80,9 @@ int main(void)
 
 		for (const auto& event : buffer)
 			::std::cout << "offset: " << event.line_offset()
-				    << ", type: " << edge_event_type_str(event)
-				    << ", event #" << event.line_seqno()
+				    << "  type: " << ::std::setw(7)
+				    << ::std::left << edge_event_type_str(event)
+				    << "  event #" << event.line_seqno()
 				    << ::std::endl;
 	}
-
-	return EXIT_SUCCESS;
 }
