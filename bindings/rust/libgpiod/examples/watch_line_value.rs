@@ -7,12 +7,12 @@ use libgpiod::line;
 use std::time::Duration;
 
 fn main() -> libgpiod::Result<()> {
-    // example configuration - customize to suit your situation
+    // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offset = 5;
 
     let mut lsettings = line::Settings::new()?;
-    // assume a button connecting the pin to ground,
+    // Assume a button connecting the pin to ground,
     // so pull it up and provide some debounce.
     lsettings
         .set_edge_detection(Some(line::Edge::Both))?
@@ -28,7 +28,7 @@ fn main() -> libgpiod::Result<()> {
     let chip = libgpiod::chip::Chip::open(&chip_path)?;
     let request = chip.request_lines(Some(&rconfig), &lconfig)?;
 
-    // a larger buffer is an optimisation for reading bursts of events from the
+    // A larger buffer is an optimisation for reading bursts of events from the
     // kernel, but that is not necessary in this case, so 1 is fine.
     let mut buffer = libgpiod::request::Buffer::new(1)?;
     loop {
@@ -37,10 +37,10 @@ fn main() -> libgpiod::Result<()> {
         for event in events {
             let event = event?;
             println!(
-                "line: {}, type: {}, event #{}",
+                "line: {}  type: {:<7}  event #{}",
                 event.line_offset(),
                 match event.event_type()? {
-                    line::EdgeKind::Rising => "Rising ",
+                    line::EdgeKind::Rising => "Rising",
                     line::EdgeKind::Falling => "Falling",
                 },
                 event.line_seqno()

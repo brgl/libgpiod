@@ -3,22 +3,21 @@
 //
 // Minimal example of toggling a single line.
 
-use libgpiod::line;
-use std::time::Duration;
+use core::time::Duration;
+use libgpiod::line::{self, Value};
 
-fn toggle_value(value: line::Value) -> line::Value {
+fn toggle_value(value: Value) -> Value {
     match value {
-        line::Value::Active => line::Value::InActive,
-        line::Value::InActive => line::Value::Active,
+        Value::Active => Value::InActive,
+        Value::InActive => Value::Active,
     }
 }
 
 fn main() -> libgpiod::Result<()> {
-    // example configuration - customize to suit your situation
+    // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offset = 5;
-
-    let mut value = line::Value::Active;
+    let mut value = Value::Active;
 
     let mut settings = line::Settings::new()?;
     settings
@@ -35,7 +34,7 @@ fn main() -> libgpiod::Result<()> {
     let mut req = chip.request_lines(Some(&rconfig), &lconfig)?;
 
     loop {
-        println!("{:?}", value);
+        println!("{}={:?}", line_offset, value);
         std::thread::sleep(Duration::from_secs(1));
         value = toggle_value(value);
         req.set_value(line_offset, value)?;

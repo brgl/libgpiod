@@ -6,7 +6,7 @@
 use libgpiod::line;
 
 fn main() -> libgpiod::Result<()> {
-    // example configuration - customize to suit your situation
+    // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offset = 5;
 
@@ -23,6 +23,6 @@ fn main() -> libgpiod::Result<()> {
     let request = chip.request_lines(Some(&rconfig), &lconfig)?;
 
     let value = request.value(line_offset)?;
-    println!("{:?}", value);
+    println!("{}={:?}", line_offset, value);
     Ok(())
 }
