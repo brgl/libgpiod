@@ -12,18 +12,14 @@ from gpiod.line import Bias, Edge
 
 def edge_type(event):
     if event.event_type is event.Type.RISING_EDGE:
-        return "Rising "
+        return "Rising"
     if event.event_type is event.Type.FALLING_EDGE:
         return "Falling"
     return "Unknown"
 
 
-def watch_line_value():
-    # example configuration - customise to suit your situation
-    chip_path = "/dev/gpiochip0"
-    line_offset = 5
-
-    # assume a button connecting the pin to ground,
+def watch_line_value(chip_path, line_offset):
+    # Assume a button connecting the pin to ground,
     # so pull it up and provide some debounce.
     with gpiod.request_lines(
         chip_path,
@@ -37,13 +33,16 @@ def watch_line_value():
         },
     ) as request:
         while True:
-            # blocks until at least one event is available
+            # Blocks until at least one event is available
             for event in request.read_edge_events():
                 print(
-                    "offset: %d, type: %s, event #%d"
+                    "line: %d  type: %-7s  event #%d"
                     % (event.line_offset, edge_type(event), event.line_seqno)
                 )
 
 
 if __name__ == "__main__":
-    watch_line_value()
+    try:
+        watch_line_value("/dev/gpiochip0", 5)
+    except OSError as ex:
+        print(ex, "\nCustomise the example configuration to suit your situation")

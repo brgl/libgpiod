@@ -19,12 +19,8 @@ def edge_type(event):
     return "Unknown"
 
 
-def async_watch_line_value():
-    # example configuration - customise to suit your situation
-    chip_path = "/dev/gpiochip0"
-    line_offset = 5
-
-    # assume a button connecting the pin to ground,
+def async_watch_line_value(chip_path, line_offset):
+    # Assume a button connecting the pin to ground,
     # so pull it up and provide some debounce.
     with gpiod.request_lines(
         chip_path,
@@ -40,7 +36,7 @@ def async_watch_line_value():
         poll = select.poll()
         poll.register(request.fd, select.POLLIN)
         while True:
-            # other fds could be registered with the poll and be handled
+            # Other fds could be registered with the poll and be handled
             # separately using the return value (fd, event) from poll()
             poll.poll()
             for event in request.read_edge_events():
@@ -51,4 +47,7 @@ def async_watch_line_value():
 
 
 if __name__ == "__main__":
-    async_watch_line_value()
+    try:
+        async_watch_line_value("/dev/gpiochip0", 5)
+    except OSError as ex:
+        print(ex, "\nCustomise the example configuration to suit your situation")

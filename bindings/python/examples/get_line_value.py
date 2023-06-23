@@ -9,19 +9,18 @@ import gpiod
 from gpiod.line import Direction
 
 
-def get_line_value():
-    # example configuration - customise to suit your situation
-    chip_path = "/dev/gpiochip0"
-    line_offset = 5
-
+def get_line_value(chip_path, line_offset):
     with gpiod.request_lines(
         chip_path,
         consumer="get-line-value",
         config={line_offset: gpiod.LineSettings(direction=Direction.INPUT)},
     ) as request:
         value = request.get_value(line_offset)
-        print(value)
+        print("{}={}".format(line_offset, value))
 
 
 if __name__ == "__main__":
-    get_line_value()
+    try:
+        get_line_value("/dev/gpiochip0", 5)
+    except OSError as ex:
+        print(ex, "\nCustomise the example configuration to suit your situation")
