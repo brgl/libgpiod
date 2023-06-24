@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR BSD-3-Clause
 // SPDX-FileCopyrightText: 2023 Kent Gibson <warthog618@gmail.com>
 //
-// Minimal example of requesting a line intended for bi-directional use as input and then switching to output.
+// Example of a bi-directional line requested as input and then switched to output.
 
 use libgpiod::line;
 
