@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2023 Kent Gibson <warthog618@gmail.com>
 
-/* Minimal example of reading a single line. */
+/*
+ * Example of a bi-directional line requested as input and then switched
+ * to output.
+ */
 
 #include <errno.h>
 #include <gpiod.h>

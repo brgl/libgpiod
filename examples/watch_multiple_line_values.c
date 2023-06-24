@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2023 Kent Gibson <warthog618@gmail.com>
 
-/* Minimal example of watching for edges on a single line. */
+/* Minimal example of watching for edges on multiple lines. */
 
 #include <errno.h>
 #include <gpiod.h>
