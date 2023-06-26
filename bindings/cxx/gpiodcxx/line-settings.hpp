@@ -70,7 +70,7 @@ public:
 	 * @brief Reset the line settings to default values.
 	 * @return Reference to self.
 	 */
-	line_settings& reset(void) noexcept;
+	line_settings& reset() noexcept;
 
 	/**
 	 * @brief Set direction.

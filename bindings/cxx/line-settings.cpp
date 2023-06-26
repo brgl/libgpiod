@@ -179,7 +179,7 @@ GPIOD_CXX_API line_settings& line_settings::operator=(line_settings&& other)
 	return *this;
 }
 
-GPIOD_CXX_API line_settings& line_settings::reset(void) noexcept
+GPIOD_CXX_API line_settings& line_settings::reset() noexcept
 {
 	::gpiod_line_settings_reset(this->_m_priv->settings.get());
 
