@@ -25,7 +25,7 @@ const ::gpiod::line::offset line_offset = 5;
 
 } /* namespace */
 
-int main(void)
+int main()
 {
 	::gpiod::line::value value = ::gpiod::line::value::ACTIVE;
 

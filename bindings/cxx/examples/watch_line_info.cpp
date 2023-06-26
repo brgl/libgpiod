@@ -30,7 +30,7 @@ const char *event_type(const ::gpiod::info_event &event)
 
 } /* namespace */
 
-int main(void)
+int main()
 {
 	::gpiod::chip chip(chip_path);
 

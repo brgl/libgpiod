@@ -37,7 +37,7 @@ void print_values(::gpiod::line::offsets const &offsets,
 
 } /* namespace */
 
-int main(void)
+int main()
 {
 	::gpiod::line::values values = { ::gpiod::line::value::ACTIVE,
 					 ::gpiod::line::value::ACTIVE,

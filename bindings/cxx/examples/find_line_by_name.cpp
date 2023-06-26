@@ -15,7 +15,7 @@ const ::std::string line_name = "GPIO19";
 
 } /* namespace */
 
-int main(void)
+int main()
 {
 	/*
 	 * Names are not guaranteed unique, so this finds the first line with

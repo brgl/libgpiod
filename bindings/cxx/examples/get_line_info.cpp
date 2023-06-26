@@ -17,7 +17,7 @@ const ::gpiod::line::offset line_offset = 3;
 
 } /* namespace */
 
-int main(void)
+int main()
 {
 	auto chip = ::gpiod::chip(chip_path);
 	auto info = chip.get_line_info(line_offset);

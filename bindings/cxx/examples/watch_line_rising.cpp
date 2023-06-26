@@ -29,7 +29,7 @@ const char *edge_event_type_str(const ::gpiod::edge_event &event)
 
 } /* namespace */
 
-int main(void)
+int main()
 {
 	auto request =
 		::gpiod::chip(chip_path)

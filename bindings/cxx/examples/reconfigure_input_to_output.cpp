@@ -19,7 +19,7 @@ const ::gpiod::line::offset line_offset = 5;
 
 } /* namespace */
 
-int main(void)
+int main()
 {
 	/* request the line initially as an input */
 	auto request = ::gpiod::chip(chip_path)

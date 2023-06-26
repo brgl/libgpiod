@@ -15,7 +15,7 @@ const ::std::filesystem::path chip_path("/dev/gpiochip0");
 
 } /* namespace */
 
-int main(void)
+int main()
 {
 	::gpiod::chip chip(chip_path);
 	auto info = chip.get_info();

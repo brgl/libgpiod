@@ -31,7 +31,7 @@ const char* edge_event_type_str(const ::gpiod::edge_event &event)
 
 } /* namespace */
 
-int main(void)
+int main()
 {
 	/*
 	 * Assume a button connecting the pin to ground, so pull it up and
