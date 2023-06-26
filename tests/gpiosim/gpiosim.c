@@ -137,10 +137,10 @@ static int id_alloc(void)
 
 static void id_free(int id)
 {
+	pthread_mutex_lock(&id_lock);
+
 	id_del_ctx.id = id;
 	id_del_ctx.idp = NULL;
-
-	pthread_mutex_lock(&id_lock);
 
 	twalk(id_root, id_del);
 	if (id_del_ctx.idp) {
