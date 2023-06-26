@@ -3,13 +3,15 @@
 
 EXTRA_DIST = \
 	async_watch_line_value.py \
+	find_line_by_name.py \
+	get_chip_info.py \
+	get_line_info.py \
 	get_line_value.py \
-	gpiodetect.py \
-	gpiofind.py \
-	gpioget.py \
-	gpioinfo.py \
-	gpiomon.py \
-	gpionotify.py \
-	gpioset.py \
+	get_multiple_line_values.py \
+	reconfigure_input_to_output.py \
 	toggle_line_value.py \
-	watch_line_value.py
+	toggle_multiple_line_values.py \
+	watch_line_requests.py \
+	watch_line_value.py \
+	watch_line_rising.py \
+	watch_multiple_line_values.py

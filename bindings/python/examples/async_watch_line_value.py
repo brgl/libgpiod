@@ -11,9 +11,9 @@ from datetime import timedelta
 from gpiod.line import Bias, Edge
 
 
-def edge_type(event):
+def edge_type_str(event):
     if event.event_type is event.Type.RISING_EDGE:
-        return "Rising "
+        return "Rising"
     if event.event_type is event.Type.FALLING_EDGE:
         return "Falling"
     return "Unknown"
@@ -41,8 +41,9 @@ def async_watch_line_value(chip_path, line_offset):
             poll.poll()
             for event in request.read_edge_events():
                 print(
-                    "offset: %d, type: %s, event #%d"
-                    % (event.line_offset, edge_type(event), event.line_seqno)
+                    "offset: {}  type: {:<7}  event #{}".format(
+                        event.line_offset, edge_type_str(event), event.line_seqno
+                    )
                 )
 
 
