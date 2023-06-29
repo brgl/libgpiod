@@ -9,3 +9,5 @@ members = [
     "libgpiod",
     "libgpiod-sys"
 ]
+
+resolver = "2"
