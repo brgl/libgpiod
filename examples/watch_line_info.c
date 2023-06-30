@@ -5,6 +5,7 @@
 
 #include <errno.h>
 #include <gpiod.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,7 +64,7 @@ int main(void)
 
 		info = gpiod_info_event_get_line_info(event);
 		timestamp_ns = gpiod_info_event_get_timestamp_ns(event);
-		printf("line %3d: %-9s %ld.%ld\n",
+		printf("line %3d: %-9s %" PRIu64 ".%" PRIu64 "\n",
 		       gpiod_line_info_get_offset(info), event_type(event),
 		       timestamp_ns / 1000000000, timestamp_ns % 1000000000);
 
