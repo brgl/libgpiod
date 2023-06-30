@@ -218,6 +218,9 @@ impl Settings {
 
     /// Get the debounce period.
     pub fn debounce_period(&self) -> Result<Duration> {
+        // c_ulong may be 32bit OR 64bit, clippy reports a false-positive here:
+        // https://github.com/rust-lang/rust-clippy/issues/10555
+        #[allow(clippy::unnecessary_cast)]
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
         Ok(Duration::from_micros(unsafe {
             gpiod::gpiod_line_settings_get_debounce_period_us(self.settings) as u64

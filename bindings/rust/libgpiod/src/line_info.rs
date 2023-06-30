@@ -142,6 +142,9 @@ impl Info {
 
     /// Get the debounce period of the line.
     pub fn debounce_period(&self) -> Duration {
+        // c_ulong may be 32bit OR 64bit, clippy reports a false-positive here:
+        // https://github.com/rust-lang/rust-clippy/issues/10555
+        #[allow(clippy::unnecessary_cast)]
         // SAFETY: `gpiod_line_info` is guaranteed to be valid here.
         Duration::from_micros(unsafe {
             gpiod::gpiod_line_info_get_debounce_period_us(self.info) as u64
