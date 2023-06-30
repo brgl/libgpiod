@@ -18,18 +18,6 @@ endif
 
 bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpionotify
 
-gpiodetect_SOURCES = gpiodetect.c
-
-gpioinfo_SOURCES = gpioinfo.c
-
-gpioget_SOURCES = gpioget.c
-
-gpioset_SOURCES = gpioset.c
-
-gpiomon_SOURCES = gpiomon.c
-
-gpionotify_SOURCES = gpionotify.c
-
 if WITH_TESTS
 
 noinst_SCRIPTS = gpio-tools-test.bash
