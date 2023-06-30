@@ -186,7 +186,7 @@ impl SimBank {
 
     fn set_num_lines(&self, num: usize) -> Result<()> {
         // SAFETY: `gpiosim_bank` is guaranteed to be valid here.
-        let ret = unsafe { gpiosim_bank_set_num_lines(self.bank, num.try_into().unwrap()) };
+        let ret = unsafe { gpiosim_bank_set_num_lines(self.bank, num) };
         if ret == -1 {
             Err(Error::OperationFailed(
                 OperationType::SimBankSetNumLines,

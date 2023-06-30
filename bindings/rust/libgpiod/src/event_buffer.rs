@@ -108,7 +108,7 @@ impl Buffer {
             gpiod::gpiod_line_request_read_edge_events(
                 request.request,
                 self.buffer,
-                self.events.len().try_into().unwrap(),
+                self.events.len(),
             )
         };
 
