@@ -46,7 +46,7 @@ impl Value {
                     errno::errno(),
                 ))
             }
-            _ => return Err(Error::InvalidEnumValue("Value", val as i32)),
+            _ => return Err(Error::InvalidEnumValue("Value", val)),
         })
     }
 }

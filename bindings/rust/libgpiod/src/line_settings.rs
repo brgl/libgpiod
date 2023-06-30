@@ -244,7 +244,7 @@ impl Settings {
     /// Get the event clock setting.
     pub fn event_clock(&self) -> Result<EventClock> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
-        EventClock::new(unsafe { gpiod::gpiod_line_settings_get_event_clock(self.settings) } as u32)
+        EventClock::new(unsafe { gpiod::gpiod_line_settings_get_event_clock(self.settings) })
     }
 
     /// Set the output value setting.

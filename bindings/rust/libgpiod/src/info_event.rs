@@ -34,7 +34,7 @@ impl Event {
     /// Get the event type of the status change event.
     pub fn event_type(&self) -> Result<InfoChangeKind> {
         // SAFETY: `gpiod_info_event` is guaranteed to be valid here.
-        InfoChangeKind::new(unsafe { gpiod::gpiod_info_event_get_event_type(self.event) } as u32)
+        InfoChangeKind::new(unsafe { gpiod::gpiod_info_event_get_event_type(self.event) })
     }
 
     /// Get the timestamp of the event, read from the monotonic clock.

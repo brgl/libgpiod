@@ -279,7 +279,7 @@ impl Info {
     /// Get the number of GPIO lines exposed by the chip.
     pub fn num_lines(&self) -> usize {
         // SAFETY: `gpiod_chip` is guaranteed to be valid here.
-        unsafe { gpiod::gpiod_chip_info_get_num_lines(self.info) as usize }
+        unsafe { gpiod::gpiod_chip_info_get_num_lines(self.info) }
     }
 }
 

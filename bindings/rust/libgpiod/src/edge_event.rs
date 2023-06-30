@@ -41,7 +41,7 @@ impl Event {
     /// Get the event type.
     pub fn event_type(&self) -> Result<EdgeKind> {
         // SAFETY: `gpiod_edge_event` is guaranteed to be valid here.
-        EdgeKind::new(unsafe { gpiod::gpiod_edge_event_get_event_type(self.0) } as u32)
+        EdgeKind::new(unsafe { gpiod::gpiod_edge_event_get_event_type(self.0) })
     }
 
     /// Get the timestamp of the event.

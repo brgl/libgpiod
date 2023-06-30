@@ -82,7 +82,7 @@ impl Buffer {
         }
 
         // SAFETY: `gpiod_edge_event_buffer` is guaranteed to be valid here.
-        let capacity = unsafe { gpiod::gpiod_edge_event_buffer_get_capacity(buffer) as usize };
+        let capacity = unsafe { gpiod::gpiod_edge_event_buffer_get_capacity(buffer) };
 
         Ok(Self {
             buffer,

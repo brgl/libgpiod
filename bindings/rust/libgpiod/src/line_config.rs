@@ -108,7 +108,7 @@ impl Config {
         let mut map = SettingsMap::new();
         // SAFETY: gpiod_line_config is guaranteed to be valid here
         let num_lines = unsafe { gpiod::gpiod_line_config_get_num_configured_offsets(self.config) };
-        let mut offsets = vec![0; num_lines as usize];
+        let mut offsets = vec![0; num_lines];
 
         // SAFETY: gpiod_line_config is guaranteed to be valid here.
         let num_stored = unsafe {
@@ -119,7 +119,7 @@ impl Config {
             )
         };
 
-        for offset in &offsets[0..num_stored as usize] {
+        for offset in &offsets[0..num_stored] {
             // SAFETY: `gpiod_line_config` is guaranteed to be valid here.
             let settings =
                 unsafe { gpiod::gpiod_line_config_get_line_settings(self.config, *offset) };

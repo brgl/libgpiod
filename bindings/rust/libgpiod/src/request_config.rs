@@ -83,7 +83,7 @@ impl Config {
     /// Get the edge event buffer size setting for the request config.
     pub fn event_buffer_size(&self) -> usize {
         // SAFETY: `gpiod_request_config` is guaranteed to be valid here.
-        unsafe { gpiod::gpiod_request_config_get_event_buffer_size(self.config) as usize }
+        unsafe { gpiod::gpiod_request_config_get_event_buffer_size(self.config) }
     }
 }
 

@@ -28,12 +28,12 @@ impl Request {
     /// Get the number of lines in the request.
     pub fn num_lines(&self) -> usize {
         // SAFETY: `gpiod_line_request` is guaranteed to be valid here.
-        unsafe { gpiod::gpiod_line_request_get_num_requested_lines(self.request) as usize }
+        unsafe { gpiod::gpiod_line_request_get_num_requested_lines(self.request) }
     }
 
     /// Get the offsets of lines in the request.
     pub fn offsets(&self) -> Vec<Offset> {
-        let mut offsets = vec![0; self.num_lines() as usize];
+        let mut offsets = vec![0; self.num_lines()];
 
         // SAFETY: `gpiod_line_request` is guaranteed to be valid here.
         let num_offsets = unsafe {
@@ -43,7 +43,7 @@ impl Request {
                 self.num_lines(),
             )
         };
-        offsets.shrink_to(num_offsets as usize);
+        offsets.shrink_to(num_offsets);
         offsets
     }
 
@@ -145,7 +145,7 @@ impl Request {
 
     /// Set values of all lines associated with the request.
     pub fn set_values(&mut self, values: &[Value]) -> Result<&mut Self> {
-        if values.len() != self.num_lines() as usize {
+        if values.len() != self.num_lines() {
             return Err(Error::InvalidArguments);
         }
 

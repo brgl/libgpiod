@@ -59,7 +59,7 @@ mod chip {
             assert_eq!(info.label().unwrap(), LABEL);
             assert_eq!(info.name().unwrap(), sim.chip_name());
             assert_eq!(chip.path().unwrap(), sim.dev_path().to_str().unwrap());
-            assert_eq!(info.num_lines(), NGPIO as usize);
+            assert_eq!(info.num_lines(), NGPIO);
         }
 
         #[test]
