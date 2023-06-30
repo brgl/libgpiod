@@ -54,6 +54,9 @@ impl<'a> Iterator for Events<'a> {
     }
 
     fn next(&mut self) -> Option<Self::Item> {
+        // clippy false-positive, fixed in next clippy release:
+        // https://github.com/rust-lang/rust-clippy/issues/9820
+        #[allow(clippy::iter_nth_zero)]
         self.nth(0)
     }
 }
