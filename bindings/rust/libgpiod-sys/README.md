@@ -8,6 +8,9 @@ SPDX-FileCopyrightText: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 Automatically generated Rust FFI bindings via
 	[bindgen](https://github.com/rust-lang/rust-bindgen).
 
+Typically, you will want to use the safe `libgpiod` wrapper crate instead of
+these unsafe wrappers around the C lib.
+
 ## Build requirements
 
 A compatible variant of the C library needs to detectable using pkg-config.
