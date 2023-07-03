@@ -60,7 +60,7 @@ status_is() {
 # Same as above but match against the regex pattern in $1.
 output_regex_match() {
 	[[ "$output" =~ $1 ]]
-	assertEquals "0" "$?"
+	assertEquals " '$output' did not match '$1'" "0" "$?"
 }
 
 gpiosim_chip() {
@@ -249,7 +249,7 @@ dut_regex_match() {
 		unset DUT_FIRST_CHAR
 	fi
 	[[ $LINE =~ $PATTERN ]]
-	assertEquals "0" "$?"
+	assertEquals "'$LINE' did not match '$PATTERN'" "0" "$?"
 }
 
 dut_write() {
