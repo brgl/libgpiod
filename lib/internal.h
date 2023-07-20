@@ -26,7 +26,8 @@ void gpiod_request_config_to_uapi(struct gpiod_request_config *config,
 int gpiod_line_config_to_uapi(struct gpiod_line_config *config,
 			      struct gpio_v2_line_request *uapi_cfg);
 struct gpiod_line_request *
-gpiod_line_request_from_uapi(struct gpio_v2_line_request *uapi_req);
+gpiod_line_request_from_uapi(struct gpio_v2_line_request *uapi_req,
+			     const char *chip_name);
 int gpiod_edge_event_buffer_read_fd(int fd,
 				    struct gpiod_edge_event_buffer *buffer,
 				    size_t max_events);

@@ -13,13 +13,15 @@
 #include "internal.h"
 
 struct gpiod_line_request {
+	char *chip_name;
 	unsigned int offsets[GPIO_V2_LINES_MAX];
 	size_t num_lines;
 	int fd;
 };
 
 struct gpiod_line_request *
-gpiod_line_request_from_uapi(struct gpio_v2_line_request *uapi_req)
+gpiod_line_request_from_uapi(struct gpio_v2_line_request *uapi_req,
+			     const char *chip_name)
 {
 	struct gpiod_line_request *request;
 
@@ -28,6 +30,13 @@ gpiod_line_request_from_uapi(struct gpio_v2_line_request *uapi_req)
 		return NULL;
 
 	memset(request, 0, sizeof(*request));
+
+	request->chip_name = strdup(chip_name);
+	if (!request->chip_name) {
+		free(request);
+		return NULL;
+	}
+
 	request->fd = uapi_req->fd;
 	request->num_lines = uapi_req->num_lines;
 	memcpy(request->offsets, uapi_req->offsets,
@@ -42,7 +51,16 @@ GPIOD_API void gpiod_line_request_release(struct gpiod_line_request *request)
 		return;
 
 	close(request->fd);
+	free(request->chip_name);
 	free(request);
+}
+
+GPIOD_API const char *
+gpiod_line_request_get_chip_name(struct gpiod_line_request *request)
+{
+	assert(request);
+
+	return request->chip_name;
 }
 
 GPIOD_API size_t

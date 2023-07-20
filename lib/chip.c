@@ -215,6 +215,7 @@ gpiod_chip_request_lines(struct gpiod_chip *chip,
 {
 	struct gpio_v2_line_request uapi_req;
 	struct gpiod_line_request *request;
+	struct gpiochip_info info;
 	int ret;
 
 	assert(chip);
@@ -233,11 +234,15 @@ gpiod_chip_request_lines(struct gpiod_chip *chip,
 	if (ret)
 		return NULL;
 
+	ret = read_chip_info(chip->fd, &info);
+	if (ret < 0)
+		return NULL;
+
 	ret = ioctl(chip->fd, GPIO_V2_GET_LINE_IOCTL, &uapi_req);
 	if (ret < 0)
 		return NULL;
 
-	request = gpiod_line_request_from_uapi(&uapi_req);
+	request = gpiod_line_request_from_uapi(&uapi_req, info.name);
 	if (!request) {
 		close(uapi_req.fd);
 		return NULL;

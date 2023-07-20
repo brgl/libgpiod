@@ -1008,6 +1008,15 @@ gpiod_request_config_get_event_buffer_size(struct gpiod_request_config *config);
 void gpiod_line_request_release(struct gpiod_line_request *request);
 
 /**
+ * @brief Get the name of the chip this request was made on.
+ * @param request Line request object.
+ * @return Name the GPIO chip device. The returned pointer is valid for the
+ * lifetime of the request object and must not be freed by the caller.
+ */
+const char *
+gpiod_line_request_get_chip_name(struct gpiod_line_request *request);
+
+/**
  * @brief Get the number of lines in the request.
  * @param request Line request object.
  * @return Number of requested lines.
