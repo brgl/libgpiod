@@ -63,6 +63,13 @@ GPIOD_CXX_API void line_request::release()
 	this->_m_priv->request.reset();
 }
 
+GPIOD_CXX_API ::std::string line_request::chip_name() const
+{
+	this->_m_priv->throw_if_released();
+
+	return ::gpiod_line_request_get_chip_name(this->_m_priv->request.get());
+}
+
 GPIOD_CXX_API ::std::size_t line_request::num_lines() const
 {
 	this->_m_priv->throw_if_released();
@@ -222,7 +229,8 @@ GPIOD_CXX_API ::std::ostream& operator<<(::std::ostream& out, const line_request
 	if (!request)
 		out << "gpiod::line_request(released)";
 	else
-		out << "gpiod::line_request(num_lines=" << request.num_lines() <<
+		out << "gpiod::line_request(chip=\"" << request.chip_name() <<
+		       "\", num_lines=" << request.num_lines() <<
 		       ", line_offsets=" << request.offsets() <<
 		       ", fd=" << request.fd() <<
 		       ")";

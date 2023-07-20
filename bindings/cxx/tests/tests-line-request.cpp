@@ -468,14 +468,16 @@ TEST_CASE("line_request stream insertion operator works", "[line-request]")
 		.set_num_lines(4)
 		.build();
 
-	auto request = ::gpiod::chip(sim.dev_path())
+	auto chip = ::gpiod::chip(sim.dev_path());
+	auto request = chip
 		.prepare_request()
 		.add_line_settings({ 3, 1, 0, 2}, ::gpiod::line_settings())
 		.do_request();
 
 	::std::stringstream buf, expected;
 
-	expected << "gpiod::line_request(num_lines=4, line_offsets=gpiod::offsets(3, 1, 0, 2), fd=" <<
+	expected << "gpiod::line_request(chip=\"" << sim.name() <<
+		    "\", num_lines=4, line_offsets=gpiod::offsets(3, 1, 0, 2), fd=" <<
 		    request.fd() << ")";
 
 	SECTION("active request")

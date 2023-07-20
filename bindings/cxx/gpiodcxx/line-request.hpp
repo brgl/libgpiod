@@ -76,6 +76,12 @@ public:
 	void release();
 
 	/**
+	 * @brief Get the name of the chip this request was made on.
+	 * @return Name to the GPIO chip.
+	 */
+	::std::string chip_name() const;
+
+	/**
 	 * @brief Get the number of requested lines.
 	 * @return Number of lines in this request.
 	 */
