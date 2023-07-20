@@ -212,9 +212,17 @@ class LineRequest:
         if not self._req:
             return "<LineRequest RELEASED>"
 
-        return "<LineRequest num_lines={} offsets={} fd={}>".format(
-            self.num_lines, self.offsets, self.fd
+        return '<LineRequest chip="{}" num_lines={} offsets={} fd={}>'.format(
+            self.chip_name, self.num_lines, self.offsets, self.fd
         )
+
+    @property
+    def chip_name(self) -> str:
+        """
+        Name of the chip this request was made on.
+        """
+        self._check_released()
+        return self._chip_name
 
     @property
     def num_lines(self) -> int:

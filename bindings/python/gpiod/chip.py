@@ -315,6 +315,7 @@ class Chip:
         req_internal = self._chip.request_lines(line_cfg, consumer, event_buffer_size)
         request = LineRequest(req_internal)
 
+        request._chip_name = req_internal.chip_name
         request._offsets = req_internal.offsets
         request._name_map = name_map
         request._offset_map = offset_map

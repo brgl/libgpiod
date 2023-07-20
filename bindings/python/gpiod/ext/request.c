@@ -38,6 +38,13 @@ static void request_finalize(request_object *self)
 }
 
 static PyObject *
+request_chip_name(request_object *self, void *Py_UNUSED(ignored))
+{
+	return PyUnicode_FromString(
+			gpiod_line_request_get_chip_name(self->request));
+}
+
+static PyObject *
 request_num_lines(request_object *self, void *Py_UNUSED(ignored))
 {
 	return PyLong_FromUnsignedLong(
@@ -92,6 +99,10 @@ static PyObject *request_fd(request_object *self, void *Py_UNUSED(ignored))
 }
 
 static PyGetSetDef request_getset[] = {
+	{
+		.name = "chip_name",
+		.get = (getter)request_chip_name,
+	},
 	{
 		.name = "num_lines",
 		.get = (getter)request_num_lines,

@@ -529,11 +529,14 @@ class LineRequestStringRepresentation(TestCase):
         del self.sim
 
     def test_str(self):
-        with gpiod.request_lines(self.sim.dev_path, config={(2, 6, 4, 1): None}) as req:
-            self.assertEqual(
-                str(req),
-                "<LineRequest num_lines=4 offsets=[2, 6, 4, 1] fd={}>".format(req.fd),
-            )
+        with gpiod.Chip(self.sim.dev_path) as chip:
+            with chip.request_lines(config={(2, 6, 4, 1): None}) as req:
+                self.assertEqual(
+                    str(req),
+                    '<LineRequest chip="{}" num_lines=4 offsets=[2, 6, 4, 1] fd={}>'.format(
+                        self.sim.name, req.fd
+                    ),
+                )
 
     def test_str_released(self):
         req = gpiod.request_lines(self.sim.dev_path, config={(2, 6, 4, 1): None})
