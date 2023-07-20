@@ -675,3 +675,24 @@ GPIOD_TEST_CASE(get_requested_offsets_less_and_more)
 	g_assert_cmpuint(retrieved[2], ==, 2);
 	g_assert_cmpuint(retrieved[3], ==, 3);
 }
+
+GPIOD_TEST_CASE(get_chip_name)
+{
+	static const guint offset = 4;
+
+	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 8, NULL);
+	g_autoptr(struct_gpiod_chip) chip = NULL;
+	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
+	g_autoptr(struct_gpiod_line_request) request = NULL;
+
+	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
+	line_cfg = gpiod_test_create_line_config_or_fail();
+
+	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
+							 NULL);
+
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
+
+	g_assert_cmpstr(g_gpiosim_chip_get_name(sim), ==,
+			gpiod_line_request_get_chip_name(request));
+}
