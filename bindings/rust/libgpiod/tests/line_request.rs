@@ -60,6 +60,20 @@ mod line_request {
         use super::*;
 
         #[test]
+        fn chip_name() {
+            const GPIO: Offset = 2;
+            let mut config = TestConfig::new(NGPIO).unwrap();
+            config.lconfig_add_settings(&[GPIO]);
+            config.request_lines().unwrap();
+
+            let arc = config.sim();
+            let sim = arc.lock().unwrap();
+            let chip_name = sim.chip_name().clone();
+
+            assert_eq!(config.request().chip_name().unwrap(), chip_name);
+        }
+
+        #[test]
         fn custom_consumer() {
             const GPIO: Offset = 2;
             const CONSUMER: &str = "foobar";

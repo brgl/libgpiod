@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2022 Linaro Ltd.
 // SPDX-FileCopyrightText: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
+use std::ffi::CStr;
 use std::os::unix::prelude::AsRawFd;
 use std::time::Duration;
 
@@ -23,6 +24,19 @@ impl Request {
     /// Request a set of lines for exclusive usage.
     pub(crate) fn new(request: *mut gpiod::gpiod_line_request) -> Result<Self> {
         Ok(Self { request })
+    }
+
+    /// Get the name of the chip this request was made on.
+    pub fn chip_name(&self) -> Result<&str> {
+        // SAFETY: The `gpiod_line_request` is guaranteed to be live as long
+        // as `&self`
+        let name = unsafe { gpiod::gpiod_line_request_get_chip_name(self.request) };
+
+        // SAFETY: The string is guaranteed to be valid, non-null and immutable
+        // by the C API for the lifetime of the `gpiod_line_request`.
+        unsafe { CStr::from_ptr(name) }
+            .to_str()
+            .map_err(Error::StringNotUtf8)
     }
 
     /// Get the number of lines in the request.
