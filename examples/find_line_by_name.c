@@ -69,12 +69,9 @@ int main(void)
 	static const char *const line_name = "GPIO19";
 
 	struct gpiod_chip_info *cinfo;
-	struct gpiod_line_info *linfo;
-	unsigned int j, num_lines;
+	int i, num_chips, offset;
 	struct gpiod_chip *chip;
 	char **chip_paths;
-	const char *name;
-	int i, num_chips;
 
 	/*
 	 * Names are not guaranteed unique, so this finds the first line with
@@ -85,26 +82,21 @@ int main(void)
 		chip = gpiod_chip_open(chip_paths[i]);
 		if (!chip)
 			continue;
+
+		offset = gpiod_chip_get_line_offset_from_name(chip, line_name);
+		if (offset == -1)
+			goto close_chip;
+
 		cinfo = gpiod_chip_get_info(chip);
 		if (!cinfo)
-			continue;
+			goto close_chip;
 
-		num_lines = gpiod_chip_info_get_num_lines(cinfo);
-		for (j = 0; j < num_lines; j++) {
-			linfo = gpiod_chip_get_line_info(chip, j);
-			if (!linfo)
-				continue;
-			name = gpiod_line_info_get_name(linfo);
-			if (name && (strcmp(line_name, name) == 0)) {
-				printf("%s: %s %d\n", line_name,
-				       gpiod_chip_info_get_name(cinfo), j);
-				return EXIT_SUCCESS;
-			}
+		printf("%s: %s %d\n", line_name,
+		       gpiod_chip_info_get_name(cinfo), offset);
 
-			gpiod_line_info_free(linfo);
-		}
+		return EXIT_SUCCESS;
 
-		gpiod_chip_info_free(cinfo);
+close_chip:
 		gpiod_chip_close(chip);
 	}
 
