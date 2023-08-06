@@ -574,6 +574,7 @@ GPIOD_TEST_CASE(request_lines_with_unordered_offsets)
 	g_autoptr(struct_gpiod_line_request) request = NULL;
 	enum gpiod_line_value values[4];
 	guint set_offsets[4];
+	gint ret;
 
 	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
 	settings = gpiod_test_create_line_settings_or_fail();
@@ -596,7 +597,9 @@ GPIOD_TEST_CASE(request_lines_with_unordered_offsets)
 	set_offsets[1] = 1;
 	set_offsets[2] = 6;
 	set_offsets[3] = 0;
-	gpiod_line_request_set_values_subset(request, 4, set_offsets, values);
+	ret = gpiod_line_request_set_values_subset(request, 4, set_offsets, values);
+	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
 
 	g_assert_cmpint(g_gpiosim_chip_get_value(sim, 0), ==,
 			G_GPIOSIM_VALUE_INACTIVE);
