@@ -5,6 +5,7 @@
  * Copyright (C) 2019 Bartosz Golaszewski <bgolaszewski@baylibre.com>
  */
 
+#include <dirent.h>
 #include <errno.h>
 #include <libkmod.h>
 #include <libudev.h>
@@ -357,6 +358,51 @@ err_out:
 	return -1;
 }
 
+static int dir_filter(const struct dirent *entry)
+{
+	return !strncmp(entry->d_name, "gpio-mockup.", 12);
+}
+
+static void free_dirs(struct dirent **entries, size_t count)
+{
+	size_t i;
+
+	for (i = 0; i < count; i++)
+		free(entries[i]);
+	free(entries);
+}
+
+static int unbind_devices(void)
+{
+	struct dirent **entries;
+	int i, count, fd;
+	ssize_t ret;
+
+	count = scandir("/sys/bus/platform/drivers/gpio-mockup", &entries,
+			dir_filter, alphasort);
+	if (count < 0)
+		return -1;
+
+	fd = open("/sys/bus/platform/drivers/gpio-mockup/unbind", O_WRONLY);
+	if (fd < 0) {
+		free_dirs(entries, count);
+		return -1;
+	}
+
+	for (i = 0; i < count; i++) {
+		ret = write(fd, entries[i]->d_name, strlen(entries[i]->d_name));
+		if (ret < 0) {
+			close(fd);
+			free_dirs(entries, count);
+			return -1;
+		}
+	}
+
+	close(fd);
+	free_dirs(entries, count);
+	return 0;
+}
+
 EXPORT int gpio_mockup_remove(struct gpio_mockup *ctx)
 {
 	unsigned int i;
@@ -366,6 +412,10 @@ EXPORT int gpio_mockup_remove(struct gpio_mockup *ctx)
 		errno = ENODEV;
 		return -1;
 	}
+
+	rv = unbind_devices();
+	if (rv)
+		return -1;
 
 	rv = kmod_module_remove_module(ctx->module, 0);
 	if (rv)
