@@ -3,6 +3,7 @@
 
 #include <catch2/catch.hpp>
 #include <chrono>
+#include <filesystem>
 #include <gpiod.hpp>
 #include <sstream>
 #include <thread>
@@ -17,11 +18,11 @@ using event_type = ::gpiod::info_event::event_type;
 
 namespace {
 
-void request_reconfigure_release_line(::gpiod::chip& chip)
+void request_reconfigure_release_line(const ::std::filesystem::path& chip_path)
 {
 	::std::this_thread::sleep_for(::std::chrono::milliseconds(10));
 
-	auto request = chip
+	auto request = ::gpiod::chip(chip_path)
 		.prepare_request()
 		.add_line_settings(7, ::gpiod::line_settings())
 		.do_request();
@@ -48,7 +49,9 @@ TEST_CASE("Lines can be watched", "[info-event][chip]")
 		.set_num_lines(8)
 		.build();
 
-	::gpiod::chip chip(sim.dev_path());
+	const auto chip_path = sim.dev_path();
+
+	::gpiod::chip chip(chip_path);
 
 	SECTION("watch_line_info() returns line info")
 	{
@@ -74,7 +77,7 @@ TEST_CASE("Lines can be watched", "[info-event][chip]")
 
 		REQUIRE(info.direction() == direction::INPUT);
 
-		::std::thread thread(request_reconfigure_release_line, ::std::ref(chip));
+		::std::thread thread(request_reconfigure_release_line, ::std::ref(chip_path));
 
 		REQUIRE(chip.wait_info_event(::std::chrono::seconds(1)));
 		auto event = chip.read_info_event();
