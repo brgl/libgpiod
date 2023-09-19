@@ -49,43 +49,59 @@ GPIOD_TEST_CASE(event_timeout)
 }
 
 struct request_ctx {
-	struct gpiod_chip *chip;
-	struct gpiod_line_config *line_cfg;
-	struct gpiod_line_settings *settings;
+	const char *path;
 	guint offset;
 };
 
 static gpointer request_reconfigure_release_line(gpointer data)
 {
+	g_autoptr(struct_gpiod_line_settings) settings = NULL;
+	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
 	g_autoptr(struct_gpiod_line_request) request = NULL;
+	g_autoptr(struct_gpiod_chip) chip = NULL;
 	struct request_ctx *ctx = data;
 	gint ret;
 
+	chip = gpiod_chip_open(ctx->path);
+	g_assert_nonnull(chip);
+	if (g_test_failed())
+		return NULL;
+
+	line_cfg = gpiod_line_config_new();
+	g_assert_nonnull(line_cfg);
+	if (g_test_failed())
+		return NULL;
+
+	settings = gpiod_line_settings_new();
+	g_assert_nonnull(settings);
+	if (g_test_failed())
+		return NULL;
+
 	g_usleep(1000);
 
-	ret = gpiod_line_config_add_line_settings(ctx->line_cfg, &ctx->offset,
-						  1, ctx->settings);
+	ret = gpiod_line_config_add_line_settings(line_cfg, &ctx->offset,
+						  1, settings);
 	g_assert_cmpint(ret, ==, 0);
 	if (g_test_failed())
 		return NULL;
 
-	request = gpiod_chip_request_lines(ctx->chip, NULL, ctx->line_cfg);
+	request = gpiod_chip_request_lines(chip, NULL, line_cfg);
 	g_assert_nonnull(request);
 	if (g_test_failed())
 		return NULL;
 
 	g_usleep(1000);
 
-	gpiod_line_config_reset(ctx->line_cfg);
-	gpiod_line_settings_set_direction(ctx->settings,
+	gpiod_line_config_reset(line_cfg);
+	gpiod_line_settings_set_direction(settings,
 					  GPIOD_LINE_DIRECTION_OUTPUT);
-	ret = gpiod_line_config_add_line_settings(ctx->line_cfg, &ctx->offset,
-						  1, ctx->settings);
+	ret = gpiod_line_config_add_line_settings(line_cfg, &ctx->offset,
+						  1, settings);
 	g_assert_cmpint(ret, ==, 0);
 	if (g_test_failed())
 		return NULL;
 
-	ret = gpiod_line_request_reconfigure_lines(request, ctx->line_cfg);
+	ret = gpiod_line_request_reconfigure_lines(request, line_cfg);
 	g_assert_cmpint(ret, ==, 0);
 	if (g_test_failed())
 		return NULL;
@@ -106,25 +122,19 @@ GPIOD_TEST_CASE(request_reconfigure_release_events)
 	g_autoptr(struct_gpiod_info_event) request_event = NULL;
 	g_autoptr(struct_gpiod_info_event) reconfigure_event = NULL;
 	g_autoptr(struct_gpiod_info_event) release_event = NULL;
-	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
-	g_autoptr(struct_gpiod_line_settings) settings = NULL;
 	g_autoptr(GThread) thread = NULL;
 	struct gpiod_line_info *request_info, *reconfigure_info, *release_info;
 	guint64 request_ts, reconfigure_ts, release_ts;
 	struct request_ctx ctx;
+	const char *chip_path = g_gpiosim_chip_get_dev_path(sim);
 	gint ret;
 
-	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
-	line_cfg = gpiod_test_create_line_config_or_fail();
-	settings = gpiod_test_create_line_settings_or_fail();
-
+	chip = gpiod_test_open_chip_or_fail(chip_path);
 	info = gpiod_test_chip_watch_line_info_or_fail(chip, 3);
 
 	g_assert_false(gpiod_line_info_is_used(info));
 
-	ctx.chip = chip;
-	ctx.line_cfg = line_cfg;
-	ctx.settings = settings;
+	ctx.path = chip_path;
 	ctx.offset = 3;
 
 	thread = g_thread_new("request-release",
@@ -199,26 +209,20 @@ GPIOD_TEST_CASE(chip_fd_can_be_polled)
 	g_autoptr(struct_gpiod_chip) chip = NULL;
 	g_autoptr(struct_gpiod_line_info) info = NULL;
 	g_autoptr(struct_gpiod_info_event) event = NULL;
-	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
-	g_autoptr(struct_gpiod_line_settings) settings = NULL;
 	g_autoptr(GThread) thread = NULL;
+	const char *chip_path = g_gpiosim_chip_get_dev_path(sim);
 	struct gpiod_line_info *evinfo;
 	struct request_ctx ctx;
 	struct timespec ts;
 	struct pollfd pfd;
 	gint ret, fd;
 
-	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
-	settings = gpiod_test_create_line_settings_or_fail();
-	line_cfg = gpiod_test_create_line_config_or_fail();
-
+	chip = gpiod_test_open_chip_or_fail(chip_path);
 	info = gpiod_test_chip_watch_line_info_or_fail(chip, 3);
 
 	g_assert_false(gpiod_line_info_is_used(info));
 
-	ctx.chip = chip;
-	ctx.line_cfg = line_cfg;
-	ctx.settings = settings;
+	ctx.path = chip_path;
 	ctx.offset = 3;
 
 	thread = g_thread_new("request-release",
