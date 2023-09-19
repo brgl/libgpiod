@@ -37,9 +37,9 @@ class InfoEventDataclassBehavior(TestCase):
                     event.line_info = 4
 
 
-def request_reconfigure_release_line(chip, offset):
+def request_reconfigure_release_line(chip_path, offset):
     time.sleep(0.1)
-    with chip.request_lines(config={offset: None}) as request:
+    with gpiod.request_lines(chip_path, config={offset: None}) as request:
         time.sleep(0.1)
         request.reconfigure_lines(
             config={offset: gpiod.LineSettings(direction=Direction.OUTPUT)}
@@ -95,7 +95,7 @@ class WatchingInfoEventWorks(TestCase):
         self.assertEqual(info.direction, Direction.INPUT)
 
         self.thread = threading.Thread(
-            target=partial(request_reconfigure_release_line, self.chip, 7)
+            target=partial(request_reconfigure_release_line, self.sim.dev_path, 7)
         )
         self.thread.start()
 
