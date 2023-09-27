@@ -13,7 +13,6 @@ use std::os::{raw::c_char, unix::prelude::AsRawFd};
 use std::path::Path;
 use std::ptr;
 use std::str;
-use std::sync::Arc;
 use std::time::Duration;
 
 use super::{
@@ -22,14 +21,24 @@ use super::{
     request, Error, OperationType, Result,
 };
 
+/// GPIO chip
+///
+/// A GPIO chip object is associated with an open file descriptor to the GPIO
+/// character device. It exposes basic information about the chip and allows
+/// callers to retrieve information about each line, watch lines for state
+/// changes and make line requests.
 #[derive(Debug, Eq, PartialEq)]
-struct Internal {
+pub struct Chip {
     chip: *mut gpiod::gpiod_chip,
 }
 
-impl Internal {
+// SAFETY: Safe as chip is modeling a owned chip instance that may be freely
+// moved to other threads
+unsafe impl Send for Chip {}
+
+impl Chip {
     /// Find a chip by path.
-    fn open<P: AsRef<Path>>(path: &P) -> Result<Self> {
+    pub fn open<P: AsRef<Path>>(path: &P) -> Result<Self> {
         // Null-terminate the string
         let path = path.as_ref().to_string_lossy() + "\0";
 
@@ -45,37 +54,6 @@ impl Internal {
 
         Ok(Self { chip })
     }
-}
-
-impl Drop for Internal {
-    /// Close the chip and release all associated resources.
-    fn drop(&mut self) {
-        // SAFETY: `gpiod_chip` is guaranteed to be valid here.
-        unsafe { gpiod::gpiod_chip_close(self.chip) }
-    }
-}
-
-/// GPIO chip
-///
-/// A GPIO chip object is associated with an open file descriptor to the GPIO
-/// character device. It exposes basic information about the chip and allows
-/// callers to retrieve information about each line, watch lines for state
-/// changes and make line requests.
-#[derive(Debug, Eq, PartialEq)]
-pub struct Chip {
-    ichip: Arc<Internal>,
-}
-
-// SAFETY: Safe as `Internal` won't be freed until the `Chip` is dropped.
-unsafe impl Send for Chip {}
-
-impl Chip {
-    /// Find a chip by path.
-    pub fn open<P: AsRef<Path>>(path: &P) -> Result<Self> {
-        let ichip = Arc::new(Internal::open(path)?);
-
-        Ok(Self { ichip })
-    }
 
     /// Get the chip name as represented in the kernel.
     pub fn info(&self) -> Result<Info> {
@@ -86,7 +64,7 @@ impl Chip {
     pub fn path(&self) -> Result<&str> {
         // SAFETY: The string returned by libgpiod is guaranteed to live as long
         // as the `struct Chip`.
-        let path = unsafe { gpiod::gpiod_chip_get_path(self.ichip.chip) };
+        let path = unsafe { gpiod::gpiod_chip_get_path(self.chip) };
 
         // SAFETY: The string is guaranteed to be valid here by the C API.
         unsafe { CStr::from_ptr(path) }
@@ -98,7 +76,7 @@ impl Chip {
     pub fn line_info(&self, offset: Offset) -> Result<line::Info> {
         // SAFETY: The `gpiod_line_info` returned by libgpiod is guaranteed to live as long
         // as the `struct Info`.
-        let info = unsafe { gpiod::gpiod_chip_get_line_info(self.ichip.chip, offset) };
+        let info = unsafe { gpiod::gpiod_chip_get_line_info(self.chip, offset) };
 
         if info.is_null() {
             return Err(Error::OperationFailed(
@@ -114,7 +92,7 @@ impl Chip {
     /// it for future changes.
     pub fn watch_line_info(&self, offset: Offset) -> Result<line::Info> {
         // SAFETY: `gpiod_line_info` is guaranteed to be valid here.
-        let info = unsafe { gpiod::gpiod_chip_watch_line_info(self.ichip.chip, offset) };
+        let info = unsafe { gpiod::gpiod_chip_watch_line_info(self.chip, offset) };
 
         if info.is_null() {
             return Err(Error::OperationFailed(
@@ -130,7 +108,7 @@ impl Chip {
     pub fn unwatch(&self, offset: Offset) {
         // SAFETY: `gpiod_chip` is guaranteed to be valid here.
         unsafe {
-            gpiod::gpiod_chip_unwatch_line_info(self.ichip.chip, offset);
+            gpiod::gpiod_chip_unwatch_line_info(self.chip, offset);
         }
     }
 
@@ -143,7 +121,7 @@ impl Chip {
         };
 
         // SAFETY: `gpiod_chip` is guaranteed to be valid here.
-        let ret = unsafe { gpiod::gpiod_chip_wait_info_event(self.ichip.chip, timeout) };
+        let ret = unsafe { gpiod::gpiod_chip_wait_info_event(self.chip, timeout) };
 
         match ret {
             -1 => Err(Error::OperationFailed(
@@ -160,7 +138,7 @@ impl Chip {
     pub fn read_info_event(&self) -> Result<info::Event> {
         // SAFETY: The `gpiod_info_event` returned by libgpiod is guaranteed to live as long
         // as the `struct Event`.
-        let event = unsafe { gpiod::gpiod_chip_read_info_event(self.ichip.chip) };
+        let event = unsafe { gpiod::gpiod_chip_read_info_event(self.chip) };
         if event.is_null() {
             return Err(Error::OperationFailed(
                 OperationType::ChipReadInfoEvent,
@@ -177,10 +155,7 @@ impl Chip {
 
         // SAFETY: `gpiod_chip` is guaranteed to be valid here.
         let ret = unsafe {
-            gpiod::gpiod_chip_get_line_offset_from_name(
-                self.ichip.chip,
-                name.as_ptr() as *const c_char,
-            )
+            gpiod::gpiod_chip_get_line_offset_from_name(self.chip, name.as_ptr() as *const c_char)
         };
 
         if ret == -1 {
@@ -207,7 +182,7 @@ impl Chip {
         // SAFETY: The `gpiod_line_request` returned by libgpiod is guaranteed to live as long
         // as the `struct Request`.
         let request =
-            unsafe { gpiod::gpiod_chip_request_lines(self.ichip.chip, req_cfg, lconfig.config) };
+            unsafe { gpiod::gpiod_chip_request_lines(self.chip, req_cfg, lconfig.config) };
 
         if request.is_null() {
             return Err(Error::OperationFailed(
@@ -220,6 +195,14 @@ impl Chip {
     }
 }
 
+impl Drop for Chip {
+    /// Close the chip and release all associated resources.
+    fn drop(&mut self) {
+        // SAFETY: `gpiod_chip` is guaranteed to be valid here.
+        unsafe { gpiod::gpiod_chip_close(self.chip) }
+    }
+}
+
 impl AsRawFd for Chip {
     /// Get the file descriptor associated with the chip.
     ///
@@ -227,7 +210,7 @@ impl AsRawFd for Chip {
     /// `struct Chip` may fail.
     fn as_raw_fd(&self) -> i32 {
         // SAFETY: `gpiod_chip` is guaranteed to be valid here.
-        unsafe { gpiod::gpiod_chip_get_fd(self.ichip.chip) }
+        unsafe { gpiod::gpiod_chip_get_fd(self.chip) }
     }
 }
 
@@ -240,8 +223,8 @@ pub struct Info {
 impl Info {
     /// Find a GPIO chip by path.
     fn new(chip: &Chip) -> Result<Self> {
-        // SAFETY: `chip.ichip.chip` is guaranteed to be valid here.
-        let info = unsafe { gpiod::gpiod_chip_get_info(chip.ichip.chip) };
+        // SAFETY: `chip.chip` is guaranteed to be valid here.
+        let info = unsafe { gpiod::gpiod_chip_get_info(chip.chip) };
         if info.is_null() {
             return Err(Error::OperationFailed(
                 OperationType::ChipGetInfo,
