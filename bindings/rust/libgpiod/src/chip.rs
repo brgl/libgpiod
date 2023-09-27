@@ -79,7 +79,7 @@ impl Chip {
 
     /// Get the chip name as represented in the kernel.
     pub fn info(&self) -> Result<Info> {
-        Info::new(self.ichip.clone())
+        Info::new(self)
     }
 
     /// Get the path used to find the chip.
@@ -239,9 +239,9 @@ pub struct Info {
 
 impl Info {
     /// Find a GPIO chip by path.
-    fn new(chip: Arc<Internal>) -> Result<Self> {
-        // SAFETY: `gpiod_chip` is guaranteed to be valid here.
-        let info = unsafe { gpiod::gpiod_chip_get_info(chip.chip) };
+    fn new(chip: &Chip) -> Result<Self> {
+        // SAFETY: `chip.ichip.chip` is guaranteed to be valid here.
+        let info = unsafe { gpiod::gpiod_chip_get_info(chip.ichip.chip) };
         if info.is_null() {
             return Err(Error::OperationFailed(
                 OperationType::ChipGetInfo,
