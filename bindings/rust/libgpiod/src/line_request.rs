@@ -20,6 +20,10 @@ pub struct Request {
     pub(crate) request: *mut gpiod::gpiod_line_request,
 }
 
+// SAFETY: Request models a wrapper around an owned gpiod_line_request and may
+// be safely sent to other threads.
+unsafe impl Send for Request {}
+
 impl Request {
     /// Request a set of lines for exclusive usage.
     pub(crate) fn new(request: *mut gpiod::gpiod_line_request) -> Result<Self> {

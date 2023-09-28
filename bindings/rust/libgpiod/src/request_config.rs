@@ -20,6 +20,10 @@ pub struct Config {
     pub(crate) config: *mut gpiod::gpiod_request_config,
 }
 
+// SAFETY: Config models a wrapper around an owned gpiod_request_config and may
+// be safely sent to other threads.
+unsafe impl Send for Config {}
+
 impl Config {
     /// Create a new request config object.
     pub fn new() -> Result<Self> {

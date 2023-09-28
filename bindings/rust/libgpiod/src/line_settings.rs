@@ -25,6 +25,10 @@ pub struct Settings {
     pub(crate) settings: *mut gpiod::gpiod_line_settings,
 }
 
+// SAFETY: Settings models a wrapper around an owned gpiod_line_settings and may
+// be safely sent to other threads.
+unsafe impl Send for Settings {}
+
 impl Settings {
     /// Create a new line settings object.
     pub fn new() -> Result<Self> {

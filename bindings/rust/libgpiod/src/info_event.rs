@@ -25,6 +25,10 @@ pub struct Event {
     pub(crate) event: *mut gpiod::gpiod_info_event,
 }
 
+// SAFETY: Event models a wrapper around an owned gpiod_info_event and may be
+// safely sent to other threads.
+unsafe impl Send for Event {}
+
 impl Event {
     /// Get a single chip's line's status change event.
     pub(crate) fn new(event: *mut gpiod::gpiod_info_event) -> Self {

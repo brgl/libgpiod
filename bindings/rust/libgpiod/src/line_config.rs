@@ -28,6 +28,10 @@ pub struct Config {
     pub(crate) config: *mut gpiod::gpiod_line_config,
 }
 
+// SAFETY: Config models a wrapper around an owned gpiod_line_config and may be
+// safely sent to other threads.
+unsafe impl Send for Config {}
+
 impl Config {
     /// Create a new line config object.
     pub fn new() -> Result<Self> {

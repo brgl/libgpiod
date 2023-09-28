@@ -68,6 +68,14 @@ pub struct Buffer {
     events: Vec<*mut gpiod::gpiod_edge_event>,
 }
 
+// SAFETY: Buffer models an owned gpiod_edge_event_buffer. However, there may
+// be events tied to it. Concurrent access from multiple threads to a buffer
+// and its associated events is not allowed by the C lib.
+// In Rust, those events will always be borrowed from a buffer instance. Thus,
+// either Rust prevents the user to move the Buffer while there are still
+// borrowed events, or we can safely send the the Buffer.
+unsafe impl Send for Buffer {}
+
 impl Buffer {
     /// Create a new edge event buffer.
     ///

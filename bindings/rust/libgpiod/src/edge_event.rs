@@ -24,6 +24,10 @@ use super::{
 #[derive(Debug, Eq, PartialEq)]
 pub struct Event(*mut gpiod::gpiod_edge_event);
 
+// SAFETY: Event models a wrapper around an owned gpiod_edge_event and may
+// be safely sent to other threads.
+unsafe impl Send for Event {}
+
 impl Event {
     pub fn event_clone(event: &Event) -> Result<Event> {
         // SAFETY: `gpiod_edge_event` is guaranteed to be valid here.
