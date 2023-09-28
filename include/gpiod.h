@@ -22,11 +22,11 @@ extern "C" {
  * This is the complete documentation of the public API made available to
  * users of libgpiod.
  *
- * <p>The API is logically split into several sections. For each opaque data
+ * The API is logically split into several sections. For each opaque data
  * class, there's a set of functions for manipulating it. Together they can be
  * thought of as objects and their methods in OOP parlance.
  *
- * <p>General note on error handling: all functions exported by libgpiod that
+ * General note on error handling: all functions exported by libgpiod that
  * can fail, set errno to one of the error values defined in errno.h upon
  * failure. The way of notifying the caller that an error occurred varies
  * between functions, but in general a function that returns an int, returns -1
@@ -35,7 +35,7 @@ extern "C" {
  * codes for every function as they propagate errors from the underlying libc
  * functions.
  *
- * <p>In general libgpiod functions are NULL-aware. For functions that are
+ * In general libgpiod functions are NULL-aware. For functions that are
  * logically methods of data classes - ones that take a pointer to the object
  * of that class as the first argument - passing a NULL pointer will result in
  * the program aborting the execution. For non-methods, init functions and
