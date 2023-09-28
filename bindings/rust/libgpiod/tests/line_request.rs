@@ -68,7 +68,7 @@ mod line_request {
 
             let arc = config.sim();
             let sim = arc.lock().unwrap();
-            let chip_name = sim.chip_name().clone();
+            let chip_name = sim.chip_name();
 
             assert_eq!(config.request().chip_name().unwrap(), chip_name);
         }
