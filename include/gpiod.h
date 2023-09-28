@@ -42,6 +42,14 @@ extern "C" {
  * methods that take a pointer as any of the subsequent arguments, the handling
  * of a NULL-pointer depends on the implementation and may range from gracefully
  * handling it, ignoring it or returning an error.
+ *
+ * libgpiod is thread-aware but does not provide any further thread-safety
+ * guarantees. This requires the user to ensure that at most one thread may
+ * work with an object at any time. Sharing objects across threads is allowed
+ * if a suitable synchronization mechanism serializes the access. Different,
+ * standalone objects can safely be used concurrently. Most libgpiod objects
+ * are standalone. Exceptions - such as events allocated in buffers - exist and
+ * are noted in the documentation.
  */
 
 /**
@@ -624,6 +632,12 @@ uint64_t gpiod_info_event_get_timestamp_ns(struct gpiod_info_event *event);
  * @return Returns a pointer to the line-info object associated with the event.
  *         The object lifetime is tied to the event object, so the pointer must
  *         be not be freed by the caller.
+ * @warning Thread-safety:
+ *          Since the line-info object is tied to the event, different threads
+ *          may not operate on the event and line-info at the same time. The
+ *          line-info can be copied using ::gpiod_line_info_copy in order to
+ *          create a standalone object - which then may safely be used from a
+ *          different thread concurrently.
  */
 struct gpiod_line_info *
 gpiod_info_event_get_line_info(struct gpiod_info_event *event);
@@ -1297,6 +1311,12 @@ void gpiod_edge_event_buffer_free(struct gpiod_edge_event_buffer *buffer);
  * @return Pointer to an event stored in the buffer. The lifetime of the
  *         event is tied to the buffer object. Users must not free the event
  *         returned by this function.
+ * @warning Thread-safety:
+ *          Since events are tied to the buffer instance, different threads
+ *          may not operate on the buffer and any associated events at the same
+ *          time. Events can be copied using ::gpiod_edge_event_copy in order
+ *          to create a standalone objects - which each may safely be used from
+ *          a different thread concurrently.
  */
 struct gpiod_edge_event *
 gpiod_edge_event_buffer_get_event(struct gpiod_edge_event_buffer *buffer,
