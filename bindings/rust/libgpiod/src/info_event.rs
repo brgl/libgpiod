@@ -48,7 +48,7 @@ impl Event {
     }
 
     /// Get the line-info object associated with the event.
-    pub fn line_info(&self) -> Result<line::Info> {
+    pub fn line_info(&self) -> Result<&line::InfoRef> {
         // SAFETY: `gpiod_line_info` is guaranteed to be valid here.
         let info = unsafe { gpiod::gpiod_info_event_get_line_info(self.event) };
 
@@ -59,7 +59,11 @@ impl Event {
             ));
         }
 
-        line::Info::new_from_event(info)
+        // SAFETY: The pointer is valid. The returned reference receives the
+        // lifetime '0 - the same as &self. &self also controls lifetime and
+        // ownership of the owning object. Therefore, the borrow prevents moving
+        // of the owning object to another thread.
+        Ok(unsafe { line::InfoRef::from_raw(info) })
     }
 }
 

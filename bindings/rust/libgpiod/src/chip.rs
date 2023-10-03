@@ -85,7 +85,9 @@ impl Chip {
             ));
         }
 
-        line::Info::new(info)
+        // SAFETY: We verified that the pointer is valid. We own the pointer and
+        // no longer use it after converting it into a Info instance.
+        Ok(unsafe { line::Info::from_raw(info) })
     }
 
     /// Get the current snapshot of information about the line at given offset and start watching
@@ -101,7 +103,9 @@ impl Chip {
             ));
         }
 
-        line::Info::new_watch(info)
+        // SAFETY: We verified that the pointer is valid. We own the instance and
+        // no longer use it after converting it into a Info instance.
+        Ok(unsafe { line::Info::from_raw(info) })
     }
 
     /// Stop watching a line
