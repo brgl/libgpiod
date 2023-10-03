@@ -19,6 +19,10 @@ mod line_info {
     const NGPIO: usize = 8;
 
     mod properties {
+        use std::thread;
+
+        use libgpiod::{line, request};
+
         use super::*;
 
         #[test]
@@ -270,6 +274,55 @@ mod line_info {
             let info = config.chip().line_info(0).unwrap();
             assert!(info.is_debounced());
             assert_eq!(info.debounce_period(), Duration::from_millis(100));
+        }
+
+        fn generate_line_event(chip: &Chip) {
+            let mut line_config = line::Config::new().unwrap();
+            line_config
+                .add_line_settings(&[0], line::Settings::new().unwrap())
+                .unwrap();
+
+            let mut request = chip
+                .request_lines(Some(&request::Config::new().unwrap()), &line_config)
+                .unwrap();
+
+            let mut new_line_config = line::Config::new().unwrap();
+            let mut settings = line::Settings::new().unwrap();
+            settings.set_direction(Direction::Output).unwrap();
+            new_line_config.add_line_settings(&[0], settings).unwrap();
+            request.reconfigure_lines(&new_line_config).unwrap();
+        }
+
+        #[test]
+        fn ownership() {
+            let sim = Sim::new(Some(1), None, false).unwrap();
+            sim.set_line_name(0, "Test line").unwrap();
+            sim.enable().unwrap();
+
+            let chip = Chip::open(&sim.dev_path()).unwrap();
+
+            // start watching line
+            chip.watch_line_info(0).unwrap();
+
+            generate_line_event(&chip);
+
+            // read generated event
+            let event = chip.read_info_event().unwrap();
+            let info = event.line_info().unwrap();
+            assert_eq!(info.name().unwrap(), "Test line");
+
+            // clone info and move to separate thread
+            let info = info.try_clone().unwrap();
+
+            // drop the original event with the associated line_info
+            drop(event);
+
+            // assert that we can still read the name
+            thread::scope(|s| {
+                s.spawn(move || {
+                    assert_eq!(info.name().unwrap(), "Test line");
+                });
+            });
         }
     }
 }

@@ -74,6 +74,7 @@ pub enum OperationType {
     LineConfigSetOutputValues,
     LineConfigGetOffsets,
     LineConfigGetSettings,
+    LineInfoCopy,
     LineRequestReconfigLines,
     LineRequestGetVal,
     LineRequestGetValSubset,

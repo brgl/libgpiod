@@ -58,6 +58,22 @@ impl InfoRef {
         self as *const _ as *mut _
     }
 
+    /// Clones the line info object.
+    pub fn try_clone(&self) -> Result<Info> {
+        // SAFETY: `gpiod_line_info` is guaranteed to be valid here.
+        let copy = unsafe { gpiod::gpiod_line_info_copy(self.as_raw_ptr()) };
+        if copy.is_null() {
+            return Err(Error::OperationFailed(
+                crate::OperationType::LineInfoCopy,
+                errno::errno(),
+            ));
+        }
+
+        // SAFETY: The copy succeeded, we are the owner and stop using the
+        // pointer after this.
+        Ok(unsafe { Info::from_raw(copy) })
+    }
+
     /// Get the offset of the line within the GPIO chip.
     ///
     /// The offset uniquely identifies the line on the chip. The combination of the chip and offset
