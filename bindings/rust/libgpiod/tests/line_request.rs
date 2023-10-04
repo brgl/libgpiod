@@ -272,7 +272,7 @@ mod line_request {
             for offset in offsets {
                 lsettings.set_debounce_period(Duration::from_millis((100 + offset).into()));
                 lconfig
-                    .add_line_settings(&[offset as Offset], lsettings.settings_clone().unwrap())
+                    .add_line_settings(&[offset as Offset], lsettings.try_clone().unwrap())
                     .unwrap();
             }
 

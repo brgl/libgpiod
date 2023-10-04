@@ -56,8 +56,8 @@ impl Settings {
         unsafe { gpiod::gpiod_line_settings_reset(self.settings) }
     }
 
-    /// Makes copy of the settings object.
-    pub fn settings_clone(&self) -> Result<Self> {
+    /// Makes a copy of the settings object.
+    pub fn try_clone(&self) -> Result<Self> {
         // SAFETY: `gpiod_line_settings` is guaranteed to be valid here.
         let settings = unsafe { gpiod::gpiod_line_settings_copy(self.settings) };
         if settings.is_null() {

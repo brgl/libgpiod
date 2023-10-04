@@ -29,7 +29,8 @@ pub struct Event(*mut gpiod::gpiod_edge_event);
 unsafe impl Send for Event {}
 
 impl Event {
-    pub fn event_clone(event: &Event) -> Result<Event> {
+    /// Makes a copy of the event object.
+    pub fn try_clone(event: &Event) -> Result<Event> {
         // SAFETY: `gpiod_edge_event` is guaranteed to be valid here.
         let event = unsafe { gpiod::gpiod_edge_event_copy(event.0) };
         if event.is_null() {
