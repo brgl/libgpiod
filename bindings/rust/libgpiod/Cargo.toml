@@ -4,7 +4,7 @@
 
 [package]
 name = "libgpiod"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Viresh Kumar <viresh.kumar@linaro.org>"]
 description = "libgpiod wrappers"
 repository = "https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git"
