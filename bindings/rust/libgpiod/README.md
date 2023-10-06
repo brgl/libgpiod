@@ -17,6 +17,19 @@ By default, `libgpiod-sys` builds against the libgpiod version identified via
 `pkg-config`. See the `README.md` of `libgpiod-sys` for options to override
 that.
 
+Currently at least libgpiod 2.0 is required with the default feature set.
+
+## Features
+
+The Rust bindings will usually be built against whatever libgpiod version a
+system provides. Hence, only the functionality of the oldest supported libgpiod
+C library will be exposed by default.
+
+Setting flags allows to increase the base version and export features of newer
+versions:
+
+- `vnext`: The upcoming, still unreleased version of the C lib
+
 ## License
 
 This project is licensed under either of

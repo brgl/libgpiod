@@ -18,6 +18,9 @@ exclude = [
     "Makefile.am",
 ]
 
+[features]
+vnext = []
+
 [dependencies]
 errno = "0.2.8"
 intmap = "2.0.0"

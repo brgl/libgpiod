@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2022 Linaro Ltd.
 // SPDX-FileCopyrightText: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
+#[cfg(feature = "vnext")]
 use std::ffi::CStr;
 use std::os::unix::prelude::AsRawFd;
 use std::time::Duration;
@@ -31,6 +32,7 @@ impl Request {
     }
 
     /// Get the name of the chip this request was made on.
+    #[cfg(feature = "vnext")]
     pub fn chip_name(&self) -> Result<&str> {
         // SAFETY: The `gpiod_line_request` is guaranteed to be live as long
         // as `&self`
