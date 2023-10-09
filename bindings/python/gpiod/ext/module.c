@@ -178,9 +178,9 @@ PyMODINIT_FUNC PyInit__ext(void)
 		return NULL;
 	}
 
-	ret = PyModule_AddObjectRef(module, "__all__", all);
-	Py_DECREF(all);
+	ret = PyModule_AddObject(module, "__all__", all);
 	if (ret) {
+		Py_DECREF(all);
 		Py_DECREF(module);
 		return NULL;
 	}
