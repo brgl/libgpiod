@@ -50,7 +50,7 @@ procname_ext = Extension(
 )
 
 extensions = [gpiod_ext]
-if "GPIOD_WITH_TESTS" in environ and environ["GPIOD_WITH_TESTS"] == "1":
+if environ.get("GPIOD_WITH_TESTS") == "1":
     extensions.append(gpiosim_ext)
     extensions.append(procname_ext)
 
