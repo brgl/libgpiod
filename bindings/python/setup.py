@@ -58,7 +58,7 @@ with open("gpiod/version.py", "r") as fd:
     exec(fd.read())
 
 setup(
-    name="libgpiod",
+    name="gpiod",
     packages=find_packages(exclude=["tests", "tests.*"]),
     python_requires=">=3.9.0",
     ext_modules=extensions,
