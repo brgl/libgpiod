@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
 include setup.py
+include README.md
 
 recursive-include gpiod *.py
 recursive-include tests *.py

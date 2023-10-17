@@ -67,8 +67,8 @@ setup(
     author="Bartosz Golaszewski",
     author_email="brgl@bgdev.pl",
     description="Python bindings for libgpiod",
-    long_description="This is a package spun out of the main libgpiod repository containing " \
-                     "python bindings to the underlying C library.",
+    long_description=open("README.md", "r").read(),
+    long_description_content_type="text/markdown",
     platforms=["linux"],
     license="LGPLv2.1",
 )
