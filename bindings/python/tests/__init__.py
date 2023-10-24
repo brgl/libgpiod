@@ -4,7 +4,7 @@
 import os
 import unittest
 
-from setuptools._distutils.version import LooseVersion
+from distutils.version import LooseVersion
 
 required_kernel_version = LooseVersion("5.19.0")
 current_version = LooseVersion(os.uname().release.split("-")[0])
