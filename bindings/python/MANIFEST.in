@@ -3,6 +3,7 @@
 
 include setup.py
 include README.md
+include libgpiod-version.txt
 
 recursive-include gpiod *.py
 recursive-include tests *.py
@@ -12,3 +13,7 @@ recursive-include gpiod/ext *.h
 
 recursive-include tests/gpiosim *.c
 recursive-include tests/procname *.c
+
+recursive-include lib *.c
+recursive-include lib *.h
+recursive-include include *.h
