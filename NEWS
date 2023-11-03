@@ -2,6 +2,41 @@
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 # SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
+libgpiod v2.1
+=============
+
+New features:
+- port tests to shunit2
+- add a sample Android build file
+- add code examples to the core library and replace existing reimplementations
+  of gpio-tools with dedicated examples in bindings
+- don't install test executables
+- add idle-timeout option to gpiomon and gpionotify
+- provide gpiod_line_request_get_chip_name() and respective wrappers in
+  bindings
+
+Improvements:
+- add more tests for various corner-cases and improve coverage
+- documentation improvements
+- drop dependencies that make it impossible to build libgpiod with bionic libc
+- remove dead code
+- use AM_V_GEN where applicable in build
+
+Bug fixes:
+- fix a segfault in the GLib wrapper around libgpiosim
+- fix a race condition in libgpiosim
+- remove an implicit dependency on ncurses in gpio-tools tests
+- make value toggling in gpio-tools tests more reliable by removing hard-coded
+  sleeps in favor of actively waiting for value changes
+- sanitize the arguments in gpiod_line_config_set_output_values()
+- make the chip file descriptor blocking in the core library so that calls to
+  gpiod_chip_read_info_event() behave as advertised in the docs
+- fix setting the event clock type in gpiomon
+- fix the regex pattern for version strings
+- fix some test cases
+- drop profiling flags from tests' Makefile
+- don't use the same chip from different threads
+
 libgpiod v2.0
 =============
 
