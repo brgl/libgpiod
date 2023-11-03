@@ -20,6 +20,6 @@ bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpionotify
 
 if WITH_TESTS
 
-noinst_SCRIPTS = gpio-tools-test.bash
+dist_noinst_SCRIPTS = gpio-tools-test.bash
 
 endif
