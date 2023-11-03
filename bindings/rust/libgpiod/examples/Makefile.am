@@ -9,8 +9,7 @@ EXTRA_DIST = \
 	get_line_info.rs \
 	get_line_value.rs \
 	get_multiple_line_values.rs \
-	gpio_threaded_info_events.rs \
-	reconfigure_input_to_output \
+	reconfigure_input_to_output.rs \
 	toggle_line_value.rs \
 	toggle_multiple_line_values.rs \
 	watch_line_info.rs \
