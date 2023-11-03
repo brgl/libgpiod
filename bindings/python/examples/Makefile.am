@@ -11,7 +11,7 @@ EXTRA_DIST = \
 	reconfigure_input_to_output.py \
 	toggle_line_value.py \
 	toggle_multiple_line_values.py \
-	watch_line_requests.py \
+	watch_line_info.py \
 	watch_line_value.py \
 	watch_line_rising.py \
 	watch_multiple_line_values.py
