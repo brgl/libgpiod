@@ -2,4 +2,4 @@
 # SPDX-FileCopyrightText: 2022 Linaro Ltd.
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
