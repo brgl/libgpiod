@@ -11,7 +11,7 @@ from setuptools.command.sdist import sdist as orig_sdist
 from setuptools.errors import BaseError
 
 LINK_SYSTEM_LIBGPIOD = getenv("LINK_SYSTEM_LIBGPIOD") == "1"
-LIBGPIOD_MINIMUM_VERSION = "2.1.0"
+LIBGPIOD_MINIMUM_VERSION = "2.1"
 LIBGPIOD_VERSION = getenv("LIBGPIOD_VERSION")
 GPIOD_WITH_TESTS = getenv("GPIOD_WITH_TESTS") == "1"
 SRC_BASE_URL = "https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/"
