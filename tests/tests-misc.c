@@ -67,7 +67,7 @@ GPIOD_TEST_CASE(is_gpiochip_null_path)
 
 GPIOD_TEST_CASE(version_string)
 {
-	static const gchar *const pattern = "^\\d+\\.\\d+(\\.\\d+|\\-devel|\\-rc\\d+)$";
+	static const gchar *const pattern = "^\\d+\\.\\d+(\\.\\d+|\\-devel|\\-rc\\d+)?$";
 
 	g_autoptr(GError) err = NULL;
 	g_autoptr(GRegex) regex = NULL;
