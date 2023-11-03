@@ -2,5 +2,5 @@
 # SPDX-FileCopyrightText: 2022 Linaro Ltd.
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-EXTRA_DIST = build.rs Cargo.toml README.md
+EXTRA_DIST = build.rs Cargo.toml README.md wrapper.h
 SUBDIRS = src
