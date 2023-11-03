@@ -1,5 +1,5 @@
-# SPDX-License-Identifier: CC-BY-SA-4.0
-# SPDX-FileCopyrightText: 2023 Phil Howard <phil@gadgetoid.com>
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: 2023 Phil Howard <phil@gadgetoid.com> -->
 
 # gpiod
 
