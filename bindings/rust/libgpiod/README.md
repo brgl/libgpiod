@@ -28,6 +28,7 @@ C library will be exposed by default.
 Setting flags allows to increase the base version and export features of newer
 versions:
 
+- `v2_1`: Minimum version of `2.1.x`
 - `vnext`: The upcoming, still unreleased version of the C lib
 
 ## License

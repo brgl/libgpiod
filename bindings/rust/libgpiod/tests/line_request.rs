@@ -60,7 +60,7 @@ mod line_request {
         use super::*;
 
         #[test]
-        #[cfg(feature = "vnext")]
+        #[cfg(feature = "v2_1")]
         fn chip_name() {
             const GPIO: Offset = 2;
             let mut config = TestConfig::new(NGPIO).unwrap();

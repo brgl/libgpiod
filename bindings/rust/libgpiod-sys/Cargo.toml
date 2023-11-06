@@ -18,11 +18,16 @@ exclude = [
     "Makefile.am",
 ]
 
+[features]
+v2_1 = []
+
 [dependencies]
 
 [build-dependencies]
 bindgen = "0.63"
 system-deps = "2.0"
 
-[package.metadata.system-deps]
-libgpiod = "2"
+[package.metadata.system-deps.libgpiod]
+name = "libgpiod"
+version = "2"
+v2_1 = { version = "2.1" }

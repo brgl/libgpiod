@@ -19,7 +19,8 @@ exclude = [
 ]
 
 [features]
-vnext = []
+v2_1 = ["libgpiod-sys/v2_1"]
+vnext = ["v2_1"]
 
 [dependencies]
 errno = "0.2.8"
