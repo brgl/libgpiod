@@ -13,7 +13,6 @@ from setuptools.errors import BaseError
 LINK_SYSTEM_LIBGPIOD = getenv("LINK_SYSTEM_LIBGPIOD") == "1"
 LIBGPIOD_MINIMUM_VERSION = "2.1"
 LIBGPIOD_VERSION = getenv("LIBGPIOD_VERSION")
-GPIOD_WITH_TESTS = getenv("GPIOD_WITH_TESTS") == "1"
 SRC_BASE_URL = "https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/"
 TAR_FILENAME = "libgpiod-{version}.tar.gz"
 ASC_FILENAME = "sha256sums.asc"
@@ -189,11 +188,6 @@ class build_ext(orig_build_ext):
 
         super().run()
 
-        # We don't ever want the module tests directory in our package
-        # since this might include gpiosim._ext or procname._ext from a
-        # previous dirty build tree.
-        rmtree(path.join(self.build_lib, "tests"), ignore_errors=True)
-
 
 class sdist(orig_sdist):
     """
@@ -226,32 +220,12 @@ gpiod_ext = Extension(
     extra_compile_args=["-Wall", "-Wextra"],
 )
 
-gpiosim_ext = Extension(
-    "tests.gpiosim._ext",
-    sources=["tests/gpiosim/ext.c"],
-    define_macros=[("_GNU_SOURCE", "1")],
-    libraries=["gpiosim"],
-    extra_compile_args=["-Wall", "-Wextra"],
-)
-
-procname_ext = Extension(
-    "tests.procname._ext",
-    sources=["tests/procname/ext.c"],
-    define_macros=[("_GNU_SOURCE", "1")],
-    extra_compile_args=["-Wall", "-Wextra"],
-)
-
-extensions = [gpiod_ext]
-if GPIOD_WITH_TESTS:
-    extensions.append(gpiosim_ext)
-    extensions.append(procname_ext)
-
 setup(
     name="gpiod",
     url="https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git",
     packages=find_packages(exclude=["tests", "tests.*"]),
     python_requires=">=3.9.0",
-    ext_modules=extensions,
+    ext_modules=[gpiod_ext],
     cmdclass={"build_ext": build_ext, "sdist": sdist},
     version=__version__,
     author="Bartosz Golaszewski",

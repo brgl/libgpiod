@@ -7,19 +7,36 @@ EXTRA_DIST = \
 
 if WITH_TESTS
 
-BUILD_TESTS = 1
+python-tests:
+	TOP_SRCDIR=$(abs_top_builddir) \
+	TOP_BUILDDIR=$(abs_top_builddir) \
+	$(PYTHON) build_tests.py
+
+python-tests-run:
+	PYTHONPATH=$(abs_top_srcdir)/bindings/python
+	LD_LIBRARY_PATH=$(abs_top_builddir)/lib/.libs/:\
+		$(abs_top_builddir)/tests/gpiosim/.libs/ \
+	python3 -B -m tests
+
+else
+
+python-tests:
 
 endif
 
-all-local:
-	GPIOD_WITH_TESTS=$(BUILD_TESTS) \
-	$(PYTHON) setup.py build_ext --inplace \
-		--include-dirs=$(top_srcdir)/include/:$(top_srcdir)/tests/gpiosim/ \
-		--library-dirs=$(top_builddir)/lib/.libs/:$(top_srcdir)/tests/gpiosim/.libs/
+clean-local:
+	rm -rf dist
+	rm -f gpiod/_ext.*.so
+	rm -f tests/*/_ext.*.so
+
+all-local: python-tests
+	CFLAGS="-I$(abs_top_srcdir)/include/ -I$(abs_top_srcdir)/tests/gpiosim \
+	-L$(abs_top_builddir)/lib/.libs/ -L$(abs_top_builddir)/tests/gpiosim/.libs/" \
+	$(PYTHON) -m build
 
 install-exec-local:
-	GPIOD_WITH_TESTS= \
-	$(PYTHON) setup.py install --prefix=$(DESTDIR)$(prefix)
+	$(PYTHON) -m pip install dist/*.whl \
+	--prefix=$(DESTDIR)$(prefix)
 
 SUBDIRS = gpiod
 
