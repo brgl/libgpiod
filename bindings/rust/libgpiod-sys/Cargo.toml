@@ -4,7 +4,7 @@
 
 [package]
 name = "libgpiod-sys"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Viresh Kumar <viresh.kumar@linaro.org>"]
 description = "libgpiod public header bindings"
 repository = "https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git"
