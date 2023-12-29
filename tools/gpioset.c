@@ -68,7 +68,7 @@ static void print_help(void)
 	printf("  -s, --strict\t\tabort if requested line names are not unique\n");
 	printf("  -t, --toggle <period>[,period]...\n");
 	printf("\t\t\ttoggle the line(s) after the specified period(s)\n");
-	printf("\t\t\tIf the last period is non-zero then the sequence repeats.\n");
+	printf("\t\t\tIf the last period is 0 then gpioset exits else the sequence repeats.\n");
 	printf("      --unquoted\tdon't quote line names\n");
 	printf("  -v, --version\t\toutput version information and exit\n");
 	printf("  -z, --daemonize\tset values then detach from the controlling terminal\n");
