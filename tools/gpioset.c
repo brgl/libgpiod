@@ -76,11 +76,10 @@ static void print_help(void)
 	print_period_help();
 	printf("\n");
 	printf("*Note*\n");
-	printf("    The state of a GPIO line controlled over the character device reverts to default\n");
-	printf("    when the last process referencing the file descriptor representing the device file exits.\n");
-	printf("    This means that it's wrong to run gpioset, have it exit and expect the line to continue\n");
-	printf("    being driven high or low. It may happen if given pin is floating but it must be interpreted\n");
-	printf("    as undefined behavior.\n");
+	printf("    It should not be assumed that a line will retain its state after gpioset exits.\n");
+	printf("    When a process exits, any GPIO lines it has requested are automatically released.\n");
+	printf("    Once released, the state of a line may be modified by the kernel or another process.\n");
+	printf("    To guarantee the requested value, by default gpioset does not exit.\n");
 }
 
 static int parse_drive_or_die(const char *option)
