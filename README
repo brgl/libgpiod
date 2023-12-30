@@ -134,7 +134,7 @@ Examples:
     # Blink an LED on GPIO22 at 1Hz with a 20% duty cycle
     $ gpioset -t200ms,800ms GPIO22=1
 
-    # Set some lines interactively (requires --enable-gpioset-interative)
+    # Set some lines interactively (requires --enable-gpioset-interactive)
     $ gpioset --interactive --unquoted GPIO23=inactive GPIO24=active
     gpioset> get
     GPIO23=inactive GPIO24=active
