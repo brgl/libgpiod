@@ -36,7 +36,7 @@ all-local: python-tests
 
 install-exec-local:
 	$(PYTHON) -m pip install dist/*.whl \
-	--prefix=$(DESTDIR)$(prefix)
+	--ignore-installed --prefix=$(prefix) --root=$(if $(DESTDIR),$(DESTDIR),/)
 
 SUBDIRS = gpiod
 
