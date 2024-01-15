@@ -294,9 +294,16 @@ Those also provide examples of the expected formatting.
 Allow some time for your e-mail to propagate to the list before retrying,
 particularly if there are no e-mails in the list more recent than yours.
 
+There is a libgpiod github page[7] available for reporting bugs and general
+discussions and although PRs can be submitted and discussed, upstreambound
+patches need to go through the mailing list nevertheless while release
+tarballs should be fetched from kernel.org[8].
+
 [1] https://github.com/kward/shunit2
 [2] http://vger.kernel.org/vger-lists.html#linux-gpio
 [3] https://docs.kernel.org/process/email-clients.html
 [4] https://docs.kernel.org/process/coding-style.html
 [5] https://docs.kernel.org/process/submitting-patches.html
 [6] https://lore.kernel.org/linux-gpio/
+[7] https://github.com/brgl/libgpiod
+[8] https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/
