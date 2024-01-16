@@ -8,8 +8,9 @@ libgpiod
              character device (gpiod stands for GPIO device)
 
 Since linux 4.8 the GPIO sysfs interface is deprecated. User space should use
-the character device instead. This library encapsulates the ioctl calls and
-data structures behind a straightforward API.
+the character device instead. Version 2 of libgpiod requires GPIO character
+device uAPI v2 which was first released in linux 5.10. This library
+encapsulates the ioctl calls and data structures behind a straightforward API.
 
 RATIONALE
 ---------
