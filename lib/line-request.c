@@ -6,7 +6,6 @@
 #include <gpiod.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
 #include <sys/param.h>
 #include <unistd.h>
 
@@ -153,7 +152,8 @@ gpiod_line_request_get_values_subset(struct gpiod_line_request *request,
 
 	uapi_values.mask = mask;
 
-	ret = ioctl(request->fd, GPIO_V2_LINE_GET_VALUES_IOCTL, &uapi_values);
+	ret = gpiod_ioctl(request->fd, GPIO_V2_LINE_GET_VALUES_IOCTL,
+			  &uapi_values);
 	if (ret)
 		return -1;
 
@@ -218,7 +218,8 @@ gpiod_line_request_set_values_subset(struct gpiod_line_request *request,
 	uapi_values.mask = mask;
 	uapi_values.bits = bits;
 
-	return ioctl(request->fd, GPIO_V2_LINE_SET_VALUES_IOCTL, &uapi_values);
+	return gpiod_ioctl(request->fd, GPIO_V2_LINE_SET_VALUES_IOCTL,
+			   &uapi_values);
 }
 
 GPIOD_API int gpiod_line_request_set_values(struct gpiod_line_request *request,
@@ -271,8 +272,8 @@ gpiod_line_request_reconfigure_lines(struct gpiod_line_request *request,
 		return -1;
 	}
 
-	ret = ioctl(request->fd, GPIO_V2_LINE_SET_CONFIG_IOCTL,
-		    &uapi_cfg.config);
+	ret = gpiod_ioctl(request->fd, GPIO_V2_LINE_SET_CONFIG_IOCTL,
+			  &uapi_cfg.config);
 	if (ret)
 		return ret;
 

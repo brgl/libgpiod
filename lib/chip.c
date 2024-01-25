@@ -7,7 +7,6 @@
 #include <gpiod.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
 #include <unistd.h>
 
 #include "internal.h"
@@ -72,7 +71,7 @@ static int read_chip_info(int fd, struct gpiochip_info *info)
 
 	memset(info, 0, sizeof(*info));
 
-	ret = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, info);
+	ret = gpiod_ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, info);
 	if (ret)
 		return -1;
 
@@ -87,7 +86,7 @@ GPIOD_API struct gpiod_chip_info *gpiod_chip_get_info(struct gpiod_chip *chip)
 	assert(chip);
 
 	ret = read_chip_info(chip->fd, &info);
-	if (ret < 0)
+	if (ret)
 		return NULL;
 
 	return gpiod_chip_info_from_uapi(&info);
@@ -111,7 +110,7 @@ static int chip_read_line_info(int fd, unsigned int offset,
 	cmd = watch ? GPIO_V2_GET_LINEINFO_WATCH_IOCTL :
 		      GPIO_V2_GET_LINEINFO_IOCTL;
 
-	ret = ioctl(fd, cmd, info);
+	ret = gpiod_ioctl(fd, cmd, info);
 	if (ret)
 		return -1;
 
@@ -150,7 +149,7 @@ GPIOD_API int gpiod_chip_unwatch_line_info(struct gpiod_chip *chip,
 {
 	assert(chip);
 
-	return ioctl(chip->fd, GPIO_GET_LINEINFO_UNWATCH_IOCTL, &offset);
+	return gpiod_ioctl(chip->fd, GPIO_GET_LINEINFO_UNWATCH_IOCTL, &offset);
 }
 
 GPIOD_API int gpiod_chip_get_fd(struct gpiod_chip *chip)
@@ -192,7 +191,7 @@ GPIOD_API int gpiod_chip_get_line_offset_from_name(struct gpiod_chip *chip,
 	}
 
 	ret = read_chip_info(chip->fd, &chinfo);
-	if (ret < 0)
+	if (ret)
 		return -1;
 
 	for (offset = 0; offset < chinfo.lines; offset++) {
@@ -235,11 +234,11 @@ gpiod_chip_request_lines(struct gpiod_chip *chip,
 		return NULL;
 
 	ret = read_chip_info(chip->fd, &info);
-	if (ret < 0)
+	if (ret)
 		return NULL;
 
-	ret = ioctl(chip->fd, GPIO_V2_GET_LINE_IOCTL, &uapi_req);
-	if (ret < 0)
+	ret = gpiod_ioctl(chip->fd, GPIO_V2_GET_LINE_IOCTL, &uapi_req);
+	if (ret)
 		return NULL;
 
 	request = gpiod_line_request_from_uapi(&uapi_req, info.name);

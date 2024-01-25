@@ -38,6 +38,7 @@ struct gpiod_info_event *gpiod_info_event_read_fd(int fd);
 int gpiod_poll_fd(int fd, int64_t timeout);
 int gpiod_set_output_value(enum gpiod_line_value in,
 			   enum gpiod_line_value *out);
+int gpiod_ioctl(int fd, unsigned long request, void *arg);
 
 void gpiod_line_mask_zero(uint64_t *mask);
 bool gpiod_line_mask_test_bit(const uint64_t *mask, int nr);

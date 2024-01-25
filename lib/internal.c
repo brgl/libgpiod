@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 #include <sys/types.h>
@@ -119,6 +120,18 @@ int gpiod_set_output_value(enum gpiod_line_value in, enum gpiod_line_value *out)
 	}
 
 	return 0;
+}
+
+int gpiod_ioctl(int fd, unsigned long request, void *arg)
+{
+	int ret;
+
+	ret = ioctl(fd, request, arg);
+	if (ret <= 0)
+		return ret;
+
+	errno = EBADE;
+	return -1;
 }
 
 void gpiod_line_mask_zero(uint64_t *mask)
