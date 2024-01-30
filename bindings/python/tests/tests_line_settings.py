@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+import datetime
 import gpiod
 
 from . import gpiosim
-from datetime import timedelta
 from gpiod.line import Direction, Edge, Bias, Drive, Value, Clock
 from unittest import TestCase
 
@@ -47,7 +47,7 @@ class LineSettingsAttributes(TestCase):
         settings.direction = Direction.INPUT
         settings.edge_detection = Edge.BOTH
         settings.bias = Bias.DISABLED
-        settings.debounce_period = timedelta(microseconds=3000)
+        settings.debounce_period = datetime.timedelta(microseconds=3000)
         settings.event_clock = Clock.HTE
 
         self.assertEqual(settings.direction, Direction.INPUT)
@@ -69,8 +69,11 @@ class LineSettingsStringRepresentation(TestCase):
     def test_repr(self):
         self.assertEqual(
             repr(self.settings),
-            "LineSettings(direction=Direction.OUTPUT, edge_detection=Edge.NONE bias=Bias.AS_IS drive=Drive.OPEN_SOURCE active_low=True debounce_period=datetime.timedelta(0) event_clock=Clock.MONOTONIC output_value=Value.INACTIVE)",
+            "gpiod.LineSettings(direction=Direction.OUTPUT, edge_detection=Edge.NONE, bias=Bias.AS_IS, drive=Drive.OPEN_SOURCE, active_low=True, debounce_period=datetime.timedelta(0), event_clock=Clock.MONOTONIC, output_value=Value.INACTIVE)",
         )
+
+        cmp = eval(repr(self.settings))
+        self.assertEqual(self.settings, cmp)
 
     def test_str(self):
         self.assertEqual(

@@ -333,7 +333,7 @@ class Chip:
         if not self._chip:
             return "<Chip CLOSED>"
 
-        return 'Chip("{}")'.format(self.path)
+        return 'gpiod.Chip("{}")'.format(self.path)
 
     def __str__(self) -> str:
         """

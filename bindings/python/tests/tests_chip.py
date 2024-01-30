@@ -202,7 +202,10 @@ class StringRepresentation(TestCase):
         self.sim = None
 
     def test_repr(self):
-        self.assertEqual(repr(self.chip), 'Chip("{}")'.format(self.sim.dev_path))
+        self.assertEqual(repr(self.chip), 'gpiod.Chip("{}")'.format(self.sim.dev_path))
+
+        cmp = eval(repr(self.chip))
+        self.assertEqual(self.chip.path, cmp.path)
 
     def test_str(self):
         info = self.chip.get_info()
