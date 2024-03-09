@@ -46,7 +46,7 @@ int main()
 	::gpiod::edge_event_buffer buffer;
 
 	for (;;) {
-		/* Blocks until at leat one event available */
+		/* Blocks until at least one event available */
 		request.read_edge_events(buffer);
 
 		for (const auto &event : buffer)
