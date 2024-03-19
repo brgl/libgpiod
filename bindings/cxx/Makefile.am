@@ -24,8 +24,8 @@ libgpiodcxx_la_CXXFLAGS = -Wall -Wextra -g -std=gnu++17
 libgpiodcxx_la_CXXFLAGS += -fvisibility=hidden -I$(top_srcdir)/include/
 libgpiodcxx_la_CXXFLAGS += $(PROFILING_CFLAGS)
 libgpiodcxx_la_LDFLAGS = -version-info $(subst .,:,$(ABI_CXX_VERSION))
-libgpiodcxx_la_LDFLAGS += -lgpiod -L$(top_builddir)/lib
 libgpiodcxx_la_LDFLAGS += $(PROFILING_LDFLAGS)
+libgpiodcxx_la_LIBADD = $(top_builddir)/lib/libgpiod.la
 
 include_HEADERS = gpiod.hpp
 
