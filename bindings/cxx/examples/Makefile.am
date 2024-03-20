@@ -3,7 +3,7 @@
 
 AM_CXXFLAGS = -I$(top_srcdir)/bindings/cxx/ -I$(top_srcdir)/include
 AM_CXXFLAGS += -Wall -Wextra -g -std=gnu++17
-AM_LDFLAGS = -lgpiodcxx -L$(top_builddir)/bindings/cxx/
+LDADD = $(top_builddir)/bindings/cxx/libgpiodcxx.la
 
 noinst_PROGRAMS = \
 	async_watch_line_value \
