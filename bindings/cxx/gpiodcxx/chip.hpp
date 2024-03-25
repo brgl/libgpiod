@@ -126,7 +126,7 @@ public:
 	 * @brief Wait for line status events on any of the watched lines
 	 *        exposed by this chip.
 	 * @param timeout Wait time limit in nanoseconds. If set to 0, the
-	 *                function returns immediatelly. If set to a negative
+	 *                function returns immediately. If set to a negative
 	 *                number, the function blocks indefinitely until an
 	 *                event becomes available.
 	 * @return True if at least one event is ready to be read. False if the

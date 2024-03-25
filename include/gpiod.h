@@ -246,7 +246,7 @@ int gpiod_chip_get_fd(struct gpiod_chip *chip);
  *        on the chip.
  * @param chip GPIO chip object.
  * @param timeout_ns Wait time limit in nanoseconds. If set to 0, the function
- *                   returns immediatelly. If set to a negative number, the
+ *                   returns immediately. If set to a negative number, the
  *                   function blocks indefinitely until an event becomes
  *                   available.
  * @return 0 if wait timed out, -1 if an error occurred, 1 if an event is
@@ -1164,7 +1164,7 @@ int gpiod_line_request_get_fd(struct gpiod_line_request *request);
  * @brief Wait for edge events on any of the requested lines.
  * @param request GPIO line request.
  * @param timeout_ns Wait time limit in nanoseconds. If set to 0, the function
- *                   returns immediatelly. If set to a negative number, the
+ *                   returns immediately. If set to a negative number, the
  *                   function blocks indefinitely until an event becomes
  *                   available.
  * @return 0 if wait timed out, -1 if an error occurred, 1 if an event is
