@@ -35,3 +35,4 @@ stamp-h1
 # profiling
 *.gcda
 *.gcno
+*.gcov
