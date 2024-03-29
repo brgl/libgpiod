@@ -22,7 +22,7 @@ libgpiod_la_CFLAGS += -fvisibility=hidden -I$(top_srcdir)/include/
 libgpiod_la_CFLAGS += -include $(top_builddir)/config.h
 libgpiod_la_CFLAGS += $(PROFILING_CFLAGS)
 libgpiod_la_LDFLAGS = -version-info $(subst .,:,$(ABI_VERSION))
-libgpiod_la_LDFLAGS+= $(PROFILING_LDFLAGS)
+libgpiod_la_LDFLAGS += $(PROFILING_LDFLAGS)
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgpiod.pc
