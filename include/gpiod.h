@@ -498,10 +498,10 @@ bool gpiod_line_info_is_used(struct gpiod_line_info *info);
  * @brief Get the name of the consumer of the line.
  * @param info GPIO line info object.
  * @return Name of the GPIO consumer as it is represented in the kernel.
- *        This function returns a valid pointer to a null-terminated string
- *        or NULL if the consumer name is not set.
- *        The string lifetime is tied to the line info object so the pointer
- *        must not be freed.
+ *         This function returns a valid pointer to a null-terminated string
+ *         or NULL if the consumer name is not set.
+ *         The string lifetime is tied to the line info object so the pointer
+ *         must not be freed.
  */
 const char *gpiod_line_info_get_consumer(struct gpiod_line_info *info);
 
@@ -509,7 +509,7 @@ const char *gpiod_line_info_get_consumer(struct gpiod_line_info *info);
  * @brief Get the direction setting of the line.
  * @param info GPIO line info object.
  * @return Returns ::GPIOD_LINE_DIRECTION_INPUT or
- *        ::GPIOD_LINE_DIRECTION_OUTPUT.
+ *         ::GPIOD_LINE_DIRECTION_OUTPUT.
  */
 enum gpiod_line_direction
 gpiod_line_info_get_direction(struct gpiod_line_info *info);
@@ -518,7 +518,7 @@ gpiod_line_info_get_direction(struct gpiod_line_info *info);
  * @brief Get the edge detection setting of the line.
  * @param info GPIO line info object.
  * @return Returns ::GPIOD_LINE_EDGE_NONE, ::GPIOD_LINE_EDGE_RISING,
- *        ::GPIOD_LINE_EDGE_FALLING or ::GPIOD_LINE_EDGE_BOTH.
+ *         ::GPIOD_LINE_EDGE_FALLING or ::GPIOD_LINE_EDGE_BOTH.
  */
 enum gpiod_line_edge
 gpiod_line_info_get_edge_detection(struct gpiod_line_info *info);
