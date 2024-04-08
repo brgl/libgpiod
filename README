@@ -213,15 +213,13 @@ and --enable-bindings-rust arguments respectively to configure.
 C++ bindings require C++11 support and autoconf-archive collection if building
 from git.
 
-Python bindings require python3 support and libpython development files. Care
-must be taken when cross-compiling python bindings: users usually must specify
-the PYTHON_CPPFLAGS and PYTHON_LIBS variables in order to point the build
-system to the correct locations. During native builds, the configure script
-can auto-detect the location of the development files.
+Python bindings require python3 support and libpython development files. Please
+refer to bindings/python/README.md for more information.
 
 Rust bindings require cargo support. When building the Rust bindings along the
 C library using make, they will be automatically configured to build against the
-build results of the C library.
+build results of the C library. Please refer to bindings/rust/libgpiod/README.md
+for more information.
 
 TESTING
 -------
