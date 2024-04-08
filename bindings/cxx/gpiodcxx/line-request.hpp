@@ -68,7 +68,7 @@ public:
 	explicit operator bool() const noexcept;
 
 	/**
-	 * @brief Release the GPIO chip and free all associated resources.
+	 * @brief Release the requested lines and free all associated resources.
 	 * @note The object can still be used after this method is called but
 	 *       using any of the mutators will result in throwing
 	 *       a logic_error exception.
