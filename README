@@ -298,6 +298,8 @@ discussions and although PRs can be submitted and discussed, upstreambound
 patches need to go through the mailing list nevertheless while release
 tarballs should be fetched from kernel.org[8].
 
+For more information, refer to CONTRIBUTING.md in this repository.
+
 [1] https://github.com/kward/shunit2
 [2] http://vger.kernel.org/vger-lists.html#linux-gpio
 [3] https://docs.kernel.org/process/email-clients.html
