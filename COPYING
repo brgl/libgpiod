@@ -7,7 +7,7 @@ or any later version according with:
 
     LICENSES/LGPL-2.1-or-later.txt
 
-gpio-tools and test suites are provided under:
+gpio-tools, test suites and examples are provided under:
 
     SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -15,15 +15,6 @@ Being under the terms of the GNU General Public License version 2.0 or any
 later version according with:
 
     LICENSES/GPL-2.0-or-later.txt
-
-C++ bindings to libgpiod are provided under:
-
-    SPDX-License-Identifier: LGPL-3.0-or-later
-
-Being under the terms of the GNU Lesser General Public License version 3.0
-or any later version according with:
-
-    LICENSES/LGPL-3.0-or-later.txt
 
 The Linux Kernel uAPI headers are provided under:
 
