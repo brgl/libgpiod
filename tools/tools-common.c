@@ -138,10 +138,12 @@ long long parse_period(const char *option)
 	}
 
 	if (m) {
-		if (*end != 's')
+		if (*end == '\0')
+			m = 60000000;
+		else if (*end == 's')
+			end++;
+		else
 			return -1;
-
-		end++;
 	} else {
 		m = 1000;
 	}
@@ -213,7 +215,7 @@ void print_period_help(void)
 {
 	printf("\nPeriods:\n");
 	printf("    Periods are taken as milliseconds unless units are specified. e.g. 10us.\n");
-	printf("    Supported units are 's', 'ms', and 'us'.\n");
+	printf("    Supported units are 'm', 's', 'ms', and 'us' for minutes, seconds, milliseconds and microseconds respectively.\n");
 }
 
 #define TIME_BUFFER_SIZE 20
