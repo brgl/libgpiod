@@ -132,7 +132,7 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 			cfg->fmt = optarg;
 			break;
 		case 'i':
-			cfg->idle_timeout = parse_period_or_die(optarg) / 1000;
+			cfg->idle_timeout = parse_period_or_die(optarg);
 			break;
 		case 'n':
 			cfg->events_wanted = parse_uint_or_die(optarg);
@@ -374,6 +374,7 @@ int main(int argc, char **argv)
 	int i, j, ret, events_done = 0, evtype;
 	struct line_resolver *resolver;
 	struct gpiod_info_event *event;
+	struct timespec idle_timeout;
 	struct gpiod_chip **chips;
 	struct gpiod_chip *chip;
 	struct pollfd *pollfds;
@@ -419,10 +420,17 @@ int main(int argc, char **argv)
 	if (cfg.banner)
 		print_banner(argc, argv);
 
+	if (cfg.idle_timeout > 0) {
+		idle_timeout.tv_sec = cfg.idle_timeout / 1000000;
+		idle_timeout.tv_nsec =
+				(cfg.idle_timeout % 1000000) * 1000;
+	}
+
 	for (;;) {
 		fflush(stdout);
 
-		ret = poll(pollfds, resolver->num_chips, cfg.idle_timeout);
+		ret = ppoll(pollfds, resolver->num_chips,
+			    cfg.idle_timeout > 0 ? &idle_timeout : NULL, NULL);
 		if (ret < 0)
 			die_perror("error polling for events");
 
