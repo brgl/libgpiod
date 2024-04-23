@@ -30,7 +30,7 @@ struct config {
 	const char *fmt;
 	enum gpiod_line_clock event_clock;
 	int timestamp_fmt;
-	int timeout;
+	int idle_timeout;
 };
 
 static void print_help(void)
@@ -143,7 +143,7 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 	memset(cfg, 0, sizeof(*cfg));
 	cfg->edges = GPIOD_LINE_EDGE_BOTH;
 	cfg->consumer = "gpiomon";
-	cfg->timeout = -1;
+	cfg->idle_timeout = -1;
 
 	for (;;) {
 		optc = getopt_long(argc, argv, shortopts, longopts, &opti);
@@ -176,7 +176,7 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 			cfg->fmt = optarg;
 			break;
 		case 'i':
-			cfg->timeout = parse_period_or_die(optarg) / 1000;
+			cfg->idle_timeout = parse_period_or_die(optarg) / 1000;
 			break;
 		case 'l':
 			cfg->active_low = true;
@@ -453,7 +453,7 @@ int main(int argc, char **argv)
 	for (;;) {
 		fflush(stdout);
 
-		ret = poll(pollfds, resolver->num_chips, cfg.timeout);
+		ret = poll(pollfds, resolver->num_chips, cfg.idle_timeout);
 		if (ret < 0)
 			die_perror("error polling for events");
 
