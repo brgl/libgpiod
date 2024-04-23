@@ -19,7 +19,7 @@ struct config {
 	bool unquoted;
 	enum gpiod_line_bias bias;
 	enum gpiod_line_direction direction;
-	unsigned int hold_period_us;
+	unsigned long long hold_period_us;
 	const char *chip_id;
 	const char *consumer;
 };
@@ -205,7 +205,7 @@ int main(int argc, char **argv)
 			die_perror("unable to request lines");
 
 		if (cfg.hold_period_us)
-			usleep(cfg.hold_period_us);
+			sleep_us(cfg.hold_period_us);
 
 		ret = gpiod_line_request_get_values(request, values);
 		if (ret)

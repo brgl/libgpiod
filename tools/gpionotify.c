@@ -23,7 +23,7 @@ struct config {
 	const char *chip_id;
 	const char *fmt;
 	int timestamp_fmt;
-	int idle_timeout;
+	long long idle_timeout;
 };
 
 static void print_help(void)

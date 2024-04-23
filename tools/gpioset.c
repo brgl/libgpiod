@@ -28,8 +28,8 @@ struct config {
 	enum gpiod_line_bias bias;
 	enum gpiod_line_drive drive;
 	int toggles;
-	unsigned int *toggle_periods;
-	unsigned int hold_period_us;
+	unsigned long long *toggle_periods;
+	unsigned long long hold_period_us;
 	const char *chip_id;
 	const char *consumer;
 };
@@ -94,10 +94,10 @@ static int parse_drive_or_die(const char *option)
 	return 0;
 }
 
-static int parse_periods_or_die(char *option, unsigned int **periods)
+static int parse_periods_or_die(char *option, unsigned long long **periods)
 {
 	int i, num_periods = 1;
-	unsigned int *pp;
+	unsigned long long *pp;
 	char *end;
 
 	for (i = 0; option[i] != '\0'; i++)
@@ -376,7 +376,7 @@ static void toggle_all_lines(struct line_resolver *resolver)
  * and apply the values to the requests.
  * offset and values are scratch pads for working.
  */
-static void toggle_sequence(int toggles, unsigned int *toggle_periods,
+static void toggle_sequence(int toggles, unsigned long long *toggle_periods,
 			    struct gpiod_line_request **requests,
 			    struct line_resolver *resolver,
 			    unsigned int *offsets,
@@ -388,7 +388,7 @@ static void toggle_sequence(int toggles, unsigned int *toggle_periods,
 		return;
 
 	for (;;) {
-		usleep(toggle_periods[i]);
+		sleep_us(toggle_periods[i]);
 		toggle_all_lines(resolver);
 		apply_values(requests, resolver, offsets, values);
 
@@ -826,7 +826,7 @@ static void interact(struct gpiod_line_request **requests,
 				printf("invalid period: '%s'\n", words[1]);
 				goto cmd_ok;
 			}
-			usleep(period_us);
+			sleep_us(period_us);
 			goto cmd_ok;
 		}
 
@@ -981,7 +981,7 @@ int main(int argc, char **argv)
 	}
 
 	if (cfg.hold_period_us)
-		usleep(cfg.hold_period_us);
+		sleep_us(cfg.hold_period_us);
 
 #ifdef GPIOSET_INTERACTIVE
 	if (cfg.interactive)

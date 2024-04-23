@@ -112,12 +112,12 @@ int parse_bias_or_die(const char *option)
 	return GPIOD_LINE_BIAS_DISABLED;
 }
 
-int parse_period(const char *option)
+long long parse_period(const char *option)
 {
-	unsigned long p, m = 0;
+	unsigned long long p, m = 0;
 	char *end;
 
-	p = strtoul(option, &end, 10);
+	p = strtoull(option, &end, 10);
 
 	switch (*end) {
 	case 'u':
@@ -147,20 +147,30 @@ int parse_period(const char *option)
 	}
 
 	p *= m;
-	if (*end != '\0' || p > INT_MAX)
+	if (*end != '\0' || p > LLONG_MAX)
 		return -1;
 
 	return p;
 }
 
-unsigned int parse_period_or_die(const char *option)
+unsigned long long parse_period_or_die(const char *option)
 {
-	int period = parse_period(option);
+	long long period = parse_period(option);
 
 	if (period < 0)
 		die("invalid period: %s", option);
 
 	return period;
+}
+
+void sleep_us(unsigned long long period)
+{
+	struct timespec	spec;
+
+	spec.tv_sec = period / 1000000;
+	spec.tv_nsec = (period % 1000000) * 1000;
+
+	nanosleep(&spec, NULL);
 }
 
 int parse_uint(const char *option)

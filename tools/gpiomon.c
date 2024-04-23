@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <gpiod.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,13 +25,13 @@ struct config {
 	enum gpiod_line_bias bias;
 	enum gpiod_line_edge edges;
 	int events_wanted;
-	unsigned int debounce_period_us;
+	unsigned long long debounce_period_us;
 	const char *chip_id;
 	const char *consumer;
 	const char *fmt;
 	enum gpiod_line_clock event_clock;
 	int timestamp_fmt;
-	int idle_timeout;
+	long long idle_timeout;
 };
 
 static void print_help(void)
@@ -390,9 +391,14 @@ int main(int argc, char **argv)
 	if (cfg.active_low)
 		gpiod_line_settings_set_active_low(settings, true);
 
-	if (cfg.debounce_period_us)
+	if (cfg.debounce_period_us) {
+		if (cfg.debounce_period_us > UINT_MAX)
+			die("maximum debounce period is %uus, got %lluus",
+			    UINT_MAX, cfg.debounce_period_us);
+
 		gpiod_line_settings_set_debounce_period_us(
-			settings, cfg.debounce_period_us);
+			settings, (unsigned long)cfg.debounce_period_us);
+	}
 
 	gpiod_line_settings_set_event_clock(settings, cfg.event_clock);
 	gpiod_line_settings_set_edge_detection(settings, cfg.edges);
