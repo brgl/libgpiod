@@ -304,9 +304,9 @@ test_gpiodetect_all_chips() {
 
 	run_tool gpiodetect
 
-	output_contains_line "$sim0 [${sim0dev}-node0] (4 lines)"
-	output_contains_line "$sim1 [${sim1dev}-node0] (8 lines)"
-	output_contains_line "$sim2 [${sim2dev}-node0] (16 lines)"
+	output_regex_match "$sim0 \[${sim0dev}[-:]node0\] \(4 lines\)"
+	output_regex_match "$sim1 \[${sim1dev}[-:]node0\] \(8 lines\)"
+	output_regex_match "$sim2 \[${sim2dev}[-:]node0\] \(16 lines\)"
 	status_is 0
 
 	# ignoring symlinks
@@ -334,21 +334,21 @@ test_gpiodetect_a_chip() {
 	# by name
 	run_tool gpiodetect $sim0
 
-	output_contains_line "$sim0 [${sim0dev}-node0] (4 lines)"
+	output_regex_match "$sim0 \[${sim0dev}[-:]node0\] \(4 lines\)"
 	num_lines_is 1
 	status_is 0
 
 	# by path
 	run_tool gpiodetect ${GPIOSIM_CHIP_PATH[sim1]}
 
-	output_contains_line "$sim1 [${sim1dev}-node0] (8 lines)"
+	output_regex_match "$sim1 \[${sim1dev}[-:]node0\] \(8 lines\)"
 	num_lines_is 1
 	status_is 0
 
 	# by number
 	run_tool gpiodetect $(gpiosim_chip_number sim2)
 
-	output_contains_line "$sim2 [${sim2dev}-node0] (16 lines)"
+	output_regex_match "$sim2 \[${sim2dev}[-:]node0\] \(16 lines\)"
 	num_lines_is 1
 	status_is 0
 
@@ -356,7 +356,7 @@ test_gpiodetect_a_chip() {
 	gpiosim_chip_symlink sim2 .
 	run_tool gpiodetect $GPIOSIM_CHIP_LINK
 
-	output_contains_line "$sim2 [${sim2dev}-node0] (16 lines)"
+	output_regex_match "$sim2 \[${sim2dev}[-:]node0\] \(16 lines\)"
 	num_lines_is 1
 	status_is 0
 }
@@ -375,9 +375,9 @@ test_gpiodetect_multiple_chips() {
 
 	run_tool gpiodetect $sim0 $sim1 $sim2
 
-	output_contains_line "$sim0 [${sim0dev}-node0] (4 lines)"
-	output_contains_line "$sim1 [${sim1dev}-node0] (8 lines)"
-	output_contains_line "$sim2 [${sim2dev}-node0] (16 lines)"
+	output_regex_match "$sim0 \[${sim0dev}[-:]node0\] \(4 lines\)"
+	output_regex_match "$sim1 \[${sim1dev}[-:]node0\] \(8 lines\)"
+	output_regex_match "$sim2 \[${sim2dev}[-:]node0\] \(16 lines\)"
 	num_lines_is 3
 	status_is 0
 }
