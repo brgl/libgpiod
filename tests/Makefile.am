@@ -24,6 +24,7 @@ gpiod_test_SOURCES = \
 	tests-chip-info.c \
 	tests-edge-event.c \
 	tests-info-event.c \
+	tests-kernel-uapi.c \
 	tests-line-config.c \
 	tests-line-info.c \
 	tests-line-request.c \
