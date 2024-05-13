@@ -13,7 +13,6 @@ EXTRA_DIST = \
 	LICENSES/CC0-1.0.txt \
 	LICENSES/GPL-2.0-only.txt \
 	LICENSES/Linux-syscall-note.txt \
-	LICENSES/LGPL-3.0-or-later.txt \
 	LICENSES/BSD-3-Clause.txt
 
 if WITH_EXAMPLES
