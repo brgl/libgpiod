@@ -14,6 +14,9 @@ class Value(Enum):
     INACTIVE = _ext.VALUE_INACTIVE
     ACTIVE = _ext.VALUE_ACTIVE
 
+    def __bool__(self):
+        return self == self.ACTIVE
+
 
 class Direction(Enum):
     """Direction settings."""
