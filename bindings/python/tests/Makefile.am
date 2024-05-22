@@ -11,6 +11,7 @@ EXTRA_DIST = \
 	tests_chip.py \
 	tests_edge_event.py \
 	tests_info_event.py \
+	tests_line.py \
 	tests_line_info.py \
 	tests_line_request.py \
 	tests_line_settings.py \
