@@ -185,5 +185,5 @@ class InfoEventStringRepresentation(TestCase):
                 event = chip.read_info_event()
                 self.assertRegex(
                     str(event),
-                    '<InfoEvent type=Type\.LINE_REQUESTED timestamp_ns=[0-9]+ line_info=<LineInfo offset=0 name="None" used=True consumer="\?" direction=Direction\.INPUT active_low=False bias=Bias\.UNKNOWN drive=Drive\.PUSH_PULL edge_detection=Edge\.NONE event_clock=Clock\.MONOTONIC debounced=False debounce_period=0:00:00>>',
+                    '<InfoEvent type=Type\\.LINE_REQUESTED timestamp_ns=[0-9]+ line_info=<LineInfo offset=0 name="None" used=True consumer="\\?" direction=Direction\\.INPUT active_low=False bias=Bias\\.UNKNOWN drive=Drive\\.PUSH_PULL edge_detection=Edge\\.NONE event_clock=Clock\\.MONOTONIC debounced=False debounce_period=0:00:00>>',
                 )

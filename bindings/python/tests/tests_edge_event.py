@@ -208,5 +208,5 @@ class EdgeEventStringRepresentation(TestCase):
             event = req.read_edge_events()[0]
             self.assertRegex(
                 str(event),
-                "<EdgeEvent type=Type\.RISING_EDGE timestamp_ns=[0-9]+ line_offset=0 global_seqno=1 line_seqno=1>",
+                "<EdgeEvent type=Type\\.RISING_EDGE timestamp_ns=[0-9]+ line_offset=0 global_seqno=1 line_seqno=1>",
             )
