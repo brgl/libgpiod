@@ -51,3 +51,10 @@ testing with gpio-tools-test.bash using coproc problematic).
 
 One approach that could address both these problems is to bypass the readline
 emulation and use the libedit API (histedit.h) directly.
+
+----------
+
+* migrate C++ tests to Catch2 v3
+
+It's been almost two years since Catch2 v3.0 was released. It's not backward
+compatible and requires some rework of the C++ test-suite.
