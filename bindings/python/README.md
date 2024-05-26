@@ -102,3 +102,13 @@ with gpiod.request_lines(
         time.sleep(1)
 ```
 
+## Testing
+
+The test suite for the python bindings can be run by calling:
+
+```
+make python-tests-run
+```
+
+from the `libgpiod/bindings/python` directory as root (necessary to be able
+to create the **gpio-sims** used for testing).
