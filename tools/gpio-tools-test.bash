@@ -203,9 +203,9 @@ dut_run_redirect() {
 
 dut_read_redirect() {
 	output=$(<$SHUNIT_TMPDIR/$DUT_OUTPUT)
-        local ORIG_IFS="$IFS"
-        IFS=$'\n' lines=($output)
-        IFS="$ORIG_IFS"
+	local ORIG_IFS="$IFS"
+	IFS=$'\n' lines=($output)
+	IFS="$ORIG_IFS"
 }
 
 dut_read() {
@@ -269,12 +269,12 @@ dut_wait() {
 }
 
 dut_cleanup() {
-        if [ -n "$DUT_PID" ]
-        then
+	if [ -n "$DUT_PID" ]
+	then
 		kill -SIGTERM $DUT_PID 2> /dev/null
 		wait $DUT_PID || false
-        fi
-        rm -f $SHUNIT_TMPDIR/$DUT_OUTPUT
+	fi
+	rm -f $SHUNIT_TMPDIR/$DUT_OUTPUT
 }
 
 tearDown() {
