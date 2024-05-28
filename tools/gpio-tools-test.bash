@@ -211,7 +211,7 @@ dut_read_redirect() {
 dut_read() {
 	local LINE
 	lines=()
-	while read -t 0.2 -u ${COPROC[0]} LINE;
+	while read -t 0.2 -u ${COPROC[0]} LINE
 	do
 		if [ -n "$DUT_FIRST_CHAR" ]
 		then
@@ -232,7 +232,7 @@ dut_flush() {
 	lines=()
 	output=
 	unset DUT_FIRST_CHAR
-	while read -t 0 -u ${COPROC[0]} JUNK;
+	while read -t 0 -u ${COPROC[0]} JUNK
 	do
 		read -t 0.1 -u ${COPROC[0]} JUNK || true
 	done
