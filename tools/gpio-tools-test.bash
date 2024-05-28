@@ -27,9 +27,9 @@ GPIOSIM_APP_NAME="gpio-tools-test"
 MIN_KERNEL_VERSION="5.17.4"
 MIN_SHUNIT_VERSION="2.1.8"
 
-# Run the command in $* and fail the test if the command succeeds.
+# Run the command in $@ and fail the test if the command succeeds.
 assert_fail() {
-	$* || return 0
+	"$@" || return 0
 	fail " '$*': command did not fail as expected"
 }
 
@@ -71,7 +71,7 @@ gpiosim_chip() {
 
 	mkdir -p $BANKPATH
 
-	for ARG in $*
+	for ARG in "$@"
 	do
 		local KEY=$(echo $ARG | cut -d"=" -f1)
 		local VAL=$(echo $ARG | cut -d"=" -f2)
@@ -253,7 +253,7 @@ dut_regex_match() {
 }
 
 dut_write() {
-	echo $* >&${COPROC[1]}
+	echo "$@" >&${COPROC[1]}
 }
 
 dut_kill() {
@@ -283,7 +283,7 @@ tearDown() {
 }
 
 request_release_line() {
-	$SOURCE_DIR/gpioget -c $* >/dev/null
+	$SOURCE_DIR/gpioget -c "$@" >/dev/null
 }
 
 #
