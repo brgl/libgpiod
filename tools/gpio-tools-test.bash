@@ -158,19 +158,10 @@ gpiosim_cleanup() {
 		local BANKPATH=$DEVPATH/bank0
 
 		echo 0 > $DEVPATH/live
-
-		ls $BANKPATH/line* > /dev/null 2>&1
-		if [ "$?" = "0" ]
-		then
-			for LINE in $(find $BANKPATH/ | grep -E "line[0-9]+$")
-			do
-				test -e $LINE/hog && rmdir $LINE/hog
-				rmdir $LINE
-			done
-		fi
-
-		rmdir $BANKPATH
-		rmdir $DEVPATH
+		find "$DEVPATH" -type d -name hog -exec rmdir '{}' '+'
+		find "$DEVPATH" -type d -name "line*" -exec rmdir '{}' '+'
+		find "$DEVPATH" -type d -name "bank*" -exec rmdir '{}' '+'
+		rmdir "$DEVPATH"
 	done
 
 	gpiosim_chip_symlink_cleanup
@@ -3078,7 +3069,6 @@ check_prog() {
 check_prog shunit2
 check_prog modprobe
 check_prog timeout
-check_prog grep
 
 # Check if we're running a kernel at the required version or later
 check_kernel $MIN_KERNEL_VERSION
