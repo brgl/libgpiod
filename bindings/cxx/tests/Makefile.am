@@ -4,7 +4,7 @@
 AM_CXXFLAGS = -I$(top_srcdir)/bindings/cxx/ -I$(top_srcdir)/include
 AM_CXXFLAGS += -I$(top_srcdir)/tests/gpiosim/
 AM_CXXFLAGS += -Wall -Wextra -g -std=gnu++17 $(CATCH2_CFLAGS)
-AM_LDFLAGS = -pthread
+AM_LDFLAGS = -pthread $(CATCH2_LIBS)
 LDADD = $(top_builddir)/bindings/cxx/libgpiodcxx.la
 LDADD += $(top_builddir)/tests/gpiosim/libgpiosim.la
 

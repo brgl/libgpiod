@@ -4,13 +4,13 @@
 #ifndef __GPIOD_CXX_TEST_HELPERS_HPP__
 #define __GPIOD_CXX_TEST_HELPERS_HPP__
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <regex>
 #include <string>
 #include <sstream>
 #include <system_error>
 
-class system_error_matcher : public Catch::MatcherBase<::std::system_error>
+class system_error_matcher : public Catch::Matchers::MatcherBase<::std::system_error>
 {
 public:
 	explicit system_error_matcher(int expected_errno);
@@ -21,7 +21,7 @@ private:
 	::std::error_condition _m_cond;
 };
 
-class regex_matcher : public Catch::MatcherBase<::std::string>
+class regex_matcher : public Catch::Matchers::MatcherBase<::std::string>
 {
 public:
 	explicit regex_matcher(const ::std::string& pattern);
@@ -33,7 +33,7 @@ private:
 	::std::string _m_repr;
 };
 
-template<class T> class stringify_matcher : public Catch::MatcherBase<T>
+template<class T> class stringify_matcher : public Catch::Matchers::MatcherBase<T>
 {
 public:
 	explicit stringify_matcher(const ::std::string& expected) : _m_expected(expected)

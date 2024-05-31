@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2021-2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <gpiod.hpp>
 #include <sstream>
 
@@ -24,12 +24,12 @@ TEST_CASE("chip_info properties can be read", "[chip-info][chip]")
 
 	SECTION("get chip name")
 	{
-		REQUIRE_THAT(info.name(), Catch::Equals(sim.name()));
+		REQUIRE_THAT(info.name(), Catch::Matchers::Equals(sim.name()));
 	}
 
 	SECTION("get chip label")
 	{
-		REQUIRE_THAT(info.label(), Catch::Equals("foobar"));
+		REQUIRE_THAT(info.label(), Catch::Matchers::Equals("foobar"));
 	}
 
 	SECTION("get num_lines")
@@ -52,12 +52,12 @@ TEST_CASE("chip_info can be copied and moved", "[chip-info]")
 	{
 		auto copy(info);
 
-		REQUIRE_THAT(copy.name(), Catch::Equals(sim.name()));
-		REQUIRE_THAT(copy.label(), Catch::Equals("foobar"));
+		REQUIRE_THAT(copy.name(), Catch::Matchers::Equals(sim.name()));
+		REQUIRE_THAT(copy.label(), Catch::Matchers::Equals("foobar"));
 		REQUIRE(copy.num_lines() == 4);
 
-		REQUIRE_THAT(info.name(), Catch::Equals(sim.name()));
-		REQUIRE_THAT(info.label(), Catch::Equals("foobar"));
+		REQUIRE_THAT(info.name(), Catch::Matchers::Equals(sim.name()));
+		REQUIRE_THAT(info.label(), Catch::Matchers::Equals("foobar"));
 		REQUIRE(info.num_lines() == 4);
 	}
 
@@ -67,12 +67,12 @@ TEST_CASE("chip_info can be copied and moved", "[chip-info]")
 
 		copy = info;
 
-		REQUIRE_THAT(copy.name(), Catch::Equals(sim.name()));
-		REQUIRE_THAT(copy.label(), Catch::Equals("foobar"));
+		REQUIRE_THAT(copy.name(), Catch::Matchers::Equals(sim.name()));
+		REQUIRE_THAT(copy.label(), Catch::Matchers::Equals("foobar"));
 		REQUIRE(copy.num_lines() == 4);
 
-		REQUIRE_THAT(info.name(), Catch::Equals(sim.name()));
-		REQUIRE_THAT(info.label(), Catch::Equals("foobar"));
+		REQUIRE_THAT(info.name(), Catch::Matchers::Equals(sim.name()));
+		REQUIRE_THAT(info.label(), Catch::Matchers::Equals("foobar"));
 		REQUIRE(info.num_lines() == 4);
 	}
 
@@ -80,8 +80,8 @@ TEST_CASE("chip_info can be copied and moved", "[chip-info]")
 	{
 		auto moved(std::move(info));
 
-		REQUIRE_THAT(moved.name(), Catch::Equals(sim.name()));
-		REQUIRE_THAT(moved.label(), Catch::Equals("foobar"));
+		REQUIRE_THAT(moved.name(), Catch::Matchers::Equals(sim.name()));
+		REQUIRE_THAT(moved.label(), Catch::Matchers::Equals("foobar"));
 		REQUIRE(moved.num_lines() == 4);
 	}
 
@@ -91,8 +91,8 @@ TEST_CASE("chip_info can be copied and moved", "[chip-info]")
 
 		moved = ::std::move(info);
 
-		REQUIRE_THAT(moved.name(), Catch::Equals(sim.name()));
-		REQUIRE_THAT(moved.label(), Catch::Equals("foobar"));
+		REQUIRE_THAT(moved.name(), Catch::Matchers::Equals(sim.name()));
+		REQUIRE_THAT(moved.label(), Catch::Matchers::Equals("foobar"));
 		REQUIRE(moved.num_lines() == 4);
 	}
 }

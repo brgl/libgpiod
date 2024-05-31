@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2021-2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <cstddef>
 #include <gpiod.hpp>
 #include <string>
@@ -33,7 +33,7 @@ TEST_CASE("request_config can be moved", "[request-config]")
 	SECTION("move constructor works")
 	{
 		auto moved(::std::move(cfg));
-		REQUIRE_THAT(moved.consumer(), Catch::Equals("foobar"));
+		REQUIRE_THAT(moved.consumer(), Catch::Matchers::Equals("foobar"));
 		REQUIRE(moved.event_buffer_size() == 64);
 	}
 
@@ -43,7 +43,7 @@ TEST_CASE("request_config can be moved", "[request-config]")
 
 		moved = ::std::move(cfg);
 
-		REQUIRE_THAT(moved.consumer(), Catch::Equals("foobar"));
+		REQUIRE_THAT(moved.consumer(), Catch::Matchers::Equals("foobar"));
 		REQUIRE(moved.event_buffer_size() == 64);
 	}
 }
@@ -55,7 +55,7 @@ TEST_CASE("request_config mutators work", "[request-config]")
 	SECTION("set consumer")
 	{
 		cfg.set_consumer("foobar");
-		REQUIRE_THAT(cfg.consumer(), Catch::Equals("foobar"));
+		REQUIRE_THAT(cfg.consumer(), Catch::Matchers::Equals("foobar"));
 	}
 
 	SECTION("set event_buffer_size")
@@ -77,7 +77,7 @@ TEST_CASE("request_config stream insertion operator works", "[request-config]")
 
 	::std::string expected("gpiod::request_config(consumer='foobar', event_buffer_size=32)");
 
-	REQUIRE_THAT(buf.str(), Catch::Equals(expected));
+	REQUIRE_THAT(buf.str(), Catch::Matchers::Equals(expected));
 }
 
 } /* namespace */

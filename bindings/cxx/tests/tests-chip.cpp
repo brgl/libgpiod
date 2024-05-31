@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2021-2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <gpiod.hpp>
 #include <sstream>
 #include <system_error>
@@ -48,9 +48,9 @@ TEST_CASE("chip constructor works", "[chip]")
 			.build();
 
 		::gpiod::chip first(sim.dev_path());
-		REQUIRE_THAT(first.get_info().label(), Catch::Equals("foobar"));
+		REQUIRE_THAT(first.get_info().label(), Catch::Matchers::Equals("foobar"));
 		::gpiod::chip second(::std::move(first));
-		REQUIRE_THAT(second.get_info().label(), Catch::Equals("foobar"));
+		REQUIRE_THAT(second.get_info().label(), Catch::Matchers::Equals("foobar"));
 	}
 }
 
@@ -70,9 +70,9 @@ TEST_CASE("chip operators work", "[chip]")
 
 		::gpiod::chip moved_chip(moved_sim.dev_path());
 
-		REQUIRE_THAT(chip.get_info().label(), Catch::Equals("foobar"));
+		REQUIRE_THAT(chip.get_info().label(), Catch::Matchers::Equals("foobar"));
 		chip = ::std::move(moved_chip);
-		REQUIRE_THAT(chip.get_info().label(), Catch::Equals("moved"));
+		REQUIRE_THAT(chip.get_info().label(), Catch::Matchers::Equals("moved"));
 	}
 
 	SECTION("boolean operator")
@@ -94,7 +94,7 @@ TEST_CASE("chip properties can be read", "[chip]")
 
 	SECTION("get device path")
 	{
-		REQUIRE_THAT(chip.path(), Catch::Equals(sim.dev_path()));
+		REQUIRE_THAT(chip.path(), Catch::Matchers::Equals(sim.dev_path()));
 	}
 
 	SECTION("get file descriptor")
@@ -169,7 +169,7 @@ TEST_CASE("stream insertion operator works for chip", "[chip]")
 			    "\", label=\"foobar\", num_lines=4))";
 
 		buf << chip;
-		REQUIRE_THAT(buf.str(), Catch::Equals(expected.str()));
+		REQUIRE_THAT(buf.str(), Catch::Matchers::Equals(expected.str()));
 	}
 
 	SECTION("closed chip")

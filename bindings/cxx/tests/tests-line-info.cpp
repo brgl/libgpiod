@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <gpiod.hpp>
 #include <string>
 
@@ -35,9 +35,9 @@ TEST_CASE("get_line_info() works", "[chip][line-info]")
 		auto info = chip.get_line_info(0);
 
 		REQUIRE(info.offset() == 0);
-		REQUIRE_THAT(info.name(), Catch::Equals("foobar"));
+		REQUIRE_THAT(info.name(), Catch::Matchers::Equals("foobar"));
 		REQUIRE(info.used());
-		REQUIRE_THAT(info.consumer(), Catch::Equals("hog"));
+		REQUIRE_THAT(info.consumer(), Catch::Matchers::Equals("hog"));
 		REQUIRE(info.direction() == ::gpiod::line::direction::OUTPUT);
 		REQUIRE_FALSE(info.active_low());
 		REQUIRE(info.bias() == ::gpiod::line::bias::UNKNOWN);
@@ -74,9 +74,9 @@ TEST_CASE("line properties can be retrieved", "[line-info]")
 		auto info6 = chip.get_line_info(6);
 
 		REQUIRE(info4.offset() == 4);
-		REQUIRE_THAT(info4.name(), Catch::Equals("baz"));
+		REQUIRE_THAT(info4.name(), Catch::Matchers::Equals("baz"));
 		REQUIRE(info4.used());
-		REQUIRE_THAT(info4.consumer(), Catch::Equals("hog4"));
+		REQUIRE_THAT(info4.consumer(), Catch::Matchers::Equals("hog4"));
 		REQUIRE(info4.direction() == direction::OUTPUT);
 		REQUIRE(info4.edge_detection() == edge::NONE);
 		REQUIRE_FALSE(info4.active_low());
@@ -102,10 +102,10 @@ TEST_CASE("line_info can be copied and moved")
 	{
 		auto copy(info);
 		REQUIRE(copy.offset() == 2);
-		REQUIRE_THAT(copy.name(), Catch::Equals("foobar"));
+		REQUIRE_THAT(copy.name(), Catch::Matchers::Equals("foobar"));
 		/* info can still be used */
 		REQUIRE(info.offset() == 2);
-		REQUIRE_THAT(info.name(), Catch::Equals("foobar"));
+		REQUIRE_THAT(info.name(), Catch::Matchers::Equals("foobar"));
 	}
 
 	SECTION("assignment operator works")
@@ -113,17 +113,17 @@ TEST_CASE("line_info can be copied and moved")
 		auto copy = chip.get_line_info(0);
 		copy = info;
 		REQUIRE(copy.offset() == 2);
-		REQUIRE_THAT(copy.name(), Catch::Equals("foobar"));
+		REQUIRE_THAT(copy.name(), Catch::Matchers::Equals("foobar"));
 		/* info can still be used */
 		REQUIRE(info.offset() == 2);
-		REQUIRE_THAT(info.name(), Catch::Equals("foobar"));
+		REQUIRE_THAT(info.name(), Catch::Matchers::Equals("foobar"));
 	}
 
 	SECTION("move constructor works")
 	{
 		auto copy(::std::move(info));
 		REQUIRE(copy.offset() == 2);
-		REQUIRE_THAT(copy.name(), Catch::Equals("foobar"));
+		REQUIRE_THAT(copy.name(), Catch::Matchers::Equals("foobar"));
 	}
 
 	SECTION("move assignment operator works")
@@ -131,7 +131,7 @@ TEST_CASE("line_info can be copied and moved")
 		auto copy = chip.get_line_info(0);
 		copy = ::std::move(info);
 		REQUIRE(copy.offset() == 2);
-		REQUIRE_THAT(copy.name(), Catch::Equals("foobar"));
+		REQUIRE_THAT(copy.name(), Catch::Matchers::Equals("foobar"));
 	}
 }
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <gpiod.hpp>
 #include <sstream>
 #include <stdexcept>
@@ -20,7 +20,7 @@ using pull = ::gpiosim::chip::pull;
 
 namespace {
 
-class value_matcher : public Catch::MatcherBase<value>
+class value_matcher : public Catch::Matchers::MatcherBase<value>
 {
 public:
 	value_matcher(pull pull, bool active_low = false)
@@ -117,7 +117,7 @@ TEST_CASE("consumer string is set correctly", "[line-request]")
 		auto info = chip.get_line_info(2);
 
 		REQUIRE(info.used());
-		REQUIRE_THAT(info.consumer(), Catch::Equals("foobar"));
+		REQUIRE_THAT(info.consumer(), Catch::Matchers::Equals("foobar"));
 	}
 
 	SECTION("empty consumer")
@@ -130,7 +130,7 @@ TEST_CASE("consumer string is set correctly", "[line-request]")
 		auto info = chip.get_line_info(2);
 
 		REQUIRE(info.used());
-		REQUIRE_THAT(info.consumer(), Catch::Equals("?"));
+		REQUIRE_THAT(info.consumer(), Catch::Matchers::Equals("?"));
 	}
 }
 
@@ -380,7 +380,7 @@ TEST_CASE("line_request can be moved", "[line-request]")
 		auto moved(::std::move(request));
 
 		REQUIRE(moved.fd() == fd);
-		REQUIRE_THAT(moved.offsets(), Catch::Equals(offs));
+		REQUIRE_THAT(moved.offsets(), Catch::Matchers::Equals(offs));
 	}
 
 	SECTION("move assignment operator works")
@@ -388,7 +388,7 @@ TEST_CASE("line_request can be moved", "[line-request]")
 		another = ::std::move(request);
 
 		REQUIRE(another.fd() == fd);
-		REQUIRE_THAT(another.offsets(), Catch::Equals(offs));
+		REQUIRE_THAT(another.offsets(), Catch::Matchers::Equals(offs));
 	}
 }
 
@@ -484,7 +484,7 @@ TEST_CASE("line_request stream insertion operator works", "[line-request]")
 	{
 		buf << request;
 
-		REQUIRE_THAT(buf.str(), Catch::Equals(expected.str()));
+		REQUIRE_THAT(buf.str(), Catch::Matchers::Equals(expected.str()));
 	}
 
 	SECTION("request released")
@@ -493,7 +493,7 @@ TEST_CASE("line_request stream insertion operator works", "[line-request]")
 
 		buf << request;
 
-		REQUIRE_THAT(buf.str(), Catch::Equals("gpiod::line_request(released)"));
+		REQUIRE_THAT(buf.str(), Catch::Matchers::Equals("gpiod::line_request(released)"));
 	}
 }
 
