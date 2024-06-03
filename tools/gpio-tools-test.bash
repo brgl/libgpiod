@@ -3048,7 +3048,7 @@ die() {
 oneTimeSetUp() {
 	test "$SHUNIT_VERSION" = "$MIN_SHUNIT_VERSION" && return 0
 	local FIRST
-	FIRST=$(printf "$SHUNIT_VERSION\n$MIN_SHUNIT_VERSION\n" | sort -Vr | head -1)
+	FIRST=$(printf "%s\n%s\n" "$SHUNIT_VERSION" "$MIN_SHUNIT_VERSION" | sort -Vr | head -1)
 	test "$FIRST" = "$MIN_SHUNIT_VERSION" && \
 		die "minimum shunit version required is $MIN_SHUNIT_VERSION (current version is $SHUNIT_VERSION"
 }
@@ -3058,7 +3058,7 @@ check_kernel() {
 	local CURRENT
 	CURRENT=$(uname -r)
 
-	SORTED=$(printf "$REQUIRED\n$CURRENT" | sort -V | head -n 1)
+	SORTED=$(printf "%s\n%s" "$REQUIRED" "$CURRENT" | sort -V | head -n 1)
 
 	if [ "$SORTED" != "$REQUIRED" ]
 	then
