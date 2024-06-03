@@ -188,7 +188,7 @@ dut_run() {
 	shift
 	coproc timeout 10s "$SOURCE_DIR/$cmd" "$@" 2>&1
 	DUT_PID=$COPROC_PID
-	read -t1 -n1 -u ${COPROC[0]} DUT_FIRST_CHAR
+	read -r -t1 -n1 -u "${COPROC[0]}" DUT_FIRST_CHAR
 }
 
 dut_run_redirect() {
@@ -211,7 +211,7 @@ dut_read_redirect() {
 dut_read() {
 	local LINE
 	lines=()
-	while read -t 0.2 -u ${COPROC[0]} LINE
+	while read -r -t 0.2 -u "${COPROC[0]}" LINE
 	do
 		if [ -n "$DUT_FIRST_CHAR" ]
 		then
@@ -234,7 +234,7 @@ dut_flush() {
 	unset DUT_FIRST_CHAR
 	while read -t 0 -u "${COPROC[0]}" _JUNK
 	do
-		read -t 0.1 -u "${COPROC[0]}" _JUNK || true
+		read -r -t 0.1 -u "${COPROC[0]}" _JUNK || true
 	done
 }
 
@@ -242,7 +242,7 @@ dut_flush() {
 dut_regex_match() {
 	PATTERN=$1
 
-	read -t 0.2 -u ${COPROC[0]} LINE || (echo Timeout && false)
+	read -r -t 0.2 -u "${COPROC[0]}" LINE || (echo Timeout && false)
 	if [ -n "$DUT_FIRST_CHAR" ]
 	then
 		LINE=${DUT_FIRST_CHAR}${LINE}
