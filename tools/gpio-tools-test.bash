@@ -3069,8 +3069,7 @@ check_kernel() {
 check_prog() {
 	local PROG=$1
 
-	which "$PROG" > /dev/null
-	if [ "$?" -ne "0" ]
+	if ! which "$PROG" > /dev/null
 	then
 		die "$PROG not found - needed to run the tests"
 	fi
