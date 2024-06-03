@@ -3087,4 +3087,5 @@ modprobe gpio-sim || die "unable to load the gpio-sim module"
 mountpoint /sys/kernel/config/ > /dev/null 2> /dev/null || \
 	die "configfs not mounted at /sys/kernel/config/"
 
+# shellcheck source=/dev/null
 . shunit2
