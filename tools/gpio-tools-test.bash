@@ -49,7 +49,8 @@ output_is() {
 
 num_lines_is() {
 	[ "$1" -eq "0" ] || [ -z "$output" ] && return 0
-	local NUM_LINES=$(echo "$output" | wc -l)
+	local NUM_LINES
+	NUM_LINES=$(echo "$output" | wc -l)
 	assertEquals " number of lines:" "$1" "$NUM_LINES"
 }
 
@@ -73,16 +74,18 @@ gpiosim_chip() {
 
 	for ARG in "$@"
 	do
-		local KEY=$(echo $ARG | cut -d"=" -f1)
-		local VAL=$(echo $ARG | cut -d"=" -f2)
+		local KEY VAL
+		KEY=$(echo "$ARG" | cut -d"=" -f1)
+		VAL=$(echo "$ARG" | cut -d"=" -f2)
 
 		if [ "$KEY" = "num_lines" ]
 		then
 			echo $VAL > $BANKPATH/num_lines
 		elif [ "$KEY" = "line_name" ]
 		then
-			local OFFSET=$(echo $VAL | cut -d":" -f1)
-			local LINENAME=$(echo $VAL | cut -d":" -f2)
+			local OFFSET LINENAME
+			OFFSET=$(echo "$VAL" | cut -d":" -f1)
+			LINENAME=$(echo "$VAL" | cut -d":" -f2)
 			local LINEPATH=$BANKPATH/line$OFFSET
 
 			mkdir -p $LINEPATH
@@ -92,10 +95,11 @@ gpiosim_chip() {
 
 	echo 1 > $DEVPATH/live
 
-	local chip_name=$(<$BANKPATH/chip_name)
-	GPIOSIM_CHIP_NAME[$1]=$chip_name
-	GPIOSIM_CHIP_PATH[$1]="/dev/$chip_name"
-	GPIOSIM_DEV_NAME[$1]=$(<$DEVPATH/dev_name)
+	local CHIP_NAME
+	CHIP_NAME=$(<"$BANKPATH/chip_name")
+	GPIOSIM_CHIP_NAME[$1]=$CHIP_NAME
+	GPIOSIM_CHIP_PATH[$1]="/dev/$CHIP_NAME"
+	GPIOSIM_DEV_NAME[$1]=$(<"$DEVPATH/dev_name")
 }
 
 gpiosim_chip_number() {
@@ -3044,14 +3048,16 @@ die() {
 # Must be done after we sources shunit2 as we need SHUNIT_VERSION to be set.
 oneTimeSetUp() {
 	test "$SHUNIT_VERSION" = "$MIN_SHUNIT_VERSION" && return 0
-	local FIRST=$(printf "$SHUNIT_VERSION\n$MIN_SHUNIT_VERSION\n" | sort -Vr | head -1)
+	local FIRST
+	FIRST=$(printf "$SHUNIT_VERSION\n$MIN_SHUNIT_VERSION\n" | sort -Vr | head -1)
 	test "$FIRST" = "$MIN_SHUNIT_VERSION" && \
 		die "minimum shunit version required is $MIN_SHUNIT_VERSION (current version is $SHUNIT_VERSION"
 }
 
 check_kernel() {
 	local REQUIRED=$1
-	local CURRENT=$(uname -r)
+	local CURRENT
+	CURRENT=$(uname -r)
 
 	SORTED=$(printf "$REQUIRED\n$CURRENT" | sort -V | head -n 1)
 
