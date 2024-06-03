@@ -174,18 +174,24 @@ gpiosim_cleanup() {
 run_tool() {
 	# Executables to test are expected to be in the same directory as the
 	# testing script.
-	output=$(timeout 10s $SOURCE_DIR/"$@" 2>&1)
+	cmd=$1
+	shift
+	output=$(timeout 10s "$SOURCE_DIR/$cmd" "$@" 2>&1)
 	status=$?
 }
 
 dut_run() {
-	coproc timeout 10s $SOURCE_DIR/"$@" 2>&1
+	cmd=$1
+	shift
+	coproc timeout 10s "$SOURCE_DIR/$cmd" "$@" 2>&1
 	DUT_PID=$COPROC_PID
 	read -t1 -n1 -u ${COPROC[0]} DUT_FIRST_CHAR
 }
 
 dut_run_redirect() {
-	coproc timeout 10s $SOURCE_DIR/"$@" > $SHUNIT_TMPDIR/$DUT_OUTPUT 2>&1
+	cmd=$1
+	shift
+	coproc timeout 10s "$SOURCE_DIR/$cmd" "$@" > "$SHUNIT_TMPDIR/$DUT_OUTPUT" 2>&1
 	DUT_PID=$COPROC_PID
 	# give the process time to spin up
 	# FIXME - find a better solution
