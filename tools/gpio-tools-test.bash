@@ -146,7 +146,7 @@ gpiosim_wait_value() {
 	local CHIPNAME=${GPIOSIM_CHIP_NAME[$1]}
 	local PORT=$GPIOSIM_SYSFS/$DEVNAME/$CHIPNAME/sim_gpio$OFFSET/value
 
-	for i in {1..30}; do
+	for _i in {1..30}; do
 		[ "$(<$PORT)" = "$EXPECTED" ] && return
 		sleep 0.01
 	done
@@ -159,7 +159,6 @@ gpiosim_cleanup() {
 		local NAME=${GPIOSIM_APP_NAME}-$$-$CHIP
 
 		local DEVPATH=$GPIOSIM_CONFIGFS/$NAME
-		local BANKPATH=$DEVPATH/bank0
 
 		echo 0 > $DEVPATH/live
 		find "$DEVPATH" -type d -name hog -exec rmdir '{}' '+'
@@ -229,13 +228,13 @@ dut_readable() {
 }
 
 dut_flush() {
-	local JUNK
+	local _JUNK
 	lines=()
 	output=
 	unset DUT_FIRST_CHAR
-	while read -t 0 -u ${COPROC[0]} JUNK
+	while read -t 0 -u "${COPROC[0]}" _JUNK
 	do
-		read -t 0.1 -u ${COPROC[0]} JUNK || true
+		read -t 0.1 -u "${COPROC[0]}" _JUNK || true
 	done
 }
 
