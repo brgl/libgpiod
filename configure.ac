@@ -8,7 +8,7 @@
 
 AC_PREREQ(2.61)
 
-AC_INIT([libgpiod], 1.6.4)
+AC_INIT([libgpiod], 1.6.5)
 AC_SUBST(EXTRA_VERSION, [])
 
 AC_DEFINE_UNQUOTED([GPIOD_VERSION_STR],
@@ -30,12 +30,12 @@ AC_SUBST(VERSION_STR, [$PACKAGE_VERSION$EXTRA_VERSION])
 #
 # Define the libtool version as (C.R.A):
 # NOTE: this version only applies to the core C library.
-AC_SUBST(ABI_VERSION, [4.2.2])
+AC_SUBST(ABI_VERSION, [4.3.2])
 # Have a separate ABI version for C++ bindings:
 AC_SUBST(ABI_CXX_VERSION, [2.2.1])
 # ABI version for libgpiomockup (we need this since it can be installed if we
 # enable install-tests).
-AC_SUBST(ABI_MOCKUP_VERSION, [0.1.0])
+AC_SUBST(ABI_MOCKUP_VERSION, [0.2.0])
 
 AC_CONFIG_AUX_DIR([autostuff])
 AC_CONFIG_MACRO_DIRS([m4])
