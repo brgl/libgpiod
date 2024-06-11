@@ -1,3 +1,11 @@
+libgpiod v1.6.5
+===============
+
+Bug fixes:
+- fix build on platforms that don't pull libgen.h implicitly with other
+  headers
+- unbind all gpio-mockup devices before unloading the module
+
 libgpiod v1.6.4
 ===============
 
