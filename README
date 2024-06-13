@@ -284,7 +284,9 @@ to send plain text[3].
 
 Code submissions should stick to the linux kernel coding style[4] and
 follow the kernel patch submission process[5] as applied to the libgpiod
-source tree.
+source tree. All shell scripts must pass `shellcheck` tests[9]. All files
+must have a license and copyright SPDX headers and the repo is expected to
+pass the `reuse lint` check[10].
 
 The mailing list archive[6] contains all the historical mails to the list,
 and is the place to check to ensure your e-mail has been received.
@@ -300,11 +302,13 @@ tarballs should be fetched from kernel.org[8].
 
 For more information, refer to CONTRIBUTING.md in this repository.
 
-[1] https://github.com/kward/shunit2
-[2] http://vger.kernel.org/vger-lists.html#linux-gpio
-[3] https://docs.kernel.org/process/email-clients.html
-[4] https://docs.kernel.org/process/coding-style.html
-[5] https://docs.kernel.org/process/submitting-patches.html
-[6] https://lore.kernel.org/linux-gpio/
-[7] https://github.com/brgl/libgpiod
-[8] https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/
+[1]  https://github.com/kward/shunit2
+[2]  http://vger.kernel.org/vger-lists.html#linux-gpio
+[3]  https://docs.kernel.org/process/email-clients.html
+[4]  https://docs.kernel.org/process/coding-style.html
+[5]  https://docs.kernel.org/process/submitting-patches.html
+[6]  https://lore.kernel.org/linux-gpio/
+[7]  https://github.com/brgl/libgpiod
+[8]  https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/
+[9]  https://www.shellcheck.net/
+[10] https://reuse.software/
