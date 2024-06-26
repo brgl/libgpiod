@@ -5,7 +5,7 @@ import errno
 import gpiod
 
 from . import gpiosim
-from gpiod.line import Direction, Edge, Value
+from gpiod.line import Direction, Drive, Edge, Value
 from unittest import TestCase
 
 Pull = gpiosim.Chip.Pull
@@ -462,7 +462,9 @@ class ReconfigureRequestedLines(TestCase):
         self.sim = gpiosim.Chip(num_lines=8, line_names={3: "foo", 4: "bar", 6: "baz"})
         self.chip = gpiod.Chip(self.sim.dev_path)
         self.req = self.chip.request_lines(
-            {(0, 2, "foo", "baz"): gpiod.LineSettings(direction=Direction.OUTPUT)}
+            {(0, 2, "foo", "baz"): gpiod.LineSettings(direction=Direction.OUTPUT,
+                                                      active_low=True,
+                                                      drive=Drive.OPEN_DRAIN)}
         )
 
     def tearDown(self):
@@ -511,6 +513,8 @@ class ReconfigureRequestedLines(TestCase):
     def test_reconfigure_with_default(self):
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.OUTPUT)
+        self.assertTrue(info.active_low)
+        self.assertEqual(info.drive, Drive.OPEN_DRAIN)
         self.req.reconfigure_lines({
             0: gpiod.LineSettings(direction=Direction.INPUT),
             2: None,
@@ -520,10 +524,14 @@ class ReconfigureRequestedLines(TestCase):
         self.assertEqual(info.direction, Direction.INPUT)
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.OUTPUT)
+        self.assertTrue(info.active_low)
+        self.assertEqual(info.drive, Drive.OPEN_DRAIN)
 
     def test_reconfigure_missing_offsets(self):
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.OUTPUT)
+        self.assertTrue(info.active_low)
+        self.assertEqual(info.drive, Drive.OPEN_DRAIN)
         self.req.reconfigure_lines(
                 {(6, 0): gpiod.LineSettings(direction=Direction.INPUT)}
             )
@@ -531,6 +539,8 @@ class ReconfigureRequestedLines(TestCase):
         self.assertEqual(info.direction, Direction.INPUT)
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.OUTPUT)
+        self.assertTrue(info.active_low)
+        self.assertEqual(info.drive, Drive.OPEN_DRAIN)
 
     def test_reconfigure_extra_offsets(self):
         info = self.chip.get_line_info(2)
