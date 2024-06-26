@@ -490,6 +490,56 @@ class ReconfigureRequestedLines(TestCase):
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.INPUT)
 
+    def test_reconfigure_by_misordered_offsets(self):
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.OUTPUT)
+        self.req.reconfigure_lines(
+            {(6, 0, 3, 2): gpiod.LineSettings(direction=Direction.INPUT)}
+        )
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.INPUT)
+
+    def test_reconfigure_by_misordered_names(self):
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.OUTPUT)
+        self.req.reconfigure_lines(
+            {(0, "baz", 2, "foo"): gpiod.LineSettings(direction=Direction.INPUT)}
+        )
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.INPUT)
+
+    def test_reconfigure_with_default(self):
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.OUTPUT)
+        self.req.reconfigure_lines({
+            0: gpiod.LineSettings(direction=Direction.INPUT),
+            2: None,
+            ("baz", "foo"): gpiod.LineSettings(direction=Direction.INPUT)
+        })
+        info = self.chip.get_line_info(0)
+        self.assertEqual(info.direction, Direction.INPUT)
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.OUTPUT)
+
+    def test_reconfigure_missing_offsets(self):
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.OUTPUT)
+        self.req.reconfigure_lines(
+                {(6, 0): gpiod.LineSettings(direction=Direction.INPUT)}
+            )
+        info = self.chip.get_line_info(0)
+        self.assertEqual(info.direction, Direction.INPUT)
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.OUTPUT)
+
+    def test_reconfigure_extra_offsets(self):
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.OUTPUT)
+        self.req.reconfigure_lines(
+            {(0, 2, 3, 6, 5): gpiod.LineSettings(direction=Direction.INPUT)}
+            )
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.INPUT)
 
 class ReleasedLineRequestCannotBeUsed(TestCase):
     def test_using_released_line_request(self):
