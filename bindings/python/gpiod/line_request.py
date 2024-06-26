@@ -151,23 +151,26 @@ class LineRequest:
         Args:
           config
             Dictionary mapping offsets or names (or tuples thereof) to
-            LineSettings. If None is passed as the value of the mapping,
-            default settings are used.
+            LineSettings. If no entry exists, or a None is passed as the
+            settings, then the configuration for that line is not changed.
+            Any settings for non-requested lines are ignored.
         """
         self._check_released()
 
         line_cfg = _ext.LineConfig()
+        line_settings = {}
 
         for lines, settings in config.items():
             if isinstance(lines, int) or isinstance(lines, str):
                 lines = [lines]
 
-            offsets = [
-                self._name_map[line] if self._check_line_name(line) else line
-                for line in lines
-            ]
+            for line in lines:
+                offset = self._name_map[line] if self._check_line_name(line) else line
+                line_settings[offset] = settings
 
-            line_cfg.add_line_settings(offsets, _line_settings_to_ext(settings))
+        for offset in self.offsets:
+            settings = line_settings.get(offset) or LineSettings()
+            line_cfg.add_line_settings([offset], _line_settings_to_ext(settings))
 
         self._req.reconfigure_lines(line_cfg)
 
