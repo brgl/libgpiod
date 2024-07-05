@@ -34,6 +34,11 @@ BUILDING
 This is a pretty standard autotools project. The core C library does not have
 any external dependencies other than the standard C library with GNU extensions.
 
+The build system requires autotools, autoconf-archive, libtool and pkg-config
+to be installed on the host system for the basic build. Development files for
+additional libraries may be required depending on selected options. The
+configure script will report any missing additional required dependencies.
+
 The command-line tools optionally depend on libedit for the interactive feature.
 
 To build the project (including command-line utilities) run:
