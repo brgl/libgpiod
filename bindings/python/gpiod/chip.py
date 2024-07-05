@@ -252,7 +252,7 @@ class Chip:
 
         line_cfg = _ext.LineConfig()
 
-        # Sanitize lines - don't allow offset repeatitions or offset-name conflicts.
+        # Sanitize lines - don't allow offset repetitions or offset-name conflicts.
         for offset, count in Counter(
             [
                 self.line_offset_from_id(line)
