@@ -208,6 +208,7 @@ TEST_CASE("values can be read", "[line-request]")
 				.add_line_settings(
 					offs,
 					::gpiod::line_settings()
+						.set_direction(direction::INPUT)
 						.set_active_low(true))
 		);
 
