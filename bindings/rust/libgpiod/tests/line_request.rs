@@ -138,6 +138,7 @@ mod line_request {
             // Value read properly after reconfigure
             let mut lsettings = line::Settings::new().unwrap();
             lsettings.set_active_low(true);
+            lsettings.set_direction(Direction::Input).unwrap();
             let mut lconfig = line::Config::new().unwrap();
             lconfig.add_line_settings(&offsets, lsettings).unwrap();
             request.reconfigure_lines(&lconfig).unwrap();
@@ -452,6 +453,7 @@ mod line_request {
             let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings.set_event_clock(EventClock::Monotonic).unwrap();
+            lsettings.set_direction(Direction::Input).unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
             config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
@@ -460,6 +462,7 @@ mod line_request {
             let mut lconfig = line::Config::new().unwrap();
             let mut lsettings = line::Settings::new().unwrap();
             lsettings.set_event_clock(EventClock::Realtime).unwrap();
+            lsettings.set_direction(Direction::Input).unwrap();
             lconfig.add_line_settings(&[0], lsettings).unwrap();
             config.request().reconfigure_lines(&lconfig).unwrap();
             let info = config.chip().line_info(0).unwrap();
