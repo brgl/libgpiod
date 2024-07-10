@@ -279,11 +279,12 @@ class Chip:
         else:
             mapped_output_values = None
 
+        name_map = dict()
+        offset_map = dict()
+        global_output_values = list()
+
         for lines, settings in config.items():
             offsets = list()
-            name_map = dict()
-            offset_map = dict()
-            global_output_values = list()
 
             if isinstance(lines, int) or isinstance(lines, str):
                 lines = (lines,)
