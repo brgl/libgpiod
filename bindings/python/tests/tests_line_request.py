@@ -310,6 +310,40 @@ class LineRequestComplexConfig(TestCase):
                 self.assertEqual(chip.get_line_info(3).edge_detection, Edge.BOTH)
 
 
+class LineRequestMixedConfigByName(TestCase):
+    def setUp(self):
+        self.sim = gpiosim.Chip(
+            num_lines=4, line_names={2: "foo", 3: "bar", 1: "baz", 0: "xyz"}
+        )
+        self.req = gpiod.request_lines(
+            self.sim.dev_path,
+            {
+                ("baz", "bar"): gpiod.LineSettings(direction=Direction.OUTPUT),
+                ("foo", "xyz"): gpiod.LineSettings(direction=Direction.INPUT),
+            },
+        )
+
+    def tearDown(self):
+        self.req.release()
+        del self.req
+        del self.sim
+
+    def test_set_values_by_name(self):
+        self.req.set_values({"bar": Value.ACTIVE, "baz": Value.INACTIVE})
+
+        self.assertEqual(self.sim.get_value(1), SimVal.INACTIVE)
+        self.assertEqual(self.sim.get_value(3), SimVal.ACTIVE)
+
+    def test_get_values_by_name(self):
+        self.sim.set_pull(0, Pull.UP)
+        self.sim.set_pull(2, Pull.DOWN)
+
+        self.assertEqual(
+            self.req.get_values(["foo", "xyz", "baz"]),
+            [Value.INACTIVE, Value.ACTIVE, Value.INACTIVE],
+        )
+
+
 class RepeatingLinesInRequestConfig(TestCase):
     def setUp(self):
         self.sim = gpiosim.Chip(num_lines=4, line_names={0: "foo", 2: "bar"})
