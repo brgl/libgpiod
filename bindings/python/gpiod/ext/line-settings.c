@@ -79,6 +79,10 @@ line_settings_init(line_settings_object *self, PyObject *args, PyObject *kwargs)
 	if (ret)
 		return set_error();
 
+	ret = gpiod_line_settings_set_event_clock(self->settings, event_clock);
+	if (ret)
+		return set_error();
+
 	return 0;
 }
 
