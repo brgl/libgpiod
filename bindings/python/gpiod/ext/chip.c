@@ -274,14 +274,16 @@ static PyObject *chip_request_lines(chip_object *self, PyObject *args)
 	Py_BEGIN_ALLOW_THREADS;
 	request = gpiod_chip_request_lines(self->chip, req_cfg, line_cfg);
 	Py_END_ALLOW_THREADS;
-	gpiod_request_config_free(req_cfg);
-	if (!request)
+	if (!request) {
+		gpiod_request_config_free(req_cfg);
 		return Py_gpiod_SetErrFromErrno();
+	}
 
 	req_obj = Py_gpiod_MakeRequestObject(request,
 			gpiod_request_config_get_event_buffer_size(req_cfg));
 	if (!req_obj)
 		gpiod_line_request_release(request);
+	gpiod_request_config_free(req_cfg);
 
 	return req_obj;
 }
