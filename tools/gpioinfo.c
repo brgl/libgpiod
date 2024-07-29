@@ -195,8 +195,10 @@ static void list_lines(struct line_resolver *resolver, struct gpiod_chip *chip,
 				   offset, gpiod_chip_info_get_name(chip_info));
 
 		if (resolver->num_lines &&
-		    !resolve_line(resolver, info, chip_num))
+		    !resolve_line(resolver, info, chip_num)) {
+			gpiod_line_info_free(info);
 			continue;
+		}
 
 		if (resolver->num_lines) {
 			printf("%s %u", gpiod_chip_info_get_name(chip_info),
