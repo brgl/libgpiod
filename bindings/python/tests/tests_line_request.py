@@ -5,7 +5,7 @@ import errno
 import gpiod
 
 from . import gpiosim
-from gpiod.line import Direction, Drive, Edge, Value
+from gpiod.line import Clock, Direction, Drive, Edge, Value
 from unittest import TestCase
 
 Pull = gpiosim.Chip.Pull
@@ -302,12 +302,15 @@ class LineRequestComplexConfig(TestCase):
                         direction=Direction.OUTPUT, output_value=Value.ACTIVE
                     ),
                     (1, 3, 5): gpiod.LineSettings(
-                        direction=Direction.INPUT, edge_detection=Edge.BOTH
+                        direction=Direction.INPUT,
+                        edge_detection=Edge.BOTH,
+                        event_clock=Clock.REALTIME,
                     ),
                 },
             ) as req:
                 self.assertEqual(chip.get_line_info(2).direction, Direction.OUTPUT)
                 self.assertEqual(chip.get_line_info(3).edge_detection, Edge.BOTH)
+                self.assertEqual(chip.get_line_info(5).event_clock, Clock.REALTIME)
 
 
 class LineRequestMixedConfigByName(TestCase):
