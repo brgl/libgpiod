@@ -53,7 +53,7 @@ exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 
-root_doc = 'contents'
+root_doc = "contents"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
