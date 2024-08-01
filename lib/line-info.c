@@ -10,9 +10,9 @@
 
 struct gpiod_line_info {
 	unsigned int offset;
-	char name[GPIO_MAX_NAME_SIZE+1];
+	char name[GPIO_MAX_NAME_SIZE + 1];
 	bool used;
-	char consumer[GPIO_MAX_NAME_SIZE+1];
+	char consumer[GPIO_MAX_NAME_SIZE + 1];
 	enum gpiod_line_direction direction;
 	bool active_low;
 	enum gpiod_line_bias bias;

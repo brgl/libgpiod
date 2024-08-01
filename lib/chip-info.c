@@ -10,8 +10,8 @@
 
 struct gpiod_chip_info {
 	size_t num_lines;
-	char name[GPIO_MAX_NAME_SIZE+1];
-	char label[GPIO_MAX_NAME_SIZE+1];
+	char name[GPIO_MAX_NAME_SIZE + 1];
+	char label[GPIO_MAX_NAME_SIZE + 1];
 };
 
 GPIOD_API void gpiod_chip_info_free(struct gpiod_chip_info *info)
