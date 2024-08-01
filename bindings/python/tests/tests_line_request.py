@@ -499,9 +499,11 @@ class ReconfigureRequestedLines(TestCase):
         self.sim = gpiosim.Chip(num_lines=8, line_names={3: "foo", 4: "bar", 6: "baz"})
         self.chip = gpiod.Chip(self.sim.dev_path)
         self.req = self.chip.request_lines(
-            {(0, 2, "foo", "baz"): gpiod.LineSettings(direction=Direction.OUTPUT,
-                                                      active_low=True,
-                                                      drive=Drive.OPEN_DRAIN)}
+            {
+                (0, 2, "foo", "baz"): gpiod.LineSettings(
+                    direction=Direction.OUTPUT, active_low=True, drive=Drive.OPEN_DRAIN
+                )
+            }
         )
 
     def tearDown(self):
@@ -552,11 +554,13 @@ class ReconfigureRequestedLines(TestCase):
         self.assertEqual(info.direction, Direction.OUTPUT)
         self.assertTrue(info.active_low)
         self.assertEqual(info.drive, Drive.OPEN_DRAIN)
-        self.req.reconfigure_lines({
-            0: gpiod.LineSettings(direction=Direction.INPUT),
-            2: None,
-            ("baz", "foo"): gpiod.LineSettings(direction=Direction.INPUT)
-        })
+        self.req.reconfigure_lines(
+            {
+                0: gpiod.LineSettings(direction=Direction.INPUT),
+                2: None,
+                ("baz", "foo"): gpiod.LineSettings(direction=Direction.INPUT),
+            }
+        )
         info = self.chip.get_line_info(0)
         self.assertEqual(info.direction, Direction.INPUT)
         info = self.chip.get_line_info(2)
@@ -570,8 +574,8 @@ class ReconfigureRequestedLines(TestCase):
         self.assertTrue(info.active_low)
         self.assertEqual(info.drive, Drive.OPEN_DRAIN)
         self.req.reconfigure_lines(
-                {(6, 0): gpiod.LineSettings(direction=Direction.INPUT)}
-            )
+            {(6, 0): gpiod.LineSettings(direction=Direction.INPUT)}
+        )
         info = self.chip.get_line_info(0)
         self.assertEqual(info.direction, Direction.INPUT)
         info = self.chip.get_line_info(2)
@@ -584,9 +588,10 @@ class ReconfigureRequestedLines(TestCase):
         self.assertEqual(info.direction, Direction.OUTPUT)
         self.req.reconfigure_lines(
             {(0, 2, 3, 6, 5): gpiod.LineSettings(direction=Direction.INPUT)}
-            )
+        )
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.INPUT)
+
 
 class ReleasedLineRequestCannotBeUsed(TestCase):
     def test_using_released_line_request(self):
