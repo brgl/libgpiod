@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
+# SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
@@ -36,6 +37,12 @@ endif
 # Build bindings after core tests. When building tests for bindings, we need
 # libgpiosim to be already present.
 SUBDIRS += bindings
+
+if WITH_DBUS
+
+SUBDIRS += dbus
+
+endif
 
 if HAS_DOXYGEN
 
