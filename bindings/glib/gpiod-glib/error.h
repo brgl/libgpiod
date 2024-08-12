@@ -1,0 +1,45 @@
+/* SPDX-License-Identifier: LGPL-2.1-or-later */
+/* SPDX-FileCopyrightText: 2022-2024 Bartosz Golaszewski <bartosz.golaszewski@linaro.org> */
+
+#ifndef __GPIODGLIB_ERROR_H__
+#define __GPIODGLIB_ERROR_H__
+
+#if !defined(__INSIDE_GPIOD_GLIB_H__) && !defined(GPIODGLIB_COMPILATION)
+#error "Only <gpiod-glib.h> can be included directly."
+#endif
+
+#include <glib.h>
+
+G_BEGIN_DECLS
+
+#define GPIODGLIB_ERROR gpiodglib_error_quark()
+
+typedef enum {
+	GPIODGLIB_ERR_FAILED = 1,
+	GPIODGLIB_ERR_CHIP_CLOSED,
+	GPIODGLIB_ERR_REQUEST_RELEASED,
+	GPIODGLIB_ERR_PERM,
+	GPIODGLIB_ERR_NOENT,
+	GPIODGLIB_ERR_INTR,
+	GPIODGLIB_ERR_IO,
+	GPIODGLIB_ERR_NXIO,
+	GPIODGLIB_ERR_E2BIG,
+	GPIODGLIB_ERR_BADFD,
+	GPIODGLIB_ERR_CHILD,
+	GPIODGLIB_ERR_AGAIN,
+	GPIODGLIB_ERR_NOMEM,
+	GPIODGLIB_ERR_ACCES,
+	GPIODGLIB_ERR_FAULT,
+	GPIODGLIB_ERR_BUSY,
+	GPIODGLIB_ERR_EXIST,
+	GPIODGLIB_ERR_NODEV,
+	GPIODGLIB_ERR_INVAL,
+	GPIODGLIB_ERR_NOTTY,
+	GPIODGLIB_ERR_PIPE,
+} GpiodglibError;
+
+GQuark gpiodglib_error_quark(void);
+
+G_END_DECLS
+
+#endif /* __GPIODGLIB_ERROR_H__ */
