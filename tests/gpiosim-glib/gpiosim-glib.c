@@ -245,12 +245,11 @@ static void g_gpiosim_chip_get_property(GObject *obj, guint prop_id,
 
 	switch (prop_id) {
 	case G_GPIOSIM_CHIP_PROP_DEV_PATH:
-		g_value_set_static_string(val,
-				gpiosim_bank_get_dev_path(self->bank));
+		g_value_set_string(val, gpiosim_bank_get_dev_path(self->bank));
 		break;
 	case G_GPIOSIM_CHIP_PROP_NAME:
-		g_value_set_static_string(val,
-				gpiosim_bank_get_chip_name(self->bank));
+		g_value_set_string(val,
+				   gpiosim_bank_get_chip_name(self->bank));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -396,27 +395,14 @@ static void g_gpiosim_chip_init(GPIOSimChip *self)
 	self->hogs = NULL;
 }
 
-static const gchar *
-g_gpiosim_chip_get_string_prop(GPIOSimChip *self, const gchar *prop)
-{
-	GValue val = G_VALUE_INIT;
-	const gchar *str;
-
-	g_object_get_property(G_OBJECT(self), prop, &val);
-	str = g_value_get_string(&val);
-	g_value_unset(&val);
-
-	return str;
-}
-
 const gchar *g_gpiosim_chip_get_dev_path(GPIOSimChip *self)
 {
-	return g_gpiosim_chip_get_string_prop(self, "dev-path");
+	return gpiosim_bank_get_dev_path(self->bank);
 }
 
 const gchar *g_gpiosim_chip_get_name(GPIOSimChip *self)
 {
-	return g_gpiosim_chip_get_string_prop(self, "name");
+	return gpiosim_bank_get_chip_name(self->bank);
 }
 
 GPIOSimValue
