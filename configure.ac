@@ -267,12 +267,12 @@ then
 		AC_MSG_ERROR([glib-mkenums not found - needed to build GLib bindings]))
 
 	AC_CHECK_PROG([has_gi_docgen], [gi-docgen], [true], [false])
-	AM_CONDITIONAL([HAS_GI_DOCGEN], [test "x$has_gi_docgen" = xtrue])
 	if test "x$has_gi_docgen" = xfalse
 	then
 		AC_MSG_NOTICE([gi-docgen not found - GLib documentation cannot be generated])
 	fi
 fi
+AM_CONDITIONAL([HAS_GI_DOCGEN], [test "x$has_gi_docgen" = xtrue])
 
 # GObject-introspection
 found_introspection=no
