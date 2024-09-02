@@ -56,6 +56,14 @@ If you still need the deprecated pure-Python bindings, install with:
 pip install gpiod==1.5.4
 ```
 
+Pre-built binary `manylinux` and `musllinux` wheels are published to PyPI.org
+for selected platforms, to speed up installation. `armv7l` users: Note that the
+pre-built armv7l wheels make use of the VFP instruction set extension (a.k.a.
+hard float). If your system does not support VFP, `pip install` will rebuild the
+wheel from source on a `manylinux` system, but possibly not on a `musllinux`
+system. If you have a musl-libc-based armv7l system without VFP support and you
+come across issues using the pre-built gpiod wheel, please get in touch.
+
 ## Examples
 
 Check a GPIO chip character device exists:
