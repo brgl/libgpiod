@@ -283,10 +283,10 @@ AM_CONDITIONAL([WITH_BINDINGS_GLIB], [test "x$with_bindings_glib" = xtrue])
 
 if test "x$with_bindings_glib" = xtrue
 then
-	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.54])
-	PKG_CHECK_MODULES([GOBJECT], [gobject-2.0 >= 2.54])
-	PKG_CHECK_MODULES([GIO], [gio-2.0 >= 2.54])
-	PKG_CHECK_MODULES([GIO_UNIX], [gio-unix-2.0 >= 2.54])
+	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.80])
+	PKG_CHECK_MODULES([GOBJECT], [gobject-2.0 >= 2.80])
+	PKG_CHECK_MODULES([GIO], [gio-2.0 >= 2.80])
+	PKG_CHECK_MODULES([GIO_UNIX], [gio-unix-2.0 >= 2.80])
 	PKG_PROG_PKG_CONFIG([0.28])
 	PKG_CHECK_VAR([GLIB_MKENUMS], [glib-2.0], [glib_mkenums], [],
 		AC_MSG_ERROR([glib-mkenums not found - needed to build GLib bindings]))
