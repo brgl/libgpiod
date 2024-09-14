@@ -226,7 +226,7 @@ class Chip:
         config: dict[tuple[Union[int, str]], Optional[LineSettings]],
         consumer: Optional[str] = None,
         event_buffer_size: Optional[int] = None,
-        output_values: Optional[dict[tuple[Union[int, str]], Value]] = None,
+        output_values: Optional[dict[Union[int, str], Value]] = None,
     ) -> LineRequest:
         """
         Request a set of lines for exclusive usage.
