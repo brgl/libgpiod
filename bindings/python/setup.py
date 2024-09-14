@@ -224,6 +224,7 @@ setup(
     name="gpiod",
     url="https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git",
     packages=find_packages(exclude=["tests", "tests.*"]),
+    package_data={"gpiod": ["py.typed"]},
     python_requires=">=3.9.0",
     ext_modules=[gpiod_ext],
     cmdclass={"build_ext": build_ext, "sdist": sdist},
