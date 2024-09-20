@@ -69,7 +69,7 @@ class LineSettingsStringRepresentation(TestCase):
     def test_repr(self):
         self.assertEqual(
             repr(self.settings),
-            "gpiod.LineSettings(direction=Direction.OUTPUT, edge_detection=Edge.NONE, bias=Bias.AS_IS, drive=Drive.OPEN_SOURCE, active_low=True, debounce_period=datetime.timedelta(0), event_clock=Clock.MONOTONIC, output_value=Value.INACTIVE)",
+            "gpiod.LineSettings(direction=gpiod.line.Direction.OUTPUT, edge_detection=gpiod.line.Edge.NONE, bias=gpiod.line.Bias.AS_IS, drive=gpiod.line.Drive.OPEN_SOURCE, active_low=True, debounce_period=datetime.timedelta(0), event_clock=gpiod.line.Clock.MONOTONIC, output_value=gpiod.line.Value.INACTIVE)",
         )
 
         cmp = eval(repr(self.settings))
