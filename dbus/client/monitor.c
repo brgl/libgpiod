@@ -16,14 +16,14 @@ static void on_edge_event(GpiodbusLine *line, GVariant *args,
 			  gpointer user_data G_GNUC_UNUSED)
 {
 	const char *name = gpiodbus_line_get_name(line);
-	gulong global_seqno, line_seqno;
-	guint64 timestamp;
-	gint edge;
+	guint64 global_seqno, line_seqno, timestamp;
+	gint32 edge;
 
 	g_variant_get(args, "(ittt)", &edge, &timestamp,
 		      &global_seqno, &line_seqno);
 
-	g_print("%lu %s ", timestamp, edge ? "rising " : "falling");
+	g_print("%"G_GUINT64_FORMAT" %s ",
+		timestamp, edge ? "rising " : "falling");
 	if (strlen(name))
 		g_print("\"%s\"\n", name);
 	else

@@ -520,12 +520,11 @@ gpiodbus_daemon_on_edge_event(GpiodglibLineRequest *request G_GNUC_UNUSED,
 			      GpiodglibEdgeEvent *event, gpointer user_data)
 {
 	GpiodbusDaemonRequestData *req_data = user_data;
+	guint64 line_seqno, global_seqno, timestamp;
 	GpiodbusDaemonLineData *line_data;
-	gulong line_seqno, global_seqno;
 	GpiodglibEdgeEventType edge;
-	guint64 timestamp;
 	guint offset;
-	gint val;
+	gint32 val;
 
 	edge = gpiodglib_edge_event_get_event_type(event);
 	offset = gpiodglib_edge_event_get_line_offset(event);
