@@ -40,7 +40,7 @@ static void do_print_line_info(GpiodbusObject *line_obj,
 				       props->edge, props->event_clock);
 		if (props->debounced)
 			g_string_append_printf(attributes,
-					       "debounce-period=%lu,",
+					       "debounce-period=%"G_GUINT64_FORMAT",",
 					       props->debounce_period);
 	}
 

@@ -93,7 +93,7 @@ on_properties_changed(GpiodbusLine *line, GVariant *changed_properties,
 			g_string_printf(change, "event-clock=>%s",
 					       g_variant_get_string(val, NULL));
 		} else if (g_strcmp0(key, "DebouncePeriodUs") == 0) {
-			g_string_printf(change, "debounce-period=>%ld",
+			g_string_printf(change, "debounce-period=>%"G_GUINT64_FORMAT"",
 					       g_variant_get_uint64(val));
 		} else if (g_strcmp0(key, "Managed") == 0) {
 			g_string_printf(change, "managed=>%s",
@@ -150,7 +150,7 @@ static void print_line_info(GpiodbusLine *line, GpiodbusChip *chip)
 
 		if (props->debounced)
 			g_string_append_printf(attrs,
-					       "debounced,debounce-period=%lu",
+					       "debounced,debounce-period=%"G_GUINT64_FORMAT"",
 					       props->debounce_period);
 	}
 
