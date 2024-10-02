@@ -2,6 +2,53 @@
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 # SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
+libgpiod v2.2
+=============
+
+New features:
+- add GObject bindings with introspection
+- add a D-Bus interface to libgpiod together with a daemon implementing it and
+  a command-line client
+- split out the common shell test code for gpio-tools into a reusable test
+  harness for GPIO command-line tools
+- add minutes as a new supported time unit for tools and allow longer periods
+  for timeouts, line holding, etc.
+- add a script for generating sdist and wheels for python bindings
+- migrate C++ tests to using Catch2 v3
+
+Improvements:
+- relicense C++ bindings under LGPL-2.1-or-later in order to make the project
+  more attractive to users with GPL-3.0 restrictions
+- remove dependency on grep from tools' tests
+- make shell scripts pass shellcheck treewide
+- use ppoll() in tools to actually achieve the advertised microsecond
+  granularity of timeouts
+- documentation improvements
+- improve typing info in python bindings
+- improve __repr__() implementations in python bindings
+- make reconfiguring lines more flexible in python bindings by relaxing the
+  requirement to carry the ordering of the config entries from the request
+- support casting of line.Value to bool in python bindings
+- various new test-cases for improved coverage treewide
+- align the test cases with the current kernel requirement for specifying
+  direction explicitly when reconfiguring lines
+
+Bug fixes:
+- fix C++ bindings build using slibtool
+- accept the new style automatic GPIO chip labels from gpio-sim in bash tests
+- fix C++ tests with recent kernels which introduced stricter reconfigure
+  behavior
+- fix a use-after-free bug in python bindings
+- fix passing the event clock property to line requests in python bindings
+- fix a memory leak in tools
+- make sure the string buffers in line-info and chip-info are big enough to not
+  truncate the strings they hold below the size accepted by the kernel
+- remove buggy and unnecessary flags sanitization from line-config
+- fix python bindings installation with Makefile build
+- sanitize the return values of GPIO ioctl()s which in some cases may be
+  erroneously positive
+- fix requesting lines by name with multiple entries in python bindings
+
 libgpiod v2.1
 =============
 
