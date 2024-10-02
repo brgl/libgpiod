@@ -26,4 +26,4 @@ BUILT_SOURCES = generated-gpiodbus.c generated-gpiodbus.h
 CLEANFILES = $(BUILT_SOURCES)
 
 dbusdir = $(datadir)/dbus-1/interfaces
-dbus_DATA = io.gpiod1.xml
+dist_dbus_DATA = io.gpiod1.xml

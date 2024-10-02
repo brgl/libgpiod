@@ -28,4 +28,4 @@ gpiocli_SOURCES = \
 	set.c \
 	wait.c
 
-noinst_SCRIPTS = gpiocli-test.bash
+dist_noinst_SCRIPTS = gpiocli-test.bash
