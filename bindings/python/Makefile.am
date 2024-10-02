@@ -3,6 +3,10 @@
 
 EXTRA_DIST = \
 	MANIFEST.in \
+	README.md \
+	build_tests.py \
+	generate_pypi_artifacts.sh \
+	pyproject.toml \
 	setup.py
 
 if WITH_TESTS
