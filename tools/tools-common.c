@@ -215,7 +215,8 @@ void print_period_help(void)
 {
 	printf("\nPeriods:\n");
 	printf("    Periods are taken as milliseconds unless units are specified. e.g. 10us.\n");
-	printf("    Supported units are 'm', 's', 'ms', and 'us' for minutes, seconds, milliseconds and microseconds respectively.\n");
+	printf("    Supported units are 'm', 's', 'ms', and 'us' for minutes, seconds, milliseconds and\n");
+	printf("    microseconds respectively.\n");
 }
 
 #define TIME_BUFFER_SIZE 20
