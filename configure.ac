@@ -282,6 +282,9 @@ fi
 
 AM_CONDITIONAL([WITH_BINDINGS_GLIB], [test "x$with_bindings_glib" = xtrue])
 
+AC_DEFUN([GLIB_MKENUMS_NOT_FOUND],
+	 [AC_MSG_ERROR([glib-mkenums not found - needed to build GLib bindings])])
+
 if test "x$with_bindings_glib" = xtrue
 then
 	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.80])
@@ -289,8 +292,12 @@ then
 	PKG_CHECK_MODULES([GIO], [gio-2.0 >= 2.80])
 	PKG_CHECK_MODULES([GIO_UNIX], [gio-unix-2.0 >= 2.80])
 	PKG_PROG_PKG_CONFIG([0.28])
-	PKG_CHECK_VAR([GLIB_MKENUMS], [glib-2.0], [glib_mkenums], [],
-		AC_MSG_ERROR([glib-mkenums not found - needed to build GLib bindings]))
+	PKG_CHECK_VAR([GLIB_MKENUMS], [glib-2.0], [glib_mkenums], [], GLIB_MKENUMS_NOT_FOUND)
+	AC_CHECK_PROG([has_glib_mkenums], [glib-mkenums], [true], [false])
+	if test "x$has_glib_mkenums" == xfalse
+	then
+		GLIB_MKENUMS_NOT_FOUND
+	fi
 
 	AC_CHECK_PROG([has_gi_docgen], [gi-docgen], [true], [false])
 	if test "x$has_gi_docgen" = xfalse
