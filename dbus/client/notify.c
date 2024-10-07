@@ -211,10 +211,10 @@ static void connect_line(gpointer elem, gpointer user_data)
 	if (data->scoped_chip) {
 		if (g_list_length(data->chips) == 0) {
 			chip = gpiodbus_object_get_chip(chip_obj);
-			data->chips = g_list_append(data->chips,
-						    g_object_ref(chip));
+			data->chips = g_list_append(data->chips, chip);
 		} else {
 			chip = g_list_first(data->chips)->data;
+			g_object_ref(chip);
 		}
 	} else {
 		chip = gpiodbus_object_get_chip(chip_obj);
