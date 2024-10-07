@@ -289,6 +289,8 @@ int gpiocli_notify_main(int argc, char **argv)
 
 	g_main_loop_run(loop);
 
+	g_list_free_full(data.lines, g_object_unref);
+	g_list_free_full(data.chips, g_object_unref);
 	g_bus_unwatch_name(watch_id);
 
 	return EXIT_SUCCESS;
