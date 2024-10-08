@@ -64,15 +64,19 @@ PyObject *Py_gpiod_SetErrFromErrno(void)
 	return PyErr_SetFromErrno(exc);
 }
 
-PyObject *Py_gpiod_GetGlobalType(const char *type_name)
+PyObject *Py_gpiod_GetModuleAttrString(const char *modname,
+				       const char *attrname)
 {
-	PyObject *globals;
+	PyObject *module, *attribute;
 
-	globals = PyEval_GetGlobals();
-	if (!globals)
+	module = PyImport_ImportModule(modname);
+	if (!module)
 		return NULL;
 
-	return PyDict_GetItemString(globals, type_name);
+	attribute = PyObject_GetAttrString(module, attrname);
+	Py_DECREF(module);
+
+	return attribute;
 }
 
 unsigned int Py_gpiod_PyLongAsUnsignedInt(PyObject *pylong)

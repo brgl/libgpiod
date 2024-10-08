@@ -8,7 +8,8 @@
 #include <Python.h>
 
 PyObject *Py_gpiod_SetErrFromErrno(void);
-PyObject *Py_gpiod_GetGlobalType(const char *type_name);
+PyObject *Py_gpiod_GetModuleAttrString(const char *modname,
+				       const char *attrname);
 unsigned int Py_gpiod_PyLongAsUnsignedInt(PyObject *pylong);
 void Py_gpiod_dealloc(PyObject *self);
 PyObject *Py_gpiod_MakeRequestObject(struct gpiod_line_request *request,

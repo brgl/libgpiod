@@ -149,10 +149,6 @@ static PyObject *request_get_values(request_object *self, PyObject *args)
 	if (num_offsets < 0)
 		return NULL;
 
-	type = Py_gpiod_GetGlobalType("Value");
-	if (!type)
-		return NULL;
-
 	iter = PyObject_GetIter(offsets);
 	if (!iter)
 		return NULL;
@@ -183,18 +179,26 @@ static PyObject *request_get_values(request_object *self, PyObject *args)
 	if (ret)
 		return Py_gpiod_SetErrFromErrno();
 
+	type = Py_gpiod_GetModuleAttrString("gpiod.line", "Value");
+	if (!type)
+		return NULL;
+
 	for (pos = 0; pos < num_offsets; pos++) {
 		val = PyObject_CallFunction(type, "i", self->values[pos]);
-		if (!val)
+		if (!val) {
+			Py_DECREF(type);
 			return NULL;
+		}
 
 		ret = PyList_SetItem(values, pos, val);
 		if (ret) {
 			Py_DECREF(val);
+			Py_DECREF(type);
 			return NULL;
 		}
 	}
 
+	Py_DECREF(type);
 	Py_RETURN_NONE;
 }
 
@@ -279,10 +283,6 @@ static PyObject *request_read_edge_events(request_object *self, PyObject *args)
 		max_events = 64;
 	}
 
-	type = Py_gpiod_GetGlobalType("EdgeEvent");
-	if (!type)
-		return NULL;
-
 	Py_BEGIN_ALLOW_THREADS;
 	ret = gpiod_line_request_read_edge_events(self->request,
 						 self->buffer, max_events);
@@ -296,10 +296,17 @@ static PyObject *request_read_edge_events(request_object *self, PyObject *args)
 	if (!events)
 		return NULL;
 
+	type = Py_gpiod_GetModuleAttrString("gpiod.edge_event", "EdgeEvent");
+	if (!type) {
+		Py_DECREF(events);
+		return NULL;
+	}
+
 	for (i = 0; i < num_events; i++) {
 		event = gpiod_edge_event_buffer_get_event(self->buffer, i);
 		if (!event) {
 			Py_DECREF(events);
+			Py_DECREF(type);
 			return NULL;
 		}
 
@@ -311,6 +318,7 @@ static PyObject *request_read_edge_events(request_object *self, PyObject *args)
 				gpiod_edge_event_get_line_seqno(event));
 		if (!event_obj) {
 			Py_DECREF(events);
+			Py_DECREF(type);
 			return NULL;
 		}
 
@@ -318,10 +326,12 @@ static PyObject *request_read_edge_events(request_object *self, PyObject *args)
 		if (ret) {
 			Py_DECREF(event_obj);
 			Py_DECREF(events);
+			Py_DECREF(type);
 			return NULL;
 		}
 	}
 
+	Py_DECREF(type);
 	return events;
 }
 

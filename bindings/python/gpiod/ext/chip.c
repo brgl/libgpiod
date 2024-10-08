@@ -75,31 +75,34 @@ static PyObject *chip_get_info(chip_object *self, PyObject *Py_UNUSED(ignored))
 	struct gpiod_chip_info *info;
 	PyObject *type, *ret;
 
-	type = Py_gpiod_GetGlobalType("ChipInfo");
+	type = Py_gpiod_GetModuleAttrString("gpiod.chip_info", "ChipInfo");
 	if (!type)
 		return NULL;
 
 	info = gpiod_chip_get_info(self->chip);
-	if (!info)
+	if (!info) {
+		Py_DECREF(type);
 		return PyErr_SetFromErrno(PyExc_OSError);
+	}
 
-	 ret = PyObject_CallFunction(type, "ssI",
-				     gpiod_chip_info_get_name(info),
-				     gpiod_chip_info_get_label(info),
-				     gpiod_chip_info_get_num_lines(info));
-	 gpiod_chip_info_free(info);
-	 return ret;
+	ret = PyObject_CallFunction(type, "ssI",
+				    gpiod_chip_info_get_name(info),
+				    gpiod_chip_info_get_label(info),
+				    gpiod_chip_info_get_num_lines(info));
+	gpiod_chip_info_free(info);
+	Py_DECREF(type);
+	return ret;
 }
 
 static PyObject *make_line_info(struct gpiod_line_info *info)
 {
-	PyObject *type;
+	PyObject *type, *ret;
 
-	type = Py_gpiod_GetGlobalType("LineInfo");
+	type = Py_gpiod_GetModuleAttrString("gpiod.line_info", "LineInfo");
 	if (!type)
 		return NULL;
 
-	return PyObject_CallFunction(type, "IsOsiOiiiiOk",
+	ret = PyObject_CallFunction(type, "IsOsiOiiiiOk",
 				gpiod_line_info_get_offset(info),
 				gpiod_line_info_get_name(info),
 				gpiod_line_info_is_used(info) ?
@@ -115,6 +118,8 @@ static PyObject *make_line_info(struct gpiod_line_info *info)
 				gpiod_line_info_is_debounced(info) ?
 							Py_True : Py_False,
 				gpiod_line_info_get_debounce_period_us(info));
+	Py_DECREF(type);
+	return ret;
 }
 
 static PyObject *chip_get_line_info(chip_object *self, PyObject *args)
@@ -168,10 +173,6 @@ chip_read_info_event(chip_object *self, PyObject *Py_UNUSED(ignored))
 	struct gpiod_info_event *event;
 	struct gpiod_line_info *info;
 
-	type = Py_gpiod_GetGlobalType("InfoEvent");
-	if (!type)
-		return NULL;
-
 	Py_BEGIN_ALLOW_THREADS;
 	event = gpiod_chip_read_info_event(self->chip);
 	Py_END_ALLOW_THREADS;
@@ -186,11 +187,19 @@ chip_read_info_event(chip_object *self, PyObject *Py_UNUSED(ignored))
 		return NULL;
 	}
 
+	type = Py_gpiod_GetModuleAttrString("gpiod.info_event", "InfoEvent");
+	if (!type) {
+		Py_DECREF(info_obj);
+		gpiod_info_event_free(event);
+		return NULL;
+	}
+
 	event_obj = PyObject_CallFunction(type, "iKO",
 				gpiod_info_event_get_event_type(event),
 				gpiod_info_event_get_timestamp_ns(event),
 				info_obj);
 	Py_DECREF(info_obj);
+	Py_DECREF(type);
 	gpiod_info_event_free(event);
 	return event_obj;
 }
