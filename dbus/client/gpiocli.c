@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2022-2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
 #include <glib/gstdio.h>
+#include <gpiodbus.h>
 
 #include "common.h"
 
@@ -115,7 +116,8 @@ static gchar *make_description(void)
 
 static void show_version_and_exit(void)
 {
-	g_print("gpiocli v%s\n", GPIOD_VERSION_STR);
+	g_print("gpiocli (libgpiod) v%s\nD-Bus API version: %d\n",
+		GPIOD_VERSION_STR, GPIODBUS_API_VERSION);
 
 	exit(EXIT_SUCCESS);
 }
