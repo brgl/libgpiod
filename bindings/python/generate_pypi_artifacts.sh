@@ -108,8 +108,7 @@ python3 -m "${venv_module}" .venv
 venv_python="${temp_dir}/.venv/bin/python"
 
 # Install build dependencies
-# cibuildwheel 2.18.1 pins the toolchain containers to 2024-05-13-0983f6f
-${venv_python} -m pip install build==1.2.1 cibuildwheel==2.18.1
+${venv_python} -m pip install build==1.2.2.post1 cibuildwheel==2.21.3
 
 LIBGPIOD_VERSION=${src_version} ${venv_python} -m build --sdist --outdir ./dist "${source_dir}"
 sdist=$(find ./dist -name '*.tar.gz')
