@@ -70,6 +70,7 @@ def fetch_tarball(command):
     def wrapper(self):
         # Just-in-time import of tarfile and urllib.request so these are
         # not required for Yocto to build a vendored or linked package
+        import sys
         import tarfile
         from tempfile import TemporaryDirectory
         from urllib.request import urlretrieve
@@ -122,7 +123,10 @@ def fetch_tarball(command):
             # Unpack the downloaded tarball
             log.info(f"unpacking: {tarball_filename}")
             with tarfile.open(downloaded_tarball) as f:
-                f.extractall(temp_dir)
+                if sys.version_info < (3, 12):
+                    f.extractall(temp_dir)
+                else:
+                    f.extractall(temp_dir, filter=tarfile.fully_trusted_filter)
 
             # Copy the include and lib directories we need to build libgpiod
             base_dir = path.join(temp_dir, f"libgpiod-{LIBGPIOD_VERSION}")
