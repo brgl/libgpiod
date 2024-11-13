@@ -14,7 +14,6 @@ from collections import Counter
 from collections.abc import Iterable
 from datetime import timedelta
 from errno import ENOENT
-from select import select
 from typing import Union, Optional
 
 __all__ = "Chip"
