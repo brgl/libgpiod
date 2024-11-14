@@ -3,3 +3,39 @@
 
 [build-system]
 requires = ["setuptools", "wheel", "packaging"]
+
+[tool.mypy]
+python_version = "3.9"
+files = [
+  "gpiod/",
+  "tests/",
+]
+
+[[tool.mypy.overrides]]
+module = "gpiod.line.*"
+strict_equality = false # Ignore Enum comparison-overlap: https://github.com/python/mypy/issues/17317
+
+[tool.ruff]
+target-version = "py39"
+include = [
+  "gpiod/**/*.py",
+  "gpiod/**/*.pyi",
+  "tests/**/*.py",
+  "tests/**/*.pyi",
+]
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "TCH", "UP"]
+ignore=[
+  # Ignore chained exception warnings for now: https://docs.astral.sh/ruff/rules/raise-without-from-inside-except/
+  "B904",
+  # Never enforce line length violations. Let the formatter handle it: https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+  "E501",
+  # Ignore new Union (|) syntax until we require 3.10+
+  "UP007",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"gpiod/__init__.py" = ["F403", "F405"]  # ignore warnings about star imports
+"tests/__main__.py" = ["F403"]
+"tests/**.py" = ["F841"]  # ignore warnings about unused variables

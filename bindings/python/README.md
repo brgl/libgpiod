@@ -112,3 +112,20 @@ make python-tests-run
 
 from the `libgpiod/bindings/python` directory as root (necessary to be able
 to create the **gpio-sims** used for testing).
+
+## Linting/Formatting
+
+When making changes, ensure type checks and linting still pass:
+
+```
+python3 -m venv venv
+. venv/bin/activate
+pip install mypy ruff
+mypy; ruff format; ruff check
+```
+
+Ideally the gpiod library will continue to pass strict checks:
+
+```
+mypy --strict
+```
