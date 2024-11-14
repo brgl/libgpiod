@@ -118,7 +118,7 @@ class WaitingForEdgeEvents(TestCase):
 
             self.assertFalse(req.wait_edge_events(timedelta(microseconds=10000)))
 
-    def test_rising_edge_event(self):
+    def test_falling_edge_event(self):
         with gpiod.request_lines(
             self.sim.dev_path, {6: gpiod.LineSettings(edge_detection=Edge.FALLING)}
         ) as req:
