@@ -4,9 +4,8 @@
 from typing import TYPE_CHECKING, Optional, Union
 
 from . import _ext
-
+from ._internal import poll_fd
 from .exception import RequestReleasedError
-from .internal import poll_fd
 from .line_settings import LineSettings, _line_settings_to_ext
 
 if TYPE_CHECKING:

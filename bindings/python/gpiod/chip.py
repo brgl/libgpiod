@@ -6,8 +6,8 @@ from errno import ENOENT
 from typing import TYPE_CHECKING, Optional, Union
 
 from . import _ext
+from ._internal import poll_fd
 from .exception import ChipClosedError
-from .internal import poll_fd
 from .line import Value
 from .line_request import LineRequest
 from .line_settings import LineSettings, _line_settings_to_ext
