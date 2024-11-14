@@ -15,10 +15,10 @@ class ChipInfoProperties(TestCase):
         self.info = self.chip.get_info()
 
     def tearDown(self) -> None:
-        self.info = None
+        self.info = None  # type: ignore[assignment]
         self.chip.close()
-        self.chip = None
-        self.sim = None
+        self.chip = None  # type: ignore[assignment]
+        self.sim = None  # type: ignore[assignment]
 
     def test_chip_info_name(self) -> None:
         self.assertEqual(self.info.name, self.sim.name)

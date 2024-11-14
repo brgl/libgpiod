@@ -5,6 +5,7 @@ import time
 from datetime import timedelta
 from functools import partial
 from threading import Thread
+from typing import Optional
 from unittest import TestCase
 
 import gpiod
@@ -54,13 +55,13 @@ class EdgeEventInvalidConfig(TestCase):
 class WaitingForEdgeEvents(TestCase):
     def setUp(self) -> None:
         self.sim = gpiosim.Chip(num_lines=8)
-        self.thread = None
+        self.thread: Optional[Thread] = None
 
     def tearDown(self) -> None:
         if self.thread:
             self.thread.join()
             del self.thread
-        self.sim = None
+        self.sim = None  # type: ignore[assignment]
 
     def trigger_falling_and_rising_edge(self, offset: int) -> None:
         time.sleep(0.05)

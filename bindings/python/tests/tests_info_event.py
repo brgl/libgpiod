@@ -7,6 +7,7 @@ import threading
 import time
 from dataclasses import FrozenInstanceError
 from functools import partial
+from typing import Optional
 from unittest import TestCase
 
 import gpiod
@@ -51,7 +52,7 @@ class WatchingInfoEventWorks(TestCase):
     def setUp(self) -> None:
         self.sim = gpiosim.Chip(num_lines=8, line_names={4: "foobar"})
         self.chip = gpiod.Chip(self.sim.dev_path)
-        self.thread = None
+        self.thread: Optional[threading.Thread] = None
 
     def tearDown(self) -> None:
         if self.thread:
@@ -59,8 +60,8 @@ class WatchingInfoEventWorks(TestCase):
             self.thread = None
 
         self.chip.close()
-        self.chip = None
-        self.sim = None
+        self.chip = None  # type: ignore[assignment]
+        self.sim = None  # type: ignore[assignment]
 
     def test_watch_line_info_returns_line_info(self) -> None:
         info = self.chip.watch_line_info(7)
@@ -138,8 +139,8 @@ class UnwatchingLineInfo(TestCase):
 
     def tearDown(self) -> None:
         self.chip.close()
-        self.chip = None
-        self.sim = None
+        self.chip = None  # type: ignore[assignment]
+        self.sim = None  # type: ignore[assignment]
 
     def test_unwatch_line_info(self) -> None:
         self.chip.watch_line_info(0)

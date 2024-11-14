@@ -22,8 +22,8 @@ class GetLineInfo(TestCase):
 
     def tearDown(self) -> None:
         self.chip.close()
-        self.chip = None
-        self.sim = None
+        self.chip = None  # type: ignore[assignment]
+        self.sim = None  # type: ignore[assignment]
 
     def test_get_line_info_by_offset(self) -> None:
         self.chip.get_line_info(0)

@@ -75,7 +75,7 @@ class ChipProperties(TestCase):
 
     def tearDown(self) -> None:
         self.chip.close()
-        self.sim = None
+        self.sim = None  # type: ignore[assignment]
 
     def test_get_chip_path(self) -> None:
         self.assertEqual(self.sim.dev_path, self.chip.path)
@@ -200,7 +200,7 @@ class StringRepresentation(TestCase):
 
     def tearDown(self) -> None:
         self.chip.close()
-        self.sim = None
+        self.sim = None  # type: ignore[assignment]
 
     def test_repr(self) -> None:
         self.assertEqual(repr(self.chip), 'gpiod.Chip("{}")'.format(self.sim.dev_path))
@@ -224,7 +224,7 @@ class StringRepresentationClosed(TestCase):
         self.chip = gpiod.Chip(self.sim.dev_path)
 
     def tearDown(self) -> None:
-        self.sim = None
+        self.sim = None  # type: ignore[assignment]
 
     def test_repr_closed(self) -> None:
         self.chip.close()
