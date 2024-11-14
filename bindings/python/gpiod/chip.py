@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from collections import Counter
 from errno import ENOENT
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union, cast
 
 from . import _ext
 from ._internal import poll_fd
@@ -101,7 +101,7 @@ class Chip:
         longer be used after this method is called.
         """
         self._check_closed()
-        self._chip.close()
+        cast(_ext.Chip, self._chip).close()
         self._chip = None
 
     def get_info(self) -> ChipInfo:
@@ -114,7 +114,7 @@ class Chip:
         self._check_closed()
 
         if not self._info:
-            self._info = self._chip.get_info()
+            self._info = cast(_ext.Chip, self._chip).get_info()
 
         return self._info
 
@@ -139,7 +139,7 @@ class Chip:
 
         if not isinstance(id, int):
             try:
-                return self._chip.line_offset_from_id(id)
+                return cast(_ext.Chip, self._chip).line_offset_from_id(id)
             except OSError as ex:
                 if ex.errno == ENOENT:
                     try:
@@ -158,7 +158,9 @@ class Chip:
 
     def _get_line_info(self, line: Union[int, str], watch: bool) -> LineInfo:
         self._check_closed()
-        return self._chip.get_line_info(self.line_offset_from_id(line), watch)
+        return cast(_ext.Chip, self._chip).get_line_info(
+            self.line_offset_from_id(line), watch
+        )
 
     def get_line_info(self, line: Union[int, str]) -> LineInfo:
         """
@@ -196,7 +198,9 @@ class Chip:
             Offset or name of the line to stop watching.
         """
         self._check_closed()
-        return self._chip.unwatch_line_info(self.line_offset_from_id(line))
+        return cast(_ext.Chip, self._chip).unwatch_line_info(
+            self.line_offset_from_id(line)
+        )
 
     def wait_info_event(
         self, timeout: Optional[Union[timedelta, float]] = None
@@ -230,7 +234,7 @@ class Chip:
           This function may block if there are no available events in the queue.
         """
         self._check_closed()
-        return self._chip.read_info_event()
+        return cast(_ext.Chip, self._chip).read_info_event()
 
     def request_lines(
         self,
@@ -326,7 +330,9 @@ class Chip:
         if len(global_output_values):
             line_cfg.set_output_values(global_output_values)
 
-        req_internal = self._chip.request_lines(line_cfg, consumer, event_buffer_size)
+        req_internal = cast(_ext.Chip, self._chip).request_lines(
+            line_cfg, consumer, event_buffer_size
+        )
         request = LineRequest(req_internal)
 
         request._chip_name = req_internal.chip_name
@@ -366,7 +372,7 @@ class Chip:
         Filesystem path used to open this chip.
         """
         self._check_closed()
-        return self._chip.path
+        return cast(_ext.Chip, self._chip).path
 
     @property
     def fd(self) -> int:
@@ -374,4 +380,4 @@ class Chip:
         File descriptor associated with this chip.
         """
         self._check_closed()
-        return self._chip.fd
+        return cast(_ext.Chip, self._chip).fd
