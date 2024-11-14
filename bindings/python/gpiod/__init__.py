@@ -7,6 +7,9 @@ Python bindings for libgpiod.
 This module wraps the native C API of libgpiod in a set of python classes.
 """
 
+from collections.abc import Iterable
+from typing import Optional, Union
+
 from . import (
     _ext,
     chip,
@@ -82,7 +85,13 @@ def is_gpiochip_device(path: str) -> bool:
     return _ext.is_gpiochip_device(path)
 
 
-def request_lines(path: str, *args, **kwargs) -> LineRequest:
+def request_lines(
+    path: str,
+    config: dict[Union[Iterable[Union[int, str]], int, str], Optional[LineSettings]],
+    consumer: Optional[str] = None,
+    event_buffer_size: Optional[int] = None,
+    output_values: Optional[dict[Union[int, str], line.Value]] = None,
+) -> LineRequest:
     """
     Open a GPIO chip pointed to by 'path', request lines according to the
     configuration arguments, close the chip and return the request object.
@@ -98,4 +107,9 @@ def request_lines(path: str, *args, **kwargs) -> LineRequest:
       Returns a new LineRequest object.
     """
     with Chip(path) as chip:
-        return chip.request_lines(*args, **kwargs)
+        return chip.request_lines(
+            config=config,
+            consumer=consumer,
+            event_buffer_size=event_buffer_size,
+            output_values=output_values,
+        )
