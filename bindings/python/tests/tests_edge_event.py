@@ -12,7 +12,7 @@ from gpiod.line import Direction, Edge
 
 from . import gpiosim
 
-EventType = gpiod.EdgeEvent.Type
+_EventType = gpiod.EdgeEvent.Type
 Pull = gpiosim.Chip.Pull
 
 
@@ -87,7 +87,7 @@ class WaitingForEdgeEvents(TestCase):
             events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
-            self.assertEqual(event.event_type, EventType.RISING_EDGE)
+            self.assertEqual(event.event_type, _EventType.RISING_EDGE)
             self.assertEqual(event.line_offset, 2)
             ts_rising = event.timestamp_ns
 
@@ -95,7 +95,7 @@ class WaitingForEdgeEvents(TestCase):
             events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
-            self.assertEqual(event.event_type, EventType.FALLING_EDGE)
+            self.assertEqual(event.event_type, _EventType.FALLING_EDGE)
             self.assertEqual(event.line_offset, 2)
             ts_falling = event.timestamp_ns
 
@@ -114,7 +114,7 @@ class WaitingForEdgeEvents(TestCase):
             events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
-            self.assertEqual(event.event_type, EventType.RISING_EDGE)
+            self.assertEqual(event.event_type, _EventType.RISING_EDGE)
             self.assertEqual(event.line_offset, 6)
 
             self.assertFalse(req.wait_edge_events(timedelta(microseconds=10000)))
@@ -132,7 +132,7 @@ class WaitingForEdgeEvents(TestCase):
             events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
-            self.assertEqual(event.event_type, EventType.FALLING_EDGE)
+            self.assertEqual(event.event_type, _EventType.FALLING_EDGE)
             self.assertEqual(event.line_offset, 6)
 
             self.assertFalse(req.wait_edge_events(timedelta(microseconds=10000)))
@@ -150,7 +150,7 @@ class WaitingForEdgeEvents(TestCase):
             events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
-            self.assertEqual(event.event_type, EventType.RISING_EDGE)
+            self.assertEqual(event.event_type, _EventType.RISING_EDGE)
             self.assertEqual(event.line_offset, 2)
             self.assertEqual(event.global_seqno, 1)
             self.assertEqual(event.line_seqno, 1)
@@ -159,7 +159,7 @@ class WaitingForEdgeEvents(TestCase):
             events = req.read_edge_events()
             self.assertEqual(len(events), 1)
             event = events[0]
-            self.assertEqual(event.event_type, EventType.RISING_EDGE)
+            self.assertEqual(event.event_type, _EventType.RISING_EDGE)
             self.assertEqual(event.line_offset, 4)
             self.assertEqual(event.global_seqno, 2)
             self.assertEqual(event.line_seqno, 1)

@@ -14,7 +14,7 @@ from gpiod.line import Direction
 
 from . import gpiosim
 
-EventType = gpiod.InfoEvent.Type
+_EventType = gpiod.InfoEvent.Type
 
 
 class InfoEventDataclassBehavior(TestCase):
@@ -101,7 +101,7 @@ class WatchingInfoEventWorks(TestCase):
 
         self.assertTrue(self.chip.wait_info_event(datetime.timedelta(seconds=1)))
         event = self.chip.read_info_event()
-        self.assertEqual(event.event_type, EventType.LINE_REQUESTED)
+        self.assertEqual(event.event_type, _EventType.LINE_REQUESTED)
         self.assertEqual(event.line_info.offset, 7)
         self.assertEqual(event.line_info.direction, Direction.INPUT)
         ts_req = event.timestamp_ns
@@ -109,14 +109,14 @@ class WatchingInfoEventWorks(TestCase):
         # Check that we can use a float directly instead of datetime.timedelta.
         self.assertTrue(self.chip.wait_info_event(1.0))
         event = self.chip.read_info_event()
-        self.assertEqual(event.event_type, EventType.LINE_CONFIG_CHANGED)
+        self.assertEqual(event.event_type, _EventType.LINE_CONFIG_CHANGED)
         self.assertEqual(event.line_info.offset, 7)
         self.assertEqual(event.line_info.direction, Direction.OUTPUT)
         ts_rec = event.timestamp_ns
 
         self.assertTrue(self.chip.wait_info_event(datetime.timedelta(seconds=1)))
         event = self.chip.read_info_event()
-        self.assertEqual(event.event_type, EventType.LINE_RELEASED)
+        self.assertEqual(event.event_type, _EventType.LINE_RELEASED)
         self.assertEqual(event.line_info.offset, 7)
         self.assertEqual(event.line_info.direction, Direction.OUTPUT)
         ts_rel = event.timestamp_ns
@@ -146,7 +146,7 @@ class UnwatchingLineInfo(TestCase):
         with self.chip.request_lines(config={0: None}) as request:
             self.assertTrue(self.chip.wait_info_event(datetime.timedelta(seconds=1)))
             event = self.chip.read_info_event()
-            self.assertEqual(event.event_type, EventType.LINE_REQUESTED)
+            self.assertEqual(event.event_type, _EventType.LINE_REQUESTED)
             self.chip.unwatch_line_info(0)
 
         self.assertFalse(
