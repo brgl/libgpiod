@@ -13,6 +13,7 @@ from .line_request import LineRequest
 from .line_settings import LineSettings, _line_settings_to_ext
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from datetime import timedelta
 
     from .chip_info import ChipInfo
@@ -225,7 +226,9 @@ class Chip:
 
     def request_lines(
         self,
-        config: dict[tuple[Union[int, str]], Optional[LineSettings]],
+        config: dict[
+            Union[Iterable[Union[int, str]], int, str], Optional[LineSettings]
+        ],
         consumer: Optional[str] = None,
         event_buffer_size: Optional[int] = None,
         output_values: Optional[dict[Union[int, str], Value]] = None,

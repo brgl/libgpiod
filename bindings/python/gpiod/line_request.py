@@ -148,7 +148,10 @@ class LineRequest:
         self._req.set_values(mapped)
 
     def reconfigure_lines(
-        self, config: dict[tuple[Union[int, str]], LineSettings]
+        self,
+        config: dict[
+            Union[Iterable[Union[int, str]], int, str], Optional[LineSettings]
+        ],
     ) -> None:
         """
         Reconfigure requested lines.
