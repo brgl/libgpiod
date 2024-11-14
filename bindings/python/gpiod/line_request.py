@@ -94,14 +94,15 @@ class LineRequest:
         """
         return self.get_values([line])[0]
 
-    def _check_line_name(self, line: Union[int, str]) -> bool:
-        if isinstance(line, str):
-            if line not in self._name_map:
-                raise ValueError("unknown line name: {}".format(line))
-
-            return True
-
-        return False
+    def _line_to_offset(self, line: Union[int, str]) -> int:
+        if isinstance(line, int):
+            return line
+        else:
+            _line: Union[int, None]
+            if (_line := self._name_map.get(line)) is None:
+                raise ValueError(f"unknown line name: {line}")
+            else:
+                return _line
 
     def get_values(
         self, lines: Optional[Iterable[Union[int, str]]] = None
@@ -121,10 +122,7 @@ class LineRequest:
 
         lines = lines or self._lines
 
-        offsets = [
-            self._name_map[line] if self._check_line_name(line) else line
-            for line in lines
-        ]
+        offsets = [self._line_to_offset(line) for line in lines]
 
         buf = [None] * len(lines)
 
@@ -153,10 +151,7 @@ class LineRequest:
         """
         self._check_released()
 
-        mapped = {
-            self._name_map[line] if self._check_line_name(line) else line: values[line]
-            for line in values
-        }
+        mapped = {self._line_to_offset(line): value for line, value in values.items()}
 
         cast(_ext.Request, self._req).set_values(mapped)
 
@@ -186,7 +181,7 @@ class LineRequest:
                 lines = [lines]
 
             for line in lines:
-                offset = self._name_map[line] if self._check_line_name(line) else line
+                offset = self._line_to_offset(line)
                 line_settings[offset] = settings
 
         for offset in self.offsets:
