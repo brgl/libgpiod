@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Optional, Union, cast
 from . import _ext
 from ._internal import poll_fd
 from .exception import RequestReleasedError
+from .line import Value
 from .line_settings import LineSettings, _line_settings_to_ext
 
 if TYPE_CHECKING:
@@ -16,7 +17,6 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from .edge_event import EdgeEvent
-    from .line import Value
 
 
 __all__ = ["LineRequest"]
@@ -124,7 +124,7 @@ class LineRequest:
 
         offsets = [self._line_to_offset(line) for line in lines]
 
-        buf = [None] * len(lines)
+        buf = cast(list[Value], [None] * len(offsets))
 
         cast(_ext.Request, self._req).get_values(offsets, buf)
         return buf
