@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union, cast
 
 from . import _ext
 from ._internal import poll_fd
@@ -78,7 +78,7 @@ class LineRequest:
         not be used after a call to this method.
         """
         self._check_released()
-        self._req.release()
+        cast(_ext.Request, self._req).release()
         self._req = None
 
     def get_value(self, line: Union[int, str]) -> Value:
@@ -128,7 +128,7 @@ class LineRequest:
 
         buf = [None] * len(lines)
 
-        self._req.get_values(offsets, buf)
+        cast(_ext.Request, self._req).get_values(offsets, buf)
         return buf
 
     def set_value(self, line: Union[int, str], value: Value) -> None:
@@ -158,7 +158,7 @@ class LineRequest:
             for line in values
         }
 
-        self._req.set_values(mapped)
+        cast(_ext.Request, self._req).set_values(mapped)
 
     def reconfigure_lines(
         self,
@@ -193,7 +193,7 @@ class LineRequest:
             settings = line_settings.get(offset) or LineSettings()
             line_cfg.add_line_settings([offset], _line_settings_to_ext(settings))
 
-        self._req.reconfigure_lines(line_cfg)
+        cast(_ext.Request, self._req).reconfigure_lines(line_cfg)
 
     def wait_edge_events(
         self, timeout: Optional[Union[timedelta, float]] = None
@@ -227,7 +227,7 @@ class LineRequest:
         """
         self._check_released()
 
-        return self._req.read_edge_events(max_events)
+        return cast(_ext.Request, self._req).read_edge_events(max_events)
 
     def __str__(self) -> str:
         """
@@ -279,4 +279,4 @@ class LineRequest:
         File descriptor associated with this request.
         """
         self._check_released()
-        return self._req.fd
+        return cast(_ext.Request, self._req).fd
