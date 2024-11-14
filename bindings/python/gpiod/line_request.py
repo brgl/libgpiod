@@ -34,7 +34,12 @@ class LineRequest:
         LineRequest objects can only be instantiated by a Chip parent. This is
         not part of stable API.
         """
-        self._req = req
+        self._req: Union[_ext.Request, None] = req
+        self._chip_name: str
+        self._offsets: list[int]
+        self._name_map: dict[str, int]
+        self._offset_map: dict[int, str]
+        self._lines: list[Union[int, str]]
 
     def __bool__(self) -> bool:
         """
