@@ -58,7 +58,7 @@ class LineInfo:
             self, "debounce_period", timedelta(microseconds=debounce_period_us)
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '<LineInfo offset={} name="{}" used={} consumer="{}" direction={} active_low={} bias={} drive={} edge_detection={} event_clock={} debounced={} debounce_period={}>'.format(
             self.offset,
             self.name,

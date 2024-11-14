@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional, Union
 
 from . import _ext
@@ -11,6 +13,7 @@ from .line_settings import LineSettings, _line_settings_to_ext
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from datetime import timedelta
+    from types import TracebackType
 
     from .edge_event import EdgeEvent
     from .line import Value
@@ -42,14 +45,19 @@ class LineRequest:
         """
         return True if self._req else False
 
-    def __enter__(self):
+    def __enter__(self) -> LineRequest:
         """
         Controlled execution enter callback.
         """
         self._check_released()
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(
+        self,
+        exc_type: Optional[type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         """
         Controlled execution exit callback.
         """
@@ -81,7 +89,7 @@ class LineRequest:
         """
         return self.get_values([line])[0]
 
-    def _check_line_name(self, line):
+    def _check_line_name(self, line: Union[int, str]) -> bool:
         if isinstance(line, str):
             if line not in self._name_map:
                 raise ValueError("unknown line name: {}".format(line))
@@ -216,7 +224,7 @@ class LineRequest:
 
         return self._req.read_edge_events(max_events)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Return a user-friendly, human-readable description of this request.
         """

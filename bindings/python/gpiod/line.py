@@ -15,7 +15,7 @@ class Value(Enum):
     INACTIVE = _ext.VALUE_INACTIVE
     ACTIVE = _ext.VALUE_ACTIVE
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return self == self.ACTIVE
 
 

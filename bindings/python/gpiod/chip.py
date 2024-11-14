@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+from __future__ import annotations
+
 from collections import Counter
 from errno import ENOENT
 from typing import TYPE_CHECKING, Optional, Union
@@ -15,6 +17,7 @@ from .line_settings import LineSettings, _line_settings_to_ext
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from datetime import timedelta
+    from types import TracebackType
 
     from .chip_info import ChipInfo
     from .info_event import InfoEvent
@@ -70,14 +73,19 @@ class Chip:
         """
         return True if self._chip else False
 
-    def __enter__(self):
+    def __enter__(self) -> Chip:
         """
         Controlled execution enter callback.
         """
         self._check_closed()
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         """
         Controlled execution exit callback.
         """

@@ -9,7 +9,7 @@ class ChipClosedError(Exception):
     Error raised when an already closed chip is used.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("I/O operation on closed chip")
 
 
@@ -18,5 +18,5 @@ class RequestReleasedError(Exception):
     Error raised when a released request is used.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("GPIO lines have been released")
