@@ -59,7 +59,7 @@ class LineInfo:
         )
 
     def __str__(self) -> str:
-        return '<LineInfo offset={} name="{}" used={} consumer="{}" direction={} active_low={} bias={} drive={} edge_detection={} event_clock={} debounced={} debounce_period={}>'.format(
+        return '<LineInfo offset={} name="{}" used={} consumer="{}" direction={} active_low={} bias={} drive={} edge_detection={} event_clock={} debounced={} debounce_period={}>'.format(  # noqa: UP032
             self.offset,
             self.name,
             self.used,

@@ -31,6 +31,4 @@ class InfoEvent:
         object.__setattr__(self, "line_info", line_info)
 
     def __str__(self) -> str:
-        return "<InfoEvent type={} timestamp_ns={} line_info={}>".format(
-            self.event_type, self.timestamp_ns, self.line_info
-        )
+        return f"<InfoEvent type={self.event_type} timestamp_ns={self.timestamp_ns} line_info={self.line_info}>"

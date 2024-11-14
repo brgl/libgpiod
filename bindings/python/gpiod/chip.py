@@ -282,9 +282,7 @@ class Chip:
         ).items():
             if count != 1:
                 raise ValueError(
-                    "line must be configured exactly once - offset {} repeats".format(
-                        offset
-                    )
+                    f"line must be configured exactly once - offset {offset} repeats"
                 )
 
         # If we have global output values - map line names to offsets
@@ -353,7 +351,7 @@ class Chip:
         if not self._chip:
             return "<Chip CLOSED>"
 
-        return 'gpiod.Chip("{}")'.format(self.path)
+        return f'gpiod.Chip("{self.path}")'
 
     def __str__(self) -> str:
         """
@@ -362,9 +360,7 @@ class Chip:
         if not self._chip:
             return "<Chip CLOSED>"
 
-        return '<Chip path="{}" fd={} info={}>'.format(
-            self.path, self.fd, self.get_info()
-        )
+        return f'<Chip path="{self.path}" fd={self.fd} info={self.get_info()}>'
 
     @property
     def path(self) -> str:

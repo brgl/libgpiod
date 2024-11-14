@@ -40,7 +40,7 @@ class EdgeEvent:
         object.__setattr__(self, "line_seqno", line_seqno)
 
     def __str__(self) -> str:
-        return "<EdgeEvent type={} timestamp_ns={} line_offset={} global_seqno={} line_seqno={}>".format(
+        return "<EdgeEvent type={} timestamp_ns={} line_offset={} global_seqno={} line_seqno={}>".format(  # noqa: UP032
             self.event_type,
             self.timestamp_ns,
             self.line_offset,

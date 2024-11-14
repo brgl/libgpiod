@@ -231,9 +231,7 @@ class LineRequest:
         if not self._req:
             return "<LineRequest RELEASED>"
 
-        return '<LineRequest chip="{}" num_lines={} offsets={} fd={}>'.format(
-            self.chip_name, self.num_lines, self.offsets, self.fd
-        )
+        return f'<LineRequest chip="{self.chip_name}" num_lines={self.num_lines} offsets={self.offsets} fd={self.fd}>'
 
     @property
     def chip_name(self) -> str:

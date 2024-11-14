@@ -18,6 +18,4 @@ class ChipInfo:
     num_lines: int
 
     def __str__(self) -> str:
-        return '<ChipInfo name="{}" label="{}" num_lines={}>'.format(
-            self.name, self.label, self.num_lines
-        )
+        return f'<ChipInfo name="{self.name}" label="{self.label}" num_lines={self.num_lines}>'
