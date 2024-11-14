@@ -7,18 +7,65 @@ Python bindings for libgpiod.
 This module wraps the native C API of libgpiod in a set of python classes.
 """
 
-from . import _ext
-from . import line
-from .chip import Chip
-from .chip_info import ChipInfo
-from .edge_event import EdgeEvent
-from .exception import ChipClosedError, RequestReleasedError
-from .info_event import InfoEvent
-from .line_request import LineRequest
-from .line_settings import LineSettings
+from . import (
+    _ext,
+    chip,
+    chip_info,
+    edge_event,
+    exception,
+    info_event,
+    line,
+    line_info,
+    line_request,
+    line_settings,
+    version,
+)
+from .chip import *
+from .chip_info import *
+from .edge_event import *
+from .exception import *
+from .info_event import *
+from .line_info import *
+from .line_request import *
+from .line_settings import *
 from .version import __version__
 
 api_version = _ext.api_version
+
+# public submodules
+__all__ = [
+    "chip",
+    "chip_info",
+    "edge_event",
+    "exception",
+    "info_event",
+    "line",
+    "line_info",
+    "line_request",
+    "line_settings",
+    "version",
+]
+
+# re-export public submodule exports
+# do not re-export line objects, this is not an oversight
+__all__ += (
+    chip.__all__
+    + chip_info.__all__
+    + edge_event.__all__
+    + exception.__all__
+    + info_event.__all__
+    + line_info.__all__
+    + line_request.__all__
+    + line_settings.__all__
+)
+
+# module methods/attributes
+__all__ += [
+    "__version__",
+    "api_version",
+    "is_gpiochip_device",
+    "request_lines",
+]
 
 
 def is_gpiochip_device(path: str) -> bool:

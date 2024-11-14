@@ -1,17 +1,23 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+from typing import TYPE_CHECKING, Optional, Union
+
 from . import _ext
-from .edge_event import EdgeEvent
+
 from .exception import RequestReleasedError
 from .internal import poll_fd
-from .line import Value
 from .line_settings import LineSettings, _line_settings_to_ext
-from collections.abc import Iterable
-from datetime import timedelta
-from typing import Optional, Union
 
-__all__ = "LineRequest"
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from datetime import timedelta
+
+    from .edge_event import EdgeEvent
+    from .line import Value
+
+
+__all__ = ["LineRequest"]
 
 
 class LineRequest:

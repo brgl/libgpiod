@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-from . import _ext
-from .line_info import LineInfo
 from dataclasses import dataclass
 from enum import Enum
 
-__all__ = "InfoEvent"
+from . import _ext
+from .line_info import LineInfo
+
+__all__ = ["InfoEvent"]
 
 
 @dataclass(frozen=True, init=False, repr=False)

@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-from . import _ext
 from dataclasses import dataclass
 from datetime import timedelta
-from gpiod.line import Direction, Bias, Drive, Edge, Clock, Value
 
-__all__ = "LineSettings"
+from . import _ext
+from .line import Bias, Clock, Direction, Drive, Edge, Value
+
+__all__ = ["LineSettings"]
 
 
 @dataclass(repr=False)

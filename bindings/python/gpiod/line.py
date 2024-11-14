@@ -2,8 +2,9 @@
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 
-from . import _ext
 from enum import Enum
+
+from . import _ext
 
 __all__ = ["Value", "Direction", "Bias", "Drive", "Edge", "Clock"]
 

@@ -5,7 +5,7 @@ from datetime import timedelta
 from select import select
 from typing import Optional, Union
 
-__all__ = []
+__all__ = ["poll_fd"]
 
 
 def poll_fd(fd: int, timeout: Optional[Union[timedelta, float]] = None) -> bool:

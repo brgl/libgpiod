@@ -1,22 +1,25 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+from collections import Counter
+from errno import ENOENT
+from typing import TYPE_CHECKING, Optional, Union
+
 from . import _ext
-from .chip_info import ChipInfo
 from .exception import ChipClosedError
-from .info_event import InfoEvent
 from .internal import poll_fd
 from .line import Value
-from .line_info import LineInfo
-from .line_settings import LineSettings, _line_settings_to_ext
 from .line_request import LineRequest
-from collections import Counter
-from collections.abc import Iterable
-from datetime import timedelta
-from errno import ENOENT
-from typing import Union, Optional
+from .line_settings import LineSettings, _line_settings_to_ext
 
-__all__ = "Chip"
+if TYPE_CHECKING:
+    from datetime import timedelta
+
+    from .chip_info import ChipInfo
+    from .info_event import InfoEvent
+    from .line_info import LineInfo
+
+__all__ = ["Chip"]
 
 
 class Chip:
