@@ -29,13 +29,13 @@ class InfoEventDataclassBehavior(TestCase):
                 event = chip.read_info_event()
 
                 with self.assertRaises(FrozenInstanceError):
-                    event.event_type = 4
+                    event.event_type = 4  # type: ignore[misc, assignment]
 
                 with self.assertRaises(FrozenInstanceError):
-                    event.timestamp_ns = 4
+                    event.timestamp_ns = 4  # type: ignore[misc]
 
                 with self.assertRaises(FrozenInstanceError):
-                    event.line_info = 4
+                    event.line_info = 4  # type: ignore[misc, assignment]
 
 
 def request_reconfigure_release_line(chip_path: str, offset: int) -> None:
@@ -76,14 +76,14 @@ class WatchingInfoEventWorks(TestCase):
 
     def test_watch_line_info_no_arguments(self) -> None:
         with self.assertRaises(TypeError):
-            self.chip.watch_line_info()
+            self.chip.watch_line_info()  # type: ignore[call-arg]
 
     def test_watch_line_info_by_line_name(self) -> None:
         self.chip.watch_line_info("foobar")
 
     def test_watch_line_info_invalid_argument_type(self) -> None:
         with self.assertRaises(TypeError):
-            self.chip.watch_line_info(None)
+            self.chip.watch_line_info(None)  # type: ignore[arg-type]
 
     def test_wait_for_event_timeout(self) -> None:
         info = self.chip.watch_line_info(7)
@@ -162,7 +162,7 @@ class UnwatchingLineInfo(TestCase):
 
     def test_unwatch_line_info_no_argument(self) -> None:
         with self.assertRaises(TypeError):
-            self.chip.unwatch_line_info()
+            self.chip.unwatch_line_info()  # type: ignore[call-arg]
 
     def test_unwatch_line_info_by_line_name(self) -> None:
         self.chip.watch_line_info(4)

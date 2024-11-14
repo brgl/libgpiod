@@ -24,10 +24,10 @@ class ChipLineRequestsBehaveCorrectlyWithInvalidArguments(TestCase):
 
     def test_passing_invalid_types_as_configs(self) -> None:
         with self.assertRaises(AttributeError):
-            self.chip.request_lines("foobar")
+            self.chip.request_lines("foobar")  # type: ignore[arg-type]
 
         with self.assertRaises(AttributeError):
-            self.chip.request_lines(None, "foobar")
+            self.chip.request_lines(None, "foobar")  # type: ignore[arg-type]
 
     def test_offset_out_of_range(self) -> None:
         with self.assertRaises(ValueError):
@@ -39,7 +39,7 @@ class ChipLineRequestsBehaveCorrectlyWithInvalidArguments(TestCase):
 
     def test_request_no_arguments(self) -> None:
         with self.assertRaises(TypeError):
-            self.chip.request_lines()
+            self.chip.request_lines()  # type: ignore[call-arg]
 
 
 class ModuleLineRequestsBehaveCorrectlyWithInvalidArguments(TestCase):
@@ -51,10 +51,10 @@ class ModuleLineRequestsBehaveCorrectlyWithInvalidArguments(TestCase):
 
     def test_passing_invalid_types_as_configs(self) -> None:
         with self.assertRaises(AttributeError):
-            gpiod.request_lines(self.sim.dev_path, "foobar")
+            gpiod.request_lines(self.sim.dev_path, "foobar")  # type: ignore[arg-type]
 
         with self.assertRaises(AttributeError):
-            gpiod.request_lines(self.sim.dev_path, None, "foobar")
+            gpiod.request_lines(self.sim.dev_path, None, "foobar")  # type: ignore[arg-type]
 
     def test_offset_out_of_range(self) -> None:
         with self.assertRaises(ValueError):
@@ -66,7 +66,7 @@ class ModuleLineRequestsBehaveCorrectlyWithInvalidArguments(TestCase):
 
     def test_request_no_arguments(self) -> None:
         with self.assertRaises(TypeError):
-            gpiod.request_lines()
+            gpiod.request_lines()  # type: ignore[call-arg]
 
 
 class ChipLineRequestWorks(TestCase):
@@ -200,7 +200,7 @@ class LineRequestGettingValues(TestCase):
 
     def test_get_values_invalid_argument_type(self) -> None:
         with self.assertRaises(TypeError):
-            self.req.get_values(True)
+            self.req.get_values(True)  # type: ignore[arg-type]
 
 
 class LineRequestGettingValuesByName(TestCase):
@@ -602,7 +602,7 @@ class ReleasedLineRequestCannotBeUsed(TestCase):
             req.release()
 
             with self.assertRaises(gpiod.RequestReleasedError):
-                req.fd
+                _ = req.fd
 
 
 class LineRequestSurvivesParentChip(TestCase):

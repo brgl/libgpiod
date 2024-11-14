@@ -52,11 +52,11 @@ class ChipConstructor(TestCase):
 
     def test_missing_path(self) -> None:
         with self.assertRaises(TypeError):
-            gpiod.Chip()
+            gpiod.Chip()  # type: ignore[call-arg]
 
     def test_invalid_type_for_path(self) -> None:
         with self.assertRaises(TypeError):
-            gpiod.Chip(4)
+            gpiod.Chip(4)  # type: ignore[arg-type]
 
 
 class ChipBooleanConversion(TestCase):
@@ -85,10 +85,10 @@ class ChipProperties(TestCase):
 
     def test_properties_are_immutable(self) -> None:
         with self.assertRaises(AttributeError):
-            self.chip.path = "foobar"
+            self.chip.path = "foobar"  # type: ignore[misc]
 
         with self.assertRaises(AttributeError):
-            self.chip.fd = 4
+            self.chip.fd = 4  # type: ignore[misc]
 
 
 class ChipDevPathFromLink(TestCase):
@@ -172,7 +172,7 @@ class ClosedChipCannotBeUsed(TestCase):
         chip.close()
 
         with self.assertRaises(gpiod.ChipClosedError):
-            chip.path
+            _ = chip.path
 
     def test_close_chip_and_try_controlled_execution(self) -> None:
         sim = gpiosim.Chip()
@@ -182,7 +182,7 @@ class ClosedChipCannotBeUsed(TestCase):
 
         with self.assertRaises(gpiod.ChipClosedError):
             with chip:
-                chip.fd
+                _ = chip.fd
 
     def test_close_chip_twice(self) -> None:
         sim = gpiosim.Chip(label="foobar")

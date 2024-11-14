@@ -17,15 +17,15 @@ class IsGPIOChip(TestCase):
 
     def test_is_gpiochip_invalid_argument(self) -> None:
         with self.assertRaises(TypeError):
-            gpiod.is_gpiochip_device(4)
+            gpiod.is_gpiochip_device(4)  # type: ignore[arg-type]
 
     def test_is_gpiochip_superfluous_argument(self) -> None:
         with self.assertRaises(TypeError):
-            gpiod.is_gpiochip_device("/dev/null", 4)
+            gpiod.is_gpiochip_device("/dev/null", 4)  # type: ignore[call-arg]
 
     def test_is_gpiochip_missing_argument(self) -> None:
         with self.assertRaises(TypeError):
-            gpiod.is_gpiochip_device()
+            gpiod.is_gpiochip_device()  # type: ignore[call-arg]
 
     def test_is_gpiochip_good(self) -> None:
         sim = gpiosim.Chip()

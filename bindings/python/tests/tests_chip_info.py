@@ -31,13 +31,13 @@ class ChipInfoProperties(TestCase):
 
     def test_chip_info_properties_are_immutable(self) -> None:
         with self.assertRaises(AttributeError):
-            self.info.name = "foobar"
+            self.info.name = "foobar"  # type: ignore[misc]
 
         with self.assertRaises(AttributeError):
-            self.info.num_lines = 4
+            self.info.num_lines = 4  # type: ignore[misc]
 
         with self.assertRaises(AttributeError):
-            self.info.label = "foobar"
+            self.info.label = "foobar"  # type: ignore[misc]
 
 
 class ChipInfoStringRepresentation(TestCase):

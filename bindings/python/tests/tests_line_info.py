@@ -46,7 +46,7 @@ class GetLineInfo(TestCase):
 
     def test_no_offset(self) -> None:
         with self.assertRaises(TypeError):
-            self.chip.get_line_info()
+            self.chip.get_line_info()  # type: ignore[call-arg]
 
 
 class LinePropertiesCanBeRead(TestCase):
