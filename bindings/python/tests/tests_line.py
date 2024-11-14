@@ -7,6 +7,6 @@ from gpiod.line import Value
 
 
 class LineValue(TestCase):
-    def test_cast_bool(self):
+    def test_cast_bool(self) -> None:
         self.assertTrue(bool(Value.ACTIVE))
         self.assertFalse(bool(Value.INACTIVE))

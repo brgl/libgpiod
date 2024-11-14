@@ -12,7 +12,7 @@ HogDir = gpiosim.Chip.Direction
 
 
 class GetLineInfo(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.sim = gpiosim.Chip(
             num_lines=4,
             line_names={0: "foobar"},
@@ -20,37 +20,37 @@ class GetLineInfo(TestCase):
 
         self.chip = gpiod.Chip(self.sim.dev_path)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.chip.close()
         self.chip = None
         self.sim = None
 
-    def test_get_line_info_by_offset(self):
+    def test_get_line_info_by_offset(self) -> None:
         self.chip.get_line_info(0)
 
-    def test_get_line_info_by_offset_keyword(self):
+    def test_get_line_info_by_offset_keyword(self) -> None:
         self.chip.get_line_info(line=0)
 
-    def test_get_line_info_by_name(self):
+    def test_get_line_info_by_name(self) -> None:
         self.chip.get_line_info("foobar")
 
-    def test_get_line_info_by_name_keyword(self):
+    def test_get_line_info_by_name_keyword(self) -> None:
         self.chip.get_line_info(line="foobar")
 
-    def test_get_line_info_by_offset_string(self):
+    def test_get_line_info_by_offset_string(self) -> None:
         self.chip.get_line_info("2")
 
-    def test_offset_out_of_range(self):
+    def test_offset_out_of_range(self) -> None:
         with self.assertRaises(ValueError) as ex:
             self.chip.get_line_info(4)
 
-    def test_no_offset(self):
+    def test_no_offset(self) -> None:
         with self.assertRaises(TypeError):
             self.chip.get_line_info()
 
 
 class LinePropertiesCanBeRead(TestCase):
-    def test_basic_properties(self):
+    def test_basic_properties(self) -> None:
         sim = gpiosim.Chip(
             num_lines=8,
             line_names={1: "foo", 2: "bar", 4: "baz", 5: "xyz"},
@@ -87,7 +87,7 @@ class LinePropertiesCanBeRead(TestCase):
 
 
 class LineInfoStringRepresentation(TestCase):
-    def test_line_info_str(self):
+    def test_line_info_str(self) -> None:
         sim = gpiosim.Chip(
             line_names={0: "foo"}, hogs={0: ("hogger", HogDir.OUTPUT_HIGH)}
         )

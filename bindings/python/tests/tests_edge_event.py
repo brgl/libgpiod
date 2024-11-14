@@ -17,7 +17,7 @@ Pull = gpiosim.Chip.Pull
 
 
 class EdgeEventWaitTimeout(TestCase):
-    def test_event_wait_timeout(self):
+    def test_event_wait_timeout(self) -> None:
         sim = gpiosim.Chip()
 
         with gpiod.request_lines(
@@ -26,7 +26,7 @@ class EdgeEventWaitTimeout(TestCase):
         ) as req:
             self.assertEqual(req.wait_edge_events(timedelta(microseconds=10000)), False)
 
-    def test_event_wait_timeout_float(self):
+    def test_event_wait_timeout_float(self) -> None:
         sim = gpiosim.Chip()
 
         with gpiod.request_lines(
@@ -37,7 +37,7 @@ class EdgeEventWaitTimeout(TestCase):
 
 
 class EdgeEventInvalidConfig(TestCase):
-    def test_output_mode_and_edge_detection(self):
+    def test_output_mode_and_edge_detection(self) -> None:
         sim = gpiosim.Chip()
 
         with self.assertRaises(ValueError):
@@ -52,29 +52,31 @@ class EdgeEventInvalidConfig(TestCase):
 
 
 class WaitingForEdgeEvents(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.sim = gpiosim.Chip(num_lines=8)
         self.thread = None
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         if self.thread:
             self.thread.join()
             del self.thread
         self.sim = None
 
-    def trigger_falling_and_rising_edge(self, offset):
+    def trigger_falling_and_rising_edge(self, offset: int) -> None:
         time.sleep(0.05)
         self.sim.set_pull(offset, Pull.UP)
         time.sleep(0.05)
         self.sim.set_pull(offset, Pull.DOWN)
 
-    def trigger_rising_edge_events_on_two_offsets(self, offset0, offset1):
+    def trigger_rising_edge_events_on_two_offsets(
+        self, offset0: int, offset1: int
+    ) -> None:
         time.sleep(0.05)
         self.sim.set_pull(offset0, Pull.UP)
         time.sleep(0.05)
         self.sim.set_pull(offset1, Pull.UP)
 
-    def test_both_edge_events(self):
+    def test_both_edge_events(self) -> None:
         with gpiod.request_lines(
             self.sim.dev_path, {2: gpiod.LineSettings(edge_detection=Edge.BOTH)}
         ) as req:
@@ -101,7 +103,7 @@ class WaitingForEdgeEvents(TestCase):
 
             self.assertGreater(ts_falling, ts_rising)
 
-    def test_rising_edge_event(self):
+    def test_rising_edge_event(self) -> None:
         with gpiod.request_lines(
             self.sim.dev_path, {6: gpiod.LineSettings(edge_detection=Edge.RISING)}
         ) as req:
@@ -119,7 +121,7 @@ class WaitingForEdgeEvents(TestCase):
 
             self.assertFalse(req.wait_edge_events(timedelta(microseconds=10000)))
 
-    def test_falling_edge_event(self):
+    def test_falling_edge_event(self) -> None:
         with gpiod.request_lines(
             self.sim.dev_path, {6: gpiod.LineSettings(edge_detection=Edge.FALLING)}
         ) as req:
@@ -137,7 +139,7 @@ class WaitingForEdgeEvents(TestCase):
 
             self.assertFalse(req.wait_edge_events(timedelta(microseconds=10000)))
 
-    def test_sequence_numbers(self):
+    def test_sequence_numbers(self) -> None:
         with gpiod.request_lines(
             self.sim.dev_path, {(2, 4): gpiod.LineSettings(edge_detection=Edge.BOTH)}
         ) as req:
@@ -166,7 +168,7 @@ class WaitingForEdgeEvents(TestCase):
 
 
 class ReadingMultipleEdgeEvents(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.sim = gpiosim.Chip(num_lines=8)
         self.request = gpiod.request_lines(
             self.sim.dev_path, {1: gpiod.LineSettings(edge_detection=Edge.BOTH)}
@@ -180,12 +182,12 @@ class ReadingMultipleEdgeEvents(TestCase):
         self.sim.set_pull(1, Pull.UP)
         time.sleep(0.05)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.request.release()
         del self.request
         del self.sim
 
-    def test_read_multiple_events(self):
+    def test_read_multiple_events(self) -> None:
         self.assertTrue(self.request.wait_edge_events(timedelta(seconds=1)))
         events = self.request.read_edge_events()
         self.assertEqual(len(events), 3)
@@ -199,7 +201,7 @@ class ReadingMultipleEdgeEvents(TestCase):
 
 
 class EdgeEventStringRepresentation(TestCase):
-    def test_edge_event_str(self):
+    def test_edge_event_str(self) -> None:
         sim = gpiosim.Chip()
 
         with gpiod.request_lines(

@@ -12,19 +12,19 @@ from .helpers import LinkGuard
 
 
 class ChipConstructor(TestCase):
-    def test_open_existing_chip(self):
+    def test_open_existing_chip(self) -> None:
         sim = gpiosim.Chip()
 
         with gpiod.Chip(sim.dev_path):
             pass
 
-    def test_open_existing_chip_with_keyword(self):
+    def test_open_existing_chip_with_keyword(self) -> None:
         sim = gpiosim.Chip()
 
         with gpiod.Chip(path=sim.dev_path):
             pass
 
-    def test_open_chip_by_link(self):
+    def test_open_chip_by_link(self) -> None:
         link = "/tmp/gpiod-py-test-link.{}".format(os.getpid())
         sim = gpiosim.Chip()
 
@@ -32,35 +32,35 @@ class ChipConstructor(TestCase):
             with gpiod.Chip(link):
                 pass
 
-    def test_open_nonexistent_chip(self):
+    def test_open_nonexistent_chip(self) -> None:
         with self.assertRaises(OSError) as ex:
             gpiod.Chip("/dev/nonexistent")
 
         self.assertEqual(ex.exception.errno, errno.ENOENT)
 
-    def test_open_not_a_character_device(self):
+    def test_open_not_a_character_device(self) -> None:
         with self.assertRaises(OSError) as ex:
             gpiod.Chip("/tmp")
 
         self.assertEqual(ex.exception.errno, errno.ENOTTY)
 
-    def test_open_not_a_gpio_device(self):
+    def test_open_not_a_gpio_device(self) -> None:
         with self.assertRaises(OSError) as ex:
             gpiod.Chip("/dev/null")
 
         self.assertEqual(ex.exception.errno, errno.ENODEV)
 
-    def test_missing_path(self):
+    def test_missing_path(self) -> None:
         with self.assertRaises(TypeError):
             gpiod.Chip()
 
-    def test_invalid_type_for_path(self):
+    def test_invalid_type_for_path(self) -> None:
         with self.assertRaises(TypeError):
             gpiod.Chip(4)
 
 
 class ChipBooleanConversion(TestCase):
-    def test_chip_bool(self):
+    def test_chip_bool(self) -> None:
         sim = gpiosim.Chip()
         chip = gpiod.Chip(sim.dev_path)
         self.assertTrue(chip)
@@ -69,21 +69,21 @@ class ChipBooleanConversion(TestCase):
 
 
 class ChipProperties(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.sim = gpiosim.Chip()
         self.chip = gpiod.Chip(self.sim.dev_path)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.chip.close()
         self.sim = None
 
-    def test_get_chip_path(self):
+    def test_get_chip_path(self) -> None:
         self.assertEqual(self.sim.dev_path, self.chip.path)
 
-    def test_get_fd(self):
+    def test_get_fd(self) -> None:
         self.assertGreaterEqual(self.chip.fd, 0)
 
-    def test_properties_are_immutable(self):
+    def test_properties_are_immutable(self) -> None:
         with self.assertRaises(AttributeError):
             self.chip.path = "foobar"
 
@@ -92,7 +92,7 @@ class ChipProperties(TestCase):
 
 
 class ChipDevPathFromLink(TestCase):
-    def test_dev_path_open_by_link(self):
+    def test_dev_path_open_by_link(self) -> None:
         sim = gpiosim.Chip()
         link = "/tmp/gpiod-py-test-link.{}".format(os.getpid())
 
@@ -102,7 +102,7 @@ class ChipDevPathFromLink(TestCase):
 
 
 class ChipMapLine(TestCase):
-    def test_lookup_by_name_good(self):
+    def test_lookup_by_name_good(self) -> None:
         sim = gpiosim.Chip(
             num_lines=8, line_names={1: "foo", 2: "bar", 4: "baz", 5: "xyz"}
         )
@@ -110,7 +110,7 @@ class ChipMapLine(TestCase):
         with gpiod.Chip(sim.dev_path) as chip:
             self.assertEqual(chip.line_offset_from_id("baz"), 4)
 
-    def test_lookup_by_name_good_keyword_argument(self):
+    def test_lookup_by_name_good_keyword_argument(self) -> None:
         sim = gpiosim.Chip(
             num_lines=8, line_names={1: "foo", 2: "bar", 4: "baz", 5: "xyz"}
         )
@@ -118,7 +118,7 @@ class ChipMapLine(TestCase):
         with gpiod.Chip(sim.dev_path) as chip:
             self.assertEqual(chip.line_offset_from_id(id="baz"), 4)
 
-    def test_lookup_bad_name(self):
+    def test_lookup_bad_name(self) -> None:
         sim = gpiosim.Chip(
             num_lines=8, line_names={1: "foo", 2: "bar", 4: "baz", 5: "xyz"}
         )
@@ -127,21 +127,21 @@ class ChipMapLine(TestCase):
             with self.assertRaises(FileNotFoundError):
                 chip.line_offset_from_id("nonexistent")
 
-    def test_lookup_bad_offset(self):
+    def test_lookup_bad_offset(self) -> None:
         sim = gpiosim.Chip()
 
         with gpiod.Chip(sim.dev_path) as chip:
             with self.assertRaises(ValueError):
                 chip.line_offset_from_id(4)
 
-    def test_lookup_bad_offset_as_string(self):
+    def test_lookup_bad_offset_as_string(self) -> None:
         sim = gpiosim.Chip()
 
         with gpiod.Chip(sim.dev_path) as chip:
             with self.assertRaises(ValueError):
                 chip.line_offset_from_id("4")
 
-    def test_duplicate_names(self):
+    def test_duplicate_names(self) -> None:
         sim = gpiosim.Chip(
             num_lines=8, line_names={1: "foo", 2: "bar", 4: "baz", 5: "bar"}
         )
@@ -149,14 +149,14 @@ class ChipMapLine(TestCase):
         with gpiod.Chip(sim.dev_path) as chip:
             self.assertEqual(chip.line_offset_from_id("bar"), 2)
 
-    def test_integer_offsets(self):
+    def test_integer_offsets(self) -> None:
         sim = gpiosim.Chip(num_lines=8, line_names={1: "foo", 2: "bar", 6: "baz"})
 
         with gpiod.Chip(sim.dev_path) as chip:
             self.assertEqual(chip.line_offset_from_id(4), 4)
             self.assertEqual(chip.line_offset_from_id(1), 1)
 
-    def test_offsets_as_string(self):
+    def test_offsets_as_string(self) -> None:
         sim = gpiosim.Chip(num_lines=8, line_names={1: "foo", 2: "bar", 7: "6"})
 
         with gpiod.Chip(sim.dev_path) as chip:
@@ -165,7 +165,7 @@ class ChipMapLine(TestCase):
 
 
 class ClosedChipCannotBeUsed(TestCase):
-    def test_close_chip_and_try_to_use_it(self):
+    def test_close_chip_and_try_to_use_it(self) -> None:
         sim = gpiosim.Chip(label="foobar")
 
         chip = gpiod.Chip(sim.dev_path)
@@ -174,7 +174,7 @@ class ClosedChipCannotBeUsed(TestCase):
         with self.assertRaises(gpiod.ChipClosedError):
             chip.path
 
-    def test_close_chip_and_try_controlled_execution(self):
+    def test_close_chip_and_try_controlled_execution(self) -> None:
         sim = gpiosim.Chip()
 
         chip = gpiod.Chip(sim.dev_path)
@@ -184,7 +184,7 @@ class ClosedChipCannotBeUsed(TestCase):
             with chip:
                 chip.fd
 
-    def test_close_chip_twice(self):
+    def test_close_chip_twice(self) -> None:
         sim = gpiosim.Chip(label="foobar")
         chip = gpiod.Chip(sim.dev_path)
         chip.close()
@@ -194,21 +194,21 @@ class ClosedChipCannotBeUsed(TestCase):
 
 
 class StringRepresentation(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.sim = gpiosim.Chip(num_lines=4, label="foobar")
         self.chip = gpiod.Chip(self.sim.dev_path)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.chip.close()
         self.sim = None
 
-    def test_repr(self):
+    def test_repr(self) -> None:
         self.assertEqual(repr(self.chip), 'gpiod.Chip("{}")'.format(self.sim.dev_path))
 
         cmp = eval(repr(self.chip))
         self.assertEqual(self.chip.path, cmp.path)
 
-    def test_str(self):
+    def test_str(self) -> None:
         info = self.chip.get_info()
         self.assertEqual(
             str(self.chip),
@@ -219,17 +219,17 @@ class StringRepresentation(TestCase):
 
 
 class StringRepresentationClosed(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.sim = gpiosim.Chip(num_lines=4, label="foobar")
         self.chip = gpiod.Chip(self.sim.dev_path)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.sim = None
 
-    def test_repr_closed(self):
+    def test_repr_closed(self) -> None:
         self.chip.close()
         self.assertEqual(repr(self.chip), "<Chip CLOSED>")
 
-    def test_str_closed(self):
+    def test_str_closed(self) -> None:
         self.chip.close()
         self.assertEqual(str(self.chip), "<Chip CLOSED>")
