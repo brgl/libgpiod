@@ -9,6 +9,7 @@ __all__ = ["poll_fd"]
 
 
 def poll_fd(fd: int, timeout: Optional[Union[timedelta, float]] = None) -> bool:
+    sec: Union[float, None]
     if isinstance(timeout, timedelta):
         sec = timeout.total_seconds()
     else:
