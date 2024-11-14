@@ -1,15 +1,16 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-import gpiod
 import time
-
-from . import gpiosim
 from datetime import timedelta
 from functools import partial
-from gpiod.line import Direction, Edge
 from threading import Thread
 from unittest import TestCase
+
+import gpiod
+from gpiod.line import Direction, Edge
+
+from . import gpiosim
 
 EventType = gpiod.EdgeEvent.Type
 Pull = gpiosim.Chip.Pull

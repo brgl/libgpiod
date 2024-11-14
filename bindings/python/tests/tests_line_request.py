@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-import errno
+from unittest import TestCase
+
 import gpiod
+from gpiod.line import Clock, Direction, Drive, Edge, Value
 
 from . import gpiosim
-from gpiod.line import Clock, Direction, Drive, Edge, Value
-from unittest import TestCase
 
 Pull = gpiosim.Chip.Pull
 SimVal = gpiosim.Chip.Value

@@ -2,3 +2,5 @@
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 from ._ext import set_process_name
+
+__all__ = ["set_process_name"]

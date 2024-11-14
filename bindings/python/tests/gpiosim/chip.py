@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-from . import _ext
 from enum import Enum
 from typing import Optional
+
+from . import _ext
 
 
 class Chip:

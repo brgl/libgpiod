@@ -1,17 +1,17 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-import errno
+from unittest import TestCase
+
 import gpiod
-import unittest
+from gpiod.line import Bias, Clock, Direction, Drive
 
 from . import gpiosim
-from gpiod.line import Direction, Bias, Drive, Clock
 
 HogDir = gpiosim.Chip.Direction
 
 
-class GetLineInfo(unittest.TestCase):
+class GetLineInfo(TestCase):
     def setUp(self):
         self.sim = gpiosim.Chip(
             num_lines=4,
@@ -49,7 +49,7 @@ class GetLineInfo(unittest.TestCase):
             self.chip.get_line_info()
 
 
-class LinePropertiesCanBeRead(unittest.TestCase):
+class LinePropertiesCanBeRead(TestCase):
     def test_basic_properties(self):
         sim = gpiosim.Chip(
             num_lines=8,
@@ -86,7 +86,7 @@ class LinePropertiesCanBeRead(unittest.TestCase):
             self.assertEqual(info6.debounce_period.total_seconds(), 0.0)
 
 
-class LineInfoStringRepresentation(unittest.TestCase):
+class LineInfoStringRepresentation(TestCase):
     def test_line_info_str(self):
         sim = gpiosim.Chip(
             line_names={0: "foo"}, hogs={0: ("hogger", HogDir.OUTPUT_HIGH)}

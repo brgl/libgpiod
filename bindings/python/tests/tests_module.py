@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
-import gpiod
 import os
-import unittest
+from unittest import TestCase
+
+import gpiod
 
 from . import gpiosim
 from .helpers import LinkGuard
-from unittest import TestCase
 
 
 class IsGPIOChip(TestCase):
@@ -50,7 +50,6 @@ class IsGPIOChip(TestCase):
 
 
 class VersionString(TestCase):
-
     VERSION_PATTERN = "^\\d+\\.\\d+(\\.\\d+|\\-devel|\\-rc\\d+)?$"
 
     def test_api_version_string(self):

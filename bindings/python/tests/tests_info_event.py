@@ -3,16 +3,16 @@
 
 import datetime
 import errno
-import gpiod
 import threading
 import time
-import unittest
-
-from . import gpiosim
 from dataclasses import FrozenInstanceError
 from functools import partial
-from gpiod.line import Direction
 from unittest import TestCase
+
+import gpiod
+from gpiod.line import Direction
+
+from . import gpiosim
 
 EventType = gpiod.InfoEvent.Type
 

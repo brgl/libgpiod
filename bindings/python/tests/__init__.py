@@ -2,8 +2,6 @@
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 import os
-import unittest
-
 from distutils.version import LooseVersion
 
 required_kernel_version = LooseVersion("5.19.0")

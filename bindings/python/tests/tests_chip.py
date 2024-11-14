@@ -2,12 +2,13 @@
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 import errno
-import gpiod
 import os
+from unittest import TestCase
+
+import gpiod
 
 from . import gpiosim
 from .helpers import LinkGuard
-from unittest import TestCase
 
 
 class ChipConstructor(TestCase):

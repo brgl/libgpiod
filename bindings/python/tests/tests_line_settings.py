@@ -2,11 +2,10 @@
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 import datetime
-import gpiod
-
-from . import gpiosim
-from gpiod.line import Direction, Edge, Bias, Drive, Value, Clock
 from unittest import TestCase
+
+import gpiod
+from gpiod.line import Bias, Clock, Direction, Drive, Edge, Value
 
 
 class LineSettingsConstructor(TestCase):
