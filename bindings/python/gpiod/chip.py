@@ -61,8 +61,8 @@ class Chip:
           path:
             Path to the GPIO character device file.
         """
-        self._chip = _ext.Chip(path)
-        self._info = None
+        self._chip: Union[_ext.Chip, None] = _ext.Chip(path)
+        self._info: Union[ChipInfo, None] = None
 
     def __bool__(self) -> bool:
         """
