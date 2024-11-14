@@ -635,9 +635,7 @@ class LineRequestStringRepresentation(TestCase):
             with chip.request_lines(config={(2, 6, 4, 1): None}) as req:
                 self.assertEqual(
                     str(req),
-                    '<LineRequest chip="{}" num_lines=4 offsets=[2, 6, 4, 1] fd={}>'.format(
-                        self.sim.name, req.fd
-                    ),
+                    f'<LineRequest chip="{self.sim.name}" num_lines=4 offsets=[2, 6, 4, 1] fd={req.fd}>',
                 )
 
     def test_str_released(self) -> None:

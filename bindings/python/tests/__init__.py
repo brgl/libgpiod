@@ -9,7 +9,5 @@ current_version = LooseVersion(os.uname().release.split("-")[0])
 
 if current_version < required_kernel_version:
     raise NotImplementedError(
-        "linux kernel version must be at least {} - got {}".format(
-            required_kernel_version, current_version
-        )
+        f"linux kernel version must be at least {required_kernel_version} - got {current_version}"
     )

@@ -25,7 +25,7 @@ class ChipConstructor(TestCase):
             pass
 
     def test_open_chip_by_link(self) -> None:
-        link = "/tmp/gpiod-py-test-link.{}".format(os.getpid())
+        link = f"/tmp/gpiod-py-test-link.{os.getpid()}"
         sim = gpiosim.Chip()
 
         with LinkGuard(sim.dev_path, link):
@@ -94,7 +94,7 @@ class ChipProperties(TestCase):
 class ChipDevPathFromLink(TestCase):
     def test_dev_path_open_by_link(self) -> None:
         sim = gpiosim.Chip()
-        link = "/tmp/gpiod-py-test-link.{}".format(os.getpid())
+        link = f"/tmp/gpiod-py-test-link.{os.getpid()}"
 
         with LinkGuard(sim.dev_path, link):
             with gpiod.Chip(link) as chip:
@@ -203,7 +203,7 @@ class StringRepresentation(TestCase):
         self.sim = None  # type: ignore[assignment]
 
     def test_repr(self) -> None:
-        self.assertEqual(repr(self.chip), 'gpiod.Chip("{}")'.format(self.sim.dev_path))
+        self.assertEqual(repr(self.chip), f'gpiod.Chip("{self.sim.dev_path}")')
 
         cmp = eval(repr(self.chip))
         self.assertEqual(self.chip.path, cmp.path)
@@ -212,7 +212,7 @@ class StringRepresentation(TestCase):
         info = self.chip.get_info()
         self.assertEqual(
             str(self.chip),
-            '<Chip path="{}" fd={} info=<ChipInfo name="{}" label="foobar" num_lines=4>>'.format(
+            '<Chip path="{}" fd={} info=<ChipInfo name="{}" label="foobar" num_lines=4>>'.format(  # noqa: UP032
                 self.sim.dev_path, self.chip.fd, info.name
             ),
         )

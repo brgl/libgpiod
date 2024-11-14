@@ -49,5 +49,5 @@ class ChipInfoStringRepresentation(TestCase):
 
             self.assertEqual(
                 str(info),
-                '<ChipInfo name="{}" label="foobar" num_lines=16>'.format(sim.name),
+                f'<ChipInfo name="{sim.name}" label="foobar" num_lines=16>',
             )

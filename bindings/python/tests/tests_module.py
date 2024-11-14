@@ -36,14 +36,14 @@ class IsGPIOChip(TestCase):
         self.assertTrue(gpiod.is_gpiochip_device(path=sim.dev_path))
 
     def test_is_gpiochip_link_good(self) -> None:
-        link = "/tmp/gpiod-py-test-link.{}".format(os.getpid())
+        link = f"/tmp/gpiod-py-test-link.{os.getpid()}"
         sim = gpiosim.Chip()
 
         with LinkGuard(sim.dev_path, link):
             self.assertTrue(gpiod.is_gpiochip_device(link))
 
     def test_is_gpiochip_link_bad(self) -> None:
-        link = "/tmp/gpiod-py-test-link.{}".format(os.getpid())
+        link = f"/tmp/gpiod-py-test-link.{os.getpid()}"
 
         with LinkGuard("/dev/null", link):
             self.assertFalse(gpiod.is_gpiochip_device(link))
