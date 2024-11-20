@@ -3,5 +3,6 @@
 
 EXTRA_DIST = \
 	chip.py \
+	_ext.pyi \
 	ext.c \
 	__init__.py

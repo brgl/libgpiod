@@ -6,6 +6,7 @@ SUBDIRS = ext
 EXTRA_DIST = \
 	chip_info.py \
 	chip.py \
+	_ext.pyi \
 	edge_event.py \
 	exception.py \
 	info_event.py \
