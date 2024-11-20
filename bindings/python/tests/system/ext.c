@@ -32,7 +32,7 @@ static PyMethodDef module_methods[] = {
 
 static PyModuleDef module_def = {
 	PyModuleDef_HEAD_INIT,
-	.m_name = "procname._ext",
+	.m_name = "system._ext",
 	.m_methods = module_methods,
 };
 

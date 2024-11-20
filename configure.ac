@@ -371,7 +371,7 @@ AC_CONFIG_FILES([Makefile
 		 bindings/python/examples/Makefile
 		 bindings/python/tests/Makefile
 		 bindings/python/tests/gpiosim/Makefile
-		 bindings/python/tests/procname/Makefile
+		 bindings/python/tests/system/Makefile
 		 bindings/rust/libgpiod-sys/src/Makefile
 		 bindings/rust/libgpiod-sys/Makefile
 		 bindings/rust/libgpiod/src/Makefile

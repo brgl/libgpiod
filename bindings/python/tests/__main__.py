@@ -4,7 +4,7 @@
 
 import unittest
 
-from . import procname
+from .system import set_process_name
 from .tests_chip import *
 from .tests_chip_info import *
 from .tests_edge_event import *
@@ -15,6 +15,6 @@ from .tests_line_request import *
 from .tests_line_settings import *
 from .tests_module import *
 
-procname.set_process_name("python-gpiod")
+set_process_name("python-gpiod")
 
 unittest.main()

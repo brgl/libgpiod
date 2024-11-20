@@ -11,7 +11,7 @@ polluted with artefacts in build/
 Builds:
 
     tests/gpiosim/_ext.<target>.so
-    tests/procname/_ext.<target>.so
+    tests/system/_ext.<target>.so
 
 """
 
@@ -61,9 +61,9 @@ gpiosim_ext = Extension(
     ],
 )
 
-procname_ext = Extension(
-    "tests.procname._ext",
-    sources=["tests/procname/ext.c"],
+system_ext = Extension(
+    "tests.system._ext",
+    sources=["tests/system/ext.c"],
     define_macros=[("_GNU_SOURCE", "1")],
     extra_compile_args=["-Wall", "-Wextra"],
 )
@@ -71,7 +71,7 @@ procname_ext = Extension(
 dist = Distribution(
     {
         "name": "gpiod",
-        "ext_modules": [gpiosim_ext, procname_ext, gpiod_ext],
+        "ext_modules": [gpiosim_ext, system_ext, gpiod_ext],
         "version": __version__,
         "platforms": ["linux"],
     }
