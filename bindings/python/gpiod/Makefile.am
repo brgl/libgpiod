@@ -10,7 +10,7 @@ EXTRA_DIST = \
 	exception.py \
 	info_event.py \
 	__init__.py \
-	internal.py \
+	_internal.py \
 	line_info.py \
 	line.py \
 	line_request.py \
