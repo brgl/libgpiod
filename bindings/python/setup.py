@@ -4,7 +4,7 @@
 from os import getenv, path, unlink
 from shutil import copytree, rmtree
 
-from setuptools import Extension, find_packages, setup
+from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext as orig_build_ext
 from setuptools.command.sdist import log
 from setuptools.command.sdist import sdist as orig_sdist
@@ -17,11 +17,6 @@ SRC_BASE_URL = "https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/"
 TAR_FILENAME = "libgpiod-{version}.tar.gz"
 ASC_FILENAME = "sha256sums.asc"
 SHA256_CHUNK_SIZE = 2048
-
-# __version__
-with open("gpiod/version.py", "r") as fd:
-    exec(fd.read())
-
 
 def sha256(filename):
     """
@@ -225,19 +220,6 @@ gpiod_ext = Extension(
 )
 
 setup(
-    name="gpiod",
-    url="https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git",
-    packages=find_packages(exclude=["tests", "tests.*"]),
-    package_data={"gpiod": ["py.typed", "_ext.pyi"]},
-    python_requires=">=3.9.0",
     ext_modules=[gpiod_ext],
     cmdclass={"build_ext": build_ext, "sdist": sdist},
-    version=__version__,
-    author="Bartosz Golaszewski",
-    author_email="brgl@bgdev.pl",
-    description="Python bindings for libgpiod",
-    long_description=open("README.md", "r").read(),
-    long_description_content_type="text/markdown",
-    platforms=["linux"],
-    license="LGPLv2.1",
 )
