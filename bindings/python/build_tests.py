@@ -82,9 +82,13 @@ try:
 
     configure()
 except ImportError:
-    from distutils.log import DEBUG, set_verbosity
+    try:
+        from distutils.log import DEBUG, set_verbosity
 
-    set_verbosity(DEBUG)
+        set_verbosity(DEBUG)
+    except ImportError:
+        # We can still build the tests, it will just be very quiet.
+        pass
 
 with tempfile.TemporaryDirectory(prefix="libgpiod-") as temp_dir:
     command = build_ext(dist)
