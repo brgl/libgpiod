@@ -205,7 +205,7 @@ static PyObject *request_get_values(request_object *self, PyObject *args)
 static PyObject *request_set_values(request_object *self, PyObject *args)
 {
 	PyObject *values, *key, *val, *val_stripped;
-	Py_ssize_t pos = 0;
+	Py_ssize_t pos = 0, index = 0;
 	int ret;
 
 	ret = PyArg_ParseTuple(args, "O", &values);
@@ -214,8 +214,9 @@ static PyObject *request_set_values(request_object *self, PyObject *args)
 
 	clear_buffers(self);
 
+	/* Note: pos may not be contiguous. */
 	while (PyDict_Next(values, &pos, &key, &val)) {
-		self->offsets[pos - 1] = Py_gpiod_PyLongAsUnsignedInt(key);
+		self->offsets[index] = Py_gpiod_PyLongAsUnsignedInt(key);
 		if (PyErr_Occurred())
 			return NULL;
 
@@ -223,15 +224,17 @@ static PyObject *request_set_values(request_object *self, PyObject *args)
 		if (!val_stripped)
 			return NULL;
 
-		self->values[pos - 1] = PyLong_AsLong(val_stripped);
+		self->values[index] = PyLong_AsLong(val_stripped);
 		Py_DECREF(val_stripped);
 		if (PyErr_Occurred())
 			return NULL;
+
+		index++;
 	}
 
 	Py_BEGIN_ALLOW_THREADS;
 	ret = gpiod_line_request_set_values_subset(self->request,
-						   pos,
+						   index,
 						   self->offsets,
 						   self->values);
 	Py_END_ALLOW_THREADS;
