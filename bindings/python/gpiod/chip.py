@@ -344,6 +344,12 @@ class Chip:
 
         return request
 
+    def fileno(self) -> int:
+        """
+        Return the underlying file descriptor.
+        """
+        return self.fd
+
     def __repr__(self) -> str:
         """
         Return a string that can be used to re-create this chip object.

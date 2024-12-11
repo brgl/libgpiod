@@ -224,6 +224,12 @@ class LineRequest:
 
         return cast(_ext.Request, self._req).read_edge_events(max_events)
 
+    def fileno(self) -> int:
+        """
+        Return the underlying file descriptor.
+        """
+        return self.fd
+
     def __str__(self) -> str:
         """
         Return a user-friendly, human-readable description of this request.

@@ -7,6 +7,7 @@ import threading
 import time
 from dataclasses import FrozenInstanceError
 from functools import partial
+from select import select
 from typing import Optional
 from unittest import TestCase
 
@@ -130,6 +131,23 @@ class WatchingInfoEventWorks(TestCase):
         # Check timestamps are really monotonic.
         self.assertGreater(ts_rel, ts_rec)
         self.assertGreater(ts_rec, ts_req)
+
+    def test_select_chip_object(self) -> None:
+        info = self.chip.watch_line_info(7)
+
+        self.thread = threading.Thread(
+            target=partial(request_reconfigure_release_line, self.sim.dev_path, 7)
+        )
+        self.thread.start()
+
+        rd, wr, ex = select([self.chip], [], [], 1)
+        self.assertFalse(wr)
+        self.assertFalse(ex)
+        self.assertEqual(rd[0], self.chip)
+
+        event = rd[0].read_info_event()
+        self.assertEqual(event.event_type, _EventType.LINE_REQUESTED)
+        self.assertEqual(event.line_info.offset, 7)
 
 
 class UnwatchingLineInfo(TestCase):

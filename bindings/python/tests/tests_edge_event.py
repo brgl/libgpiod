@@ -4,6 +4,7 @@
 import time
 from datetime import timedelta
 from functools import partial
+from select import select
 from threading import Thread
 from typing import Optional
 from unittest import TestCase
@@ -199,6 +200,42 @@ class ReadingMultipleEdgeEvents(TestCase):
             self.assertEqual(event.global_seqno, self.global_seqno)
             self.line_seqno += 1
             self.global_seqno += 1
+
+
+class PollLineRequestObject(TestCase):
+    def setUp(self) -> None:
+        self.sim = gpiosim.Chip(num_lines=8)
+        self.request = gpiod.request_lines(
+            self.sim.dev_path, {2: gpiod.LineSettings(edge_detection=Edge.BOTH)}
+        )
+        self.thread: Optional[Thread] = None
+
+    def tearDown(self) -> None:
+        if self.thread:
+            self.thread.join()
+            del self.thread
+        self.request.release()
+        del self.request
+        del self.sim
+
+    def trigger_rising_edge(self, offset: int) -> None:
+        time.sleep(0.05)
+        self.sim.set_pull(offset, Pull.UP)
+
+    def test_select_request_object(self) -> None:
+        self.thread = Thread(target=partial(self.trigger_rising_edge, 2))
+        self.thread.start()
+
+        rd, wr, ex = select([self.request], [], [], 1)
+        self.assertFalse(wr)
+        self.assertFalse(ex)
+        self.assertEqual(rd[0], self.request)
+
+        events = rd[0].read_edge_events()
+        self.assertEqual(len(events), 1)
+
+        event = events[0]
+        self.assertEqual(event.line_offset, 2)
 
 
 class EdgeEventStringRepresentation(TestCase):
