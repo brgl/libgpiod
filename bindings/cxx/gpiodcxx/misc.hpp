@@ -17,11 +17,6 @@
 namespace gpiod {
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Check if the file pointed to by path is a GPIO chip character device.
  * @param path Path to check.
  * @return True if the file exists and is a GPIO chip character device or a
@@ -34,10 +29,6 @@ bool is_gpiochip_device(const ::std::filesystem::path& path);
  * @return String containing the library version.
  */
 const ::std::string& api_version();
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

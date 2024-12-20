@@ -27,11 +27,6 @@ class edge_event_buffer;
 class line_config;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Stores the context of a set of requested GPIO lines.
  */
 class line_request final
@@ -226,10 +221,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const line_request& request);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

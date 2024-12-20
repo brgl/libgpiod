@@ -20,11 +20,6 @@ namespace gpiod {
 class chip;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Represents an immutable snapshot of GPIO chip information.
  */
 class chip_info final
@@ -95,10 +90,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const chip_info& chip);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

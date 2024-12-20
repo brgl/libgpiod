@@ -31,11 +31,6 @@ class request_builder;
 class request_config;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Represents a GPIO chip.
  */
 class chip final
@@ -172,10 +167,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const chip& chip);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

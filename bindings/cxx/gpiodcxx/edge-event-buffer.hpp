@@ -23,11 +23,6 @@ class edge_event;
 class line_request;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Object into which edge events are read for better performance.
  *
  * The edge_event_buffer allows reading edge_event objects into an existing
@@ -119,10 +114,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const edge_event_buffer& buf);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

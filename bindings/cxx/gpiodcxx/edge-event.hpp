@@ -23,11 +23,6 @@ namespace gpiod {
 class edge_event_buffer;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Immutable object containing data about a single edge event.
  */
 class edge_event final
@@ -127,10 +122,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const edge_event& event);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

@@ -24,11 +24,6 @@ namespace gpiod {
 class chip;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Stores a set of options passed to the kernel when making a line
  *        request.
  */
@@ -104,10 +99,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const request_config& config);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

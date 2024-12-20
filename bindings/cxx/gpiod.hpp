@@ -9,12 +9,6 @@
 #define __LIBGPIOD_GPIOD_CXX_HPP__
 
 /**
- * @defgroup gpiod_cxx C++ bindings
- *
- * C++ bindings for libgpiod.
- */
-
-/**
  * @cond
  */
 

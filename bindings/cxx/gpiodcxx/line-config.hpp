@@ -22,11 +22,6 @@ class line_request;
 class line_settings;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Contains a set of line config options used in line requests and
  *        reconfiguration.
  */
@@ -110,10 +105,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const line_config& config);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 
