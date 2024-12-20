@@ -99,9 +99,18 @@ def request_lines(
     Args:
       path
         Path to the GPIO character device file.
-      *args
-      **kwargs
-        See Chip.request_lines() for configuration arguments.
+      config:
+        Dictionary mapping offsets or names (or tuples thereof) to
+        LineSettings. If None is passed as the value of the mapping,
+        default settings are used.
+      consumer:
+        Consumer string to use for this request.
+      event_buffer_size:
+        Size of the kernel edge event buffer to configure for this request.
+      output_values:
+        Dictionary mapping offsets or names to line.Value. This can be used
+        to set the desired output values globally while reusing LineSettings
+        for more lines.
 
     Returns:
       Returns a new LineRequest object.
