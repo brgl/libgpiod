@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+
+PROJECT_NAME		= libgpiod
+OUTPUT_DIRECTORY	= doxygen-output
+INPUT			= ../include/gpiod.h \
+			  ../bindings/cxx/gpiod.hpp \
+			  ../bindings/cxx/gpiodcxx/
+GENERATE_XML		= YES
+WARN_IF_UNDOCUMENTED	= YES
+QUIET			= YES
+EXTRACT_ALL		= YES
