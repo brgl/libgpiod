@@ -124,8 +124,10 @@ endif
 
 if HAS_GI_DOCGEN
 
-doc: Gpiodglib-1.0.gir
-	$(AM_V_GEN)gi-docgen generate Gpiodglib-1.0.gir
+doc: Gpiodglib-1.0.gir gi-docgen.toml
+	$(AM_V_GEN)gi-docgen generate --config gi-docgen.toml Gpiodglib-1.0.gir
 .PHONY: doc
+
+EXTRA_DIST += gi-docgen.toml
 
 endif

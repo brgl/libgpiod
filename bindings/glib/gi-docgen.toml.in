@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2025 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+
+[library]
+description = "GObject bindings to libgpiod"
+version = "@PACKAGE_VERSION@"
+authors = "Bartosz Golaszewski"
+license = "LGPL-2.1-or-later"
+website_url = "@PACKAGE_URL@"
