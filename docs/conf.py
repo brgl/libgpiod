@@ -44,10 +44,12 @@ subprocess.run(["doxygen", "Doxyfile"])
 master_doc = "index"
 source_suffix = ".rst"
 
-extensions = ["breathe"]
+extensions = ["breathe", "sphinx.ext.autodoc"]
 
 breathe_projects = {"libgpiod": "./doxygen-output/xml"}
 breathe_default_project = "libgpiod"
+
+autodoc_mock_imports = ["gpiod._ext"]
 
 # Use the RTD theme if available
 sphinx_rtd_theme = None

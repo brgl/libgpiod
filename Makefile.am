@@ -77,6 +77,17 @@ DOCS_DEPS = \
 	docs/cpp_request_config.rst \
 	docs/Doxyfile \
 	docs/index.rst \
+	docs/python_api.rst \
+	docs/python_chip.rst \
+	docs/python_chip_info.rst \
+	docs/python_edge_event.rst \
+	docs/python_exceptions.rst \
+	docs/python_info_event.rst \
+	docs/python_line.rst \
+	docs/python_line_info.rst \
+	docs/python_line_request.rst \
+	docs/python_line_settings.rst \
+	docs/python_misc.rst \
 	docs/requirements.txt
 
 docs: $(DOCS_DEPS)

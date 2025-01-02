@@ -17,3 +17,4 @@ C library.
    :maxdepth: 1
 
    cpp_api
+   python_api
