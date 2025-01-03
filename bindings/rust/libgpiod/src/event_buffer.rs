@@ -13,7 +13,6 @@ use super::{
 /// Line edge events
 ///
 /// An iterator over the elements of type `Event`.
-
 pub struct Events<'a> {
     buffer: &'a mut Buffer,
     read_index: usize,
