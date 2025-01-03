@@ -50,6 +50,7 @@ subprocess.run(
         "--enable-tools",
         "--enable-bindings-glib",
         "--enable-introspection",
+        "--enable-tools",
     ],
     check=True,
 )
@@ -76,7 +77,26 @@ def make_glib_docs(app):
     )
 
 
-late_docs_funcs = [make_glib_docs]
+def make_gpio_tools_docs(app):
+    prefix = "../" if os.getenv("READTHEDOCS") == "True" else ""
+
+    os.makedirs(f"{app.outdir}/gpio-tools", exist_ok=True)
+
+    for tool in [
+        "gpiodetect",
+        "gpioinfo",
+        "gpioget",
+        "gpioset",
+        "gpiomon",
+        "gpionotify",
+    ]:
+        with open(f"{app.outdir}/gpio-tools/{tool}.html", "w") as fd:
+            subprocess.run(
+                ["man2html", f"{prefix}man/{tool}.man"], stdout=fd, check=True
+            )
+
+
+late_docs_funcs = [make_glib_docs, make_gpio_tools_docs]
 
 
 def setup(app):

@@ -25,3 +25,4 @@ this interface.
 
    core_api
    bindings
+   gpio_tools
