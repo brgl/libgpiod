@@ -229,9 +229,9 @@ impl Request {
     ///
     /// This function will block if no event was queued for the line.
     pub fn read_edge_events<'a>(
-        &'a self,
+        &self,
         buffer: &'a mut request::Buffer,
-    ) -> Result<request::Events> {
+    ) -> Result<request::Events<'a>> {
         buffer.read_edge_events(self)
     }
 }
