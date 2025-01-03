@@ -458,7 +458,7 @@ pub mod line {
     }
 }
 
-/// Various libgpiod-related functions.
+// Various libgpiod-related functions.
 
 /// Check if the file pointed to by path is a GPIO chip character device.
 ///
