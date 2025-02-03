@@ -115,7 +115,7 @@ chip::chip(chip&& other)
 
 chip::~chip()
 {
-
+	::gpiosim_dev_disable(this->_m_priv->dev.get());
 }
 
 chip& chip::operator=(chip&& other)
