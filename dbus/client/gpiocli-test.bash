@@ -14,11 +14,11 @@ wait_for_sim() {
 
 	while true
 	do
-		gdbus call --system --dest io.gpiod1 \
-			--object-path /io/gpiod1/chips/"$1" \
-			--method org.freedesktop.DBus.Peer.Ping > /dev/null 2>&1 && break
+		gdbus call --system --dest io.gpiod1 --object-path /io/gpiod1/chips/"$1" \
+			--method org.freedesktop.DBus.Properties.Get \
+			io.gpiod1.Chip Label > /dev/null 2>&1 && break
 		sleep 0.01
-		COUNTER=$($COUNTER - 1)
+		COUNTER=$(expr $COUNTER - 1)
 		if [ "$COUNTER" -eq 0 ]
 		then
 			fail "error waiting for the GPIO sim chip to be exported on the bus"
