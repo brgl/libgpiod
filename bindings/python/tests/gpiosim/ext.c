@@ -96,15 +96,16 @@ static int chip_init(chip_object *self,
 
 static void chip_finalize(chip_object *self)
 {
-	if (self->bank)
-		gpiosim_bank_unref(self->bank);
-
 	if (self->dev) {
 		if (gpiosim_dev_is_live(self->dev))
 			gpiosim_dev_disable(self->dev);
-
-		gpiosim_dev_unref(self->dev);
 	}
+
+	if (self->bank)
+		gpiosim_bank_unref(self->bank);
+
+	if (self->dev)
+		gpiosim_dev_unref(self->dev);
 }
 
 static void chip_dealloc(PyObject *self)
