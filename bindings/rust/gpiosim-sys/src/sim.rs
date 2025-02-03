@@ -328,3 +328,9 @@ impl Sim {
         self.dev.disable()
     }
 }
+
+impl Drop for Sim {
+    fn drop(&mut self) {
+        self.disable().unwrap()
+    }
+}
