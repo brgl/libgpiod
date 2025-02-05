@@ -243,6 +243,7 @@ GPIOD_TEST_CASE(unwatch_and_check_that_no_events_are_generated)
 	g_autoptr(GpiodglibLineConfig) config = NULL;
 	g_autoptr(GArray) offsets = NULL;
 	gboolean got_event = FALSE;
+	guint cnt;
 
 	chip = gpiodglib_test_new_chip_or_fail(
 			g_gpiosim_chip_get_dev_path(sim));
@@ -261,7 +262,8 @@ GPIOD_TEST_CASE(unwatch_and_check_that_no_events_are_generated)
 	request = gpiodglib_test_chip_request_lines_or_fail(chip, NULL,
 							    config);
 
-	g_main_context_iteration(NULL, TRUE);
+	for (cnt = 5; cnt && !got_event; cnt--)
+		g_main_context_iteration(NULL, TRUE);
 
 	g_assert_true(got_event);
 
@@ -270,7 +272,8 @@ GPIOD_TEST_CASE(unwatch_and_check_that_no_events_are_generated)
 	got_event = FALSE;
 	gpiodglib_line_request_release(request);
 
-	g_main_context_iteration(NULL, TRUE);
+	for (cnt = 5; cnt && !got_event; cnt--)
+		g_main_context_iteration(NULL, TRUE);
 
 	g_assert_false(got_event);
 }
@@ -296,6 +299,7 @@ GPIOD_TEST_CASE(info_event_contains_new_line_info)
 	g_autoptr(GpiodglibLineSettings) settings = NULL;
 	g_autoptr(GpiodglibLineConfig) config = NULL;
 	g_autoptr(GArray) offsets = NULL;
+	guint cnt;
 
 	chip = gpiodglib_test_new_chip_or_fail(
 			g_gpiosim_chip_get_dev_path(sim));
@@ -316,7 +320,8 @@ GPIOD_TEST_CASE(info_event_contains_new_line_info)
 	request = gpiodglib_test_chip_request_lines_or_fail(chip, NULL,
 							    config);
 
-	g_main_context_iteration(NULL, TRUE);
+	for (cnt = 5; cnt && !event_info; cnt--)
+		g_main_context_iteration(NULL, TRUE);
 
 	g_assert_nonnull(event_info);
 }
