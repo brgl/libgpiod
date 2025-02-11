@@ -19,3 +19,4 @@ C library.
 
    cpp_api
    python_api
+   glib_api
