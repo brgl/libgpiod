@@ -14,8 +14,13 @@ class ChipInfo:
     """
 
     name: str
+    """Name of the chip."""
+
     label: str
+    """Label of the chip."""
+
     num_lines: int
+    """Number of lines exposed by the chip."""
 
     def __str__(self) -> str:
         return f'<ChipInfo name="{self.name}" label="{self.label}" num_lines={self.num_lines}>'

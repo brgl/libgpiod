@@ -16,17 +16,29 @@ class LineInfo:
     """
 
     offset: int
+    """Offset of the line."""
     name: str
+    """Name of the line."""
     used: bool
+    """Indicates whether line is in use."""
     consumer: str
+    """Name of the consumer of the line."""
     direction: Direction
+    """Direction setting of the line."""
     active_low: bool
+    """Active-low setting of the line."""
     bias: Bias
+    """Bias setting of the line."""
     drive: Drive
+    """Drive setting of the line."""
     edge_detection: Edge
+    """Edge detection setting of the line."""
     event_clock: Clock
+    """Event clock setting used for edge event timestamps for the line."""
     debounced: bool
+    """Indicates whether line is debounced."""
     debounce_period: timedelta
+    """Debounce period of the line."""
 
     def __init__(
         self,
