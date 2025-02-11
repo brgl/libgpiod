@@ -24,7 +24,7 @@ endif
 
 if WITH_TOOLS
 
-SUBDIRS += tools man
+SUBDIRS += tools
 
 endif
 
@@ -41,6 +41,12 @@ SUBDIRS += bindings
 if WITH_DBUS
 
 SUBDIRS += dbus
+
+endif
+
+if WITH_MANPAGES
+
+SUBDIRS += man
 
 endif
 
