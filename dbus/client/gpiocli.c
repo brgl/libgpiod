@@ -107,7 +107,7 @@ static gchar *make_description(void)
 	const GPIOCliCmd *cmd;
 
 	for (cmd = &cli_cmds[0]; cmd->name; cmd++)
-		g_string_append_printf(descr, "  %s - %s\n",
+		g_string_append_printf(descr, "  - %s:\n\t%s\n",
 				       cmd->name, cmd->descr);
 
 	g_string_truncate(descr, descr->len - 1);
