@@ -24,11 +24,6 @@ namespace gpiod {
 namespace line {
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Wrapper around unsigned int for representing line offsets.
  */
 class offset
@@ -264,10 +259,6 @@ using value_mappings = ::std::vector<value_mapping>;
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const value_mappings& mappings);
-
-/**
- * @}
- */
 
 } /* namespace line */
 

@@ -22,11 +22,6 @@ namespace gpiod {
 class line_config;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Stores GPIO line settings.
  */
 class line_settings final
@@ -192,10 +187,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const line_settings& settings);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 
