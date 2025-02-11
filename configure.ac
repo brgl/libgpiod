@@ -328,12 +328,16 @@ then
 fi
 
 AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
-AM_CONDITIONAL([HAS_DOXYGEN], [test "x$has_doxygen" = xtrue])
+AC_CHECK_PROG([has_sphinx], [sphinx-build], [true], [false])
+AM_CONDITIONAL([WITH_DOCS], [test "x$has_doxygen" = xtrue && test "x$has_sphinx" = xtrue])
 if test "x$has_doxygen" = xfalse
 then
 	AC_MSG_NOTICE([doxygen not found - documentation cannot be generated])
 fi
-AM_COND_IF([HAS_DOXYGEN], [AC_CONFIG_FILES([Doxyfile])])
+if test "x$has_sphinx" = xfalse
+then
+	AC_MSG_NOTICE([sphinx-build not found - documentation cannot be generated])
+fi
 
 if test "x$cross_compiling" = xno
 then
@@ -350,6 +354,7 @@ AC_CONFIG_FILES([Makefile
 		 lib/Makefile
 		 lib/libgpiod.pc
 		 contrib/Makefile
+		 docs/Makefile
 		 examples/Makefile
 		 tools/Makefile
 		 tests/Makefile

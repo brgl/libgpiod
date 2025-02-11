@@ -50,15 +50,13 @@ SUBDIRS += man
 
 endif
 
-if HAS_DOXYGEN
+if WITH_DOCS
 
-doc: Doxyfile
-	$(AM_V_GEN)doxygen Doxyfile
-.PHONY: doc
+SUBDIRS += docs
 
-clean-local:
-	rm -rf doc
+docs:
+	$(MAKE) -C docs docs
 
-EXTRA_DIST += Doxyfile
+.PHONY: docs
 
 endif
