@@ -10,8 +10,12 @@
 High-level language bindings to libgpiod
 ========================================
 
-The bindings provide a more straightforward interface to the base, low-level
-C library.
+Bindings provide a more straightforward interface to the core, low-level
+C library. Object-oriented bindings for C++, GLib, python3 and Rust are
+provided as part of the project. They can be enabled by passing
+``--enable-bindings-cxx``, ``--enable-bindings-glib``,
+``--enable-bindings-python`` and ``--enable-bindings-rust`` arguments to
+configure respectively.
 
 .. toctree::
    :maxdepth: 1
@@ -20,3 +24,4 @@ C library.
    cpp_api
    python_api
    glib_api
+   rust_api

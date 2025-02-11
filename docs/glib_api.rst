@@ -15,6 +15,9 @@ interface to interact with GPIO (General Purpose Input/Output) lines on Linux
 systems. These bindings leverage the **GObject framework**, commonly used in
 GNOME and GTK+ applications, to wrap the lower-level C API of libgpiod.
 
+.. note::
+   GLib bindings require GLib (as well as GObject, GIO and GIO-Unix) v2.80.
+
 .. warning::
    The documentation for GObject bindings is generated using gi-docgen and
    cannot be easily integrated with sphinx documentation. Please navigate to

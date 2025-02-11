@@ -17,6 +17,10 @@ easily through Python scripts, enabling tasks such as reading input values,
 setting outputs, monitoring events, and configuring more fine-grained pin
 options.
 
+.. note::
+   Python bindings require python3 support and libpython development files for
+   building from sources.
+
 .. toctree::
    :maxdepth: 1
    :caption: Contents
@@ -31,3 +35,7 @@ options.
    python_line_settings
    python_line_request
    python_misc
+
+.. note::
+   Python bindings can be installed from https://pypi.org/ with pip by running
+   ``pip install gpiod``.
