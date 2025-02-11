@@ -24,6 +24,8 @@ build:
       - gir1.2-glib-2.0-dev
       - gobject-introspection
       - graphviz
+      - libglib2.0-dev-bin
+      - libgudev-1.0-dev
       - libtool
       - pandoc
       - pkg-config

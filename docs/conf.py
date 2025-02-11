@@ -92,6 +92,7 @@ subprocess.run(
         "--enable-bindings-glib",
         "--enable-introspection",
         "--enable-tools",
+        "--enable-dbus",
     ],
     check=True,
 )
@@ -105,6 +106,20 @@ for page in [
     "gpioset",
     "gpiomon",
     "gpionotify",
+    "gpio-manager",
+    "gpiocli",
+    "gpiocli-detect",
+    "gpiocli-find",
+    "gpiocli-info",
+    "gpiocli-get",
+    "gpiocli-monitor",
+    "gpiocli-notify",
+    "gpiocli-reconfigure",
+    "gpiocli-release",
+    "gpiocli-request",
+    "gpiocli-requests",
+    "gpiocli-set",
+    "gpiocli-wait",
 ]:
     subprocess.run(
         [
@@ -118,3 +133,5 @@ for page in [
         ],
         check=True,
     )
+
+subprocess.run(["gdbus-codegen", "--generate-rst", "dbus", "../dbus/lib/io.gpiod1.xml"])
