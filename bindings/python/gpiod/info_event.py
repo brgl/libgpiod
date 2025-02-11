@@ -16,13 +16,21 @@ class InfoEvent:
     """
 
     class Type(Enum):
+        """Line status change event types."""
+
         LINE_REQUESTED = _ext.INFO_EVENT_TYPE_LINE_REQUESTED
+        """Line has been requested."""
         LINE_RELEASED = _ext.INFO_EVENT_TYPE_LINE_RELEASED
+        """Previously requested line has been released."""
         LINE_CONFIG_CHANGED = _ext.INFO_EVENT_TYPE_LINE_CONFIG_CHANGED
+        """Line configuration has changed."""
 
     event_type: Type
+    """Event type of the status change event."""
     timestamp_ns: int
+    """Timestamp of the event."""
     line_info: LineInfo
+    """Snapshot of line-info associated with the event."""
 
     def __init__(self, event_type: int, timestamp_ns: int, line_info: LineInfo):
         object.__setattr__(self, "event_type", InfoEvent.Type(event_type))

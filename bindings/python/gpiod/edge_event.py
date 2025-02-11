@@ -15,14 +15,23 @@ class EdgeEvent:
     """
 
     class Type(Enum):
+        """Possible edge event types."""
+
         RISING_EDGE = _ext.EDGE_EVENT_TYPE_RISING
+        """Rising edge event."""
         FALLING_EDGE = _ext.EDGE_EVENT_TYPE_FALLING
+        """Falling edge event."""
 
     event_type: Type
+    """Edge event type."""
     timestamp_ns: int
+    """Timestamp of the event in nanoseconds."""
     line_offset: int
+    """Offset of the line on which this event was registered."""
     global_seqno: int
+    """Global sequence number of this event."""
     line_seqno: int
+    """Event sequence number specific to the concerned line."""
 
     def __init__(
         self,
