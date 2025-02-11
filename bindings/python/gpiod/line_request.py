@@ -21,10 +21,8 @@ class LineRequest:
 
     def __init__(self, req: _ext.Request):
         """
-        DON'T USE
-
-        LineRequest objects can only be instantiated by a Chip parent. This is
-        not part of stable API.
+        Note: LineRequest objects can only be instantiated by a Chip parent.
+        LineRequest.__init__() is not part of stable API.
         """
         self._req = req
 
