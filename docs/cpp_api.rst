@@ -15,6 +15,9 @@ core C API. These bindings make it easier to work with GPIO lines in C++ by
 offering an **object-oriented** approach and **RAII** (Resource Acquisition
 Is Initialization) principles for managing resources.
 
+.. note::
+   C++17 compiler support is required to build the bindings.
+
 .. toctree::
    :maxdepth: 1
    :caption: Contents
