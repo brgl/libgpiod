@@ -3,3 +3,11 @@
 
 doxygen-output
 sphinx-output
+
+# Automatically generated .rst
+gpiodetect.rst
+gpioinfo.rst
+gpioget.rst
+gpioset.rst
+gpiomon.rst
+gpionotify.rst
