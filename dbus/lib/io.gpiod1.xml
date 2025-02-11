@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-<!-- SPDX-FileCopyrightText: 2022-2024 Bartosz Golaszewski <bartosz.golaszewski@linaro.org> -->
+<!-- SPDX-FileCopyrightText: 2022-2025 Bartosz Golaszewski <bartosz.golaszewski@linaro.org> -->
 
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
@@ -54,58 +54,60 @@
       contains the list of default output values which are only used in output
       mode.
 
-      Available line config options:
+      **Available line config options:**
 
-        "direction" => String representing the line direction. Accepts the
-                       following values: "input", "output".
-        "edge" => String representing the edge detection setting. Accepts the
-                  following values: "falling", "rising", "both".
-        "active-low" => Boolean representing the active-low setting.
-        "drive" => String representing the drive settings. Accepts the
-                   following values: "push-pull", "open-drain", "open-source".
-        "bias" => String representing the internal bias settings. Accepts the
-                  following values: "disabled", "pull-up", "pull-down", "as-is".
-        "debounce-period" => Debounce period in microseconds represented as a
-                             signed, 64-bit integer.
-        "event-clock" => String representing the clock used to timestamp edge
-                         events. Accepts the following values: "monotonic",
-                         "realtime", "hte".
+      - **"direction"**: String representing the line direction.
+        Accepts the following values: "input", "output".
+      - **"edge"**: String representing the edge detection setting.
+        Accepts the following values: "falling", "rising", "both".
+      - **"active-low"**: Boolean representing the active-low setting.
+      - **"drive"**: String representing the drive settings.
+        Accepts the following values: "push-pull", "open-drain", "open-source".
+      - **"bias"**: String representing the internal bias settings.
+        Accepts the following values: "disabled", "pull-up", "pull-down", "as-is".
+      - **"debounce-period"**: Debounce period in microseconds, represented as a
+        signed 64-bit integer.
+      - **"event-clock"**: String representing the clock used to timestamp edge
+        events.
+        Accepts the following values: "monotonic", "realtime", "hte".
 
       Output values are applied to the lines in the order they appear in the
       settings mappings.
 
-      Example variant that allows to request lines at offsets 1, 5 and 11 in
-      output, push-pull and active-low modes and specifies the output values
-      as active (as visualized with g_variant_print()):
+      **Example variant** that allows requesting lines at offsets 1, 5, and 11
+      in output, push-pull, and active-low modes, and specifies the output
+      values as active (as visualized with `g_variant_print()`):
 
-        // Line config tuple
-        (
-          // Array of line settings mappings
-          [
-            // Single mapping tuple
-            (
-              // Offsets to map
-              [1, 5, 11],
-              // Line settings dict
-              {
-                'direction': <'output'>,
-                'drive': <'push-pull'>,
-                'active-low': <true>
-              }
-            )
-          ],
-          // Output values
-          [1, 1, 1]
-        )
+      .. code-block:: none
+
+          // Line config tuple
+          (
+            // Array of line settings mappings
+            [
+              // Single mapping tuple
+              (
+                // Offsets to map
+                [1, 5, 11],
+                // Line settings dict
+                {
+                  'direction': <'output'>,
+                  'drive': <'push-pull'>,
+                  'active-low': <true>
+                }
+              )
+            ],
+            // Output values
+            [1, 1, 1]
+          )
 
       Request configuration is a hashmap mapping names of the available config
       options to their values wrapped in a variant.
 
-      Available request config options:
+      **Available request config options:**
 
-        "consumer" => Consumer name as a string
-        "event-buffer-size" => Requested size of the in-kernel edge event
-                               buffer as an unsigned 32-bit integer.
+      - **"consumer"**: Consumer name as a string.
+      - **"event-buffer-size"**: Requested size of the in-kernel edge event buffer,
+        as an unsigned 32-bit integer.
 
       The object path to the new request is returned on success. The user
       should wait for it to appear before trying to use the requested lines in
@@ -239,8 +241,7 @@
 
     <!--
       EdgeEvent:
-      @event_data: Contains the edge (1 for rising, 0 for falling), timestamp
-                   in nanoseconds and the global & line-local sequence numbers.
+      @event_data: Edge, timestamp and the global & line-local sequence numbers.
 
       If the line is managed by the gpio-manager and is requested with edge
       detection enabled then this signal will be emitted for every edge event
@@ -249,6 +250,9 @@
       D-Bus EdgeEvent signals are designed for low-to-medium frequency
       interrupts. If you performance better than the order of tens of HZ, you
       should probably access the line directly using the kernel uAPI.
+
+      The edge contains 1 for rising and 0 for falling. The timestamp is
+      expressed in nanoseconds.
     -->
     <signal name='EdgeEvent'>
       <arg name='event_data' type='(ittt)'/>
@@ -287,11 +291,13 @@
 
     <!--
       ReconfigureLines:
-      @line_config: Line configuration. Refer to the RequestLines method of
-                    the io.gpiod1.Chip interface for details.
+      @line_config: Line configuration.
 
       Change the configuration of lines held by this request object without
       releasing them.
+
+      Refer to the RequestLines method of the io.gpiod1.Chip interface for
+      details on line configuration.
     -->
     <method name='ReconfigureLines'>
       <arg name='line_config' direction='in' type='(a(aua{sv})ai)'/>
