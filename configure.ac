@@ -307,6 +307,7 @@ then
 	fi
 fi
 AM_CONDITIONAL([HAS_GI_DOCGEN], [test "x$has_gi_docgen" = xtrue])
+AM_COND_IF([HAS_GI_DOCGEN], [AC_CONFIG_FILES([bindings/glib/gi-docgen.toml])])
 
 # GObject-introspection
 found_introspection=no
