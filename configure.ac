@@ -3,8 +3,9 @@
 
 AC_PREREQ([2.71])
 
-AC_INIT([libgpiod], [2.2])
+AC_INIT([libgpiod], [2.2], [], [],
 AC_SUBST(EXTRA_VERSION, [])
+	[https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/])
 
 AC_DEFINE_UNQUOTED([GPIOD_VERSION_STR],
 			["$PACKAGE_VERSION$EXTRA_VERSION"],
