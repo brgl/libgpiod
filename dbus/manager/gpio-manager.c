@@ -85,6 +85,14 @@ static void print_version_and_exit(void)
 
 static void parse_opts(int argc, char **argv)
 {
+	static const char *const description =
+"The gpio-manager is the reference implementation of the GPIO D-Bus API\n"
+"built on top of libgpiod. It serves as the central authority managing GPIO\n"
+"chips and lines, exposing their functionalities to other applications\n"
+"through the D-Bus interface. It supports operations such as requesting,\n"
+"releasing, and setting line values, as well as monitoring events like rising\n"
+"or falling edges and line property changes.";
+
 	gboolean ret, opt_debug = FALSE, opt_version = FALSE;
 	g_autoptr(GOptionContext) ctx = NULL;
 	g_auto(GStrv) remaining = NULL;
@@ -118,6 +126,7 @@ static void parse_opts(int argc, char **argv)
 
 	ctx = g_option_context_new(NULL);
 	g_option_context_set_summary(ctx, "D-Bus daemon managing GPIOs.");
+	g_option_context_set_description(ctx, description);
 	g_option_context_add_main_entries(ctx, opts, NULL);
 
 	ret = g_option_context_parse(ctx, &argc, &argv, &err);
