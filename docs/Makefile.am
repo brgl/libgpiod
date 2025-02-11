@@ -31,7 +31,18 @@ DOCS_DEPS = \
 	cpp_misc.rst \
 	cpp_request_config.rst \
 	Doxyfile \
-	index.rst
+	index.rst \
+	python_api.rst \
+	python_chip_info.rst \
+	python_chip.rst \
+	python_edge_event.rst \
+	python_exceptions.rst \
+	python_info_event.rst \
+	python_line_info.rst \
+	python_line_request.rst \
+	python_line.rst \
+	python_line_settings.rst \
+	python_misc.rst
 
 docs: $(DOCS_DEPS)
 	pushd ..; sphinx-build ./docs/ ./docs/sphinx-output; popd

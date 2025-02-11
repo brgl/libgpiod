@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 project = "libgpiod"
 copyright = "2017-2025, Bartosz Golaszewski"
@@ -34,10 +35,13 @@ with open("../configure.ac", "r") as fd:
 
         release = f"{version}{extra}"
 
-extensions = ["breathe"]
+extensions = ["breathe", "sphinx.ext.autodoc"]
 
 breathe_projects = {"libgpiod": "./doxygen-output/xml"}
 breathe_default_project = "libgpiod"
+
+sys.path.insert(0, str(Path("../bindings/python").resolve()))
+autodoc_mock_imports = ["gpiod._ext"]
 
 # Use the RTD theme if available
 sphinx_rtd_theme = None
