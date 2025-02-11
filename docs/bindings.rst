@@ -18,3 +18,4 @@ C library.
    :caption: Contents
 
    cpp_api
+   python_api
