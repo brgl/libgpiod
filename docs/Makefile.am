@@ -33,6 +33,7 @@ DOCS_DEPS = \
 	Doxyfile \
 	index.rst \
 	glib_api.rst \
+	gpio_tools.rst \
 	python_api.rst \
 	python_chip_info.rst \
 	python_chip.rst \

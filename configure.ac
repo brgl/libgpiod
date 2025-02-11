@@ -327,18 +327,6 @@ then
 		      AC_MSG_ERROR([systemdsystemunitdir not found - needed to enable systemd support]))
 fi
 
-AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
-AC_CHECK_PROG([has_sphinx], [sphinx-build], [true], [false])
-AM_CONDITIONAL([WITH_DOCS], [test "x$has_doxygen" = xtrue && test "x$has_sphinx" = xtrue])
-if test "x$has_doxygen" = xfalse
-then
-	AC_MSG_NOTICE([doxygen not found - documentation cannot be generated])
-fi
-if test "x$has_sphinx" = xfalse
-then
-	AC_MSG_NOTICE([sphinx-build not found - documentation cannot be generated])
-fi
-
 if test "x$cross_compiling" = xno
 then
 	AC_CHECK_PROG([has_help2man], [help2man], [true], [false])
@@ -346,7 +334,25 @@ fi
 AM_CONDITIONAL([WITH_MANPAGES], [test "x$has_help2man" = xtrue])
 if test "x$has_help2man" = xfalse
 then
-	AC_MSG_NOTICE([help2man not found - man pages cannot be generated automatically])
+	AC_MSG_NOTICE([help2man not found - man pages and documentation cannot be generated])
+fi
+
+AC_DEFUN([DOC_PROG_NOT_FOUND], [AC_MSG_NOTICE([$1 not found - documentation cannot be generated])])
+AC_CHECK_PROG([has_doxygen], [doxygen], [true], [false])
+AC_CHECK_PROG([has_sphinx], [sphinx-build], [true], [false])
+AC_CHECK_PROG([has_pandoc], [pandoc], [true], [false])
+AM_CONDITIONAL([WITH_DOCS], [test "x$has_doxygen" = xtrue && test "x$has_sphinx" = xtrue && test "x$has_pandoc" = xtrue && test "x$has_help2man" = xtrue])
+if test "x$has_doxygen" = xfalse
+then
+	DOC_PROG_NOT_FOUND(["doxygen"])
+fi
+if test "x$has_sphinx" = xfalse
+then
+	DOC_PROG_NOT_FOUND(["sphinx-build"])
+fi
+if test "x$has_pandoc" = xfalse
+then
+	DOC_PROG_NOT_FOUND(["pandoc"])
 fi
 
 AC_CONFIG_FILES([Makefile

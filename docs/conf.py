@@ -91,8 +91,30 @@ subprocess.run(
         "--enable-tools",
         "--enable-bindings-glib",
         "--enable-introspection",
+        "--enable-tools",
     ],
     check=True,
 )
 subprocess.run(["make", "-j"], check=True)
 os.chdir(cwd)
+
+for page in [
+    "gpiodetect",
+    "gpioinfo",
+    "gpioget",
+    "gpioset",
+    "gpiomon",
+    "gpionotify",
+]:
+    subprocess.run(
+        [
+            "pandoc",
+            "--from=man",
+            "--to=rst",
+            "--standalone",
+            "--wrap=none",
+            f"--output={page}.rst",
+            f"../man/{page}.man",
+        ],
+        check=True,
+    )

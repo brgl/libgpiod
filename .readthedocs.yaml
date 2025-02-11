@@ -19,11 +19,13 @@ build:
       - autoconf-archive
       # doxygen is available by default, but just in case.
       - doxygen
+      - help2man
       - gi-docgen
       - gir1.2-glib-2.0-dev
       - gobject-introspection
       - graphviz
       - libtool
+      - pandoc
       - pkg-config
 
 sphinx:
