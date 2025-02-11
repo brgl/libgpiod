@@ -18,11 +18,6 @@
 namespace gpiod {
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Stores the edge and info event timestamps as returned by the kernel
  *        and allows to convert them to std::chrono::time_point.
  */
@@ -113,10 +108,6 @@ public:
 private:
 	::std::uint64_t _m_ns;
 };
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

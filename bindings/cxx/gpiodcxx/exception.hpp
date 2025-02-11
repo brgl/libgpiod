@@ -18,11 +18,6 @@
 namespace gpiod {
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Exception thrown when an already closed chip is used.
  */
 class GPIOD_CXX_API chip_closed final : public ::std::logic_error
@@ -148,10 +143,6 @@ public:
 
 	~bad_mapping();
 };
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

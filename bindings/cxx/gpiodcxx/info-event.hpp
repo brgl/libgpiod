@@ -24,11 +24,6 @@ class chip;
 class line_info;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Immutable object containing data about a single line info event.
  */
 class info_event final
@@ -113,10 +108,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const info_event& event);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

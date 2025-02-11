@@ -23,11 +23,6 @@ class line_request;
 class request_config;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Intermediate object storing the configuration for a line request.
  */
 class request_builder final
@@ -147,10 +142,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const request_builder& builder);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 

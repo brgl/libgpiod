@@ -23,11 +23,6 @@ class chip;
 class info_event;
 
 /**
- * @ingroup gpiod_cxx
- * @{
- */
-
-/**
  * @brief Contains an immutable snapshot of the line's state at the
  *        time when the object of this class was instantiated.
  */
@@ -166,10 +161,6 @@ private:
  * @return Reference to out.
  */
 ::std::ostream& operator<<(::std::ostream& out, const line_info& info);
-
-/**
- * @}
- */
 
 } /* namespace gpiod */
 
