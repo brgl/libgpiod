@@ -4,3 +4,4 @@
 *.gir
 *.typelib
 Gpiodglib-1.0
+gi-docgen.toml
