@@ -11,3 +11,9 @@ gpioget.rst
 gpioset.rst
 gpiomon.rst
 gpionotify.rst
+
+gpio-manager.rst
+
+dbus-io.gpiod1.*.rst
+gpiocli.rst
+gpiocli-*.rst

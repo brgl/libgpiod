@@ -30,10 +30,13 @@ DOCS_DEPS = \
 	cpp_line_settings.rst \
 	cpp_misc.rst \
 	cpp_request_config.rst \
+	dbus.rst \
+	dbus_api.rst \
 	Doxyfile \
 	index.rst \
 	glib_api.rst \
 	gpio_tools.rst \
+	gpiocli_top.rst \
 	python_api.rst \
 	python_chip_info.rst \
 	python_chip.rst \
