@@ -6,7 +6,6 @@
 *.la
 generated-*.c
 generated-*.h
-doc
 *.pc
 *.tar.gz
 *.patch
@@ -16,7 +15,6 @@ tags
 # autotools stuff
 .deps/
 .libs/
-Doxyfile
 Makefile
 Makefile.in
 aclocal.m4
