@@ -32,6 +32,7 @@ DOCS_DEPS = \
 	cpp_request_config.rst \
 	Doxyfile \
 	index.rst \
+	glib_api.rst \
 	python_api.rst \
 	python_chip_info.rst \
 	python_chip.rst \
