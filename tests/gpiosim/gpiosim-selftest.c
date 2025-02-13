@@ -148,6 +148,35 @@ int main(int argc UNUSED, char **argv UNUSED)
 		return EXIT_FAILURE;
 	}
 
+	printf("Re-enabling the GPIO device\n");
+
+	ret = gpiosim_dev_enable(dev);
+	if (ret) {
+		perror("Unable to re-enable the device");
+		return EXIT_FAILURE;
+	}
+
+	printf("Checking the pull has been reset\n");
+
+	ret = gpiosim_bank_get_pull(bank0, 6);
+	if (ret < 0) {
+		perror("Unable to read the pull");
+		return EXIT_FAILURE;
+	}
+
+	if (ret != GPIOSIM_PULL_DOWN) {
+		fprintf(stderr, "Invalid pull value read\n");
+		return EXIT_FAILURE;
+	}
+
+	printf("Re-disabling the device\n");
+
+	ret = gpiosim_dev_disable(dev);
+	if (ret) {
+		perror("Error while re-disabling the device");
+		return EXIT_FAILURE;
+	}
+
 	gpiosim_bank_unref(bank1);
 	gpiosim_bank_unref(bank0);
 	gpiosim_dev_unref(dev);
