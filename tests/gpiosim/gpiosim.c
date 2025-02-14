@@ -404,12 +404,14 @@ struct gpiosim_dev {
 	int cfs_dir_fd;
 	int sysfs_dir_fd;
 	struct list_head banks;
+	struct list_head deferred_banks;
 };
 
 struct gpiosim_bank {
 	struct refcount refcnt;
 	struct gpiosim_dev *dev;
 	struct list_head siblings;
+	struct list_head deferred;
 	char *item_name;
 	int id;
 	char *chip_name;
@@ -633,6 +635,7 @@ GPIOSIM_API struct gpiosim_dev *gpiosim_dev_new(struct gpiosim_ctx *ctx)
 	memset(dev, 0, sizeof(*dev));
 	refcount_init(&dev->refcnt, dev_release);
 	list_init(&dev->banks);
+	list_init(&dev->deferred_banks);
 	dev->cfs_dir_fd = configfs_fd;
 	dev->sysfs_dir_fd = -1;
 	dev->item_name = item_name;
@@ -826,8 +829,33 @@ GPIOSIM_API int gpiosim_dev_enable(struct gpiosim_dev *dev)
 	return 0;
 }
 
+static void bank_release_finish(struct gpiosim_bank *bank)
+{
+	struct gpiosim_dev *dev = bank->dev;
+	struct gpiosim_line *line, *tmp;
+	char buf[64];
+
+	list_for_each_entry_safe(line, tmp, &bank->lines, siblings) {
+		snprintf(buf, sizeof(buf), "line%u/hog", line->offset);
+		unlinkat(bank->cfs_dir_fd, buf, AT_REMOVEDIR);
+
+		snprintf(buf, sizeof(buf), "line%u", line->offset);
+		unlinkat(bank->cfs_dir_fd, buf, AT_REMOVEDIR);
+
+		list_del(&line->siblings);
+		free(line);
+	}
+
+	close(bank->cfs_dir_fd);
+	unlinkat(dev->cfs_dir_fd, bank->item_name, AT_REMOVEDIR);
+	free(bank->item_name);
+	id_free(bank->id);
+	free(bank);
+}
+
 GPIOSIM_API int gpiosim_dev_disable(struct gpiosim_dev *dev)
 {
+	struct gpiosim_bank *bank, *tmp;
 	int ret;
 
 	if (!dev_check_live(dev))
@@ -836,6 +864,11 @@ GPIOSIM_API int gpiosim_dev_disable(struct gpiosim_dev *dev)
 	ret = open_write_close(dev->cfs_dir_fd, "live", "0");
 	if (ret)
 		return ret;
+
+	list_for_each_entry_safe(bank, tmp, &dev->deferred_banks, deferred) {
+		list_del(&bank->deferred);
+		bank_release_finish(bank);
+	}
 
 	dev_close_sysfs_dirs(dev);
 
@@ -853,32 +886,19 @@ static void bank_release(struct refcount *ref)
 {
 	struct gpiosim_bank *bank = to_gpiosim_bank(ref);
 	struct gpiosim_dev *dev = bank->dev;
-	struct gpiosim_line *line, *tmp;
-	char buf[64];
-
-	list_for_each_entry_safe(line, tmp, &bank->lines, siblings) {
-		snprintf(buf, sizeof(buf), "line%u/hog", line->offset);
-		unlinkat(bank->cfs_dir_fd, buf, AT_REMOVEDIR);
-
-		snprintf(buf, sizeof(buf), "line%u", line->offset);
-		unlinkat(bank->cfs_dir_fd, buf, AT_REMOVEDIR);
-
-		list_del(&line->siblings);
-		free(line);
-	}
 
 	list_del(&bank->siblings);
-	close(bank->cfs_dir_fd);
-	unlinkat(dev->cfs_dir_fd, bank->item_name, AT_REMOVEDIR);
+
+	/*
+	 * If the device is still active, defer removing the bank directories
+	 * until it's disabled. Otherwise, do it now.
+	 */
+	if (dev->live)
+		list_add(&bank->deferred, &dev->deferred_banks);
+	else
+		bank_release_finish(bank);
+
 	gpiosim_dev_unref(dev);
-	if (bank->sysfs_dir_fd >= 0)
-		/* If the device wasn't disabled yet, this fd is still open. */
-		close(bank->sysfs_dir_fd);
-	free(bank->item_name);
-	id_free(bank->id);
-	free(bank->chip_name);
-	free(bank->dev_path);
-	free(bank);
 }
 
 GPIOSIM_API struct gpiosim_bank *gpiosim_bank_new(struct gpiosim_dev *dev)
