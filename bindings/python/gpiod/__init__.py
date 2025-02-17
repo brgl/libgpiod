@@ -14,6 +14,7 @@ from .chip_info import ChipInfo
 from .edge_event import EdgeEvent
 from .exception import ChipClosedError, RequestReleasedError
 from .info_event import InfoEvent
+from .line_info import LineInfo
 from .line_request import LineRequest
 from .line_settings import LineSettings
 from .version import __version__
