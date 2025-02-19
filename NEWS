@@ -2,6 +2,23 @@
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 # SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
+libgpiod v2.2.1
+===============
+
+Buf fixes:
+- fix potential PyDict_Next() crash in python bindings
+- disable the GPIO simulator before releasing it in C++, rust and python
+  bindings tests
+- fix the way we wait for simulated chips to appear in D-Bus command-line
+  client tests
+- make read_edge_events lifetimes more explicit in rust bindings
+- make waiting for info events more reliable in GLib bindings tests
+- defer removal of bank entries when device is not disabled in libgpiosim
+- add missing LineInfo import to __init__.py in python bindings
+
+Improvements:
+- add infrastructure for generating proper sphinx docs
+
 libgpiod v2.2
 =============
 
