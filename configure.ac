@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.71])
 
-AC_INIT([libgpiod], [2.2], [], [],
+AC_INIT([libgpiod], [2.2.1], [], [],
 AC_SUBST(EXTRA_VERSION, [])
 	[https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/])
 
@@ -31,7 +31,7 @@ AC_SUBST(ABI_VERSION, [4.1.1])
 AC_SUBST(ABI_CXX_VERSION, [3.0.1])
 # ABI version for libgpiosim (we need this since it can be installed if we
 # enable tests).
-AC_SUBST(ABI_GPIOSIM_VERSION, [1.1.0])
+AC_SUBST(ABI_GPIOSIM_VERSION, [1.2.0])
 # ... and another one for GLib bindings:
 AC_SUBST(ABI_GLIB_VERSION, [1.0.0])
 
