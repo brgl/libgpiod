@@ -3,7 +3,9 @@
 
 DOCS_DEPS = \
 	bindings.rst \
+	building.rst \
 	conf.py \
+	contributing.rst \
 	core_api.rst \
 	core_chip_info.rst \
 	core_chips.rst \
@@ -47,7 +49,9 @@ DOCS_DEPS = \
 	python_line_request.rst \
 	python_line.rst \
 	python_line_settings.rst \
-	python_misc.rst
+	python_misc.rst \
+	rust_api.rst \
+	testing.rst
 
 docs: $(DOCS_DEPS)
 	pushd ..; sphinx-build ./docs/ ./docs/sphinx-output; popd
