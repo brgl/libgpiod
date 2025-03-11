@@ -21,8 +21,21 @@ together with
 Building
 --------
 
-This is a pretty standard autotools project. The core C library does not have
-any external dependencies other than the standard C library with GNU extensions.
+The core C library does not have any external dependencies other than the
+standard C library with GNU extensions.
+
+The project is built using GNU autotools. In the general case, the steps needed
+to download a source tarball, unpack it, build the library together with the
+command-line tools and install the resulting binaries are as follows:
+
+.. code-block:: none
+
+   wget https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/libgpiod-x.y.z.tar.xz
+   tar -xvf ./libgpiod-x.y.z.tar.xz
+   cd ./libgpiod-x.y.z/
+   ./configure --enable-tools
+   make
+   sudo make install
 
 The build system requires the following packages to be installed on the host
 system for the basic build:
@@ -37,23 +50,30 @@ system for the basic build:
    selected options. The configure script will report any missing additional
    required dependencies.
 
-To build the project (including command-line utilities) run:
-
-.. code-block:: none
-
-   ./autogen.sh --enable-tools=yes
-   make
-
 .. note::
    The command-line tools optionally depend on libedit for the interactive
    feature.
 
-The autogen script will execute ``./configure`` and pass all the command-line
-arguments to it.
+The project can also be built directly from the git repository. However in this
+case the configure script does not exist and must be created first - either by
+calling ``autoreconf``:
+
+.. code-block:: none
+
+   autoreconf -ifv
+   ./configure --enable-tools
+   make
+
+Or by executing the provided ``autogen.sh`` script directly from the git tree:
+
+.. code-block:: none
+
+   ./autogen.sh --enable-tools
+   make
 
 .. note::
-   If building from release tarballs, the configure script is already provided
-   and there's no need to invoke autogen.sh.
+   The autogen script will execute ``./configure`` and pass all the
+   command-line arguments to it.
 
 For all configure features, see: ``./configure --help``.
 
