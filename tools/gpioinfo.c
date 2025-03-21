@@ -137,6 +137,7 @@ static bool resolve_line(struct line_resolver *resolver,
 
 static void print_line_info(struct gpiod_line_info *info, bool unquoted_strings)
 {
+	bool unquoted_name = unquoted_strings;
 	char quoted_name[17];
 	const char *name;
 	int len;
@@ -144,10 +145,10 @@ static void print_line_info(struct gpiod_line_info *info, bool unquoted_strings)
 	name = gpiod_line_info_get_name(info);
 	if (!name) {
 		name = "unnamed";
-		unquoted_strings = true;
+		unquoted_name = true;
 	}
 
-	if (unquoted_strings) {
+	if (unquoted_name) {
 		printf("%-16s\t", name);
 	} else {
 		len = strlen(name);
