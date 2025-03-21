@@ -478,6 +478,24 @@ test_gpioinfo_with_offset_out_of_range() {
 	status_is 1
 }
 
+test_gpioinfo_quoted_output_consistency() {
+	gpiosim_chip sim0 num_lines=2 line_name=0:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpioset --chip=$sim0 0=active 1=active
+
+	run_prog gpioinfo --chip=$sim0
+
+	status_is 0
+	num_lines_is 3
+	output_regex_match "line\\s+0:\\s+\"foo\"\\s+output\\s+consumer=\"gpioset\""
+	output_regex_match "line\\s+1:\\s+unnamed\\s+output\\s+consumer=\"gpioset\""
+
+	dut_kill
+	dut_wait
+}
+
 #
 # gpioget test cases
 #
