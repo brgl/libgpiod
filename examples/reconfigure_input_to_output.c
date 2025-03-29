@@ -71,7 +71,6 @@ static int reconfigure_as_output_line(struct gpiod_line_request *request,
 				      unsigned int offset,
 				      enum gpiod_line_value value)
 {
-	struct gpiod_request_config *req_cfg = NULL;
 	struct gpiod_line_settings *settings;
 	struct gpiod_line_config *line_cfg;
 	int ret = -1;
@@ -94,8 +93,6 @@ static int reconfigure_as_output_line(struct gpiod_line_request *request,
 		goto free_line_config;
 
 	ret = gpiod_line_request_reconfigure_lines(request, line_cfg);
-
-	gpiod_request_config_free(req_cfg);
 
 free_line_config:
 	gpiod_line_config_free(line_cfg);
