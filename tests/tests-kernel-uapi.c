@@ -110,3 +110,90 @@ GPIOD_TEST_CASE(enable_debounce_then_edge_detection)
 
 	g_assert_cmpuint(ts_falling, >, ts_rising);
 }
+
+GPIOD_TEST_CASE(open_drain_emulation)
+{
+	static const guint offset = 2;
+
+	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 8, NULL);
+	g_autoptr(struct_gpiod_chip) chip = NULL;
+	g_autoptr(struct_gpiod_line_settings) settings = NULL;
+	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
+	g_autoptr(struct_gpiod_line_request) request = NULL;
+	g_autoptr(struct_gpiod_line_info) info = NULL;
+	gint ret;
+
+	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
+	settings = gpiod_test_create_line_settings_or_fail();
+	line_cfg = gpiod_test_create_line_config_or_fail();
+
+	gpiod_line_settings_set_direction(settings,
+					  GPIOD_LINE_DIRECTION_OUTPUT);
+	gpiod_line_settings_set_drive(settings, GPIOD_LINE_DRIVE_OPEN_DRAIN);
+	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
+							 settings);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
+
+	ret = gpiod_line_request_set_value(request, offset,
+					   GPIOD_LINE_VALUE_ACTIVE);
+	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
+
+	/*
+	 * The open-drain emulation in the kernel will set the line's direction
+	 * to input but NOT set FLAG_IS_OUT. Let's verify the direction is
+	 * still reported as output.
+	 */
+	info = gpiod_test_chip_get_line_info_or_fail(chip, offset);
+	g_assert_cmpint(gpiod_line_info_get_direction(info), ==,
+			GPIOD_LINE_DIRECTION_OUTPUT);
+	g_assert_cmpint(gpiod_line_info_get_drive(info), ==,
+			GPIOD_LINE_DRIVE_OPEN_DRAIN);
+
+	/*
+	 * The actual line is not being actively driven, so check that too on
+	 * the gpio-sim end.
+	 */
+	g_assert_cmpint(g_gpiosim_chip_get_value(sim, offset), ==,
+			G_GPIOSIM_VALUE_INACTIVE);
+}
+
+GPIOD_TEST_CASE(open_source_emulation)
+{
+	static const guint offset = 2;
+
+	g_autoptr(GPIOSimChip) sim = g_gpiosim_chip_new("num-lines", 8, NULL);
+	g_autoptr(struct_gpiod_chip) chip = NULL;
+	g_autoptr(struct_gpiod_line_settings) settings = NULL;
+	g_autoptr(struct_gpiod_line_config) line_cfg = NULL;
+	g_autoptr(struct_gpiod_line_request) request = NULL;
+	g_autoptr(struct_gpiod_line_info) info = NULL;
+	gint ret;
+
+	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
+	settings = gpiod_test_create_line_settings_or_fail();
+	line_cfg = gpiod_test_create_line_config_or_fail();
+
+	gpiod_line_settings_set_direction(settings,
+					  GPIOD_LINE_DIRECTION_OUTPUT);
+	gpiod_line_settings_set_drive(settings, GPIOD_LINE_DRIVE_OPEN_SOURCE);
+	gpiod_test_line_config_add_line_settings_or_fail(line_cfg, &offset, 1,
+							 settings);
+	request = gpiod_test_chip_request_lines_or_fail(chip, NULL, line_cfg);
+
+	ret = gpiod_line_request_set_value(request, offset,
+					   GPIOD_LINE_VALUE_INACTIVE);
+	g_assert_cmpint(ret, ==, 0);
+	gpiod_test_return_if_failed();
+
+	/*
+	 * The open-source emulation in the kernel will set the line's direction
+	 * to input but NOT set FLAG_IS_OUT. Let's verify the direction is
+	 * still reported as output.
+	 */
+	info = gpiod_test_chip_get_line_info_or_fail(chip, offset);
+	g_assert_cmpint(gpiod_line_info_get_direction(info), ==,
+			GPIOD_LINE_DIRECTION_OUTPUT);
+	g_assert_cmpint(gpiod_line_info_get_drive(info), ==,
+			GPIOD_LINE_DRIVE_OPEN_SOURCE);
+}
