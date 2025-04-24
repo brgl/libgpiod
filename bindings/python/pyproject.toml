@@ -10,14 +10,13 @@ name = "gpiod"
 dynamic = ["version"]
 description = "Python bindings for libgpiod"
 readme = "README.md"
-license = {text = "LGPL-2.1-or-later"}
+license = "LGPL-2.1-or-later"
 requires-python = ">=3.9.0"
 authors = [
   {name = "Bartosz Golaszewski", email = "brgl@bgdev.pl"},
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
-  "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)",
   "Operating System :: POSIX :: Linux",
   "Typing :: Typed",
   "Programming Language :: Python",
