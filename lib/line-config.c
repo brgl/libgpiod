@@ -13,8 +13,10 @@
 #define LINES_MAX (GPIO_V2_LINES_MAX)
 
 struct settings_node {
+	struct settings_node *prev;
 	struct settings_node *next;
 	struct gpiod_line_settings *settings;
+	unsigned int refcnt;
 };
 
 struct per_line_config {
@@ -93,7 +95,7 @@ GPIOD_API int gpiod_line_config_add_line_settings(
 	size_t num_offsets, struct gpiod_line_settings *settings)
 {
 	struct per_line_config *per_line;
-	struct settings_node *node;
+	struct settings_node *node, *old;
 	size_t i;
 
 	assert(config);
@@ -121,14 +123,29 @@ GPIOD_API int gpiod_line_config_add_line_settings(
 		return -1;
 	}
 
+	node->refcnt = 0;
 	node->next = config->sref_list;
+	if (config->sref_list)
+		config->sref_list->prev = node;
+	node->prev = NULL;
 	config->sref_list = node;
 
 	for (i = 0; i < num_offsets; i++) {
 		per_line = find_config(config, offsets[i]);
 
+		node->refcnt++;
 		per_line->offset = offsets[i];
+		old = per_line->node;
 		per_line->node = node;
+
+		if (old && !(--old->refcnt)) {
+			if (old->prev)
+				old->prev->next = old->next;
+			if (old->next)
+				old->next->prev = old->prev;
+			free(old->settings);
+			free(old);
+		}
 	}
 
 	return 0;
