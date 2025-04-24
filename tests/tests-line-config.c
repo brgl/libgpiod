@@ -7,6 +7,8 @@
 #include <gpiod-test.h>
 #include <gpiod-test-common.h>
 #include <gpiosim-glib.h>
+#include <sys/resource.h>
+#include <unistd.h>
 
 #include "helpers.h"
 
@@ -468,4 +470,45 @@ GPIOD_TEST_CASE(handle_duplicate_offsets)
 	g_assert_cmpuint(retrieved[0], ==, 0);
 	g_assert_cmpuint(retrieved[1], ==, 2);
 	g_assert_cmpuint(retrieved[2], ==, 3);
+}
+
+GPIOD_TEST_CASE(dont_allow_line_config_to_balloon_out_of_control)
+{
+	static const guint offsets[] = { 0, 2 };
+
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+	g_autoptr(struct_gpiod_line_settings) settings = NULL;
+	struct rlimit rlim;
+	guint counter;
+	gint ret;
+
+	/*
+	 * Severly limit the available virtual memory and make sure that
+	 * adding settings for the same offsets repeatedly does not trigger
+	 * the OOM killer.
+	 */
+
+	if (g_test_subprocess()) {
+		config = gpiod_test_create_line_config_or_fail();
+		settings = gpiod_test_create_line_settings_or_fail();
+
+		rlim.rlim_cur = rlim.rlim_max = sysconf(_SC_PAGESIZE) * 100;
+		ret = setrlimit(RLIMIT_AS, &rlim);
+		g_assert_cmpint(ret, ==, 0);
+		gpiod_test_return_if_failed();
+
+		for (counter = 1000000; counter; counter--) {
+			gpiod_line_settings_set_direction(settings,
+					counter % 2 ?
+						GPIOD_LINE_DIRECTION_OUTPUT :
+						GPIOD_LINE_DIRECTION_INPUT);
+			gpiod_test_line_config_add_line_settings_or_fail(
+						config, offsets, 2, settings);
+		}
+
+		return;
+	}
+
+	g_test_trap_subprocess(NULL, 0, G_TEST_SUBPROCESS_DEFAULT);
+	g_test_trap_assert_passed();
 }
