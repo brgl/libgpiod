@@ -30,6 +30,9 @@ build:
       - pandoc
       - pkg-config
 
+formats:
+   - pdf
+
 sphinx:
    configuration: docs/conf.py
 
