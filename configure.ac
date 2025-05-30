@@ -229,12 +229,6 @@ if test "x$with_bindings_python" = xtrue
 then
 	AM_PATH_PYTHON([3.9], [],
 		[AC_MSG_ERROR([python3 not found - needed for python bindings])])
-	AC_CHECK_PROG([has_python_config], [python3-config], [true], [false])
-
-	if test "x$has_python_config" = xfalse
-	then
-		AC_MSG_ERROR([python3-config not found - needed for python bindings])
-	fi
 fi
 
 AC_ARG_ENABLE([bindings-rust],
