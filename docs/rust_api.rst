@@ -5,19 +5,25 @@
 ..
    This file is part of libgpiod.
 
-Where are the Rust bindings?
-=============================
+   libgpiod Rust bindings documentation
 
-.. warning::
-   There's currently no good way of integrating rust documentation with sphinx.
-   Rust bindings should be documented on https://docs.rs/ but due to a yet
-   unsolved build problem, this is currently not the case. Please refer to the
-   in-source comments for now.
+libgpiod Rust bindings API
+==========================
 
-Rust bindings are available on https://crates.io/ as the ``libgpiod`` package.
+Rust bindings for libgpiod aim to provide a memory-safe interface to the
+low-level C API. They are available on https://crates.io/ as the ``libgpiod``
+package.
 
 .. note::
    When building the Rust bindings along the C library using make, they will
    be automatically configured to build against the build results of the
    C library. Building rust bindings requires cargo to be available on the
    system.
+
+.. warning::
+   The documentation for Rust bindings is generated using ``cargo doc`` and
+   cannot be easily integrated with sphinx documentation. Please navigate to
+   a separate section dedicated exclusively to the Rust part of the API.
+
+
+`Navigate to Rust bindings documentation <rust/doc/libgpiod/index.html>`_
