@@ -61,15 +61,15 @@ html_theme = "sphinx_rtd_theme" if sphinx_rtd_theme else "default"
 def make_glib_docs(app):
     # For some reason on RTD we're in the docs/ directory while during a local
     # build, we're still in the top source directory.
-    prefix = "../" if os.getenv("READTHEDOCS") == "True" else ""
+    prefix = "../" if os.getenv("READTHEDOCS") == "True" else "./"
 
     subprocess.run(
         [
             "gi-docgen",
             "generate",
             "--config",
-            f"{prefix}bindings/glib/gi-docgen.toml",
-            f"{prefix}bindings/glib/Gpiodglib-1.0.gir",
+            f"{prefix}/bindings/glib/gi-docgen.toml",
+            f"{prefix}/bindings/glib/Gpiodglib-1.0.gir",
             "--output-dir",
             f"{app.outdir}",
         ],
