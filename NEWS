@@ -5,7 +5,7 @@
 libgpiod v2.2.1
 ===============
 
-Buf fixes:
+Bug fixes:
 - fix potential PyDict_Next() crash in python bindings
 - disable the GPIO simulator before releasing it in C++, rust and python
   bindings tests
