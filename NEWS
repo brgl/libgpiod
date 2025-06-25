@@ -2,6 +2,15 @@
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 # SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
+libgpiod v2.2.2
+===============
+
+Bug fixes:
+- don't implicity unquote unnamed lines in gpioinfo
+- remove useless variable in reconfigure example
+- don't let struct line_config balloon out of control and trigger an OOM
+- drop python3-config check from configure.ac
+
 libgpiod v2.2.1
 ===============
 
