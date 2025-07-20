@@ -46,7 +46,7 @@ impl Settings {
         Ok(Self { settings })
     }
 
-    pub fn new_with_settings(settings: *mut gpiod::gpiod_line_settings) -> Self {
+    pub(crate) fn new_with_settings(settings: *mut gpiod::gpiod_line_settings) -> Self {
         Self { settings }
     }
 
