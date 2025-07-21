@@ -24,6 +24,6 @@ fn main() -> libgpiod::Result<()> {
     let request = chip.request_lines(Some(&rconfig), &lconfig)?;
     let values = request.values()?;
 
-    println!("{:?}", values);
+    println!("{values:?}");
     Ok(())
 }

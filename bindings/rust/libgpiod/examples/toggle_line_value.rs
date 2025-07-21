@@ -34,7 +34,7 @@ fn main() -> libgpiod::Result<()> {
     let mut req = chip.request_lines(Some(&rconfig), &lconfig)?;
 
     loop {
-        println!("{}={:?}", line_offset, value);
+        println!("{line_offset}={value:?}");
         std::thread::sleep(Duration::from_secs(1));
         value = toggle_value(value);
         req.set_value(line_offset, value)?;

@@ -23,6 +23,6 @@ fn main() -> libgpiod::Result<()> {
     let request = chip.request_lines(Some(&rconfig), &lconfig)?;
 
     let value = request.value(line_offset)?;
-    println!("{}={:?}", line_offset, value);
+    println!("{line_offset}={value:?}");
     Ok(())
 }

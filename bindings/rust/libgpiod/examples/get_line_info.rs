@@ -29,8 +29,7 @@ fn main() -> libgpiod::Result<()> {
     };
 
     println!(
-        "line {:>3}: {:>12} {:>12} {:>8} {:>10}",
-        line_offset, name, consumer, dir, low
+        "line {line_offset:>3}: {name:>12} {consumer:>12} {dir:>8} {low:>10}"
     );
 
     Ok(())

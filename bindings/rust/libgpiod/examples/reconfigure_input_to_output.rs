@@ -25,7 +25,7 @@ fn main() -> libgpiod::Result<()> {
 
     // read the current line value
     let value = request.value(line_offset)?;
-    println!("{}={:?} (input)", line_offset, value);
+    println!("{line_offset}={value:?} (input)");
 
     // switch the line to an output and drive it low
     let mut lsettings = line::Settings::new()?;
@@ -36,7 +36,7 @@ fn main() -> libgpiod::Result<()> {
 
     // report the current driven value
     let value = request.value(line_offset)?;
-    println!("{}={:?} (output)", line_offset, value);
+    println!("{line_offset}={value:?} (output)");
 
     Ok(())
 }

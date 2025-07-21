@@ -24,6 +24,6 @@ fn main() -> libgpiod::Result<()> {
         }
     }
 
-    println!("line '{}' not found", line_name);
+    println!("line '{line_name}' not found");
     Ok(())
 }

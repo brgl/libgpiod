@@ -110,7 +110,7 @@ pub enum OperationType {
 
 impl fmt::Display for OperationType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -382,7 +382,7 @@ pub mod line {
 
     impl fmt::Display for SettingVal {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "{:?}", self)
+            write!(f, "{self:?}")
         }
     }
 
