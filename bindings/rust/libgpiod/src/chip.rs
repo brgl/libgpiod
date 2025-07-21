@@ -150,7 +150,10 @@ impl Chip {
             ));
         }
 
-        Ok(info::Event::new(event))
+        // SAFETY: `gpiod_chip_read_info_event` returned a standalone `event`
+        // over which we have sole ownership. We won't use the raw pointer
+        // directly after passing it here.
+        Ok(unsafe { info::Event::new(event) })
     }
 
     /// Map a GPIO line's name to its offset within the chip.
@@ -195,7 +198,10 @@ impl Chip {
             ));
         }
 
-        request::Request::new(request)
+        // SAFETY: `gpiod_chip_request_lines` returned an object over which we
+        // have sole ownership. We never use it again after constructing the
+        // wrapper.
+        unsafe { request::Request::new(request) }
     }
 }
 

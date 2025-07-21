@@ -27,7 +27,12 @@ unsafe impl Send for Request {}
 
 impl Request {
     /// Request a set of lines for exclusive usage.
-    pub(crate) fn new(request: *mut gpiod::gpiod_line_request) -> Result<Self> {
+    ///
+    /// SAFETY: The pointer must point to an instance that is valid. After
+    /// constructing a [Request] the pointer MUST NOT be used for any other
+    /// purpose anymore. All interactions with the libgpiod API have to happen
+    /// through this object.
+    pub(crate) unsafe fn new(request: *mut gpiod::gpiod_line_request) -> Result<Self> {
         Ok(Self { request })
     }
 

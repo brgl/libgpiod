@@ -31,7 +31,12 @@ unsafe impl Send for Event {}
 
 impl Event {
     /// Get a single chip's line's status change event.
-    pub(crate) fn new(event: *mut gpiod::gpiod_info_event) -> Self {
+    ///
+    /// SAFETY: The pointer must point to an instance that is valid. After
+    /// constructing an [Event] the pointer MUST NOT be used for any other
+    /// purpose anymore. All interactions with the libgpiod API have to happen
+    /// through this object.
+    pub(crate) unsafe fn new(event: *mut gpiod::gpiod_info_event) -> Self {
         Self { event }
     }
 

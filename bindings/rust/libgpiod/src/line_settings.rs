@@ -46,7 +46,15 @@ impl Settings {
         Ok(Self { settings })
     }
 
-    pub(crate) fn new_with_settings(settings: *mut gpiod::gpiod_line_settings) -> Self {
+    /// Converts a owned pointer into an owned instance
+    ///
+    /// Assumes sole ownership over a [gpiod::gpiod_line_settings] instance.
+    ///
+    /// SAFETY: The pointer must point to an instance that is valid. After
+    /// constructing a [Settings] the pointer MUST NOT be used for any other
+    /// purpose anymore. All interactions with the libgpiod API have to happen
+    /// through this object.
+    pub(crate) unsafe fn new_with_settings(settings: *mut gpiod::gpiod_line_settings) -> Self {
         Self { settings }
     }
 

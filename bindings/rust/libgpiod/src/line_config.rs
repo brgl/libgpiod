@@ -134,7 +134,12 @@ impl Config {
                 ));
             }
 
-            map.insert(*offset as u64, Settings::new_with_settings(settings));
+            // SAFETY: The above `gpiod_line_config_get_line_settings` call
+            // returns a copy of the line_settings. We thus have sole ownership.
+            // We no longer use the pointer for any other purpose.
+            let settings = unsafe { Settings::new_with_settings(settings) };
+
+            map.insert(*offset as u64, settings);
         }
 
         Ok(map)
