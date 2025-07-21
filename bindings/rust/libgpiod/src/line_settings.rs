@@ -54,7 +54,7 @@ impl Settings {
     /// constructing a [Settings] the pointer MUST NOT be used for any other
     /// purpose anymore. All interactions with the libgpiod API have to happen
     /// through this object.
-    pub(crate) unsafe fn new_with_settings(settings: *mut gpiod::gpiod_line_settings) -> Self {
+    pub(crate) unsafe fn from_raw(settings: *mut gpiod::gpiod_line_settings) -> Self {
         Self { settings }
     }
 

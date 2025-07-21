@@ -32,7 +32,7 @@ impl Request {
     /// constructing a [Request] the pointer MUST NOT be used for any other
     /// purpose anymore. All interactions with the libgpiod API have to happen
     /// through this object.
-    pub(crate) unsafe fn new(request: *mut gpiod::gpiod_line_request) -> Result<Self> {
+    pub(crate) unsafe fn from_raw(request: *mut gpiod::gpiod_line_request) -> Result<Self> {
         Ok(Self { request })
     }
 
