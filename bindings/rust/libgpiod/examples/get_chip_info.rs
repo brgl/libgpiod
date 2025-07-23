@@ -3,13 +3,13 @@
 //
 // Minimal example of reading the info for a chip.
 
-use libgpiod::{self, Result};
+use libgpiod::{self, chip::Chip, Result};
 
 fn main() -> Result<()> {
     // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
 
-    let chip = libgpiod::chip::Chip::open(&chip_path)?;
+    let chip = Chip::open(&chip_path)?;
     let info = chip.info()?;
     println!(
         "{} [{}] ({} lines)",

@@ -3,9 +3,9 @@
 //
 // Minimal example of watching for edges on a single line.
 
-use libgpiod::line;
+use libgpiod::{line, Result};
 
-fn main() -> libgpiod::Result<()> {
+fn main() -> Result<()> {
     // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offset = 5;

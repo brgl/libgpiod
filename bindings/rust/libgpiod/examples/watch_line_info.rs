@@ -3,14 +3,14 @@
 //
 // Minimal example of watching for info changes on particular lines.
 
-use libgpiod::line::InfoChangeKind;
+use libgpiod::{chip::Chip, line::InfoChangeKind, Result};
 
-fn main() -> libgpiod::Result<()> {
+fn main() -> Result<()> {
     // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offsets = [5, 3, 7];
 
-    let chip = libgpiod::chip::Chip::open(&chip_path)?;
+    let chip = Chip::open(&chip_path)?;
     for offset in line_offsets {
         let _info = chip.watch_line_info(offset)?;
     }

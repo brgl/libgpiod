@@ -5,26 +5,31 @@
 // An example demonstrating that an edge event must be cloned to outlive
 // subsequent writes to the containing event buffer.
 
-use libgpiod::line;
+use libgpiod::{
+    chip::Chip,
+    line::{Config as LineConfig, Edge, Settings},
+    request::{Buffer, Config as ReqConfig, Event},
+    Result,
+};
 
-fn main() -> libgpiod::Result<()> {
+fn main() -> Result<()> {
     // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offset = 5;
 
-    let mut lsettings = line::Settings::new()?;
-    lsettings.set_edge_detection(Some(line::Edge::Both))?;
+    let mut lsettings = Settings::new()?;
+    lsettings.set_edge_detection(Some(Edge::Both))?;
 
-    let mut lconfig = line::Config::new()?;
+    let mut lconfig = LineConfig::new()?;
     lconfig.add_line_settings(&[line_offset], lsettings)?;
 
-    let mut rconfig = libgpiod::request::Config::new()?;
+    let mut rconfig = ReqConfig::new()?;
     rconfig.set_consumer("buffered-event-lifetimes")?;
 
-    let chip = libgpiod::chip::Chip::open(&chip_path)?;
+    let chip = Chip::open(&chip_path)?;
     let request = chip.request_lines(Some(&rconfig), &lconfig)?;
 
-    let mut buffer = libgpiod::request::Buffer::new(4)?;
+    let mut buffer = Buffer::new(4)?;
 
     loop {
         // Blocks until at least one event is available
@@ -34,7 +39,7 @@ fn main() -> libgpiod::Result<()> {
         let event = events.next().unwrap()?;
 
         // This will out live `event` and the next read_edge_events().
-        let cloned_event = libgpiod::request::Event::try_clone(event)?;
+        let cloned_event = Event::try_clone(event)?;
 
         let events = request.read_edge_events(&mut buffer)?;
         for event in events {

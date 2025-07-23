@@ -5,10 +5,10 @@
 
 use libgpiod::{
     line::{self, EdgeKind},
-    request,
+    request, Result,
 };
 
-fn main() -> libgpiod::Result<()> {
+fn main() -> Result<()> {
     // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offsets = [5, 3, 7];

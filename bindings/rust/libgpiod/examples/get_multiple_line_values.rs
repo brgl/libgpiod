@@ -3,22 +3,27 @@
 //
 // Minimal example of reading multiple lines.
 
-use libgpiod::line::{self, Direction};
+use libgpiod::{
+    chip::Chip,
+    line::{Config as LineConfig, Direction, Settings},
+    request::Config as ReqConfig,
+    Result,
+};
 
-fn main() -> libgpiod::Result<()> {
+fn main() -> Result<()> {
     // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offsets = [5, 3, 7];
 
-    let mut lsettings = line::Settings::new()?;
-    let mut lconfig = line::Config::new()?;
+    let mut lsettings = Settings::new()?;
+    let mut lconfig = LineConfig::new()?;
 
     lsettings.set_direction(Direction::Input)?;
     lconfig.add_line_settings(&line_offsets, lsettings)?;
 
-    let chip = libgpiod::chip::Chip::open(&chip_path)?;
+    let chip = Chip::open(&chip_path)?;
 
-    let mut rconfig = libgpiod::request::Config::new()?;
+    let mut rconfig = ReqConfig::new()?;
     rconfig.set_consumer("get-multiple-line-values")?;
 
     let request = chip.request_lines(Some(&rconfig), &lconfig)?;

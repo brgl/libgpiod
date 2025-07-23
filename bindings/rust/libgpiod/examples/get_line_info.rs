@@ -3,14 +3,14 @@
 //
 // Minimal example of reading the info for a line.
 
-use libgpiod::line::Direction;
+use libgpiod::{chip::Chip, line::Direction, Result};
 
-fn main() -> libgpiod::Result<()> {
+fn main() -> Result<()> {
     // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offset = 3;
 
-    let chip = libgpiod::chip::Chip::open(&chip_path)?;
+    let chip = Chip::open(&chip_path)?;
     let info = chip.line_info(line_offset)?;
 
     let name = info.name().unwrap_or("unnamed");

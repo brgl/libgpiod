@@ -4,7 +4,10 @@
 // Minimal example of toggling a single line.
 
 use core::time::Duration;
-use libgpiod::line::{self, Value};
+use libgpiod::{
+    line::{self, Value},
+    Result,
+};
 
 fn toggle_value(value: Value) -> Value {
     match value {
@@ -13,7 +16,7 @@ fn toggle_value(value: Value) -> Value {
     }
 }
 
-fn main() -> libgpiod::Result<()> {
+fn main() -> Result<()> {
     // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offset = 5;
