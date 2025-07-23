@@ -14,12 +14,7 @@ fn main() -> libgpiod::Result<()> {
 
         if offset.is_ok() {
             let info = chip.info()?;
-            println!(
-                "{}: {} {}",
-                line_name,
-                info.name()?,
-                offset?
-            );
+            println!("{}: {} {}", line_name, info.name()?, offset?);
             return Ok(());
         }
     }

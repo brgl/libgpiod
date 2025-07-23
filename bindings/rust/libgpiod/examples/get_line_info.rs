@@ -28,9 +28,7 @@ fn main() -> libgpiod::Result<()> {
         "active-high"
     };
 
-    println!(
-        "line {line_offset:>3}: {name:>12} {consumer:>12} {dir:>8} {low:>10}"
-    );
+    println!("line {line_offset:>3}: {name:>12} {consumer:>12} {dir:>8} {low:>10}");
 
     Ok(())
 }
