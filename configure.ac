@@ -157,8 +157,8 @@ then
 	PKG_CHECK_MODULES([MOUNT], [mount >= 2.33.1])
 
 	# For core library tests
-	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.50])
-	PKG_CHECK_MODULES([GIO], [gio-2.0 >= 2.50])
+	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.74])
+	PKG_CHECK_MODULES([GIO], [gio-2.0 >= 2.74])
 
 	AC_CHECK_FUNC([atexit], [], [FUNC_NOT_FOUND_LIB([atexit])])
 	AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_LIB([asprintf])])
