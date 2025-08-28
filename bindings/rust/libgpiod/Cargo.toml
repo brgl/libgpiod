@@ -4,7 +4,7 @@
 
 [package]
 name = "libgpiod"
-version = "0.2.2"
+version = "1.0.0"
 authors = ["Viresh Kumar <viresh.kumar@linaro.org>"]
 description = "libgpiod wrappers"
 repository = "https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git"
@@ -26,7 +26,7 @@ vnext = ["v2_1"]
 errno = "0.3"
 intmap = "3"
 libc = "0.2.39"
-libgpiod-sys = { version = "0.1", path = "../libgpiod-sys" }
+libgpiod-sys = { version = "1", path = "../libgpiod-sys" }
 thiserror = "2"
 
 [dev-dependencies]
