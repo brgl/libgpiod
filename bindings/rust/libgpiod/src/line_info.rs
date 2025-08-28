@@ -51,7 +51,7 @@ impl InfoRef {
     /// owned by the thread invoking this method. The owning object may not be
     /// moved to another thread for the entire lifetime 'a.
     pub(crate) unsafe fn from_raw<'a>(info: *mut gpiod::gpiod_line_info) -> &'a InfoRef {
-        &*(info as *mut _)
+        unsafe { &*(info as *mut _) }
     }
 
     fn as_raw_ptr(&self) -> *mut gpiod::gpiod_line_info {
