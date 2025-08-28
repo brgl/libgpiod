@@ -27,8 +27,8 @@ fn main() {
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
 
     // Inform bindgen about the include paths identified by system_deps.
-    for (_name, lib) in libs {
-        for include_path in lib.include_paths {
+    for (_name, lib) in libs.iter() {
+        for include_path in &lib.include_paths {
             builder = builder.clang_arg("-I").clang_arg(
                 include_path
                     .to_str()
