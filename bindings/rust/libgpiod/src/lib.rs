@@ -178,10 +178,10 @@ pub mod line {
     }
 
     /// Maps offset to Value.
-    pub type ValueMap = IntMap<Value>;
+    pub type ValueMap = IntMap<Offset, Value>;
 
     /// Maps offsets to Settings
-    pub type SettingsMap = IntMap<Settings>;
+    pub type SettingsMap = IntMap<Offset, Settings>;
 
     impl Value {
         pub fn new(val: gpiod::gpiod_line_value) -> Result<Self> {

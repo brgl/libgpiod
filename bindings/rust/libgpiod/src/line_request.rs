@@ -110,7 +110,7 @@ impl Request {
             let mut map = ValueMap::new();
 
             for (i, val) in values.iter().enumerate() {
-                map.insert(offsets[i].into(), Value::new(*val)?);
+                map.insert(offsets[i], Value::new(*val)?);
             }
 
             Ok(map)
@@ -144,7 +144,7 @@ impl Request {
         let mut values = Vec::new();
 
         for (offset, value) in map {
-            offsets.push(offset as u32);
+            offsets.push(offset);
             values.push(value.value());
         }
 

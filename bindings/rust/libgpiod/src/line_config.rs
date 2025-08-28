@@ -139,7 +139,7 @@ impl Config {
             // We no longer use the pointer for any other purpose.
             let settings = unsafe { Settings::from_raw(settings) };
 
-            map.insert(*offset as u64, settings);
+            map.insert(*offset as Offset, settings);
         }
 
         Ok(map)

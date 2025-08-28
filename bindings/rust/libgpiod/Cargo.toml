@@ -24,7 +24,7 @@ vnext = ["v2_1"]
 
 [dependencies]
 errno = "0.3"
-intmap = "2.0.0"
+intmap = "3"
 libc = "0.2.39"
 libgpiod-sys = { version = "0.1", path = "../libgpiod-sys" }
 thiserror = "2"
