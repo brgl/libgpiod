@@ -20,4 +20,4 @@ libgpiod = { path = "../libgpiod" }
 
 [build-dependencies]
 bindgen = "0.72"
-cc = "1.0.46"
+cc = "1"
