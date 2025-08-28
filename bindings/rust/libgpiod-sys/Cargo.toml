@@ -24,7 +24,7 @@ v2_1 = []
 [dependencies]
 
 [build-dependencies]
-bindgen = "0.63"
+bindgen = "0.72"
 system-deps = "2.0"
 
 [package.metadata.system-deps.libgpiod]

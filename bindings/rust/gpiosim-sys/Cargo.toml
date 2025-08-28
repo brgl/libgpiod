@@ -19,5 +19,5 @@ errno = "0.2.8"
 libgpiod = { path = "../libgpiod" }
 
 [build-dependencies]
-bindgen = "0.63"
+bindgen = "0.72"
 cc = "1.0.46"
