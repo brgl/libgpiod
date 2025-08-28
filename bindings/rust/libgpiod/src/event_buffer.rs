@@ -108,7 +108,7 @@ impl Buffer {
     /// Get edge events from a line request.
     ///
     /// This function will block if no event was queued for the line.
-    pub fn read_edge_events(&mut self, request: &Request) -> Result<Events> {
+    pub fn read_edge_events<'a>(&'a mut self, request: &Request) -> Result<Events<'a>> {
         for i in 0..self.events.len() {
             self.events[i] = ptr::null_mut();
         }
