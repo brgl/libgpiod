@@ -236,6 +236,20 @@ class Chip:
         self._check_closed()
         return cast(_ext.Chip, self._chip).read_info_event()
 
+    def _resolve_config_keys_to_offsets(
+        self,
+        config_keys: Iterable[Union[Iterable[Union[int, str]], int, str]],
+    ) -> list[int]:
+        offsets: list[int] = list()
+        for key in config_keys:
+            # perform strict int/str check since str is also Iterable
+            if isinstance(key, (int, str)):
+                offsets.append(self.line_offset_from_id(key))
+            else:  # key is an iterable with multiple IDs to resolve
+                for item in key:
+                    offsets.append(self.line_offset_from_id(item))
+        return offsets
+
     def request_lines(
         self,
         config: dict[
@@ -271,14 +285,7 @@ class Chip:
 
         # Sanitize lines - don't allow offset repetitions or offset-name conflicts.
         for offset, count in Counter(
-            [
-                self.line_offset_from_id(line)
-                for line in (
-                    lambda t: [
-                        j for i in (t) for j in (i if isinstance(i, tuple) else (i,))
-                    ]
-                )(tuple(config.keys()))
-            ]
+            self._resolve_config_keys_to_offsets(config.keys())
         ).items():
             if count != 1:
                 raise ValueError(

@@ -101,6 +101,10 @@ class ChipLineRequestWorks(TestCase):
         with self.chip.request_lines(config={(4): None}) as req:
             self.assertEqual(req.offsets, [4])
 
+    def test_request_single_offset_as_frozenset(self) -> None:
+        with self.chip.request_lines(config={frozenset([4]): None}) as req:
+            self.assertEqual(req.offsets, [4])
+
     def test_request_by_name(self) -> None:
         with self.chip.request_lines(config={(1, 2, "foo", "bar"): None}) as req:
             self.assertEqual(req.offsets, [1, 2, 5, 7])
