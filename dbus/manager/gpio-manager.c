@@ -77,8 +77,9 @@ static void on_name_lost(GDBusConnection *con,
 
 static void print_version_and_exit(void)
 {
-	g_print("%s (libgpiod) v%s\nD-Bus API version: %d\n",
-		g_get_prgname(), gpiodglib_api_version(), GPIODBUS_API_VERSION);
+	g_print("%s v%s (libgpiod v%s)\nD-Bus API version: %d\n",
+		g_get_prgname(), GPIOD_VERSION_STR,
+		gpiodglib_api_version(), GPIODBUS_API_VERSION);
 
 	exit(EXIT_SUCCESS);
 }
