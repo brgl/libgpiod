@@ -71,7 +71,7 @@ TEST_CASE("api_version() returns a valid API version", "[misc]")
 	SECTION("check api_version() format")
 	{
 		REQUIRE_THAT(::gpiod::api_version(),
-			     regex_matcher("^\\d+\\.\\d+(\\.\\d+|\\-devel|\\-rc\\d+)?$"));
+			     regex_matcher("^\\d+\\.\\d+\\.\\d+"));
 	}
 }
 
