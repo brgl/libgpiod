@@ -35,6 +35,10 @@ AC_SUBST(ABI_GPIOSIM_VERSION, [1.1.0])
 # ... and another one for GLib bindings:
 AC_SUBST(ABI_GLIB_VERSION, [1.0.0])
 
+# Core libgpiod API version.
+AC_SUBST(API_VERSION, [2.2.0])
+AC_DEFINE_UNQUOTED([GPIOD_API_VERSION_STR], ["$API_VERSION"], [Library API version string.])
+
 AC_CONFIG_AUX_DIR([autostuff])
 AC_CONFIG_MACRO_DIRS([m4])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
