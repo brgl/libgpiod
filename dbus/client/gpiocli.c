@@ -116,7 +116,7 @@ static gchar *make_description(void)
 
 static void show_version_and_exit(void)
 {
-	g_print("gpiocli (libgpiod) v%s\nD-Bus API version: %d\n",
+	g_print("gpiocli v%s\nD-Bus API version: %d\n",
 		GPIOD_VERSION_STR, GPIODBUS_API_VERSION);
 
 	exit(EXIT_SUCCESS);
