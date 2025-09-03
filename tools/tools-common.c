@@ -93,7 +93,8 @@ void die_perror(const char *fmt, ...)
 
 void print_version(void)
 {
-	printf("%s (libgpiod) v%s\n", get_prog_short_name(), gpiod_api_version());
+	printf("%s v%s (libgpiod v%s)\n",
+	       get_prog_short_name(), GPIOD_VERSION_STR, gpiod_api_version());
 	printf("Copyright (C) 2017-2023 Bartosz Golaszewski\n");
 	printf("License: GPL-2.0-or-later\n");
 	printf("This is free software: you are free to change and redistribute it.\n");
