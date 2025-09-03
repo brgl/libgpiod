@@ -35,6 +35,7 @@
 #include "gpiodcxx/line-info.hpp"
 #include "gpiodcxx/line-request.hpp"
 #include "gpiodcxx/line-settings.hpp"
+#include "gpiodcxx/misc.hpp"
 #include "gpiodcxx/request-builder.hpp"
 #include "gpiodcxx/request-config.hpp"
 #undef __LIBGPIOD_GPIOD_CXX_INSIDE__

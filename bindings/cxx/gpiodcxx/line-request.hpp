@@ -17,8 +17,6 @@
 #include <iostream>
 #include <memory>
 
-#include "misc.hpp"
-
 namespace gpiod {
 
 class chip;
