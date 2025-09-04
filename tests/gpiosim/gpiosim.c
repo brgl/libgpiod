@@ -1125,6 +1125,24 @@ GPIOSIM_API int gpiosim_bank_clear_hog(struct gpiosim_bank *bank,
 	return unlinkat(bank->cfs_dir_fd, buf, AT_REMOVEDIR);
 }
 
+GPIOSIM_API int gpiosim_bank_set_line_valid(struct gpiosim_bank *bank,
+					    unsigned int offset, bool valid)
+{
+	char buf[32];
+	int ret;
+
+	if (!dev_check_pending(bank->dev))
+		return -1;
+
+	ret = bank_make_line_dir(bank, offset);
+	if (ret)
+		return -1;
+
+	snprintf(buf, sizeof(buf), "line%u/valid", offset);
+
+	return open_write_close(bank->cfs_dir_fd, buf, valid ? "1" : "0");
+}
+
 static int sysfs_read_bank_attr(struct gpiosim_bank *bank, unsigned int offset,
 				const char *attr, char *buf, size_t bufsize)
 {
