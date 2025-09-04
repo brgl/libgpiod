@@ -132,7 +132,7 @@ static gboolean g_gpiosim_chip_apply_hogs(GPIOSimChip *self)
 
 static gboolean g_gpiosim_chip_apply_properties(GPIOSimChip *self)
 {
-	int ret;
+	gboolean ret;
 
 	ret = gpiosim_bank_set_num_lines(self->bank, self->num_lines);
 	if (ret) {
