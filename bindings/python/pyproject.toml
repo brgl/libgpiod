@@ -73,6 +73,7 @@ ignore=[
   "E501",
   # Ignore new Union (|) syntax until we require 3.10+
   "UP007",
+  "UP045",
 ]
 
 [tool.ruff.lint.per-file-ignores]
