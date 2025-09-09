@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Optional, Union, cast
 from . import _ext
 from ._internal import poll_fd
 from .exception import RequestReleasedError
-from .line import Value
 from .line_settings import LineSettings, _line_settings_to_ext
 
 if TYPE_CHECKING:
@@ -17,6 +16,7 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from .edge_event import EdgeEvent
+    from .line import Value
 
 
 __all__ = ["LineRequest"]
@@ -76,7 +76,7 @@ class LineRequest:
         not be used after a call to this method.
         """
         self._check_released()
-        cast(_ext.Request, self._req).release()
+        cast("_ext.Request", self._req).release()
         self._req = None
 
     def get_value(self, line: Union[int, str]) -> Value:
@@ -122,9 +122,9 @@ class LineRequest:
 
         offsets = [self._line_to_offset(line) for line in lines]
 
-        buf = cast(list[Value], [None] * len(offsets))
+        buf = cast("list[Value]", [None] * len(offsets))
 
-        cast(_ext.Request, self._req).get_values(offsets, buf)
+        cast("_ext.Request", self._req).get_values(offsets, buf)
         return buf
 
     def set_value(self, line: Union[int, str], value: Value) -> None:
@@ -151,7 +151,7 @@ class LineRequest:
 
         mapped = {self._line_to_offset(line): value for line, value in values.items()}
 
-        cast(_ext.Request, self._req).set_values(mapped)
+        cast("_ext.Request", self._req).set_values(mapped)
 
     def reconfigure_lines(
         self,
@@ -186,7 +186,7 @@ class LineRequest:
             settings = line_settings.get(offset) or LineSettings()
             line_cfg.add_line_settings([offset], _line_settings_to_ext(settings))
 
-        cast(_ext.Request, self._req).reconfigure_lines(line_cfg)
+        cast("_ext.Request", self._req).reconfigure_lines(line_cfg)
 
     def wait_edge_events(
         self, timeout: Optional[Union[timedelta, float]] = None
@@ -220,7 +220,7 @@ class LineRequest:
         """
         self._check_released()
 
-        return cast(_ext.Request, self._req).read_edge_events(max_events)
+        return cast("_ext.Request", self._req).read_edge_events(max_events)
 
     def fileno(self) -> int:
         """
@@ -276,4 +276,4 @@ class LineRequest:
         File descriptor associated with this request.
         """
         self._check_released()
-        return cast(_ext.Request, self._req).fd
+        return cast("_ext.Request", self._req).fd

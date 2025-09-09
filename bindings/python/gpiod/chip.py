@@ -101,7 +101,7 @@ class Chip:
         longer be used after this method is called.
         """
         self._check_closed()
-        cast(_ext.Chip, self._chip).close()
+        cast("_ext.Chip", self._chip).close()
         self._chip = None
 
     def get_info(self) -> ChipInfo:
@@ -114,7 +114,7 @@ class Chip:
         self._check_closed()
 
         if not self._info:
-            self._info = cast(_ext.Chip, self._chip).get_info()
+            self._info = cast("_ext.Chip", self._chip).get_info()
 
         return self._info
 
@@ -139,7 +139,7 @@ class Chip:
 
         if not isinstance(id, int):
             try:
-                return cast(_ext.Chip, self._chip).line_offset_from_id(id)
+                return cast("_ext.Chip", self._chip).line_offset_from_id(id)
             except OSError as ex:
                 if ex.errno == ENOENT:
                     try:
@@ -158,7 +158,7 @@ class Chip:
 
     def _get_line_info(self, line: Union[int, str], watch: bool) -> LineInfo:
         self._check_closed()
-        return cast(_ext.Chip, self._chip).get_line_info(
+        return cast("_ext.Chip", self._chip).get_line_info(
             self.line_offset_from_id(line), watch
         )
 
@@ -198,7 +198,7 @@ class Chip:
             Offset or name of the line to stop watching.
         """
         self._check_closed()
-        return cast(_ext.Chip, self._chip).unwatch_line_info(
+        return cast("_ext.Chip", self._chip).unwatch_line_info(
             self.line_offset_from_id(line)
         )
 
@@ -234,7 +234,7 @@ class Chip:
           This function may block if there are no available events in the queue.
         """
         self._check_closed()
-        return cast(_ext.Chip, self._chip).read_info_event()
+        return cast("_ext.Chip", self._chip).read_info_event()
 
     def _resolve_config_keys_to_offsets(
         self,
@@ -335,7 +335,7 @@ class Chip:
         if len(global_output_values):
             line_cfg.set_output_values(global_output_values)
 
-        req_internal = cast(_ext.Chip, self._chip).request_lines(
+        req_internal = cast("_ext.Chip", self._chip).request_lines(
             line_cfg, consumer, event_buffer_size
         )
         request = LineRequest(req_internal)
@@ -381,7 +381,7 @@ class Chip:
         Filesystem path used to open this chip.
         """
         self._check_closed()
-        return cast(_ext.Chip, self._chip).path
+        return cast("_ext.Chip", self._chip).path
 
     @property
     def fd(self) -> int:
@@ -389,4 +389,4 @@ class Chip:
         File descriptor associated with this chip.
         """
         self._check_closed()
-        return cast(_ext.Chip, self._chip).fd
+        return cast("_ext.Chip", self._chip).fd
