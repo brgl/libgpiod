@@ -27,6 +27,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 
 [project.urls]
@@ -80,3 +81,8 @@ ignore=[
 "gpiod/__init__.py" = ["F403", "F405"]  # ignore warnings about star imports
 "tests/__main__.py" = ["F403"]
 "tests/**.py" = ["F841"]  # ignore warnings about unused variables
+
+[tool.cibuildwheel]
+build = "cp*"
+skip = "cp31?t-*"  # Do not build free-threaded wheels
+archs = ["x86_64", "aarch64"]

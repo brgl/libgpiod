@@ -108,14 +108,12 @@ python3 -m "${venv_module}" .venv
 venv_python="${temp_dir}/.venv/bin/python"
 
 # Install build dependencies
-${venv_python} -m pip install build==1.2.2.post1 cibuildwheel==2.21.3
+${venv_python} -m pip install build==1.3.0 cibuildwheel==3.2.0
 
 LIBGPIOD_VERSION=${src_version} ${venv_python} -m build --sdist --outdir ./dist "${source_dir}"
 sdist=$(find ./dist -name '*.tar.gz')
 
-# Target only CPython and X86_64 + AArch64 Linux wheels unless specified otherwise via environment variables
-CIBW_BUILD=${CIBW_BUILD:-"cp*"} CIBW_ARCHS=${CIBW_ARCHS:-"x86_64,aarch64"} \
-	${venv_python} -m cibuildwheel --platform linux "${sdist}" --output-dir dist/
+${venv_python} -m cibuildwheel --platform linux "${sdist}" --output-dir dist/
 
 if [ "${force}" -eq 1 ]; then
 	printf "\nRemoving files from %s/dist/\n" "${output_dir}"
