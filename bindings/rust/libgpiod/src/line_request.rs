@@ -8,9 +8,9 @@ use std::os::unix::prelude::AsRawFd;
 use std::time::Duration;
 
 use super::{
-    gpiod,
+    Error, OperationType, Result, gpiod,
     line::{self, Offset, Value, ValueMap},
-    request, Error, OperationType, Result,
+    request,
 };
 
 /// Line request operations

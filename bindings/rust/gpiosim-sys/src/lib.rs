@@ -44,7 +44,7 @@ impl Value {
                 return Err(Error::OperationFailed(
                     OperationType::SimBankGetVal,
                     errno::errno(),
-                ))
+                ));
             }
             _ => return Err(Error::InvalidEnumValue("Value", val)),
         })

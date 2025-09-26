@@ -9,7 +9,7 @@ mod chip {
     use std::path::PathBuf;
 
     use gpiosim_sys::Sim;
-    use libgpiod::{chip::Chip, Error as ChipError, OperationType};
+    use libgpiod::{Error as ChipError, OperationType, chip::Chip};
 
     mod open {
         use super::*;

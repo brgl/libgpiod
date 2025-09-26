@@ -3,7 +3,7 @@
 //
 // Minimal example of reading the info for a chip.
 
-use libgpiod::{self, chip::Chip, Result};
+use libgpiod::{self, Result, chip::Chip};
 
 fn main() -> Result<()> {
     // Example configuration - customize to suit your situation

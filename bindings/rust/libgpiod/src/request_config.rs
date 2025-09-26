@@ -6,7 +6,7 @@ use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::str;
 
-use super::{gpiod, Error, OperationType, Result};
+use super::{Error, OperationType, Result, gpiod};
 
 /// Request configuration objects
 ///

@@ -11,9 +11,9 @@ mod line_info {
     use crate::common::*;
     use gpiosim_sys::{Direction as SimDirection, Sim};
     use libgpiod::{
+        Error as ChipError, OperationType,
         chip::Chip,
         line::{Bias, Direction, Drive, Edge, EventClock},
-        Error as ChipError, OperationType,
     };
 
     const NGPIO: usize = 8;

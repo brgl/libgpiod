@@ -6,10 +6,10 @@
 // subsequent writes to the containing event buffer.
 
 use libgpiod::{
+    Result,
     chip::Chip,
     line::{Config as LineConfig, Edge, Settings},
     request::{Buffer, Config as ReqConfig, Event},
-    Result,
 };
 
 fn main() -> Result<()> {

@@ -11,10 +11,10 @@ mod line_request {
     use crate::common::*;
     use gpiosim_sys::{Pull, Value as SimValue};
     use libgpiod::{
+        Error as ChipError, OperationType,
         line::{
             self, Bias, Direction, Drive, Edge, EventClock, Offset, SettingVal, Value, ValueMap,
         },
-        Error as ChipError, OperationType,
     };
 
     const NGPIO: usize = 8;
@@ -246,10 +246,12 @@ mod line_request {
             config.request_lines().unwrap();
 
             // No events available
-            assert!(!config
-                .request()
-                .wait_edge_events(Some(Duration::from_millis(100)))
-                .unwrap());
+            assert!(
+                !config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_millis(100)))
+                    .unwrap()
+            );
         }
     }
 

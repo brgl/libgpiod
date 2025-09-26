@@ -5,9 +5,8 @@
 use std::ptr;
 
 use super::{
-    gpiod,
+    Error, OperationType, Result, gpiod,
     request::{Event, Request},
-    Error, OperationType, Result,
 };
 
 /// Line edge events

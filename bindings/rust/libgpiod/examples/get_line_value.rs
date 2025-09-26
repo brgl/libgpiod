@@ -4,10 +4,10 @@
 // Minimal example of reading a single line.
 
 use libgpiod::{
+    Result,
     chip::Chip,
     line::{Config as LineConfig, Direction, Settings},
     request::Config as ReqConfig,
-    Result,
 };
 
 fn main() -> Result<()> {

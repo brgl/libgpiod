@@ -7,9 +7,10 @@ use std::time::Duration;
 
 use gpiosim_sys::{Pull, Sim, Value as SimValue};
 use libgpiod::{
+    Result,
     chip::Chip,
     line::{self, Bias, Direction, Drive, Edge, EventClock, Offset, SettingVal, Value},
-    request, Result,
+    request,
 };
 
 pub(crate) struct TestConfig {

@@ -87,10 +87,12 @@ mod edge_event {
             trigger_falling_and_rising_edge(config.sim(), GPIO);
 
             // Rising event
-            assert!(config
-                .request()
-                .wait_edge_events(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
             assert_eq!(events.len(), 1);
@@ -101,10 +103,12 @@ mod edge_event {
             assert_eq!(event.line_offset(), GPIO);
 
             // Falling event
-            assert!(config
-                .request()
-                .wait_edge_events(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
             assert_eq!(events.len(), 1);
@@ -115,10 +119,12 @@ mod edge_event {
             assert_eq!(event.line_offset(), GPIO);
 
             // No events available
-            assert!(!config
-                .request()
-                .wait_edge_events(Some(Duration::from_millis(100)))
-                .unwrap());
+            assert!(
+                !config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_millis(100)))
+                    .unwrap()
+            );
 
             assert!(ts_falling > ts_rising);
         }
@@ -136,10 +142,12 @@ mod edge_event {
             trigger_falling_and_rising_edge(config.sim(), GPIO);
 
             // Rising event
-            assert!(config
-                .request()
-                .wait_edge_events(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
             assert_eq!(events.len(), 1);
@@ -149,10 +157,12 @@ mod edge_event {
             assert_eq!(event.line_offset(), GPIO);
 
             // No events available
-            assert!(!config
-                .request()
-                .wait_edge_events(Some(Duration::from_millis(100)))
-                .unwrap());
+            assert!(
+                !config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_millis(100)))
+                    .unwrap()
+            );
         }
 
         #[test]
@@ -168,10 +178,12 @@ mod edge_event {
             trigger_falling_and_rising_edge(config.sim(), GPIO);
 
             // Falling event
-            assert!(config
-                .request()
-                .wait_edge_events(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
             assert_eq!(events.len(), 1);
@@ -181,10 +193,12 @@ mod edge_event {
             assert_eq!(event.line_offset(), GPIO);
 
             // No events available
-            assert!(!config
-                .request()
-                .wait_edge_events(Some(Duration::from_millis(100)))
-                .unwrap());
+            assert!(
+                !config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_millis(100)))
+                    .unwrap()
+            );
         }
 
         #[test]
@@ -200,10 +214,12 @@ mod edge_event {
 
             // Rising event GPIO 0
             let mut buf = request::Buffer::new(0).unwrap();
-            assert!(config
-                .request()
-                .wait_edge_events(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
             assert_eq!(events.len(), 1);
@@ -215,10 +231,12 @@ mod edge_event {
             assert_eq!(event.line_seqno(), 1);
 
             // Rising event GPIO 1
-            assert!(config
-                .request()
-                .wait_edge_events(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
 
             let mut events = config.request().read_edge_events(&mut buf).unwrap();
             assert_eq!(events.len(), 1);
@@ -230,10 +248,12 @@ mod edge_event {
             assert_eq!(event.line_seqno(), 1);
 
             // No events available
-            assert!(!config
-                .request()
-                .wait_edge_events(Some(Duration::from_millis(100)))
-                .unwrap());
+            assert!(
+                !config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_millis(100)))
+                    .unwrap()
+            );
         }
 
         #[test]
@@ -249,10 +269,12 @@ mod edge_event {
             trigger_multiple_events(config.sim(), GPIO);
 
             // Read multiple events
-            assert!(config
-                .request()
-                .wait_edge_events(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
 
             let events = config.request().read_edge_events(&mut buf).unwrap();
             assert_eq!(events.len(), 3);
@@ -285,10 +307,12 @@ mod edge_event {
             trigger_multiple_events(config.sim(), GPIO);
 
             // Read multiple events
-            assert!(config
-                .request()
-                .wait_edge_events(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                config
+                    .request()
+                    .wait_edge_events(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
 
             let events = config.request().read_edge_events(&mut buf).unwrap();
             assert_eq!(events.len(), 2);

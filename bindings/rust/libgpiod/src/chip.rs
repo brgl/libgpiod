@@ -16,9 +16,9 @@ use std::str;
 use std::time::Duration;
 
 use super::{
-    gpiod,
+    Error, OperationType, Result, gpiod,
     line::{self, Offset},
-    request, Error, OperationType, Result,
+    request,
 };
 
 /// GPIO chip

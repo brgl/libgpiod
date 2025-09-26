@@ -8,9 +8,8 @@ use std::time::Duration;
 use std::{ffi::CStr, marker::PhantomData};
 
 use super::{
-    gpiod,
+    Error, Result, gpiod,
     line::{Bias, Direction, Drive, Edge, EventClock, Offset},
-    Error, Result,
 };
 
 /// Line info reference

@@ -3,7 +3,7 @@
 //
 // Minimal example of reading the info for a line.
 
-use libgpiod::{chip::Chip, line::Direction, Result};
+use libgpiod::{Result, chip::Chip, line::Direction};
 
 fn main() -> Result<()> {
     // Example configuration - customize to suit your situation

@@ -4,10 +4,10 @@
 // Minimal example of watching for edges on a single line.
 
 use libgpiod::{
+    Result,
     chip::Chip,
     line::{Bias, Config as LineConfig, Edge, EdgeKind, Settings},
     request::{Buffer, Config as ReqConfig},
-    Result,
 };
 use std::time::Duration;
 

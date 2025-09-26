@@ -192,7 +192,7 @@ pub mod line {
                     return Err(Error::OperationFailed(
                         OperationType::LineRequestGetVal,
                         errno::errno(),
-                    ))
+                    ));
                 }
                 _ => return Err(Error::InvalidEnumValue("Value", val)),
             })

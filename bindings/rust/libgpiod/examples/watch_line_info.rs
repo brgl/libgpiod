@@ -3,7 +3,7 @@
 //
 // Minimal example of watching for info changes on particular lines.
 
-use libgpiod::{chip::Chip, line::InfoChangeKind, Result};
+use libgpiod::{Result, chip::Chip, line::InfoChangeKind};
 
 fn main() -> Result<()> {
     // Example configuration - customize to suit your situation

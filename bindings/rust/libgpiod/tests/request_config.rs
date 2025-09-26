@@ -5,7 +5,7 @@
 mod common;
 
 mod request_config {
-    use libgpiod::{request, Error as ChipError, OperationType};
+    use libgpiod::{Error as ChipError, OperationType, request};
 
     mod verify {
         use super::*;

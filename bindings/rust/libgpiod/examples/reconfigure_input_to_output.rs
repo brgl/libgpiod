@@ -4,10 +4,10 @@
 // Example of a bi-directional line requested as input and then switched to output.
 
 use libgpiod::{
+    Result,
     chip::Chip,
     line::{Config as LineConfig, Direction, Settings, Value},
     request::Config as ReqConfig,
-    Result,
 };
 
 fn main() -> Result<()> {

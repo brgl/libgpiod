@@ -3,9 +3,8 @@
 // SPDX-FileCopyrightText: 2022 Viresh Kumar <viresh.kumar@linaro.org>
 
 use super::{
-    gpiod,
+    Error, OperationType, Result, gpiod,
     line::{Offset, Settings, SettingsMap, Value},
-    Error, OperationType, Result,
 };
 
 /// Line configuration objects.

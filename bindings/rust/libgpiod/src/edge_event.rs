@@ -5,9 +5,8 @@
 use std::time::Duration;
 
 use super::{
-    gpiod,
+    Error, OperationType, Result, gpiod,
     line::{EdgeKind, Offset},
-    Error, OperationType, Result,
 };
 
 /// Line edge events handling

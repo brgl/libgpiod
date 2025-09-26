@@ -7,7 +7,7 @@ use std::os::raw::c_char;
 use std::path::PathBuf;
 use std::str;
 
-use libgpiod::{line::Offset, Error, OperationType, Result};
+use libgpiod::{Error, OperationType, Result, line::Offset};
 
 use crate::*;
 

@@ -8,8 +8,8 @@ mod info_event {
     use libc::EINVAL;
     use std::{
         sync::{
-            mpsc::{self, Receiver, Sender},
             Arc, Mutex,
+            mpsc::{self, Receiver, Sender},
         },
         thread,
         time::Duration,
@@ -17,9 +17,10 @@ mod info_event {
 
     use gpiosim_sys::Sim;
     use libgpiod::{
+        Error as ChipError, OperationType,
         chip::Chip,
         line::{self, Direction, InfoChangeKind, Offset},
-        request, Error as ChipError, OperationType,
+        request,
     };
 
     fn request_reconfigure_line(chip: Arc<Mutex<Chip>>, tx: Sender<()>, rx: Receiver<()>) {
@@ -75,9 +76,11 @@ mod info_event {
             assert_eq!(info.offset(), GPIO);
 
             // No events available
-            assert!(!chip
-                .wait_info_event(Some(Duration::from_millis(100)))
-                .unwrap());
+            assert!(
+                !chip
+                    .wait_info_event(Some(Duration::from_millis(100)))
+                    .unwrap()
+            );
         }
 
         #[test]
@@ -99,11 +102,12 @@ mod info_event {
             rx_main.recv().expect("Could not receive from channel");
 
             // Line requested event
-            assert!(chip
-                .lock()
-                .unwrap()
-                .wait_info_event(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                chip.lock()
+                    .unwrap()
+                    .wait_info_event(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
             let event = chip.lock().unwrap().read_info_event().unwrap();
             let ts_req = event.timestamp();
 
@@ -120,11 +124,12 @@ mod info_event {
             rx_main.recv().expect("Could not receive from channel");
 
             // Line changed event
-            assert!(chip
-                .lock()
-                .unwrap()
-                .wait_info_event(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                chip.lock()
+                    .unwrap()
+                    .wait_info_event(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
             let event = chip.lock().unwrap().read_info_event().unwrap();
             let ts_rec = event.timestamp();
 
@@ -141,22 +146,25 @@ mod info_event {
             tx_main.send(()).expect("Could not send signal on channel");
 
             // Line released event
-            assert!(chip
-                .lock()
-                .unwrap()
-                .wait_info_event(Some(Duration::from_secs(1)))
-                .unwrap());
+            assert!(
+                chip.lock()
+                    .unwrap()
+                    .wait_info_event(Some(Duration::from_secs(1)))
+                    .unwrap()
+            );
             let event = chip.lock().unwrap().read_info_event().unwrap();
             let ts_rel = event.timestamp();
 
             assert_eq!(event.event_type().unwrap(), InfoChangeKind::LineReleased);
 
             // No events available
-            assert!(!chip
-                .lock()
-                .unwrap()
-                .wait_info_event(Some(Duration::from_millis(100)))
-                .unwrap());
+            assert!(
+                !chip
+                    .lock()
+                    .unwrap()
+                    .wait_info_event(Some(Duration::from_millis(100)))
+                    .unwrap()
+            );
 
             // Check timestamps are really monotonic.
             assert!(ts_rel > ts_rec);

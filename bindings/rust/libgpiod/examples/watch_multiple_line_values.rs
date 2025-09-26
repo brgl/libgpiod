@@ -4,10 +4,10 @@
 // Minimal example of watching for edges on multiple lines.
 
 use libgpiod::{
+    Result,
     chip::Chip,
     line::{Config as LineConfig, Edge, EdgeKind, Settings},
     request::{Buffer, Config as ReqConfig},
-    Result,
 };
 
 fn main() -> Result<()> {

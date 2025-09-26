@@ -5,10 +5,10 @@
 
 use core::time::Duration;
 use libgpiod::{
+    Result,
     chip::Chip,
     line::{Config as LineConfig, Direction, Offset, Settings, Value},
     request::Config as ReqConfig,
-    Result,
 };
 use std::thread::sleep;
 

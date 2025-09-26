@@ -5,9 +5,8 @@
 use std::time::Duration;
 
 use super::{
-    gpiod,
+    Error, OperationType, Result, gpiod,
     line::{Bias, Direction, Drive, Edge, EventClock, SettingKind, SettingVal, Value},
-    Error, OperationType, Result,
 };
 
 /// Line settings objects.

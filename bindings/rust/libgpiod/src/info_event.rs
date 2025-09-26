@@ -5,9 +5,8 @@
 use std::time::Duration;
 
 use super::{
-    gpiod,
+    Error, OperationType, Result, gpiod,
     line::{self, InfoChangeKind},
-    Error, OperationType, Result,
 };
 
 /// Line status watch events

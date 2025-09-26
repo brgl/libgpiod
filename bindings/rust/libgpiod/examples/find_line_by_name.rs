@@ -3,7 +3,7 @@
 //
 // Minimal example of finding a line with the given name.
 
-use libgpiod::{gpiochip_devices, Result};
+use libgpiod::{Result, gpiochip_devices};
 
 fn main() -> Result<()> {
     // Example configuration - customize to suit your situation
