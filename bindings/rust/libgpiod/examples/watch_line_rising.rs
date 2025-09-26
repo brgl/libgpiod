@@ -3,28 +3,33 @@
 //
 // Minimal example of watching for edges on a single line.
 
-use libgpiod::{line, Result};
+use libgpiod::{
+    chip::Chip,
+    line::{Config as LineConfig, Edge, EdgeKind, Settings},
+    request::{Buffer, Config as ReqConfig},
+    Result,
+};
 
 fn main() -> Result<()> {
     // Example configuration - customize to suit your situation
     let chip_path = "/dev/gpiochip0";
     let line_offset = 5;
 
-    let mut lsettings = line::Settings::new()?;
-    lsettings.set_edge_detection(Some(line::Edge::Rising))?;
+    let mut lsettings = Settings::new()?;
+    lsettings.set_edge_detection(Some(Edge::Rising))?;
 
-    let mut lconfig = line::Config::new()?;
+    let mut lconfig = LineConfig::new()?;
     lconfig.add_line_settings(&[line_offset], lsettings)?;
 
-    let mut rconfig = libgpiod::request::Config::new()?;
+    let mut rconfig = ReqConfig::new()?;
     rconfig.set_consumer("watch-line-value")?;
 
-    let chip = libgpiod::chip::Chip::open(&chip_path)?;
+    let chip = Chip::open(&chip_path)?;
     let request = chip.request_lines(Some(&rconfig), &lconfig)?;
 
     // A larger buffer is an optimisation for reading bursts of events from the
     // kernel, but that is not necessary in this case, so 1 is fine.
-    let mut buffer = libgpiod::request::Buffer::new(1)?;
+    let mut buffer = Buffer::new(1)?;
     loop {
         // blocks until at least one event is available
         let events = request.read_edge_events(&mut buffer)?;
@@ -34,8 +39,8 @@ fn main() -> Result<()> {
                 "line: {}  type: {:<7}  event #{}",
                 event.line_offset(),
                 match event.event_type()? {
-                    line::EdgeKind::Rising => "Rising",
-                    line::EdgeKind::Falling => "Falling",
+                    EdgeKind::Rising => "Rising",
+                    EdgeKind::Falling => "Falling",
                 },
                 event.line_seqno()
             );

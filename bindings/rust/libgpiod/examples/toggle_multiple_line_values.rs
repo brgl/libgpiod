@@ -5,9 +5,12 @@
 
 use core::time::Duration;
 use libgpiod::{
-    line::{self, Offset, Value},
+    chip::Chip,
+    line::{Config as LineConfig, Direction, Offset, Settings, Value},
+    request::Config as ReqConfig,
     Result,
 };
+use std::thread::sleep;
 
 fn toggle_value(value: Value) -> Value {
     match value {
@@ -35,23 +38,23 @@ fn main() -> Result<()> {
     let line_offsets = [5, 3, 7];
     let mut values = vec![Value::Active, Value::Active, Value::InActive];
 
-    let mut lsettings = line::Settings::new()?;
-    lsettings.set_direction(line::Direction::Output)?;
+    let mut lsettings = Settings::new()?;
+    lsettings.set_direction(Direction::Output)?;
 
-    let mut lconfig = line::Config::new()?;
+    let mut lconfig = LineConfig::new()?;
     lconfig
         .add_line_settings(&line_offsets, lsettings)?
         .set_output_values(&values)?;
 
-    let mut rconfig = libgpiod::request::Config::new()?;
+    let mut rconfig = ReqConfig::new()?;
     rconfig.set_consumer("toggle-multiple-line-values")?;
 
-    let chip = libgpiod::chip::Chip::open(&chip_path)?;
+    let chip = Chip::open(&chip_path)?;
     let mut req = chip.request_lines(Some(&rconfig), &lconfig)?;
 
     loop {
         print_values(&line_offsets, &values);
-        std::thread::sleep(Duration::from_secs(1));
+        sleep(Duration::from_secs(1));
         toggle_values(&mut values);
         req.set_values(&values)?;
     }
