@@ -31,6 +31,84 @@ versions:
 - `v2_1`: Minimum version of `2.1.x`
 - `vnext`: The upcoming, still unreleased version of the C lib
 
+## Examples
+
+Get GPIO chip information:
+
+```rust
+let chip = Chip::open(&Path::new("/dev/gpiochip0"))?;
+let info = chip.info()?;
+
+println!("{} [{}] ({} lines)", info.name()?, info.label()?, info.num_lines());
+```
+
+Print GPIO line name:
+
+```rust
+let chip = Chip::open(&Path::new("/dev/gpiochip0"))?;
+let info = chip.line_info(0)?;
+let name = info.name().unwrap_or("unnamed");
+
+println!("{name}");
+```
+
+Toggle GPIO line output value:
+
+```rust
+let mut settings = line::Settings::new()?;
+settings
+    .set_direction(line::Direction::Output)?
+    .set_output_value(Value::Active)?;
+
+let mut line_cfg = line::Config::new()?;
+line_cfg.add_line_settings(&[line_offset], settings)?;
+
+let mut req_cfg = request::Config::new()?;
+req_cfg.set_consumer("toggle-line-value")?;
+
+let chip = Chip::open(&Path::new("/dev/gpiochip0"))?;
+
+/* Request with value 1 */
+let mut req = chip.request_lines(Some(&req_cfg), &line_cfg)?;
+
+/* Toggle to value 0 */
+req.set_value(line_offset, Value::InActive)?;
+```
+
+Read GPIO line event:
+
+```rust
+let mut lsettings = line::Settings::new()?;
+lsettings
+    .set_direction(line::Direction::Input)?
+    .set_edge_detection(Some(line::Edge::Both))?;
+
+let mut line_cfg = line::Config::new()?;
+line_cfg.add_line_settings(&[line_offset], settings)?;
+
+let mut req_cfg = request::Config::new()?;
+req_cfg.set_consumer("toggle-line-value")?;
+
+let chip = Chip::open(&Path::new("/dev/gpiochip0"))?;
+let req = chip.request_lines(Some(&req_cfg), &line_cfg)?;
+
+let mut buffer = request::Buffer::new(1)?;
+
+loop {
+    let events = req.read_edge_events(&mut buffer)?;
+    for event in events {
+        println!(
+            "line: {} type: {}",
+            event.line_offset(),
+            match event.event_type()? {
+                EdgeKind::Rising => "Rising",
+                EdgeKind::Falling => "Falling",
+            }
+        );
+    }
+}
+```
+
 ## License
 
 This project is licensed under either of
