@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2022-2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-bin_PROGRAMS = \
+noinst_PROGRAMS = \
 	find_line_by_name_glib \
 	get_chip_info_glib \
 	get_line_info_glib \
