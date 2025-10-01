@@ -7,3 +7,4 @@ gpioget
 gpioset
 gpiomon
 gpionotify
+gpioctl
