@@ -17,10 +17,10 @@ generated-gpiodbus.h generated-gpiodbus.c: io.gpiod1.xml
 		$(srcdir)/io.gpiod1.xml
 
 lib_LTLIBRARIES = libgpiodbus.la
-include_HEADERS = \
+libgpiodbus_la_SOURCES = \
+	generated-gpiodbus.c \
 	generated-gpiodbus.h \
 	gpiodbus.h
-libgpiodbus_la_SOURCES = generated-gpiodbus.c
 
 BUILT_SOURCES = generated-gpiodbus.c generated-gpiodbus.h
 CLEANFILES = $(BUILT_SOURCES)
