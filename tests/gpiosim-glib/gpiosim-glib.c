@@ -132,6 +132,7 @@ static gboolean g_gpiosim_chip_apply_hogs(GPIOSimChip *self)
 
 static gboolean g_gpiosim_chip_apply_properties(GPIOSimChip *self)
 {
+	gboolean err;
 	int ret;
 
 	ret = gpiosim_bank_set_num_lines(self->bank, self->num_lines);
@@ -154,8 +155,8 @@ static gboolean g_gpiosim_chip_apply_properties(GPIOSimChip *self)
 		}
 	}
 
-	ret = g_gpiosim_chip_apply_line_names(self);
-	if (!ret)
+	err = g_gpiosim_chip_apply_line_names(self);
+	if (!err)
 		return FALSE;
 
 	return g_gpiosim_chip_apply_hogs(self);
