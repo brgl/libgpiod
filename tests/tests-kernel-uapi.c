@@ -197,3 +197,32 @@ GPIOD_TEST_CASE(open_source_emulation)
 	g_assert_cmpint(gpiod_line_info_get_drive(info), ==,
 			GPIOD_LINE_DRIVE_OPEN_SOURCE);
 }
+
+GPIOD_TEST_CASE(valid_lines)
+{
+	static const guint invalid_lines[] = { 2, 4 };
+
+	g_autoptr(GPIOSimChip) sim = NULL;
+	g_autoptr(struct_gpiod_chip) chip = NULL;
+	g_autoptr(struct_gpiod_line_info) info0 = NULL;
+	g_autoptr(struct_gpiod_line_info) info1 = NULL;
+	g_autoptr(GVariant) vinval = NULL;
+
+	vinval = g_variant_new_fixed_array(G_VARIANT_TYPE_UINT32,
+					   invalid_lines, 2, sizeof(guint));
+	g_variant_ref_sink(vinval);
+
+	sim = g_gpiosim_chip_new("num-lines", 8,
+				 "invalid-lines", vinval,
+				 NULL);
+
+	chip = gpiod_test_open_chip_or_fail(g_gpiosim_chip_get_dev_path(sim));
+	info0 = gpiod_chip_get_line_info(chip, 0);
+	info1 = gpiod_chip_get_line_info(chip, 2);
+	g_assert_nonnull(info0);
+	g_assert_nonnull(info1);
+	gpiod_test_return_if_failed();
+
+	g_assert_false(gpiod_line_info_is_used(info0));
+	g_assert_true(gpiod_line_info_is_used(info1));
+}
