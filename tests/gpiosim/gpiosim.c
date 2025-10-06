@@ -1116,6 +1116,9 @@ GPIOSIM_API int gpiosim_bank_clear_hog(struct gpiosim_bank *bank,
 				       unsigned int offset)
 {
 	char buf[64];
+	
+	if (!dev_check_pending(bank->dev))
+		return -1;
 
 	snprintf(buf, sizeof(buf), "line%u/hog", offset);
 
