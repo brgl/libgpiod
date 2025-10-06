@@ -91,6 +91,8 @@ int main(int argc UNUSED, char **argv UNUSED)
 	ret = gpiosim_dev_enable(dev);
 	expect_or_die(ret == 0, "Unable to enable the device");
 
+	expect_or_die(gpiosim_dev_is_live(dev), "Failed to enable the device");
+
 	printf("Setting the pull of a single line to pull-up\n");
 
 	ret = gpiosim_bank_set_pull(bank0, 6, GPIOSIM_PULL_UP);
@@ -118,8 +120,15 @@ int main(int argc UNUSED, char **argv UNUSED)
 
 	printf("Disabling the GPIO device\n");
 
+	expect_or_die(gpiosim_dev_is_live(dev), "Failed to disable the device");
+
 	ret = gpiosim_dev_disable(dev);
 	expect_or_die(ret == 0, "Error while disabling the device");
+
+	printf("Clearing the GPIO hog on bank #2\n");
+
+	ret = gpiosim_bank_clear_hog(bank1, 3);
+	expect_or_die(ret == 0, "Error while clearing the hog");
 
 	printf("Re-enabling the GPIO device\n");
 
