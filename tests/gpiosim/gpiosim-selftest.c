@@ -130,6 +130,11 @@ int main(int argc UNUSED, char **argv UNUSED)
 	ret = gpiosim_bank_clear_hog(bank1, 3);
 	expect_or_die(ret == 0, "Error while clearing the hog");
 
+	printf("Mark one line as invalid\n");
+
+	ret = gpiosim_bank_set_line_valid(bank0, 1, false);
+	expect_or_die(ret == 0, "Unable to mark line as invalid");
+
 	printf("Re-enabling the GPIO device\n");
 
 	ret = gpiosim_dev_enable(dev);

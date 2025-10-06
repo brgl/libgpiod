@@ -61,6 +61,8 @@ int gpiosim_bank_set_line_name(struct gpiosim_bank *bank,
 int gpiosim_bank_hog_line(struct gpiosim_bank *bank, unsigned int offset,
 			  const char *name, enum gpiosim_direction direction);
 int gpiosim_bank_clear_hog(struct gpiosim_bank *bank, unsigned int offset);
+int gpiosim_bank_set_line_valid(struct gpiosim_bank *bank, unsigned int offset,
+				bool valid);
 
 enum gpiosim_value
 gpiosim_bank_get_value(struct gpiosim_bank *bank, unsigned int offset);

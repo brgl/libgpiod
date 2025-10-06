@@ -24,7 +24,7 @@
 
 #define GPIOSIM_API		__attribute__((visibility("default")))
 #define UNUSED			__attribute__((unused))
-#define MIN_KERNEL_VERSION	KERNEL_VERSION(5, 17, 4)
+#define MIN_KERNEL_VERSION	KERNEL_VERSION(6, 17, 0)
 
 static pthread_mutex_t id_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_once_t id_init_once = PTHREAD_ONCE_INIT;
@@ -1123,6 +1123,24 @@ GPIOSIM_API int gpiosim_bank_clear_hog(struct gpiosim_bank *bank,
 	snprintf(buf, sizeof(buf), "line%u/hog", offset);
 
 	return unlinkat(bank->cfs_dir_fd, buf, AT_REMOVEDIR);
+}
+
+GPIOSIM_API int gpiosim_bank_set_line_valid(struct gpiosim_bank *bank,
+					    unsigned int offset, bool valid)
+{
+	char buf[32];
+	int ret;
+
+	if (!dev_check_pending(bank->dev))
+		return -1;
+
+	ret = bank_make_line_dir(bank, offset);
+	if (ret)
+		return -1;
+
+	snprintf(buf, sizeof(buf), "line%u/valid", offset);
+
+	return open_write_close(bank->cfs_dir_fd, buf, valid ? "1" : "0");
 }
 
 static int sysfs_read_bank_attr(struct gpiosim_bank *bank, unsigned int offset,
