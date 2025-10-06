@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <gpiosim.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -18,6 +19,7 @@ struct _GPIOSimChip {
 	gchar *label;
 	GVariant *line_names;
 	GVariant *hogs;
+	GVariant *invalid_lines;
 };
 
 enum {
@@ -27,6 +29,7 @@ enum {
 	G_GPIOSIM_CHIP_PROP_LABEL,
 	G_GPIOSIM_CHIP_PROP_LINE_NAMES,
 	G_GPIOSIM_CHIP_PROP_HOGS,
+	G_GPIOSIM_CHIP_PROP_INVALID_LINES,
 };
 
 static struct gpiosim_ctx *sim_ctx;
@@ -130,6 +133,31 @@ static gboolean g_gpiosim_chip_apply_hogs(GPIOSimChip *self)
 	return TRUE;
 }
 
+static gboolean g_gpiosim_chip_apply_invalid_lines(GPIOSimChip *self)
+{
+	g_autoptr(GVariantIter) iter = NULL;
+	gboolean ret;
+	guint offset;
+
+	if (!self->invalid_lines)
+		return TRUE;
+
+	iter = g_variant_iter_new(self->invalid_lines);
+
+	while (g_variant_iter_loop(iter, "u", &offset)) {
+		ret = gpiosim_bank_set_line_valid(self->bank, offset, false);
+		if (ret) {
+			g_set_error(&self->construct_err, G_GPIOSIM_ERROR,
+				    G_GPIOSIM_ERR_CHIP_INIT_FAILED,
+				    "Unable to set simulated GPIO line as invalid: %s",
+				    g_strerror(errno));
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
 static gboolean g_gpiosim_chip_apply_properties(GPIOSimChip *self)
 {
 	gboolean err;
@@ -157,6 +185,10 @@ static gboolean g_gpiosim_chip_apply_properties(GPIOSimChip *self)
 
 	err = g_gpiosim_chip_apply_line_names(self);
 	if (!err)
+		return FALSE;
+
+	ret = g_gpiosim_chip_apply_invalid_lines(self);
+	if (!ret)
 		return FALSE;
 
 	return g_gpiosim_chip_apply_hogs(self);
@@ -289,6 +321,9 @@ static void g_gpiosim_chip_set_property(GObject *obj, guint prop_id,
 	case G_GPIOSIM_CHIP_PROP_HOGS:
 		set_variant_prop(&self->hogs, val);
 		break;
+	case G_GPIOSIM_CHIP_PROP_INVALID_LINES:
+		set_variant_prop(&self->invalid_lines, val);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
 		break;
@@ -301,6 +336,7 @@ static void g_gpiosim_chip_dispose(GObject *obj)
 
 	g_clear_pointer(&self->line_names, g_variant_unref);
 	g_clear_pointer(&self->hogs, g_variant_unref);
+	g_clear_pointer(&self->invalid_lines, g_variant_unref);
 
 	G_OBJECT_CLASS(g_gpiosim_chip_parent_class)->dispose(obj);
 }
@@ -385,6 +421,14 @@ static void g_gpiosim_chip_class_init(GPIOSimChipClass *chip_class)
 			"List of hogged lines and their directions.",
 			(GVariantType *)"a(usi)", NULL,
 			G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+
+	g_object_class_install_property(
+		class, G_GPIOSIM_CHIP_PROP_INVALID_LINES,
+		g_param_spec_variant(
+			"invalid-lines", "Invalid lines",
+			"List of offsets of lines not valid as GPIOs.",
+			(GVariantType *)"au", NULL,
+			G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 }
 
 static void g_gpiosim_chip_init(GPIOSimChip *self)
@@ -394,6 +438,7 @@ static void g_gpiosim_chip_init(GPIOSimChip *self)
 	self->label = NULL;
 	self->line_names = NULL;
 	self->hogs = NULL;
+	self->invalid_lines = NULL;
 }
 
 const gchar *g_gpiosim_chip_get_dev_path(GPIOSimChip *self)
