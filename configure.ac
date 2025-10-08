@@ -62,6 +62,7 @@ AC_PROG_INSTALL
 AC_PROG_EGREP
 
 LT_INIT
+PKG_PROG_PKG_CONFIG([0.28])
 
 AC_DEFUN([ERR_NOT_FOUND],
 	[AC_MSG_ERROR([$1 not found (needed to build $2)], [1])])
@@ -114,19 +115,20 @@ AC_ARG_ENABLE([gpioset-interactive],
 AM_CONDITIONAL([WITH_GPIOSET_INTERACTIVE],
 	[test "x$with_gpioset_interactive" = xtrue])
 
-# FIXME Figure out why this AS_IF() cannot be dropped without causing the other
-# PKG_CHECK_MODULES() expansions fail to execute pkg-config.
-AS_IF([test "x$with_tools" = xtrue],
-	[# These are only needed to build tools
+if test "x$with_tools" = xtrue
+then
+	# These are only needed to build tools
 	AC_CHECK_FUNC([daemon], [], [FUNC_NOT_FOUND_TOOLS([daemon])])
 	AC_CHECK_FUNC([asprintf], [], [FUNC_NOT_FOUND_TOOLS([asprintf])])
 	AC_CHECK_FUNC([scandir], [], [FUNC_NOT_FOUND_TOOLS([scandir])])
 	AC_CHECK_FUNC([versionsort], [], [FUNC_NOT_FOUND_TOOLS([versionsort])])
 	AC_CHECK_FUNC([strtoull], [], [FUNC_NOT_FOUND_TOOLS([strtoull])])
 	AC_CHECK_FUNC([nanosleep], [], [FUNC_NOT_FOUND_TOOLS([nanosleep])])
-	AS_IF([test "x$with_gpioset_interactive" = xtrue],
-		[PKG_CHECK_MODULES([LIBEDIT], [libedit >= 3.1])])
-	])
+	if test "x$with_gpioset_interactive" = xtrue
+	then
+		PKG_CHECK_MODULES([LIBEDIT], [libedit >= 3.1])
+	fi
+fi
 
 AC_ARG_ENABLE([tests],
 	[AS_HELP_STRING([--enable-tests],[enable libgpiod tests [default=no]])],
@@ -291,7 +293,6 @@ then
 	PKG_CHECK_MODULES([GOBJECT], [gobject-2.0 >= 2.80])
 	PKG_CHECK_MODULES([GIO], [gio-2.0 >= 2.80])
 	PKG_CHECK_MODULES([GIO_UNIX], [gio-unix-2.0 >= 2.80])
-	PKG_PROG_PKG_CONFIG([0.28])
 	PKG_CHECK_VAR([GLIB_MKENUMS], [glib-2.0], [glib_mkenums], [], GLIB_MKENUMS_NOT_FOUND)
 	AC_CHECK_PROG([has_glib_mkenums], [glib-mkenums], [true], [false])
 	if test "x$has_glib_mkenums" == xfalse
