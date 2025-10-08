@@ -72,12 +72,6 @@ AC_DEFUN([FUNC_NOT_FOUND_LIB],
 AC_DEFUN([HEADER_NOT_FOUND_LIB],
 	[ERR_NOT_FOUND([$1 header], [the library])])
 
-AC_DEFUN([HEADER_NOT_FOUND_TESTS],
-	[ERR_NOT_FOUND([$1 header], [the test suite])])
-
-AC_DEFUN([HEADER_NOT_FOUND_CXX],
-	[ERR_NOT_FOUND([$1 header], [C++ bindings])])
-
 # This is always checked (library needs this)
 AC_CHECK_INCLUDES_DEFAULT
 
@@ -154,6 +148,9 @@ fi
 AC_DEFUN([FUNC_NOT_FOUND_TESTS],
 	[ERR_NOT_FOUND([$1()], [tests])])
 
+AC_DEFUN([HEADER_NOT_FOUND_TESTS],
+	[ERR_NOT_FOUND([$1 header], [the test suite])])
+
 if test "x$with_tests" = xtrue
 then
 	# For libgpiosim
@@ -206,6 +203,9 @@ AC_ARG_ENABLE([bindings-cxx],
 	[if test "x$enableval" = xyes; then with_bindings_cxx=true; fi],
 	[with_bindings_cxx=false])
 AM_CONDITIONAL([WITH_BINDINGS_CXX], [test "x$with_bindings_cxx" = xtrue])
+
+AC_DEFUN([HEADER_NOT_FOUND_CXX],
+	[ERR_NOT_FOUND([$1 header], [C++ bindings])])
 
 if test "x$with_bindings_cxx" = xtrue
 then
