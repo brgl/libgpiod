@@ -339,7 +339,6 @@ class Chip:
         request._chip_name = req_internal.chip_name
         request._offsets = req_internal.offsets
         request._name_map = name_map
-        request._offset_map = offset_map
 
         request._lines = [
             offset_map[off] if off in offset_map else off for off in request.offsets
