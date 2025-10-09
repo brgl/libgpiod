@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+import warnings
 from unittest import TestCase
 
 import gpiod
@@ -604,22 +605,30 @@ class ReconfigureRequestedLines(TestCase):
     def test_reconfigure_extra_offsets(self) -> None:
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.OUTPUT)
-        self.req.reconfigure_lines(
-            {(0, 2, 3, 6, 5): gpiod.LineSettings(direction=Direction.INPUT)}
-        )
+        with warnings.catch_warnings(record=True) as w:
+            self.req.reconfigure_lines(
+                {(0, 2, 3, 6, 5): gpiod.LineSettings(direction=Direction.INPUT)}
+            )
+            assert len(w) == 1
+            assert issubclass(w[0].category, UserWarning)
+            assert "Line offset '5'" in str(w[0].message)
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.INPUT)
 
     def test_reconfigure_extra_names(self) -> None:
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.OUTPUT)
-        self.req.reconfigure_lines(
-            {
-                (0, 2, "foo", "baz", "buzz"): gpiod.LineSettings(
-                    direction=Direction.INPUT
-                )
-            }
-        )
+        with warnings.catch_warnings(record=True) as w:
+            self.req.reconfigure_lines(
+                {
+                    (0, 2, "foo", "baz", "buzz"): gpiod.LineSettings(
+                        direction=Direction.INPUT
+                    )
+                }
+            )
+            assert len(w) == 1
+            assert issubclass(w[0].category, UserWarning)
+            assert "Line name 'buzz'" in str(w[0].message)
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.INPUT)
 

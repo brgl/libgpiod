@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING, Optional, Union, cast
 
 from . import _ext
@@ -173,12 +174,21 @@ class LineRequest:
         for line, settings in config_iter(config):
             try:
                 offset = self._line_to_offset(line)
-                line_settings[offset] = settings
+                if offset in self.offsets:
+                    line_settings[offset] = settings
+                else:
+                    warnings.warn(
+                        f"Line offset '{offset}' was not included in original request.",
+                        stacklevel=2,
+                    )
             except ValueError:
                 # _line_to_offset will raise a ValueError when it encounters
                 # an unrecognized line name. Ignore these like we do offsets
                 # that were not in the original request.
-                pass
+                warnings.warn(
+                    f"Line name '{line}' was not included in original request.",
+                    stacklevel=2,
+                )
 
         for offset in self.offsets:
             settings = line_settings.get(offset) or LineSettings()
