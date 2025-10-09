@@ -302,7 +302,16 @@ class Chip:
                 )
 
             if isinstance(line, str):
+                # lines specifically requested by name overwrite any entries
                 name_map[line] = offset
+            else:
+                name = cast("_ext.Chip", self._chip).get_line_name(offset)
+                # Only track lines with actual names. Names from offsets do not
+                # overwrite existing entries (such as requests by name). So if
+                # multiple lines have the same name, the first in the request
+                # list is the one addressable by name
+                if name and name not in name_map:
+                    name_map[name] = offset
 
             line_cfg.add_line_settings(
                 offsets, _line_settings_to_ext(settings or LineSettings())

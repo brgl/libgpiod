@@ -71,7 +71,9 @@ class ModuleLineRequestsBehaveCorrectlyWithInvalidArguments(TestCase):
 
 class ChipLineRequestWorks(TestCase):
     def setUp(self) -> None:
-        self.sim = gpiosim.Chip(num_lines=8, line_names={5: "foo", 7: "bar"})
+        self.sim = gpiosim.Chip(
+            num_lines=8, line_names={0: "fizz", 1: "fizz", 5: "foo", 7: "bar"}
+        )
         self.chip = gpiod.Chip(self.sim.dev_path)
 
     def tearDown(self) -> None:
@@ -112,6 +114,16 @@ class ChipLineRequestWorks(TestCase):
     def test_request_single_line_by_name(self) -> None:
         with self.chip.request_lines(config={"foo": None}) as req:
             self.assertEqual(req.offsets, [5])
+
+    def test_request_line_with_duplicate_names_by_offset(self) -> None:
+        with self.chip.request_lines(config={(1, 0): None}) as req:
+            self.assertEqual(req.offsets, [1, 0])
+            self.assertEqual(req.lines, [1, 0])
+
+    def test_request_line_with_duplicate_names_mixed_mode(self) -> None:
+        with self.chip.request_lines(config={(1, "fizz"): None}) as req:
+            self.assertEqual(req.offsets, [1, 0])
+            self.assertEqual(req.lines, [1, "fizz"])
 
 
 class ModuleLineRequestWorks(TestCase):
@@ -500,11 +512,13 @@ class LineRequestSetOutputValues(TestCase):
 
 class ReconfigureRequestedLines(TestCase):
     def setUp(self) -> None:
-        self.sim = gpiosim.Chip(num_lines=8, line_names={3: "foo", 4: "bar", 6: "baz"})
+        self.sim = gpiosim.Chip(
+            num_lines=8, line_names={2: "fizz", 3: "foo", 4: "bar", 6: "baz", 7: "foo"}
+        )
         self.chip = gpiod.Chip(self.sim.dev_path)
         self.req = self.chip.request_lines(
             {
-                (0, 2, "foo", "baz"): gpiod.LineSettings(
+                (7, 0, 2, "foo", "baz"): gpiod.LineSettings(
                     direction=Direction.OUTPUT, active_low=True, drive=Drive.OPEN_DRAIN
                 )
             }
@@ -530,7 +544,7 @@ class ReconfigureRequestedLines(TestCase):
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.OUTPUT)
         self.req.reconfigure_lines(
-            {(0, 2, "foo", "baz"): gpiod.LineSettings(direction=Direction.INPUT)}
+            {(0, "fizz", "foo", "baz"): gpiod.LineSettings(direction=Direction.INPUT)}
         )
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.INPUT)
@@ -608,6 +622,19 @@ class ReconfigureRequestedLines(TestCase):
         )
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.INPUT)
+
+    def test_reconfigure_duplicate_names_with_offset(self) -> None:
+        info3 = self.chip.get_line_info(3)
+        info7 = self.chip.get_line_info(7)
+        self.assertEqual(info3.direction, Direction.OUTPUT)
+        self.assertEqual(info7.direction, Direction.OUTPUT)
+        self.req.reconfigure_lines(
+            {("foo", 7): gpiod.LineSettings(direction=Direction.INPUT)}
+        )
+        info3 = self.chip.get_line_info(3)
+        info7 = self.chip.get_line_info(7)
+        self.assertEqual(info3.direction, Direction.INPUT)
+        self.assertEqual(info7.direction, Direction.INPUT)
 
 
 class ReleasedLineRequestCannotBeUsed(TestCase):
