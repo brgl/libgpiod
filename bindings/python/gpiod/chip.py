@@ -269,13 +269,12 @@ class Chip:
         line_cfg = _ext.LineConfig()
 
         # If we have global output values - map line names to offsets
+        mapped_output_values = None
         if output_values:
             mapped_output_values = {
                 self.line_offset_from_id(line): value
                 for line, value in output_values.items()
             }
-        else:
-            mapped_output_values = None
 
         name_map = dict()
         requested_lines = list()
@@ -299,9 +298,7 @@ class Chip:
             # list for later.
             if mapped_output_values:
                 global_output_values.append(
-                    mapped_output_values[offset]
-                    if offset in mapped_output_values
-                    else Value.INACTIVE
+                    mapped_output_values.get(offset, Value.INACTIVE)
                 )
 
             if isinstance(line, str):
