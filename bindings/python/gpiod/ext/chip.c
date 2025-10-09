@@ -147,6 +147,32 @@ static PyObject *chip_get_line_info(chip_object *self, PyObject *args)
 	return info_obj;
 }
 
+static PyObject *chip_get_line_name(chip_object *self, PyObject *args)
+{
+	int ret;
+	unsigned int offset;
+	struct gpiod_line_info *info;
+	PyObject *line_name;
+	const char *name;
+
+	ret = PyArg_ParseTuple(args, "I", &offset);
+	if (!ret)
+		return NULL;
+
+	Py_BEGIN_ALLOW_THREADS;
+	info = gpiod_chip_get_line_info(self->chip, offset);
+	Py_END_ALLOW_THREADS;
+	if (!info)
+		return Py_gpiod_SetErrFromErrno();
+
+	name = gpiod_line_info_get_name(info);
+	line_name = (name == NULL) ? Py_None : PyUnicode_FromString(name);
+
+	gpiod_line_info_free(info);
+
+	return line_name;
+}
+
 static PyObject *
 chip_unwatch_line_info(chip_object *self, PyObject *args)
 {
@@ -331,6 +357,11 @@ static PyMethodDef chip_methods[] = {
 	{
 		.ml_name = "request_lines",
 		.ml_meth = (PyCFunction)chip_request_lines,
+		.ml_flags = METH_VARARGS,
+	},
+	{
+		.ml_name = "get_line_name",
+		.ml_meth = (PyCFunction)chip_get_line_name,
 		.ml_flags = METH_VARARGS,
 	},
 	{ }
