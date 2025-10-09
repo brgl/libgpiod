@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Union, cast
 
 from . import _ext
-from ._internal import poll_fd
+from ._internal import config_iter, poll_fd
 from .exception import RequestReleasedError
 from .line_settings import LineSettings, _line_settings_to_ext
 
@@ -174,13 +174,9 @@ class LineRequest:
         line_cfg = _ext.LineConfig()
         line_settings = {}
 
-        for lines, settings in config.items():
-            if isinstance(lines, int) or isinstance(lines, str):
-                lines = [lines]
-
-            for line in lines:
-                offset = self._line_to_offset(line)
-                line_settings[offset] = settings
+        for line, settings in config_iter(config):
+            offset = self._line_to_offset(line)
+            line_settings[offset] = settings
 
         for offset in self.offsets:
             settings = line_settings.get(offset) or LineSettings()

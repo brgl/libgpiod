@@ -8,7 +8,7 @@ from errno import ENOENT
 from typing import TYPE_CHECKING, Optional, Union, cast
 
 from . import _ext
-from ._internal import poll_fd
+from ._internal import config_iter, poll_fd
 from .exception import ChipClosedError
 from .line import Value
 from .line_request import LineRequest
@@ -305,28 +305,24 @@ class Chip:
         offset_map = dict()
         global_output_values = list()
 
-        for lines, settings in config.items():
+        for line, settings in config_iter(config):
             offsets = list()
 
-            if isinstance(lines, int) or isinstance(lines, str):
-                lines = (lines,)
+            offset = self.line_offset_from_id(line)
+            offsets.append(offset)
 
-            for line in lines:
-                offset = self.line_offset_from_id(line)
-                offsets.append(offset)
+            # If there's a global output value for this offset, store it in the
+            # list for later.
+            if mapped_output_values:
+                global_output_values.append(
+                    mapped_output_values[offset]
+                    if offset in mapped_output_values
+                    else Value.INACTIVE
+                )
 
-                # If there's a global output value for this offset, store it in the
-                # list for later.
-                if mapped_output_values:
-                    global_output_values.append(
-                        mapped_output_values[offset]
-                        if offset in mapped_output_values
-                        else Value.INACTIVE
-                    )
-
-                if isinstance(line, str):
-                    name_map[line] = offset
-                    offset_map[offset] = line
+            if isinstance(line, str):
+                name_map[line] = offset
+                offset_map[offset] = line
 
             line_cfg.add_line_settings(
                 offsets, _line_settings_to_ext(settings or LineSettings())
