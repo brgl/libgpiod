@@ -94,12 +94,9 @@ class LineRequest:
     def _line_to_offset(self, line: Union[int, str]) -> int:
         if isinstance(line, int):
             return line
-        else:
-            _line: Union[int, None]
-            if (_line := self._name_map.get(line)) is None:
-                raise ValueError(f"unknown line name: {line}")
-            else:
-                return _line
+        if (_line := self._name_map.get(line)) is None:
+            raise ValueError(f"unknown line name: {line}")
+        return _line
 
     def get_values(
         self, lines: Optional[Iterable[Union[int, str]]] = None
@@ -174,8 +171,14 @@ class LineRequest:
         line_settings = {}
 
         for line, settings in config_iter(config):
-            offset = self._line_to_offset(line)
-            line_settings[offset] = settings
+            try:
+                offset = self._line_to_offset(line)
+                line_settings[offset] = settings
+            except ValueError:
+                # _line_to_offset will raise a ValueError when it encounters
+                # an unrecognized line name. Ignore these like we do offsets
+                # that were not in the original request.
+                pass
 
         for offset in self.offsets:
             settings = line_settings.get(offset) or LineSettings()

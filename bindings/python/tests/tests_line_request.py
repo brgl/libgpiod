@@ -596,6 +596,19 @@ class ReconfigureRequestedLines(TestCase):
         info = self.chip.get_line_info(2)
         self.assertEqual(info.direction, Direction.INPUT)
 
+    def test_reconfigure_extra_names(self) -> None:
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.OUTPUT)
+        self.req.reconfigure_lines(
+            {
+                (0, 2, "foo", "baz", "buzz"): gpiod.LineSettings(
+                    direction=Direction.INPUT
+                )
+            }
+        )
+        info = self.chip.get_line_info(2)
+        self.assertEqual(info.direction, Direction.INPUT)
+
 
 class ReleasedLineRequestCannotBeUsed(TestCase):
     def test_using_released_line_request(self) -> None:
