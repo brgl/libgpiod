@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-from collections import Counter
 from errno import ENOENT
 from typing import TYPE_CHECKING, Optional, Union, cast
 
@@ -236,20 +235,6 @@ class Chip:
         self._check_closed()
         return cast("_ext.Chip", self._chip).read_info_event()
 
-    def _resolve_config_keys_to_offsets(
-        self,
-        config_keys: Iterable[Union[Iterable[Union[int, str]], int, str]],
-    ) -> list[int]:
-        offsets: list[int] = list()
-        for key in config_keys:
-            # perform strict int/str check since str is also Iterable
-            if isinstance(key, (int, str)):
-                offsets.append(self.line_offset_from_id(key))
-            else:  # key is an iterable with multiple IDs to resolve
-                for item in key:
-                    offsets.append(self.line_offset_from_id(item))
-        return offsets
-
     def request_lines(
         self,
         config: dict[
@@ -283,15 +268,6 @@ class Chip:
 
         line_cfg = _ext.LineConfig()
 
-        # Sanitize lines - don't allow offset repetitions or offset-name conflicts.
-        for offset, count in Counter(
-            self._resolve_config_keys_to_offsets(config.keys())
-        ).items():
-            if count != 1:
-                raise ValueError(
-                    f"line must be configured exactly once - offset {offset} repeats"
-                )
-
         # If we have global output values - map line names to offsets
         if output_values:
             mapped_output_values = {
@@ -304,11 +280,18 @@ class Chip:
         name_map = dict()
         requested_lines = list()
         global_output_values = list()
+        seen_offsets = set()
 
         for line, settings in config_iter(config):
             offsets = list()
 
             offset = self.line_offset_from_id(line)
+            # don't allow offset repetitions or offset-name conflicts.
+            if offset in seen_offsets:
+                raise ValueError(
+                    f"line must be configured exactly once - offset {offset} repeats"
+                )
+            seen_offsets.add(offset)
             offsets.append(offset)
             requested_lines.append(line)
 
