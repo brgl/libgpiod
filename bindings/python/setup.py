@@ -18,6 +18,7 @@ TAR_FILENAME = "libgpiod-{version}.tar.gz"
 ASC_FILENAME = "sha256sums.asc"
 SHA256_CHUNK_SIZE = 2048
 
+
 def sha256(filename):
     """
     Return a sha256sum for a specific filename, loading the file in chunks
