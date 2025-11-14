@@ -688,6 +688,12 @@ static void gpiodbus_daemon_export_chip(GpiodbusDaemon *self, GUdevDevice *dev)
 	gboolean ret;
 
 	devname = g_udev_device_get_name(dev);
+
+	if (g_hash_table_contains(self->chips, devname)) {
+		g_debug("chip %s is already exported", devname);
+		return;
+	}
+
 	devpath = g_udev_device_get_device_file(dev);
 	obj_prefix = g_dbus_object_manager_get_object_path(
 				G_DBUS_OBJECT_MANAGER(self->chip_manager));
@@ -740,7 +746,6 @@ static void gpiodbus_daemon_export_chip(GpiodbusDaemon *self, GUdevDevice *dev)
 
 	ret = g_hash_table_insert(self->chips, g_strdup(devname),
 				  g_steal_pointer(&chip_data));
-	/* It's a programming bug if the chip is already in the hashmap. */
 	g_assert(ret);
 }
 
