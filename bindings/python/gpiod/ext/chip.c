@@ -166,7 +166,12 @@ static PyObject *chip_get_line_name(chip_object *self, PyObject *args)
 		return Py_gpiod_SetErrFromErrno();
 
 	name = gpiod_line_info_get_name(info);
-	line_name = (name == NULL) ? Py_None : PyUnicode_FromString(name);
+	if (!name) {
+		Py_INCREF(Py_None);
+		line_name = Py_None;
+	} else {
+		line_name = PyUnicode_FromString(name);
+	}
 
 	gpiod_line_info_free(info);
 
