@@ -2821,6 +2821,1387 @@ test_gpionotify_with_custom_format_unknown_specifier() {
 	output_is "%x"
 }
 
+#
+# gpioctl test cases
+#
+# Unlike the other tools, gpioctl uses a client/daemon model: the 'request'
+# client exits immediately while a per-user daemon (auto-spawned on first use)
+# holds the lines. Each test ends with 'gpioctl stop' to tear the daemon down so
+# the next test starts from a clean slate. Thanks to the auto-spawn feature
+# 'stop' works even when no daemon is running (it spawns one, then stops it), and
+# because shunit2 assertions don't abort the test function the stop runs whether
+# the test passed or failed.
+#
+
+test_gpioctl_request_by_offset() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request 2
+	status_is 0
+
+	# the line is held by the daemon even though the client has exited
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_by_name() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl request foo
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+\"foo\"\\s+input consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_by_name_with_chip() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request foo
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+\"foo\"\\s+input consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_with_consumer() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" --consumer gpio-tools-tests request foo
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+\"foo\"\\s+input consumer=\"gpio-tools-tests\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_multiple_lines() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" -C multi request 0 1 2 3
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0"
+	output_regex_match "\\s+line\\s+0:\\s+unnamed\\s+input consumer=\"multi\""
+	output_regex_match "\\s+line\\s+1:\\s+unnamed\\s+input consumer=\"multi\""
+	output_regex_match "\\s+line\\s+2:\\s+unnamed\\s+input consumer=\"multi\""
+	output_regex_match "\\s+line\\s+3:\\s+unnamed\\s+input consumer=\"multi\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_multiple_lines_by_name() {
+	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=3:bar line_name=5:xyz
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" -C multi request bar foo xyz
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" foo bar xyz
+	output_regex_match "$sim0 1\\s+\"foo\"\\s+input consumer=\"multi\""
+	output_regex_match "$sim0 3\\s+\"bar\"\\s+input consumer=\"multi\""
+	output_regex_match "$sim0 5\\s+\"xyz\"\\s+input consumer=\"multi\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_by_name_flag() {
+	# a numeric-looking name is resolved as a name with --by-name
+	gpiosim_chip sim0 num_lines=8 line_name=4:5
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" --by-name request 5
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 4
+	output_regex_match "$sim0 4\\s+\"5\"\\s+input consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_nonexistent_line() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request nosuchline
+	status_is 1
+	output_regex_match ".*cannot find line 'nosuchline'"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_multiple_chips() {
+	gpiosim_chip sim0 num_lines=8 line_name=0:foo
+	gpiosim_chip sim1 num_lines=8 line_name=0:bar
+
+	# resolving lines from more than one chip at a time is rejected
+	run_prog gpioctl request foo bar
+	status_is 1
+	output_regex_match ".*Can only manipulate lines from one chip at a time"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_input_direction() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --input 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_output_direction() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+output consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_output_with_values() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 0=active 1=inactive 2=active
+	status_is 0
+
+	gpiosim_check_value sim0 0 1
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 1
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_output_with_numeric_values() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 0=0 1=1 2=0
+	status_is 0
+
+	gpiosim_check_value sim0 0 0
+	gpiosim_check_value sim0 1 1
+	gpiosim_check_value sim0 2 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_output_active_low_with_values() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	# active-low inverts the physical signal: active=1 drives the line low
+	run_prog gpioctl -c "$sim0" request --output --active-low 0=active 1=inactive
+	status_is 0
+
+	gpiosim_check_value sim0 0 0
+	gpiosim_check_value sim0 1 1
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_active_low() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --active-low 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input active-low consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_bias_pull_up() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --pull-up 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input bias=pull-up consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_bias_pull_down() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --pull-down 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input bias=pull-down consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_bias_disabled() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --bias-disabled 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input bias=disabled consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_drive_open_drain() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output --open-drain 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+output drive=open-drain consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_drive_open_source() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output --open-source 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+output drive=open-source consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_drive_push_pull() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output --push-pull 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+output consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_rising_edge() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --rising-edge 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input edges=rising consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_falling_edge() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --falling-edge 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input edges=falling consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_both_edges() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --both-edges 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input edges=both consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_debounce_period() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --both-edges --debounce-period=10ms 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match \
+"$sim0 2\\s+unnamed\\s+input edges=both debounce-period=10ms consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_bias_settings_mutually_exclusive() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local msg=".*--pull-up, --pull-down and --bias-disabled are mutually exclusive"
+
+	run_prog gpioctl -c "$sim0" request --pull-up --pull-down 2
+	status_is 1
+	output_regex_match "$msg"
+
+	run_prog gpioctl -c "$sim0" request --pull-up --bias-disabled 2
+	status_is 1
+	output_regex_match "$msg"
+
+	run_prog gpioctl -c "$sim0" request --pull-down --bias-disabled 2
+	status_is 1
+	output_regex_match "$msg"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_drive_settings_mutually_exclusive() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local msg=".*--push-pull, --open-drain and --open-source are mutually exclusive"
+
+	run_prog gpioctl -c "$sim0" request --output --open-drain --open-source 2
+	status_is 1
+	output_regex_match "$msg"
+
+	run_prog gpioctl -c "$sim0" request --output --push-pull --open-drain 2
+	status_is 1
+	output_regex_match "$msg"
+
+	run_prog gpioctl -c "$sim0" request --output --push-pull --open-source 2
+	status_is 1
+	output_regex_match "$msg"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_input_and_output_mutually_exclusive() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --input --output 2
+	status_is 1
+	output_regex_match ".*--input and --output are mutually exclusive"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_drive_requires_output() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --open-drain 2
+	status_is 1
+	output_regex_match ".*--push-pull, --open-drain and --open-source are only available in output mode"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_edge_and_output_mutually_exclusive() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output --rising-edge 2
+	status_is 1
+	output_regex_match ".*edge detection is only available in input mode"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_values_without_output_mode() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request 2=1
+	status_is 1
+	output_regex_match ".*output values can only be set in output mode"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_value_with_input_mode() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --input foo=active
+	status_is 1
+	output_regex_match ".*output values can only be set in output mode"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_partial_values_rejected() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	# values must be set for all lines or none
+	run_prog gpioctl -c "$sim0" request --output 0=1 1
+	status_is 1
+	output_regex_match ".*if values are set, they must be set for all lines"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_debounce_requires_edge() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --debounce-period=10ms 2
+	status_is 1
+	output_regex_match ".*--debounce-period requires edge detection"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_clock_requires_edge() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --clock-realtime 2
+	status_is 1
+	output_regex_match ".*--clock-\* options require edge detection"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_clocks_mutually_exclusive() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --rising-edge --clock-realtime \
+		--clock-monotonic 2
+	status_is 1
+	output_regex_match \
+".*--clock-monotonic, --clock-realtime and --clock-hte are mutually exclusive"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_release_frees_line() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request foo
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+\"foo\"\\s+input consumer=\"gpioctl\""
+
+	run_prog gpioctl release request0
+	status_is 0
+
+	run_prog gpioctl requests
+	output_is ""
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+\"foo\"\\s+input$"
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_release_by_bare_id() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request 0
+	status_is 0
+
+	# the bare id is accepted in addition to the 'requestN' name
+	run_prog gpioctl release 0
+	status_is 0
+
+	run_prog gpioctl requests
+	output_is ""
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_release_reuses_id() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request 0
+	status_is 0
+	run_prog gpioctl -c "$sim0" request 1
+	status_is 0
+
+	# free the lower id, the next request must reclaim it from the pool
+	run_prog gpioctl release request0
+	status_is 0
+
+	run_prog gpioctl -c "$sim0" -C reuse request 2
+	status_is 0
+
+	run_prog gpioctl requests
+	output_regex_match "request0 \\($sim0\\) consumer=\"reuse\" offsets: \\[2\\]"
+	output_regex_match "request1 \\($sim0\\) consumer=\"gpioctl\" offsets: \\[1\\]"
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_release_nonexistent() {
+	# releasing an id the daemon doesn't hold is an error
+	run_prog gpioctl release request5
+	status_is 1
+	output_regex_match ".*Internal server error:.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_release_invalid_name() {
+	# a malformed request name is rejected by the client
+	run_prog gpioctl release foobar
+	status_is 1
+	output_regex_match ".*invalid request name: 'foobar'"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_get_input_value() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpiosim_set_pull sim0 2 pull-up
+
+	run_prog gpioctl -c "$sim0" request --input 2
+	status_is 0
+
+	run_prog gpioctl get request0
+	status_is 0
+	output_is "active"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_get_output_value() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 3=inactive
+	status_is 0
+
+	run_prog gpioctl get request0
+	status_is 0
+	output_is "inactive"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_get_multiple_values() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpiosim_set_pull sim0 1 pull-up
+	gpiosim_set_pull sim0 3 pull-down
+
+	run_prog gpioctl -c "$sim0" request --input 1 3
+	status_is 0
+
+	run_prog gpioctl get request0
+	status_is 0
+	output_is "active inactive"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_get_nonexistent_request() {
+	run_prog gpioctl get request99
+	status_is 1
+	output_regex_match ".*Internal server error:.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_get_bare_id() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpiosim_set_pull sim0 4 pull-up
+
+	run_prog gpioctl -c "$sim0" request --input 4
+	status_is 0
+
+	run_prog gpioctl get 0
+	status_is 0
+	output_is "active"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_get_by_name_input() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpiosim_set_pull sim0 2 pull-up
+
+	run_prog gpioctl -c "$sim0" request --input 2
+	status_is 0
+
+	run_prog gpioctl get foo
+	status_is 0
+	output_is '"foo"=active'
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_get_by_name_output() {
+	gpiosim_chip sim0 num_lines=8 line_name=5:bar
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 5=inactive
+	status_is 0
+
+	run_prog gpioctl get bar
+	status_is 0
+	output_is '"bar"=inactive'
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_get_by_name_nonexistent() {
+	run_prog gpioctl get nosuchline
+	status_is 1
+	output_regex_match ".*no held request contains a line named.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_get_by_name_multiple() {
+	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpiosim_set_pull sim0 1 pull-up
+	gpiosim_set_pull sim0 4 pull-down
+
+	run_prog gpioctl -c "$sim0" request --input 1 4
+	status_is 0
+
+	run_prog gpioctl get foo bar
+	status_is 0
+	output_is '"foo"=active "bar"=inactive'
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_output_value() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpiosim_set_pull sim0 5 pull-up
+
+	run_prog gpioctl -c "$sim0" request --output 5=inactive
+	status_is 0
+
+	gpiosim_check_value sim0 5 0
+
+	run_prog gpioctl set request0 active
+	status_is 0
+
+	gpiosim_check_value sim0 5 1
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_multiple_values() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 1=inactive 2=inactive
+	status_is 0
+
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 0
+
+	run_prog gpioctl set request0 active inactive
+	status_is 0
+
+	gpiosim_check_value sim0 1 1
+	gpiosim_check_value sim0 2 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_nonexistent_request() {
+	run_prog gpioctl set request99 active
+	status_is 1
+	output_regex_match ".*Internal server error:.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_wrong_number_of_values() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 0=inactive 1=inactive
+	status_is 0
+
+	# two lines but only one value
+	run_prog gpioctl set request0 active
+	status_is 1
+	output_regex_match ".*Internal server error:.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_verified_by_get() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 6=inactive
+	status_is 0
+
+	run_prog gpioctl get request0
+	output_is "inactive"
+
+	run_prog gpioctl set request0 active
+	status_is 0
+
+	run_prog gpioctl get request0
+	output_is "active"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_by_name() {
+	gpiosim_chip sim0 num_lines=8 line_name=3:baz
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 3=inactive
+	status_is 0
+
+	gpiosim_check_value sim0 3 0
+
+	run_prog gpioctl set baz=active
+	status_is 0
+
+	gpiosim_check_value sim0 3 1
+
+	run_prog gpioctl get baz
+	status_is 0
+	output_is '"baz"=active'
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_by_name_multiple() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:foo line_name=5:bar
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 2=inactive 5=inactive
+	status_is 0
+
+	gpiosim_check_value sim0 2 0
+	gpiosim_check_value sim0 5 0
+
+	run_prog gpioctl set foo=active bar=active
+	status_is 0
+
+	gpiosim_check_value sim0 2 1
+	gpiosim_check_value sim0 5 1
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_by_name_wrong_name() {
+	run_prog gpioctl set nosuchline=active
+	status_is 1
+	output_regex_match ".*no held request contains a line named.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_subset_by_offset() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 0=inactive 1=inactive 2=inactive 3=inactive
+	status_is 0
+
+	gpiosim_check_value sim0 0 0
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 0
+	gpiosim_check_value sim0 3 0
+
+	run_prog gpioctl set request0 0=active 3=active
+	status_is 0
+
+	gpiosim_check_value sim0 0 1
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 0
+	gpiosim_check_value sim0 3 1
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_mixed_positional_and_offset_rejected() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 0=inactive 1=inactive
+	status_is 0
+
+	run_prog gpioctl set request0 active 1=inactive
+	status_is 1
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_get_by_name_multi_request() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:foo
+	gpiosim_chip sim1 num_lines=8 line_name=5:bar
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local sim1=${GPIOSIM_CHIP_NAME[sim1]}
+
+	gpiosim_set_pull sim0 2 pull-up
+	gpiosim_set_pull sim1 5 pull-down
+
+	run_prog gpioctl -c "$sim0" request --input 2
+	status_is 0
+
+	run_prog gpioctl -c "$sim1" request --input 5
+	status_is 0
+
+	run_prog gpioctl get foo bar
+	status_is 0
+	output_is '"foo"=active "bar"=inactive'
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_by_name_multi_request() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:foo
+	gpiosim_chip sim1 num_lines=8 line_name=5:bar
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local sim1=${GPIOSIM_CHIP_NAME[sim1]}
+
+	run_prog gpioctl -c "$sim0" request --output 2=inactive
+	status_is 0
+
+	run_prog gpioctl -c "$sim1" request --output 5=inactive
+	status_is 0
+
+	gpiosim_check_value sim0 2 0
+	gpiosim_check_value sim1 5 0
+
+	run_prog gpioctl set foo=active bar=active
+	status_is 0
+
+	gpiosim_check_value sim0 2 1
+	gpiosim_check_value sim1 5 1
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_monitor_rising_edge() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpiosim_set_pull sim0 3 pull-down
+
+	run_prog gpioctl -c "$sim0" request --rising-edge 3
+	status_is 0
+
+	dut_run gpioctl monitor --banner request0
+	dut_regex_match "Monitoring request0.*"
+
+	gpiosim_set_pull sim0 3 pull-down
+	gpiosim_set_pull sim0 3 pull-up
+	gpiosim_set_pull sim0 3 pull-down
+	dut_regex_match "[0-9]+\.[0-9]+\\s+rising\\s+3"
+	assert_fail dut_readable
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_monitor_falling_edge() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpiosim_set_pull sim0 3 pull-up
+
+	run_prog gpioctl -c "$sim0" request --falling-edge 3
+	status_is 0
+
+	dut_run gpioctl monitor --banner request0
+	dut_regex_match "Monitoring request0.*"
+
+	gpiosim_set_pull sim0 3 pull-up
+	gpiosim_set_pull sim0 3 pull-down
+	gpiosim_set_pull sim0 3 pull-up
+	dut_regex_match "[0-9]+\.[0-9]+\\s+falling\\s+3"
+	assert_fail dut_readable
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_monitor_both_edges() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --both-edges 4
+	status_is 0
+
+	dut_run gpioctl monitor --banner request0
+	dut_regex_match "Monitoring request0.*"
+
+	gpiosim_set_pull sim0 4 pull-up
+	dut_regex_match "[0-9]+\.[0-9]+\\s+rising\\s+4"
+
+	gpiosim_set_pull sim0 4 pull-down
+	dut_regex_match "[0-9]+\.[0-9]+\\s+falling\\s+4"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_monitor_num_events() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --both-edges 2
+	status_is 0
+
+	dut_run gpioctl monitor --banner --num-events=2 request0
+	dut_regex_match "Monitoring request0.*"
+
+	gpiosim_set_pull sim0 2 pull-up
+	dut_regex_match "[0-9]+\.[0-9]+\\s+rising\\s+2"
+
+	gpiosim_set_pull sim0 2 pull-down
+	dut_regex_match "[0-9]+\.[0-9]+\\s+falling\\s+2"
+
+	# monitor exits after 2 events
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_monitor_nonexistent_request() {
+	run_prog gpioctl monitor request99
+	status_is 1
+	output_regex_match ".*Internal server error:.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_stop_releases_lines() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request foo
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+\"foo\"\\s+input consumer=\"gpioctl\""
+
+	# stopping the daemon releases all the lines it held
+	run_prog gpioctl stop
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+\"foo\"\\s+input$"
+	status_is 0
+}
+
+test_gpioctl_requests_empty() {
+	run_prog gpioctl requests
+	status_is 0
+	output_is ""
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_requests_lists_request() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" -C lister request 0 1 2 3
+	status_is 0
+
+	run_prog gpioctl requests
+	output_regex_match \
+"request0 \\($sim0\\) consumer=\"lister\" offsets: \\[0, 1, 2, 3\\]"
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_requests_multiple_requests() {
+	gpiosim_chip sim0 num_lines=8
+	gpiosim_chip sim1 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local sim1=${GPIOSIM_CHIP_NAME[sim1]}
+
+	# each request gets the lowest free id from the pool
+	run_prog gpioctl -c "$sim0" request 0
+	status_is 0
+
+	run_prog gpioctl -c "$sim1" request 1
+	status_is 0
+
+	run_prog gpioctl requests
+	output_regex_match "request0 \\($sim0\\) consumer=\"gpioctl\" offsets: \\[0\\]"
+	output_regex_match "request1 \\($sim1\\) consumer=\"gpioctl\" offsets: \\[1\\]"
+	status_is 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_socket_path() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local sockpath
+
+	sockpath=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
+
+	run_prog gpioctl -p "$sockpath" -c "$sim0" request 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input consumer=\"gpioctl\""
+	status_is 0
+
+	run_prog gpioctl -p "$sockpath" stop
+	status_is 0
+
+	# verify file was cleaned up (filesystem socket)
+	assert_fail test -e "$sockpath"
+}
+
+test_gpioctl_socket_path_isolates_daemons() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local sockA sockB
+
+	sockA=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
+	sockB=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
+
+	# two separate daemons on different sockets
+	run_prog gpioctl -p "$sockA" -c "$sim0" request 0
+	status_is 0
+
+	run_prog gpioctl -p "$sockB" -c "$sim0" request 1
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 0
+	output_regex_match "$sim0 0\\s+unnamed\\s+input consumer=\"gpioctl\""
+	run_prog gpioinfo --chip "$sim0" 1
+	output_regex_match "$sim0 1\\s+unnamed\\s+input consumer=\"gpioctl\""
+
+	run_prog gpioctl -p "$sockA" stop
+	status_is 0
+
+	# sockB daemon still alive, line 1 still held
+	run_prog gpioinfo --chip "$sim0" 1
+	output_regex_match "$sim0 1\\s+unnamed\\s+input consumer=\"gpioctl\""
+
+	run_prog gpioctl -p "$sockB" stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_input_to_output() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --input 2
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+input consumer=\"gpioctl\""
+
+	run_prog gpioctl reconfigure request0 --output 2=active
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 2
+	output_regex_match "$sim0 2\\s+unnamed\\s+output consumer=\"gpioctl\""
+	gpiosim_check_value sim0 2 1
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_output_to_input() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 3=active
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 3
+	output_regex_match "$sim0 3\\s+unnamed\\s+output consumer=\"gpioctl\""
+
+	run_prog gpioctl reconfigure request0 --input
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 3
+	output_regex_match "$sim0 3\\s+unnamed\\s+input consumer=\"gpioctl\""
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_add_bias() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --input 4
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 4
+	output_regex_match "$sim0 4\\s+unnamed\\s+input consumer=\"gpioctl\""
+
+	run_prog gpioctl reconfigure request0 --pull-up
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 4
+	output_regex_match "$sim0 4\\s+unnamed\\s+input bias=pull-up consumer=\"gpioctl\""
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_add_edge_detection() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --input 5
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 5
+	output_regex_match "$sim0 5\\s+unnamed\\s+input consumer=\"gpioctl\""
+
+	run_prog gpioctl reconfigure request0 --rising-edge
+	status_is 0
+
+	run_prog gpioinfo --chip "$sim0" 5
+	output_regex_match \
+		"$sim0 5\\s+unnamed\\s+input edges=rising consumer=\"gpioctl\""
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_output_value() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 6=inactive
+	status_is 0
+
+	gpiosim_check_value sim0 6 0
+
+	run_prog gpioctl reconfigure request0 --output 6=active
+	status_is 0
+
+	gpiosim_check_value sim0 6 1
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_nonexistent() {
+	run_prog gpioctl reconfigure request99 --input
+	status_is 1
+	output_regex_match ".*Internal server error:.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
 # shellcheck source=tests/scripts/gpiod-bash-test-helper.inc
 source gpiod-bash-test-helper.inc
 
