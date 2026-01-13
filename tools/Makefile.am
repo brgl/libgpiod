@@ -16,7 +16,7 @@ LDADD += $(LIBEDIT_LIBS)
 
 endif
 
-bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpionotify
+bin_PROGRAMS = gpiodetect gpioinfo gpioget gpioset gpiomon gpionotify gpioctl
 
 if WITH_TESTS
 
