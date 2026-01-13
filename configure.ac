@@ -107,6 +107,9 @@ AM_CONDITIONAL([WITH_TOOLS], [test "x$with_tools" = xtrue])
 AC_DEFUN([FUNC_NOT_FOUND_TOOLS],
 	[ERR_NOT_FOUND([$1()], [tools])])
 
+AC_DEFUN([HEADER_NOT_FOUND_TOOLS],
+	[ERR_NOT_FOUND([$1 header], [gpio-tools])])
+
 AC_ARG_ENABLE([gpioset-interactive],
 	[AS_HELP_STRING([--enable-gpioset-interactive],
 		[enable gpioset interactive mode [default=no]])],
@@ -124,6 +127,41 @@ then
 	AC_CHECK_FUNC([versionsort], [], [FUNC_NOT_FOUND_TOOLS([versionsort])])
 	AC_CHECK_FUNC([strtoull], [], [FUNC_NOT_FOUND_TOOLS([strtoull])])
 	AC_CHECK_FUNC([nanosleep], [], [FUNC_NOT_FOUND_TOOLS([nanosleep])])
+	AC_CHECK_FUNC([socket], [], [FUNC_NOT_FOUND_TOOLS([socket])])
+	AC_CHECK_FUNC([listen], [], [FUNC_NOT_FOUND_TOOLS([listen])])
+	AC_CHECK_FUNC([connect], [], [FUNC_NOT_FOUND_TOOLS([connect])])
+	AC_CHECK_FUNC([bind], [], [FUNC_NOT_FOUND_TOOLS([bind])])
+	AC_CHECK_FUNC([recv], [], [FUNC_NOT_FOUND_TOOLS([recv])])
+	AC_CHECK_FUNC([send], [], [FUNC_NOT_FOUND_TOOLS([send])])
+	AC_CHECK_FUNC([fork], [], [FUNC_NOT_FOUND_TOOLS([fork])])
+	AC_CHECK_FUNC([setsid], [], [FUNC_NOT_FOUND_TOOLS([setsid])])
+	AC_CHECK_FUNC([getuid], [], [FUNC_NOT_FOUND_TOOLS([getuid])])
+	AC_CHECK_FUNC([prctl], [], [FUNC_NOT_FOUND_TOOLS([prctl])])
+	AC_CHECK_FUNC([epoll_create1], [], [FUNC_NOT_FOUND_TOOLS([epoll_create1])])
+	AC_CHECK_FUNC([epoll_ctl], [], [FUNC_NOT_FOUND_TOOLS([epoll_ctl])])
+	AC_CHECK_FUNC([epoll_wait], [], [FUNC_NOT_FOUND_TOOLS([epoll_wait])])
+	AC_CHECK_FUNC([waitpid], [], [FUNC_NOT_FOUND_TOOLS([waitpid])])
+	AC_CHECK_FUNC([kill], [], [FUNC_NOT_FOUND_TOOLS([kill])])
+	AC_CHECK_FUNC([getsockopt], [], [FUNC_NOT_FOUND_TOOLS([getsockopt])])
+	AC_CHECK_FUNC([getpwuid], [], [FUNC_NOT_FOUND_TOOLS([getpwuid])])
+	AC_CHECK_FUNC([signalfd], [], [FUNC_NOT_FOUND_TOOLS([signalfd])])
+	AC_CHECK_FUNC([sigemptyset], [], [FUNC_NOT_FOUND_TOOLS([sigemptyset])])
+	AC_CHECK_FUNC([sigaddset], [], [FUNC_NOT_FOUND_TOOLS([sigaddset])])
+	AC_CHECK_FUNC([sigprocmask], [], [FUNC_NOT_FOUND_TOOLS([sigprocmask])])
+	AC_CHECK_FUNC([clock_gettime], [], [FUNC_NOT_FOUND_TOOLS([clock_gettime])])
+	AC_CHECK_FUNC([timerfd_create], [], [FUNC_NOT_FOUND_TOOLS([timerfd_create])])
+	AC_CHECK_FUNC([timerfd_settime], [], [FUNC_NOT_FOUND_TOOLS([timerfd_settime])])
+	AC_CHECK_FUNC([timerfd_gettime], [], [FUNC_NOT_FOUND_TOOLS([timerfd_gettime])])
+	AC_CHECK_HEADERS([sys/socket.h], [], [HEADER_NOT_FOUND_TOOLS([sys/socket.h])])
+	AC_CHECK_HEADERS([sys/un.h], [], [HEADER_NOT_FOUND_TOOLS([sys/un.h])])
+	AC_CHECK_HEADERS([sys/epoll.h], [], [HEADER_NOT_FOUND_TOOLS([sys/epoll.h])])
+	AC_CHECK_HEADERS([sys/wait.h], [], [HEADER_NOT_FOUND_TOOLS([sys/wait.h])])
+	AC_CHECK_HEADERS([signal.h], [], [HEADER_NOT_FOUND_TOOLS([signal.h])])
+	AC_CHECK_HEADERS([sys/signalfd.h], [], [HEADER_NOT_FOUND_TOOLS([sys/signalfd.h])])
+	AC_CHECK_HEADERS([sys/timerfd.h], [], [HEADER_NOT_FOUND_TOOLS([sys/timerfd.h])])
+	AC_CHECK_HEADERS([pwd.h], [], [HEADER_NOT_FOUND_TOOLS([pwd.h])])
+	AC_CHECK_HEADERS([time.h], [], [HEADER_NOT_FOUND_TOOLS([time.h])])
+
 	if test "x$with_gpioset_interactive" = xtrue
 	then
 		PKG_CHECK_MODULES([LIBEDIT], [libedit >= 3.1])
