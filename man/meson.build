@@ -22,6 +22,42 @@ if opt_tools.allowed()
       install_dir: man1_dir,
     )
   endforeach
+
+  custom_target('gpioctl.1',
+    output: 'gpioctl.1',
+    command: [
+      help2man,
+      tools_exes['gpioctl'],
+      '--include', man_template,
+      '--no-info',
+      '--name=libgpiod command-line utility',
+      '--help-option=--help',
+      '--manual=gpioctl',
+      '--output=@OUTPUT@',
+    ],
+    install: true,
+    install_dir: man1_dir,
+  )
+
+  gpioctl_cmds = ['request']
+
+  foreach cmd : gpioctl_cmds
+    custom_target('gpioctl-' + cmd + '.1',
+      output: 'gpioctl-' + cmd + '.1',
+      command: [
+        help2man,
+        tools_exes['gpioctl'],
+        '--include', man_template,
+        '--no-info',
+        '--name=libgpiod command-line utility',
+        '--help-option=' + cmd + ' --help',
+        '--manual=gpioctl-' + cmd,
+        '--output=@OUTPUT@',
+      ],
+      install: true,
+      install_dir: man1_dir,
+    )
+  endforeach
 endif
 
 if opt_dbus.allowed()
