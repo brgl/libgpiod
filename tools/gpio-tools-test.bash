@@ -2235,6 +2235,22 @@ test_gpiomon_with_custom_format_unknown_specifier() {
 	output_is "%x"
 }
 
+test_gpiomon_with_initial_state() {
+	gpiosim_chip sim0 num_lines=8
+
+	gpiosim_set_pull sim0 2 pull-up
+	gpiosim_set_pull sim0 3 pull-up
+	gpiosim_set_pull sim0 5 pull-up
+	gpiosim_set_pull sim0 7 pull-up
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpiomon --initial-state --chip "$sim0" 0 1 2 3 4 5 6 7
+
+	output_is \
+"Initial line state(s): \"0\"=inactive \"1\"=inactive \"2\"=active \"3\"=active \"4\"=inactive \"5\"=active \"6\"=inactive \"7\"=active"
+	status_is 124
+}
 #
 # gpionotify test cases
 #
