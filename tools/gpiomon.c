@@ -32,6 +32,8 @@ struct config {
 	enum gpiod_line_clock event_clock;
 	int timestamp_fmt;
 	long long idle_timeout;
+	bool initial_state;
+	bool numeric;
 };
 
 static void print_help(void)
@@ -69,6 +71,8 @@ static void print_help(void)
 	printf("  -p, --debounce-period <period>\n");
 	printf("\t\t\tdebounce the line(s) with the specified period\n");
 	printf("  -q, --quiet\t\tdon't generate any output\n");
+	printf("  -I, --initial-state\t\tprint initial states of the lines\n");
+	printf("  -N, --numeric\t\tdisplay line values as '0' (inactive) or '1' (active)\n");
 	printf("  -s, --strict\t\tabort if requested line names are not unique\n");
 	printf("      --unquoted\tdon't quote line or consumer names\n");
 	printf("      --utc\t\tformat event timestamps as UTC (default for 'realtime')\n");
@@ -113,7 +117,7 @@ static int parse_event_clock_or_die(const char *option)
 
 static int parse_config(int argc, char **argv, struct config *cfg)
 {
-	static const char *const shortopts = "+b:c:C:e:E:hF:ln:p:qshv";
+	static const char *const shortopts = "+b:c:C:e:E:hF:ln:p:qshvIN";
 
 	const struct option longopts[] = {
 		{ "active-low",	no_argument,	NULL,		'l' },
@@ -136,6 +140,8 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 		{ "unquoted",	no_argument,	NULL,		'Q' },
 		{ "utc",	no_argument,	&cfg->timestamp_fmt,	1 },
 		{ "version",	no_argument,	NULL,		'v' },
+		{ "initial-state",	no_argument,	NULL,		'I' },
+		{ "numeric",	no_argument,	NULL,		'N' },
 		{ GETOPT_NULL_LONGOPT },
 	};
 
@@ -196,6 +202,12 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 			break;
 		case 's':
 			cfg->strict = true;
+			break;
+		case 'I':
+			cfg->initial_state = true;
+			break;
+		case 'N':
+			cfg->numeric = true;
 			break;
 		case 'h':
 			print_help();
@@ -363,6 +375,7 @@ int main(int argc, char **argv)
 	int num_lines, events_done = 0;
 	struct gpiod_edge_event *event;
 	struct line_resolver *resolver;
+	enum gpiod_line_value *values;
 	struct timespec idle_timeout;
 	struct gpiod_chip *chip;
 	struct pollfd *pollfds;
@@ -423,6 +436,7 @@ int main(int argc, char **argv)
 	requests = calloc(resolver->num_chips, sizeof(*requests));
 	pollfds = calloc(resolver->num_chips, sizeof(*pollfds));
 	offsets = calloc(resolver->num_lines, sizeof(*offsets));
+
 	if (!requests || !pollfds || !offsets)
 		die("out of memory");
 
@@ -444,6 +458,20 @@ int main(int argc, char **argv)
 		if (!requests[i])
 			die_perror("unable to request lines on chip %s",
 				   resolver->chips[i].path);
+
+		if (cfg.initial_state) {
+			values = calloc(resolver->num_lines, sizeof(*values));
+			if (!values)
+				die("out of memory");
+
+			ret = gpiod_line_request_get_values(requests[i], values);
+			if (ret)
+				die_perror("unable to read GPIO line values");
+
+			set_line_values(resolver, i, values);
+			print_line_vals(resolver, cfg.unquoted, cfg.numeric);
+			free(values);
+		}
 
 		pollfds[i].fd = gpiod_line_request_get_fd(requests[i]);
 		pollfds[i].events = POLLIN;

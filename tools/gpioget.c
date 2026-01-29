@@ -139,12 +139,10 @@ int main(int argc, char **argv)
 	struct gpiod_line_config *line_cfg;
 	struct line_resolver *resolver;
 	enum gpiod_line_value *values;
-	struct resolved_line *line;
 	struct gpiod_chip *chip;
 	unsigned int *offsets;
 	int i, num_lines, ret;
 	struct config cfg;
-	const char *fmt;
 
 	set_prog_name(argv[0]);
 	i = parse_config(argc, argv, &cfg);
@@ -216,21 +214,7 @@ int main(int argc, char **argv)
 		gpiod_line_request_release(request);
 		gpiod_chip_close(chip);
 	}
-
-	fmt = cfg.unquoted ? "%s=%s" : "\"%s\"=%s";
-
-	for (i = 0; i < resolver->num_lines; i++) {
-		line = &resolver->lines[i];
-		if (cfg.numeric)
-			printf("%d", line->value);
-		else
-			printf(fmt, line->id,
-			       line->value ? "active" : "inactive");
-
-		if (i != resolver->num_lines - 1)
-			printf(" ");
-	}
-	printf("\n");
+	print_line_vals(resolver, cfg.unquoted, cfg.numeric);
 
 	free_line_resolver(resolver);
 	gpiod_request_config_free(req_cfg);

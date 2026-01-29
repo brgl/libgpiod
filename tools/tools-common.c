@@ -402,6 +402,28 @@ void print_line_id(struct line_resolver *resolver, int chip_num,
 	printf(fmt, lname);
 }
 
+void print_line_vals(struct line_resolver *resolver, bool is_unquoted,
+		     bool is_numeric)
+{
+	const char *fmt = is_unquoted ? "%s=%s" : "\"%s\"=%s";
+	int i;
+
+	for (i = 0; i < resolver->num_lines; i++) {
+		struct resolved_line *line = &resolver->lines[i];
+
+		if (is_numeric)
+			printf("%d", line->value);
+		else
+			printf(fmt, line->id,
+			       line->value ? "active" : "inactive");
+
+		if (i != resolver->num_lines - 1)
+			printf(" ");
+	}
+
+	printf("\n");
+}
+
 static int chip_dir_filter(const struct dirent *entry)
 {
 	struct stat sb;
