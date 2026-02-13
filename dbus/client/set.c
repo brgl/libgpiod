@@ -26,6 +26,7 @@ int gpiocli_set_main(int argc, char **argv)
 	g_autoptr(GpiodbusObject) req_obj = NULL;
 	g_autoptr(GPtrArray) line_names = NULL;
 	g_autoptr(GArray) values = NULL;
+	const gchar *chip_name = NULL;
 	g_autoptr(GError) err = NULL;
 	g_auto(GStrv) lines = NULL;
 	GpiodbusRequest *request;
@@ -38,6 +39,16 @@ int gpiocli_set_main(int argc, char **argv)
 	gint val;
 
 	const GOptionEntry opts[] = {
+		{
+			.long_name		= "chip",
+			.short_name		= 'c',
+			.flags			= G_OPTION_FLAG_NONE,
+			.arg			= G_OPTION_ARG_STRING,
+			.arg_data		= &chip_name,
+			.description		=
+"Explicitly specify the chip_name on which to resolve the lines which allows to use raw offsets instead of line names.",
+			.arg_description	= "<chip name>",
+		},
 		{
 			.long_name		= "request",
 			.short_name		= 'r',
@@ -133,9 +144,16 @@ int gpiocli_set_main(int argc, char **argv)
 
 		line_name = g_ptr_array_index(line_names, i);
 
-		ret = get_line_obj_by_name(line_name->str, &line_obj, NULL);
-		if (!ret)
-			die("Line not found: %s\n", line_name->str);
+		if (chip_name) {
+			chip_obj = get_chip_obj(chip_name);
+			line_obj = get_line_obj_by_name_for_chip(chip_obj, line_name->str);
+			if (!line_obj)
+				die("Line '%s' not found on chip '%s'", line_name->str, chip_name);
+		} else {
+			ret = get_line_obj_by_name(line_name->str, &line_obj, NULL);
+			if (!ret)
+				die("Line not found: %s\n", line_name->str);
+		}
 
 		line = gpiodbus_object_peek_line(line_obj);
 		req_path = gpiodbus_line_get_request_path(line);
