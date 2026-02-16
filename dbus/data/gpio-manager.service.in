@@ -7,7 +7,7 @@ Description=Centralized GPIO manager daemon
 [Service]
 Type=dbus
 BusName=io.gpiod1
-ExecStart=/usr/bin/gpio-manager
+ExecStart=@prefix@/bin/gpio-manager
 Restart=always
 User=gpio-manager
 

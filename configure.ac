@@ -325,6 +325,7 @@ if test "x$with_systemd" = xtrue
 then
 	PKG_CHECK_VAR([systemdsystemunitdir], [systemd], [systemdsystemunitdir], [],
 		      AC_MSG_ERROR([systemdsystemunitdir not found - needed to enable systemd support]))
+	AC_CONFIG_FILES([dbus/data/gpio-manager.service])
 fi
 
 if test "x$cross_compiling" = xno
