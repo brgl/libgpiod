@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2023 Phil Howard <phil@gadgetoid.com>
 
 [build-system]
-requires = ["setuptools>=69.0.0", "wheel", "packaging"]
+requires = ["setuptools>=77.0.0", "wheel", "packaging"]
 build-backend = "setuptools.build_meta"
 
 [project]
