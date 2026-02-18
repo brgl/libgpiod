@@ -785,9 +785,9 @@ static void gpiodbus_daemon_on_uevent(GUdevClient *udev G_GNUC_UNUSED,
 	g_debug("uevent: %s action on %s device",
 		action, g_udev_device_get_name(dev));
 
-	if (g_strcmp0(action, "bind") == 0)
+	if (g_strcmp0(action, "add") == 0)
 		gpiodbus_daemon_export_chip(self, dev);
-	else if (g_strcmp0(action, "unbind") == 0)
+	else if (g_strcmp0(action, "remove") == 0)
 		gpiodbus_daemon_unexport_chip(self, dev);
 }
 
