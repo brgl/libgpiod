@@ -2,6 +2,20 @@
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 # SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
+libgpiod v2.2.3
+===============
+
+Bug fixes:
+- don't try to export the same chip object twice in gpio-manager on duplicate
+  uevents
+- use the "add"/"remove" uevents when watching for GPIO chips in the system as
+  the "bind"/"unbind" pair is only emitted by linux for controllers which don't
+  have a firmware node attached
+- don't allow clearing hogs on active devices in tests
+- don't install uneeded files
+- fix a pkgconfig check in configure
+- fix a return type check in test harness
+
 libgpiod v2.2.2
 ===============
 
