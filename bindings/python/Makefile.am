@@ -30,6 +30,7 @@ endif
 
 clean-local:
 	rm -rf dist
+	rm -rf gpiod.egg-info
 	rm -f gpiod/_ext.*.so
 	rm -f tests/*/_ext.*.so
 
