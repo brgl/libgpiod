@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 from os import getenv, path, unlink
-from shutil import copytree, rmtree
+from shutil import copy, copytree, rmtree
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext as orig_build_ext
@@ -17,6 +17,7 @@ SRC_BASE_URL = "https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/"
 TAR_FILENAME = "libgpiod-{version}.tar.gz"
 ASC_FILENAME = "sha256sums.asc"
 SHA256_CHUNK_SIZE = 2048
+LICENSE_FILE = "LICENSE"
 
 
 def sha256(filename):
@@ -129,6 +130,53 @@ def fetch_tarball(command):
             copytree(path.join(base_dir, "include"), "./include")
             copytree(path.join(base_dir, "lib"), "./lib")
 
+            # Since the license file is not in the bindings directory, we cannot
+            # use the PEP-639 `license-files` property since the `Distribution`
+            # class is constructed during `setup`, parses pyproject.toml, and
+            # searches for the license file before we can copy files in to the
+            # directory*. If the file is not there, we get an error.
+            #
+            # To work around this, we manually copy the license file to the
+            # current directory and insert the license file into the metadata of
+            # the `Distribution` prior to the cmdclass building the distribution.
+            #
+            # Copying the file as `LICENSE` allows wheels built off of the sdist
+            # to automatically include the LICENSE, see:
+            # https://setuptools.pypa.io/en/latest/userguide/miscellaneous.html
+            #
+            # *Note: this is not technically true, but it would require doing
+            # something more complex like a custom build backend or to wrap
+            # `setup` or the `Distrubtion` object which get invoked/created
+            # multiple times and could fetch the tarball sources multiple times.
+            # Further, we only really care about the license file when building
+            # the released distribution files (sdist and wheels).
+
+            # Read the SPDX license identifier from pyproject.toml
+            license_file = None
+            with open("pyproject.toml", "rb") as f:
+                if sys.version_info >= (3, 11):
+                    import tomllib
+
+                    license_file = tomllib.load(f).get("project").get("license")
+                else:  # tomllib isn't standard, fall back to parsing by line
+                    for line in f.readlines():
+                        _line = line.decode()
+                        if _line.startswith("license = "):
+                            license_file = _line.split("=")[1].strip(' \r\n"')
+                            break
+
+            if license_file:  # Do not allow empty string or None
+                _path = path.join(base_dir, "LICENSES", f"{license_file}.txt")
+                if path.isfile(_path):
+                    # manually set the license list for the distribution after
+                    # the license file has been copied into the build directory.
+                    #
+                    # Note: that this must be in place prior to `egg_info.run`.
+                    # For further details, see `egg_info.find_sources` and
+                    # `manifest_maker.add_license_files`
+                    copy(_path, LICENSE_FILE)
+                    self.distribution.metadata.license_files = [LICENSE_FILE]
+
         # Save the libgpiod version for sdist
         open("libgpiod-version.txt", "w").write(LIBGPIOD_VERSION)
 
@@ -136,6 +184,8 @@ def fetch_tarball(command):
         command(self)
 
         # Clean up the build directory
+        if path.exists(LICENSE_FILE):
+            unlink(LICENSE_FILE)
         rmtree("./lib", ignore_errors=True)
         rmtree("./include", ignore_errors=True)
         unlink("libgpiod-version.txt")
