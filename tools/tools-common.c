@@ -4,7 +4,6 @@
 
 /* Common code for GPIO tools. */
 
-#include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
 #include <gpiod.h>
@@ -17,6 +16,7 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#include "gpiotools.h"
 #include "tools-common.h"
 
 static const char *prog_name = NULL;
@@ -442,42 +442,6 @@ static int chip_dir_filter(const struct dirent *entry)
 	return ret;
 }
 
-static bool isuint(const char *str)
-{
-	for (; *str && isdigit(*str); str++)
-		;
-
-	return *str == '\0';
-}
-
-bool chip_path_lookup(const char *id, char **path_ptr)
-{
-	char *path;
-
-	if (isuint(id)) {
-		/* by number */
-		if (asprintf(&path, "/dev/gpiochip%s", id) < 0)
-			return false;
-	} else if (strchr(id, '/')) {
-		/* by path */
-		if (asprintf(&path, "%s", id) < 0)
-			return false;
-	} else {
-		/* by device name */
-		if (asprintf(&path, "/dev/%s", id) < 0)
-			return false;
-	}
-
-	if (!gpiod_is_gpiochip_device(path)) {
-		free(path);
-		return false;
-	}
-
-	*path_ptr = path;
-
-	return true;
-}
-
 int chip_paths(const char *id, char ***paths_ptr)
 {
 	char **paths;
@@ -486,7 +450,7 @@ int chip_paths(const char *id, char ***paths_ptr)
 	if (id == NULL)
 		return all_chip_paths(paths_ptr);
 
-	if (!chip_path_lookup(id, &path))
+	if (!gpiotools_chip_path_lookup(id, &path))
 		return 0;
 
 	paths = malloc(sizeof(*paths));

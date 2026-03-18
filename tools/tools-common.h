@@ -101,7 +101,6 @@ void print_line_id(struct line_resolver *resolver, int chip_num,
 		   unsigned int offset, const char *chip_id, bool unquoted);
 void print_line_vals(struct line_resolver *resolver, bool is_unquoted,
 		     bool is_numeric);
-bool chip_path_lookup(const char *id, char **path_ptr);
 int chip_paths(const char *id, char ***paths_ptr);
 int all_chip_paths(char ***paths_ptr);
 struct line_resolver *resolve_lines(int num_lines, char **lines,

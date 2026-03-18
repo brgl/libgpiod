@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "gpiotools.h"
 #include "tools-common.h"
 
 static void print_help(void)
@@ -107,7 +108,7 @@ int main(int argc, char **argv)
 	}
 
 	for (i = 0; i < argc; i++) {
-		if (chip_path_lookup(argv[i], &path)) {
+		if (gpiotools_chip_path_lookup(argv[i], &path)) {
 			if (print_chip_info(path))
 				ret = EXIT_FAILURE;
 

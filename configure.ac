@@ -34,6 +34,8 @@ AC_SUBST(ABI_CXX_VERSION, [3.0.1])
 AC_SUBST(ABI_GPIOSIM_VERSION, [1.1.0])
 # ... and another one for GLib bindings:
 AC_SUBST(ABI_GLIB_VERSION, [1.0.0])
+# ... and another one for libgpiotools
+AC_SUBST(ABI_GPIOTOOLS_VERSION, [1.0.0])
 
 # Core libgpiod API version.
 AC_SUBST(API_VERSION, [2.2.0])
@@ -364,6 +366,7 @@ AC_CONFIG_FILES([Makefile
 		 docs/Makefile
 		 examples/Makefile
 		 tools/Makefile
+		 tools/libgpiotools.pc
 		 tests/Makefile
 		 tests/gpiosim/Makefile
 		 tests/gpiosim-glib/Makefile
