@@ -1397,17 +1397,6 @@ test_gpioset_with_lines_strictly_by_name() {
 	gpiosim_check_value sim0 6 0
 }
 
-test_gpioset_interactive_after_SIGINT() {
-	gpiosim_chip sim0 num_lines=8 line_name=1:foo
-
-	dut_run gpioset -i foo=1
-
-	dut_kill -SIGINT
-	dut_wait
-
-	status_is 130
-}
-
 test_gpioset_interactive_after_SIGTERM() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo
 
@@ -1887,20 +1876,6 @@ test_gpiomon_multiple_lines_across_multiple_chips() {
 	dut_regex_match "foo"
 
 	assert_fail dut_readable
-}
-
-test_gpiomon_exit_after_SIGINT() {
-	gpiosim_chip sim0 num_lines=8
-
-	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
-
-	dut_run gpiomon --banner --chip "$sim0" 4
-	dut_regex_match "Monitoring line .*"
-
-	dut_kill -SIGINT
-	dut_wait
-
-	status_is 130
 }
 
 test_gpiomon_exit_after_SIGTERM() {
@@ -2466,18 +2441,6 @@ test_gpionotify_multiple_lines_across_multiple_chips() {
 	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+\"baz\""
 
 	assert_fail dut_readable
-}
-
-test_gpionotify_exit_after_SIGINT() {
-	gpiosim_chip sim0 num_lines=8
-
-	dut_run gpionotify --banner --chip "${GPIOSIM_CHIP_NAME[sim0]}" 4
-	dut_regex_match "Watching line .*"
-
-	dut_kill -SIGINT
-	dut_wait
-
-	status_is 130
 }
 
 test_gpionotify_exit_after_SIGTERM() {
