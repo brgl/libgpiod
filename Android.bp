@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2023 Benjamin Li <benl@squareup.com>
+
+// Instructions:
+// - Check out this repository as external/libgpiod.
+// - Move this build file to the project's root directory.
+
+//
+// libgpiod main library
+//
+
+cc_library_shared {
+    name: "libgpiod",
+    defaults: [
+        "libgpiod_defaults",
+    ],
+    srcs: [
+        "lib/*.c",
+        "bindings/cxx/*.cpp",
+    ],
+    export_include_dirs: [
+        "include", 
+        "bindings/cxx",
+    ],
+    host_supported: true,
+    vendor: true,
+}
+
+cc_defaults {
+    name: "libgpiod_defaults",
+    cpp_std: "gnu++17",
+    cflags: [
+        // You may want to edit this with the version from configure.ac of
+        // the release you are using.
+        "-DGPIOD_VERSION_STR=\"unstable\"",
+    ],
+    cppflags: [
+        // Google C++ style is to not use exceptions, but this library does
+        // use them.
+        "-fexceptions",
+    ],
+    // Google C++ style is to not use runtime type information, but this
+    // library does use it.
+    rtti: true,
+}
+
+
+cc_defaults {
+    name: "libgpiod_tools_defaults",
+    srcs: [
+        "tools/tools-common.c",
+    ],
+    shared_libs: [
+        "libgpiod",
+    ],
+}
+
+cc_library_headers {
+    name: "libgpiod_headers",
+    export_include_dirs: ["include"],
+}
