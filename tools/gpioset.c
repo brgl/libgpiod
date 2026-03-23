@@ -106,7 +106,7 @@ static int parse_periods_or_die(char *option, unsigned long long **periods)
 
 	pp = calloc(num_periods, sizeof(*pp));
 	if (pp == NULL)
-		die("out of memory");
+		die_eom();
 
 	for (i = 0; i < num_periods - 1; i++) {
 		for (end = option; *end != ','; end++)
@@ -752,7 +752,7 @@ static void interact(struct gpiod_line_request **requests,
 	max_words = resolver->num_lines + 1;
 	words = calloc(max_words, sizeof(*words));
 	if (!words)
-		die("out of memory");
+		die_eom();
 
 	for (done = false; !done;) {
 		/*
@@ -888,7 +888,7 @@ int main(int argc, char **argv)
 	lines = calloc(num_lines, sizeof(*lines));
 	values = calloc(num_lines, sizeof(*values));
 	if (!lines || !values)
-		die("out of memory");
+		die_eom();
 
 	parse_line_values_or_die(argc, argv, lines, values);
 
@@ -922,7 +922,7 @@ int main(int argc, char **argv)
 	requests = calloc(resolver->num_chips, sizeof(*requests));
 	offsets = calloc(num_lines, sizeof(*offsets));
 	if (!requests || !offsets)
-		die("out of memory");
+		die_eom();
 
 	line_cfg = gpiod_line_config_new();
 	if (!line_cfg)

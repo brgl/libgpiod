@@ -398,7 +398,7 @@ int main(int argc, char **argv)
 	chips = calloc(resolver->num_chips, sizeof(*chips));
 	pollfds = calloc(resolver->num_chips, sizeof(*pollfds));
 	if (!pollfds || !chips)
-		die("out of memory");
+		die_eom();
 
 	for (i = 0; i < resolver->num_chips; i++) {
 		chip = gpiod_chip_open(resolver->chips[i].path);

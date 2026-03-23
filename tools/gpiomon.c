@@ -438,7 +438,7 @@ int main(int argc, char **argv)
 	offsets = calloc(resolver->num_lines, sizeof(*offsets));
 
 	if (!requests || !pollfds || !offsets)
-		die("out of memory");
+		die_eom();
 
 	for (i = 0; i < resolver->num_chips; i++) {
 		num_lines = get_line_offsets_and_values(resolver, i, offsets,
@@ -462,7 +462,7 @@ int main(int argc, char **argv)
 		if (cfg.initial_state) {
 			values = calloc(resolver->num_lines, sizeof(*values));
 			if (!values)
-				die("out of memory");
+				die_eom();
 
 			ret = gpiod_line_request_get_values(requests[i], values);
 			if (ret)

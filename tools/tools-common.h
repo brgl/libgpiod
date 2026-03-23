@@ -84,6 +84,7 @@ const char *get_prog_short_name(void);
 void print_error(const char *fmt, ...) PRINTF(1, 2);
 void print_perror(const char *fmt, ...) PRINTF(1, 2);
 void die(const char *fmt, ...) NORETURN PRINTF(1, 2);
+void die_eom(void) NORETURN;
 void die_perror(const char *fmt, ...) NORETURN PRINTF(1, 2);
 void print_version(void);
 int parse_bias_or_die(const char *option);

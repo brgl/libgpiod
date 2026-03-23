@@ -159,7 +159,7 @@ int main(int argc, char **argv)
 	offsets = calloc(resolver->num_lines, sizeof(*offsets));
 	values = calloc(resolver->num_lines, sizeof(*values));
 	if (!offsets || !values)
-		die("out of memory");
+		die_eom();
 
 	settings = gpiod_line_settings_new();
 	if (!settings)

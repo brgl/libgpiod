@@ -78,6 +78,11 @@ void die(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
+void die_eom(void)
+{
+	die("out of memory");
+}
+
 void die_perror(const char *fmt, ...)
 {
 	va_list va;
@@ -493,7 +498,7 @@ int chip_paths(const char *id, char ***paths_ptr)
 
 	paths = malloc(sizeof(*paths));
 	if (paths == NULL)
-		die("out of memory");
+		die_eom();
 
 	paths[0] = path;
 	*paths_ptr = paths;
@@ -513,7 +518,7 @@ int all_chip_paths(char ***paths_ptr)
 
 	paths = calloc(num_chips, sizeof(*paths));
 	if (paths == NULL)
-		die("out of memory");
+		die_eom();
 
 	for (i = 0; i < num_chips; i++) {
 		if (asprintf(&paths[i], "/dev/%s", entries[i]->d_name) < 0) {
@@ -617,13 +622,13 @@ struct line_resolver *resolver_init(int num_lines, char **lines, int num_chips,
 	resolver_size = sizeof(*resolver) + num_lines * sizeof(*line);
 	resolver = malloc(resolver_size);
 	if (resolver == NULL)
-		die("out of memory");
+		die_eom();
 
 	memset(resolver, 0, resolver_size);
 
 	resolver->chips = calloc(num_chips, sizeof(struct resolved_chip));
 	if (resolver->chips == NULL)
-		die("out of memory");
+		die_eom();
 	memset(resolver->chips, 0, num_chips * sizeof(struct resolved_chip));
 
 	resolver->num_lines = num_lines;
