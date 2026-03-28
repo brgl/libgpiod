@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2017-2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
 build/
 __pycache__/
 dist/
