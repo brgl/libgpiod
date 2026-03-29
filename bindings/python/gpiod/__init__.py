@@ -8,7 +8,6 @@ This module wraps the native C API of libgpiod in a set of python classes.
 """
 
 from collections.abc import Iterable
-from typing import Optional, Union
 
 from . import (
     _ext,
@@ -87,10 +86,10 @@ def is_gpiochip_device(path: str) -> bool:
 
 def request_lines(
     path: str,
-    config: dict[Union[Iterable[Union[int, str]], int, str], Optional[LineSettings]],
-    consumer: Optional[str] = None,
-    event_buffer_size: Optional[int] = None,
-    output_values: Optional[dict[Union[int, str], line.Value]] = None,
+    config: dict[Iterable[int | str] | int | str, LineSettings | None],
+    consumer: str | None = None,
+    event_buffer_size: int | None = None,
+    output_values: dict[int | str, line.Value] | None = None,
 ) -> LineRequest:
     """
     Open a GPIO chip pointed to by 'path', request lines according to the

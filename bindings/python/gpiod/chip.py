@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from errno import ENOENT
-from typing import TYPE_CHECKING, Optional, Union, cast
+from typing import TYPE_CHECKING, cast
 
 from . import _ext
 from ._internal import config_iter, poll_fd
@@ -60,8 +60,8 @@ class Chip:
           path:
             Path to the GPIO character device file.
         """
-        self._chip: Union[_ext.Chip, None] = _ext.Chip(path)
-        self._info: Union[ChipInfo, None] = None
+        self._chip: _ext.Chip | None = _ext.Chip(path)
+        self._info: ChipInfo | None = None
 
     def __bool__(self) -> bool:
         """
@@ -81,9 +81,9 @@ class Chip:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         """
         Controlled execution exit callback.
@@ -117,7 +117,7 @@ class Chip:
 
         return self._info
 
-    def line_offset_from_id(self, id: Union[str, int]) -> int:
+    def line_offset_from_id(self, id: str | int) -> int:
         """
         Map a line's identifier to its offset within the chip.
 
@@ -155,13 +155,13 @@ class Chip:
 
         return offset
 
-    def _get_line_info(self, line: Union[int, str], watch: bool) -> LineInfo:
+    def _get_line_info(self, line: int | str, watch: bool) -> LineInfo:
         self._check_closed()
         return cast("_ext.Chip", self._chip).get_line_info(
             self.line_offset_from_id(line), watch
         )
 
-    def get_line_info(self, line: Union[int, str]) -> LineInfo:
+    def get_line_info(self, line: int | str) -> LineInfo:
         """
         Get the snapshot of information about the line at given offset.
 
@@ -174,7 +174,7 @@ class Chip:
         """
         return self._get_line_info(line, watch=False)
 
-    def watch_line_info(self, line: Union[int, str]) -> LineInfo:
+    def watch_line_info(self, line: int | str) -> LineInfo:
         """
         Get the snapshot of information about the line at given offset and
         start watching it for future changes.
@@ -188,7 +188,7 @@ class Chip:
         """
         return self._get_line_info(line, watch=True)
 
-    def unwatch_line_info(self, line: Union[int, str]) -> None:
+    def unwatch_line_info(self, line: int | str) -> None:
         """
         Stop watching a line for status changes.
 
@@ -201,9 +201,7 @@ class Chip:
             self.line_offset_from_id(line)
         )
 
-    def wait_info_event(
-        self, timeout: Optional[Union[timedelta, float]] = None
-    ) -> bool:
+    def wait_info_event(self, timeout: timedelta | float | None = None) -> bool:
         """
         Wait for line status change events on any of the watched lines on the
         chip.
@@ -237,12 +235,10 @@ class Chip:
 
     def request_lines(
         self,
-        config: dict[
-            Union[Iterable[Union[int, str]], int, str], Optional[LineSettings]
-        ],
-        consumer: Optional[str] = None,
-        event_buffer_size: Optional[int] = None,
-        output_values: Optional[dict[Union[int, str], Value]] = None,
+        config: dict[Iterable[int | str] | int | str, LineSettings | None],
+        consumer: str | None = None,
+        event_buffer_size: int | None = None,
+        output_values: dict[int | str, Value] | None = None,
     ) -> LineRequest:
         """
         Request a set of lines for exclusive usage.

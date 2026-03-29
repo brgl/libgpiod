@@ -6,7 +6,6 @@ from datetime import timedelta
 from functools import partial
 from select import select
 from threading import Thread
-from typing import Optional
 from unittest import TestCase
 
 import gpiod
@@ -56,7 +55,7 @@ class EdgeEventInvalidConfig(TestCase):
 class WaitingForEdgeEvents(TestCase):
     def setUp(self) -> None:
         self.sim = gpiosim.Chip(num_lines=8)
-        self.thread: Optional[Thread] = None
+        self.thread: Thread | None = None
 
     def tearDown(self) -> None:
         if self.thread:
@@ -208,7 +207,7 @@ class PollLineRequestObject(TestCase):
         self.request = gpiod.request_lines(
             self.sim.dev_path, {2: gpiod.LineSettings(edge_detection=Edge.BOTH)}
         )
-        self.thread: Optional[Thread] = None
+        self.thread: Thread | None = None
 
     def tearDown(self) -> None:
         if self.thread:

@@ -2,7 +2,6 @@
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 from enum import Enum
-from typing import Optional
 
 from . import _ext
 
@@ -27,10 +26,10 @@ class Chip:
 
     def __init__(
         self,
-        label: Optional[str] = None,
-        num_lines: Optional[int] = None,
-        line_names: Optional[dict[int, str]] = None,
-        hogs: Optional[dict[int, tuple[str, Direction]]] = None,
+        label: str | None = None,
+        num_lines: int | None = None,
+        line_names: dict[int, str] | None = None,
+        hogs: dict[int, tuple[str, Direction]] | None = None,
     ):
         self._chip = _ext.Chip()
 

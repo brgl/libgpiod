@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 from select import select
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable
@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 __all__ = ["poll_fd", "config_iter"]
 
 
-def poll_fd(fd: int, timeout: Optional[Union[timedelta, float]] = None) -> bool:
-    sec: Union[float, None]
+def poll_fd(fd: int, timeout: timedelta | float | None = None) -> bool:
+    sec: float | None
     if isinstance(timeout, timedelta):
         sec = timeout.total_seconds()
     else:
@@ -27,8 +27,8 @@ def poll_fd(fd: int, timeout: Optional[Union[timedelta, float]] = None) -> bool:
 
 
 def config_iter(
-    config: dict[Union[Iterable[Union[int, str]], int, str], Optional[LineSettings]],
-) -> Generator[tuple[Union[int, str], Optional[LineSettings]]]:
+    config: dict[Iterable[int | str] | int | str, LineSettings | None],
+) -> Generator[tuple[int | str, LineSettings | None]]:
     for key, settings in config.items():
         if isinstance(key, int) or isinstance(key, str):
             yield key, settings

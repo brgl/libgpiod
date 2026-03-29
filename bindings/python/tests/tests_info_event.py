@@ -8,7 +8,6 @@ import time
 from dataclasses import FrozenInstanceError
 from functools import partial
 from select import select
-from typing import Optional
 from unittest import TestCase
 
 import gpiod
@@ -53,7 +52,7 @@ class WatchingInfoEventWorks(TestCase):
     def setUp(self) -> None:
         self.sim = gpiosim.Chip(num_lines=8, line_names={4: "foobar"})
         self.chip = gpiod.Chip(self.sim.dev_path)
-        self.thread: Optional[threading.Thread] = None
+        self.thread: threading.Thread | None = None
 
     def tearDown(self) -> None:
         if self.thread:

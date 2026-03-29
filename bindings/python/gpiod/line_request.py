@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Optional, Union, cast
+from typing import TYPE_CHECKING, cast
 
 from . import _ext
 from ._internal import config_iter, poll_fd
@@ -33,11 +33,11 @@ class LineRequest:
         Note: LineRequest objects can only be instantiated by a Chip parent.
         LineRequest.__init__() is not part of stable API.
         """
-        self._req: Union[_ext.Request, None] = req
+        self._req: _ext.Request | None = req
         self._chip_name: str
         self._offsets: list[int]
         self._name_map: dict[str, int]
-        self._lines: list[Union[int, str]]
+        self._lines: list[int | str]
 
     def __bool__(self) -> bool:
         """
@@ -57,9 +57,9 @@ class LineRequest:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         """
         Controlled execution exit callback.
@@ -79,7 +79,7 @@ class LineRequest:
         cast("_ext.Request", self._req).release()
         self._req = None
 
-    def get_value(self, line: Union[int, str]) -> Value:
+    def get_value(self, line: int | str) -> Value:
         """
         Get a single GPIO line value.
 
@@ -92,16 +92,14 @@ class LineRequest:
         """
         return self.get_values([line])[0]
 
-    def _line_to_offset(self, line: Union[int, str]) -> int:
+    def _line_to_offset(self, line: int | str) -> int:
         if isinstance(line, int):
             return line
         if (_line := self._name_map.get(line)) is None:
             raise ValueError(f"unknown line name: {line}")
         return _line
 
-    def get_values(
-        self, lines: Optional[Iterable[Union[int, str]]] = None
-    ) -> list[Value]:
+    def get_values(self, lines: Iterable[int | str] | None = None) -> list[Value]:
         """
         Get values of a set of GPIO lines.
 
@@ -124,7 +122,7 @@ class LineRequest:
         cast("_ext.Request", self._req).get_values(offsets, buf)
         return buf
 
-    def set_value(self, line: Union[int, str], value: Value) -> None:
+    def set_value(self, line: int | str, value: Value) -> None:
         """
         Set the value of a single GPIO line.
 
@@ -136,7 +134,7 @@ class LineRequest:
         """
         self.set_values({line: value})
 
-    def set_values(self, values: dict[Union[int, str], Value]) -> None:
+    def set_values(self, values: dict[int | str, Value]) -> None:
         """
         Set the values of a subset of GPIO lines.
 
@@ -152,9 +150,7 @@ class LineRequest:
 
     def reconfigure_lines(
         self,
-        config: dict[
-            Union[Iterable[Union[int, str]], int, str], Optional[LineSettings]
-        ],
+        config: dict[Iterable[int | str] | int | str, LineSettings | None],
     ) -> None:
         """
         Reconfigure requested lines.
@@ -196,9 +192,7 @@ class LineRequest:
 
         cast("_ext.Request", self._req).reconfigure_lines(line_cfg)
 
-    def wait_edge_events(
-        self, timeout: Optional[Union[timedelta, float]] = None
-    ) -> bool:
+    def wait_edge_events(self, timeout: timedelta | float | None = None) -> bool:
         """
         Wait for edge events on any of the requested lines.
 
@@ -215,7 +209,7 @@ class LineRequest:
 
         return poll_fd(self.fd, timeout)
 
-    def read_edge_events(self, max_events: Optional[int] = None) -> list[EdgeEvent]:
+    def read_edge_events(self, max_events: int | None = None) -> list[EdgeEvent]:
         """
         Read a number of edge events from a line request.
 
@@ -271,7 +265,7 @@ class LineRequest:
         return self._offsets
 
     @property
-    def lines(self) -> list[Union[int, str]]:
+    def lines(self) -> list[int | str]:
         """
         List of requested lines. Lines requested by name are listed as such.
         """
