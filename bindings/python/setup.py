@@ -4,7 +4,7 @@
 from collections.abc import Callable
 from os import getenv, path, unlink
 from shutil import copy, copytree, rmtree
-from typing import TypeVar
+from typing import TypeVar, cast
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext as orig_build_ext
@@ -44,11 +44,11 @@ def find_sha256sum(asc_file: str, tar_filename: str) -> str:
     Search through a local copy of sha256sums.asc for a specific filename
     and return the associated sha256 sum.
     """
-    with open(asc_file, "r") as f:
+    with open(asc_file) as f:
         for line in f:
-            line = line.strip().split("  ")
-            if len(line) == 2 and line[1] == tar_filename:
-                return line[0]
+            _line = line.strip().split("  ")
+            if len(_line) == 2 and _line[1] == tar_filename:
+                return _line[0]
 
     raise BaseError(f"no signature found for {tar_filename}")
 
@@ -85,8 +85,8 @@ def fetch_tarball(func: Callable[[T], None]) -> Callable[[T], None]:
         # If the version in "libgpiod-version.txt" already matches our
         # requested tarball, then skip the fetch altogether.
         try:
-            if open("libgpiod-version.txt", "r").read() == LIBGPIOD_VERSION:
-                log.info(f"skipping tarball fetch")
+            if open("libgpiod-version.txt").read() == LIBGPIOD_VERSION:
+                log.info("skipping tarball fetch")
                 func(cmd)
                 return
         except OSError:
@@ -161,7 +161,8 @@ def fetch_tarball(func: Callable[[T], None]) -> Callable[[T], None]:
                 if sys.version_info >= (3, 11):
                     import tomllib
 
-                    license_file = tomllib.load(f).get("project").get("license")
+                    project = cast("dict[str,str]", tomllib.load(f).get("project"))
+                    license_file = project.get("license")
                 else:  # tomllib isn't standard, fall back to parsing by line
                     for line in f.readlines():
                         _line = line.decode()
@@ -214,7 +215,7 @@ class build_ext(orig_build_ext):
         # Try to get the gpiod version from the .txt file included in sdist
         libgpiod_version: str | None
         try:
-            libgpiod_version = open("libgpiod-version.txt", "r").read()
+            libgpiod_version = open("libgpiod-version.txt").read()
         except OSError:
             libgpiod_version = LIBGPIOD_VERSION
 
