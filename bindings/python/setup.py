@@ -1,14 +1,18 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
+from collections.abc import Callable
 from os import getenv, path, unlink
 from shutil import copy, copytree, rmtree
+from typing import TypeVar
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext as orig_build_ext
 from setuptools.command.sdist import log
 from setuptools.command.sdist import sdist as orig_sdist
 from setuptools.errors import BaseError
+
+T = TypeVar("T", "sdist", "build_ext")
 
 LINK_SYSTEM_LIBGPIOD = getenv("LINK_SYSTEM_LIBGPIOD") == "1"
 LIBGPIOD_MINIMUM_VERSION = "2.1"
@@ -20,7 +24,7 @@ SHA256_CHUNK_SIZE = 2048
 LICENSE_FILE = "LICENSE"
 
 
-def sha256(filename):
+def sha256(filename: str) -> str:
     """
     Return a sha256sum for a specific filename, loading the file in chunks
     to avoid potentially excessive memory use.
@@ -35,7 +39,7 @@ def sha256(filename):
     return sha256sum.hexdigest()
 
 
-def find_sha256sum(asc_file, tar_filename):
+def find_sha256sum(asc_file: str, tar_filename: str) -> str:
     """
     Search through a local copy of sha256sums.asc for a specific filename
     and return the associated sha256 sum.
@@ -49,7 +53,7 @@ def find_sha256sum(asc_file, tar_filename):
     raise BaseError(f"no signature found for {tar_filename}")
 
 
-def fetch_tarball(command):
+def fetch_tarball(func: Callable[[T], None]) -> Callable[[T], None]:
     """
     Verify the requested LIBGPIOD_VERSION tarball exists in sha256sums.asc,
     fetch it from https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/
@@ -61,10 +65,10 @@ def fetch_tarball(command):
 
     # If no LIBGPIOD_VERSION is specified in env, just run the command
     if LIBGPIOD_VERSION is None:
-        return command
+        return func
 
     # If LIBGPIOD_VERSION is specified, apply the tarball wrapper
-    def wrapper(self):
+    def wrapper(cmd: T) -> None:
         # Just-in-time import of tarfile and urllib.request so these are
         # not required for Yocto to build a vendored or linked package
         import sys
@@ -83,7 +87,7 @@ def fetch_tarball(command):
         try:
             if open("libgpiod-version.txt", "r").read() == LIBGPIOD_VERSION:
                 log.info(f"skipping tarball fetch")
-                command(self)
+                func(cmd)
                 return
         except OSError:
             pass
@@ -175,13 +179,13 @@ def fetch_tarball(command):
                     # For further details, see `egg_info.find_sources` and
                     # `manifest_maker.add_license_files`
                     copy(_path, LICENSE_FILE)
-                    self.distribution.metadata.license_files = [LICENSE_FILE]
+                    cmd.distribution.metadata.license_files = [LICENSE_FILE]  # type: ignore[attr-defined]
 
         # Save the libgpiod version for sdist
         open("libgpiod-version.txt", "w").write(LIBGPIOD_VERSION)
 
         # Run the command
-        command(self)
+        func(cmd)
 
         # Clean up the build directory
         if path.exists(LICENSE_FILE):
@@ -206,8 +210,9 @@ class build_ext(orig_build_ext):
     """
 
     @fetch_tarball
-    def run(self):
+    def run(self) -> None:
         # Try to get the gpiod version from the .txt file included in sdist
+        libgpiod_version: str | None
         try:
             libgpiod_version = open("libgpiod-version.txt", "r").read()
         except OSError:
@@ -251,7 +256,7 @@ class sdist(orig_sdist):
     """
 
     @fetch_tarball
-    def run(self):
+    def run(self) -> None:
         super().run()
 
 
