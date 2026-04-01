@@ -2,17 +2,19 @@
 # SPDX-FileCopyrightText: 2022 Bartosz Golaszewski <brgl@bgdev.pl>
 
 from collections.abc import Callable
+from logging import getLogger
 from os import getenv, path, unlink
 from shutil import copy, copytree, rmtree
 from typing import TypeVar, cast
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext as orig_build_ext
-from setuptools.command.sdist import log
 from setuptools.command.sdist import sdist as orig_sdist
 from setuptools.errors import BaseError
 
 T = TypeVar("T", "sdist", "build_ext")
+
+log = getLogger(__name__)
 
 LINK_SYSTEM_LIBGPIOD = getenv("LINK_SYSTEM_LIBGPIOD") == "1"
 LIBGPIOD_MINIMUM_VERSION = "2.1"
