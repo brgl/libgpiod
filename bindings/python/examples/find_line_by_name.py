@@ -4,9 +4,10 @@
 
 """Minimal example of finding a line with the given name."""
 
-import gpiod
 import os
 from collections.abc import Generator
+
+import gpiod
 
 
 def generate_gpio_chips() -> Generator[str]:
@@ -22,13 +23,13 @@ def find_line_by_name(line_name: str) -> None:
         with gpiod.Chip(path) as chip:
             try:
                 offset = chip.line_offset_from_id(line_name)
-                print("{}: {} {}".format(line_name, chip.get_info().name, offset))
+                print(f"{line_name}: {chip.get_info().name} {offset}")
                 return
             except OSError:
                 # An OSError is raised if the name is not found.
                 continue
 
-    print("line '{}' not found".format(line_name))
+    print(f"line '{line_name}' not found")
 
 
 if __name__ == "__main__":

@@ -5,7 +5,6 @@
 """Minimal example of reading a single line."""
 
 import gpiod
-
 from gpiod.line import Direction
 
 
@@ -16,7 +15,7 @@ def get_line_value(chip_path: str, line_offset: int) -> None:
         config={line_offset: gpiod.LineSettings(direction=Direction.INPUT)},
     ) as request:
         value = request.get_value(line_offset)
-        print("{}={}".format(line_offset, value))
+        print(f"{line_offset}={value}")
 
 
 if __name__ == "__main__":

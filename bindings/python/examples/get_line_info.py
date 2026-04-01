@@ -12,13 +12,11 @@ def get_line_info(chip_path: str, line_offset: int) -> None:
         info = chip.get_line_info(line_offset)
         is_input = info.direction == gpiod.line.Direction.INPUT
         print(
-            "line {:>3}: {:>12} {:>12} {:>8} {:>10}".format(
-                info.offset,
-                info.name or "unnamed",
-                info.consumer or "unused",
-                "input" if is_input else "output",
-                "active-low" if info.active_low else "active-high",
-            )
+            f"line {info.offset:>3}:"
+            f" {info.name or 'unnamed':>12}"
+            f" {info.consumer or 'unused':>12}"
+            f" {'input' if is_input else 'output':>8}"
+            f" {'active-low' if info.active_low else 'active-high':>10}"
         )
 
 

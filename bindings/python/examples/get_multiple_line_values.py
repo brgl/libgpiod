@@ -7,7 +7,6 @@
 from collections.abc import Iterable
 
 import gpiod
-
 from gpiod.line import Direction
 
 
@@ -15,12 +14,12 @@ def get_multiple_line_values(chip_path: str, line_offsets: Iterable[int]) -> Non
     with gpiod.request_lines(
         chip_path,
         consumer="get-multiple-line-values",
-        config={tuple(line_offsets): gpiod.LineSettings(direction=Direction.INPUT)},
+        config={line_offsets: gpiod.LineSettings(direction=Direction.INPUT)},
     ) as request:
         vals = request.get_values()
 
-        for offset, val in zip(line_offsets, vals):
-            print("{}={} ".format(offset, val), end="")
+        for offset, val in zip(line_offsets, vals, strict=True):
+            print(f"{offset}={val} ", end="")
         print()
 
 

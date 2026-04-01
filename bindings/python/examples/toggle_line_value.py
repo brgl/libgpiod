@@ -4,9 +4,9 @@
 
 """Minimal example of toggling a single line."""
 
-import gpiod
 import time
 
+import gpiod
 from gpiod.line import Direction, Value
 
 
@@ -30,7 +30,7 @@ def toggle_line_value(chip_path: str, line_offset: int) -> None:
         },
     ) as request:
         while True:
-            print("{}={}".format(line_offset, value_str[value]))
+            print(f"{line_offset}={value_str[value]}")
             time.sleep(1)
             value = toggle_value(value)
             request.set_value(line_offset, value)

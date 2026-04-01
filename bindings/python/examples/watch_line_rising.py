@@ -5,7 +5,6 @@
 """Minimal example of watching for rising edges on a single line."""
 
 import gpiod
-
 from gpiod.line import Edge
 
 
@@ -19,9 +18,9 @@ def watch_line_rising(chip_path: str, line_offset: int) -> None:
             # Blocks until at least one event is available
             for event in request.read_edge_events():
                 print(
-                    "line: {}  type: Rising   event #{}".format(
-                        event.line_offset, event.line_seqno
-                    )
+                    f"line: {event.line_offset}"
+                    "  type: Rising"
+                    f"  event #{event.line_seqno}"
                 )
 
 

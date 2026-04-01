@@ -4,9 +4,9 @@
 
 """Minimal example of toggling multiple lines."""
 
-import gpiod
 import time
 
+import gpiod
 from gpiod.line import Direction, Value
 
 
@@ -24,18 +24,14 @@ def toggle_multiple_line_values(
     request = gpiod.request_lines(
         chip_path,
         consumer="toggle-multiple-line-values",
-        config={
-            tuple(line_values.keys()): gpiod.LineSettings(direction=Direction.OUTPUT)
-        },
+        config={line_values.keys(): gpiod.LineSettings(direction=Direction.OUTPUT)},
         output_values=line_values,
     )
 
     while True:
-        print(
-            " ".join("{}={}".format(l, value_str[v]) for (l, v) in line_values.items())
-        )
+        print(" ".join(f"{l}={value_str[v]}" for (l, v) in line_values.items()))  # noqa: E741
         time.sleep(1)
-        for l, v in line_values.items():
+        for l, v in line_values.items():  # noqa: E741
             line_values[l] = toggle_value(v)
         request.set_values(line_values)
 

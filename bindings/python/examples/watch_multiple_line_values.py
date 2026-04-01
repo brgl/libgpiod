@@ -23,17 +23,15 @@ def watch_multiple_line_values(chip_path: str, line_offsets: Iterable[int]) -> N
     with gpiod.request_lines(
         chip_path,
         consumer="watch-multiple-line-values",
-        config={tuple(line_offsets): gpiod.LineSettings(edge_detection=Edge.BOTH)},
+        config={line_offsets: gpiod.LineSettings(edge_detection=Edge.BOTH)},
     ) as request:
         while True:
             for event in request.read_edge_events():
                 print(
-                    "offset: {}  type: {:<7}  event #{}  line event #{}".format(
-                        event.line_offset,
-                        edge_type_str(event),
-                        event.global_seqno,
-                        event.line_seqno,
-                    )
+                    f"offset: {event.line_offset}"
+                    f"  type: {edge_type_str(event):<7}"
+                    f"  event #{event.global_seqno}"
+                    f"  line event #{event.line_seqno}"
                 )
 
 
