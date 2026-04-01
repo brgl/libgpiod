@@ -9,7 +9,7 @@ import gpiod
 from gpiod.line import Edge
 
 
-def watch_line_rising(chip_path, line_offset):
+def watch_line_rising(chip_path: str, line_offset: int) -> None:
     with gpiod.request_lines(
         chip_path,
         consumer="watch-line-rising",

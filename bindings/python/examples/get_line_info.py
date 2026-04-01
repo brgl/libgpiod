@@ -7,7 +7,7 @@
 import gpiod
 
 
-def get_line_info(chip_path, line_offset):
+def get_line_info(chip_path: str, line_offset: int) -> None:
     with gpiod.Chip(chip_path) as chip:
         info = chip.get_line_info(line_offset)
         is_input = info.direction == gpiod.line.Direction.INPUT

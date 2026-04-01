@@ -9,7 +9,7 @@ import gpiod
 from gpiod.line import Direction
 
 
-def get_line_value(chip_path, line_offset):
+def get_line_value(chip_path: str, line_offset: int) -> None:
     with gpiod.request_lines(
         chip_path,
         consumer="get-line-value",

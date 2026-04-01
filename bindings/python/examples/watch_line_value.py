@@ -7,10 +7,11 @@
 import gpiod
 
 from datetime import timedelta
+from gpiod.edge_event import EdgeEvent
 from gpiod.line import Bias, Edge
 
 
-def edge_type_str(event):
+def edge_type_str(event: EdgeEvent) -> str:
     if event.event_type is event.Type.RISING_EDGE:
         return "Rising"
     if event.event_type is event.Type.FALLING_EDGE:
@@ -18,7 +19,7 @@ def edge_type_str(event):
     return "Unknown"
 
 
-def watch_line_value(chip_path, line_offset):
+def watch_line_value(chip_path: str, line_offset: int) -> None:
     # Assume a button connecting the pin to ground,
     # so pull it up and provide some debounce.
     with gpiod.request_lines(

@@ -4,12 +4,14 @@
 
 """Minimal example of watching for edges on multiple lines."""
 
-import gpiod
+from collections.abc import Iterable
 
+import gpiod
+from gpiod.edge_event import EdgeEvent
 from gpiod.line import Edge
 
 
-def edge_type_str(event):
+def edge_type_str(event: EdgeEvent) -> str:
     if event.event_type is event.Type.RISING_EDGE:
         return "Rising"
     if event.event_type is event.Type.FALLING_EDGE:
@@ -17,7 +19,7 @@ def edge_type_str(event):
     return "Unknown"
 
 
-def watch_multiple_line_values(chip_path, line_offsets):
+def watch_multiple_line_values(chip_path: str, line_offsets: Iterable[int]) -> None:
     with gpiod.request_lines(
         chip_path,
         consumer="watch-multiple-line-values",

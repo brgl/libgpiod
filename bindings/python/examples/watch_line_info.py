@@ -4,10 +4,12 @@
 
 """Minimal example of watching for info changes on particular lines."""
 
+from collections.abc import Iterable
+
 import gpiod
 
 
-def watch_line_info(chip_path, line_offsets):
+def watch_line_info(chip_path: str, line_offsets: Iterable[int]) -> None:
     with gpiod.Chip(chip_path) as chip:
         for offset in line_offsets:
             chip.watch_line_info(offset)

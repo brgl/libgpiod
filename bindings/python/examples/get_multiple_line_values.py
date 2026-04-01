@@ -4,12 +4,14 @@
 
 """Minimal example of reading multiple lines."""
 
+from collections.abc import Iterable
+
 import gpiod
 
 from gpiod.line import Direction
 
 
-def get_multiple_line_values(chip_path, line_offsets):
+def get_multiple_line_values(chip_path: str, line_offsets: Iterable[int]) -> None:
     with gpiod.request_lines(
         chip_path,
         consumer="get-multiple-line-values",

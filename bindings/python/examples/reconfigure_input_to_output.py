@@ -9,7 +9,7 @@ import gpiod
 from gpiod.line import Direction, Value
 
 
-def reconfigure_input_to_output(chip_path, line_offset):
+def reconfigure_input_to_output(chip_path: str, line_offset: int) -> None:
     # request the line initially as an input
     with gpiod.request_lines(
         chip_path,

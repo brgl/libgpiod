@@ -6,15 +6,16 @@
 
 import gpiod
 import os
+from collections.abc import Generator
 
 
-def generate_gpio_chips():
+def generate_gpio_chips() -> Generator[str]:
     for entry in os.scandir("/dev/"):
         if gpiod.is_gpiochip_device(entry.path):
             yield entry.path
 
 
-def find_line_by_name(line_name):
+def find_line_by_name(line_name: str) -> None:
     # Names are not guaranteed unique, so this finds the first line with
     # the given name.
     for path in generate_gpio_chips():

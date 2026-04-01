@@ -8,10 +8,12 @@ import gpiod
 import select
 
 from datetime import timedelta
+
+from gpiod.edge_event import EdgeEvent
 from gpiod.line import Bias, Edge
 
 
-def edge_type_str(event):
+def edge_type_str(event: EdgeEvent) -> str:
     if event.event_type is event.Type.RISING_EDGE:
         return "Rising"
     if event.event_type is event.Type.FALLING_EDGE:
@@ -19,7 +21,7 @@ def edge_type_str(event):
     return "Unknown"
 
 
-def async_watch_line_value(chip_path, line_offset, done_fd):
+def async_watch_line_value(chip_path: str, line_offset: int, done_fd: int) -> None:
     # Assume a button connecting the pin to ground,
     # so pull it up and provide some debounce.
     with gpiod.request_lines(
@@ -59,7 +61,7 @@ if __name__ == "__main__":
     # run the async executor (select.poll) in a thread to demonstrate a graceful exit.
     done_fd = os.eventfd(0)
 
-    def bg_thread():
+    def bg_thread() -> None:
         try:
             async_watch_line_value("/dev/gpiochip0", 5, done_fd)
         except OSError as ex:

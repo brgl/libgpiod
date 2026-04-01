@@ -7,7 +7,7 @@
 import gpiod
 
 
-def get_chip_info(chip_path):
+def get_chip_info(chip_path: str) -> None:
     with gpiod.Chip(chip_path) as chip:
         info = chip.get_info()
         print("{} [{}] ({} lines)".format(info.name, info.label, info.num_lines))

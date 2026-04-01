@@ -10,13 +10,13 @@ import time
 from gpiod.line import Direction, Value
 
 
-def toggle_value(value):
+def toggle_value(value: Value) -> Value:
     if value == Value.INACTIVE:
         return Value.ACTIVE
     return Value.INACTIVE
 
 
-def toggle_line_value(chip_path, line_offset):
+def toggle_line_value(chip_path: str, line_offset: int) -> None:
     value_str = {Value.ACTIVE: "Active", Value.INACTIVE: "Inactive"}
     value = Value.ACTIVE
 
