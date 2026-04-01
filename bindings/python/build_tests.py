@@ -27,9 +27,6 @@ logging.configure()
 TOP_SRCDIR = getenv("TOP_SRCDIR", "../../")
 TOP_BUILDDIR = getenv("TOP_BUILDDIR", "../../")
 
-# __version__
-with open("gpiod/version.py", "r") as fd:
-    exec(fd.read())
 
 # The tests are run in-place with PYTHONPATH set to bindings/python
 # so we need the gpiod extension module too.
@@ -72,10 +69,7 @@ system_ext = Extension(
 
 dist = Distribution(
     {
-        "name": "gpiod",
         "ext_modules": [gpiosim_ext, system_ext, gpiod_ext],
-        "version": __version__,
-        "platforms": ["linux"],
     }
 )
 
