@@ -33,6 +33,9 @@ classifiers = [
 Homepage = "https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git"
 Issues = "https://github.com/brgl/libgpiod/issues/"
 
+[dependency-groups]
+lint = ["mypy>=1.18.1", "ruff~=0.15.0", "types-setuptools", "packaging"]
+
 [tool.setuptools]
 platforms = ["linux"]
 include-package-data = false

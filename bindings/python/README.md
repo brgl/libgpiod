@@ -120,9 +120,11 @@ When making changes, ensure type checks and linting still pass:
 ```
 python3 -m venv venv
 . venv/bin/activate
-pip install mypy ruff
+pip install --group lint
 mypy; ruff format; ruff check
 ```
+
+Note that pip >=25.1 is necessary for `--group` support.
 
 Ideally the gpiod library will continue to pass strict checks:
 
