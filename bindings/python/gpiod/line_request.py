@@ -75,9 +75,9 @@ class LineRequest:
         Release this request and free all associated resources. The object must
         not be used after a call to this method.
         """
-        self._check_released()
-        cast("_ext.Request", self._req).release()
-        self._req = None
+        if self._req is not None:
+            self._req.release()
+            self._req = None
 
     def get_value(self, line: int | str) -> Value:
         """
