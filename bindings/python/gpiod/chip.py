@@ -99,9 +99,9 @@ class Chip:
         Close the associated GPIO chip descriptor. The chip object must no
         longer be used after this method is called.
         """
-        self._check_closed()
-        cast("_ext.Chip", self._chip).close()
-        self._chip = None
+        if self._chip is not None:
+            self._chip.close()
+            self._chip = None
 
     def get_info(self) -> ChipInfo:
         """

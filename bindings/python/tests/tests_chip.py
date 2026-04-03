@@ -184,14 +184,6 @@ class ClosedChipCannotBeUsed(TestCase):
             with chip:
                 _ = chip.fd
 
-    def test_close_chip_twice(self) -> None:
-        sim = gpiosim.Chip(label="foobar")
-        chip = gpiod.Chip(sim.dev_path)
-        chip.close()
-
-        with self.assertRaises(gpiod.ChipClosedError):
-            chip.close()
-
 
 class StringRepresentation(TestCase):
     def setUp(self) -> None:
