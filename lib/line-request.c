@@ -24,6 +24,11 @@ gpiod_line_request_from_uapi(struct gpio_v2_line_request *uapi_req,
 {
 	struct gpiod_line_request *request;
 
+	if (uapi_req->num_lines > GPIO_V2_LINES_MAX) {
+		errno = EINVAL;
+		return NULL;
+	}
+
 	request = malloc(sizeof(*request));
 	if (!request)
 		return NULL;
