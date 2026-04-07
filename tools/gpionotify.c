@@ -396,7 +396,7 @@ int main(int argc, char **argv)
 	validate_resolution(resolver, cfg.chip_id);
 	chips = calloc(resolver->num_chips, sizeof(*chips));
 	pollfds = calloc(resolver->num_chips, sizeof(*pollfds));
-	if (!pollfds)
+	if (!pollfds || !chips)
 		die("out of memory");
 
 	for (i = 0; i < resolver->num_chips; i++) {
