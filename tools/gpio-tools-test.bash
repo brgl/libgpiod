@@ -1133,6 +1133,17 @@ test_gpioset_with_hold_period() {
 	status_is 0
 }
 
+test_gpioset_reject_invalid_period() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioset --hold-period=1000u --chip "$sim0" 0=1
+
+	status_is 1
+	output_regex_match "invalid period"
+}
+
 test_gpioset_interactive_exit() {
 	gpiosim_chip sim0 num_lines=8
 
