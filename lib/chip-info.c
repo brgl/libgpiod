@@ -57,7 +57,7 @@ gpiod_chip_info_from_uapi(struct gpiochip_info *uapi_info)
 	 * GPIO device must have a name - don't bother checking this field. In
 	 * the worst case (would have to be a weird kernel bug) it'll be empty.
 	 */
-	strncpy(info->name, uapi_info->name, sizeof(info->name));
+	strncpy(info->name, uapi_info->name, GPIO_MAX_NAME_SIZE);
 
 	/*
 	 * The kernel sets the label of a GPIO device to "unknown" if it
@@ -65,9 +65,9 @@ gpiod_chip_info_from_uapi(struct gpiochip_info *uapi_info)
 	 * we got an empty string, do the same.
 	 */
 	if (uapi_info->label[0] == '\0')
-		strncpy(info->label, "unknown", sizeof(info->label));
+		strncpy(info->label, "unknown", GPIO_MAX_NAME_SIZE);
 	else
-		strncpy(info->label, uapi_info->label, sizeof(info->label));
+		strncpy(info->label, uapi_info->label, GPIO_MAX_NAME_SIZE);
 
 	return info;
 }
