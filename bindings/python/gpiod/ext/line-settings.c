@@ -70,10 +70,6 @@ line_settings_init(line_settings_object *self, PyObject *args, PyObject *kwargs)
 	gpiod_line_settings_set_debounce_period_us(self->settings,
 						   debounce_period);
 
-	ret = gpiod_line_settings_set_edge_detection(self->settings, edge);
-	if (ret)
-		return set_error();
-
 	ret = gpiod_line_settings_set_output_value(self->settings,
 						   output_value);
 	if (ret)
