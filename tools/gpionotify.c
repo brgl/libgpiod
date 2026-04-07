@@ -467,6 +467,7 @@ done:
 	for (i = 0; i < resolver->num_chips; i++)
 		gpiod_chip_close(chips[i]);
 
+	free(pollfds);
 	free(chips);
 	free_line_resolver(resolver);
 
