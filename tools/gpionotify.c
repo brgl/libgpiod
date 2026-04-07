@@ -374,6 +374,7 @@ int main(int argc, char **argv)
 	int i, j, ret, events_done = 0, evtype;
 	struct line_resolver *resolver;
 	struct gpiod_info_event *event;
+	struct gpiod_line_info *info;
 	struct timespec idle_timeout;
 	struct gpiod_chip **chips;
 	struct gpiod_chip *chip;
@@ -405,12 +406,15 @@ int main(int argc, char **argv)
 			die_perror("unable to open chip '%s'",
 				   resolver->chips[i].path);
 
-		for (j = 0; j < resolver->num_lines; j++)
-			if ((resolver->lines[j].chip_num == i) &&
-			    !gpiod_chip_watch_line_info(
-				    chip, resolver->lines[j].offset))
+		for (j = 0; j < resolver->num_lines; j++) {
+			info = gpiod_chip_watch_line_info(chip,
+						resolver->lines[j].offset);
+			if ((resolver->lines[j].chip_num == i) && !info)
 				die_perror("unable to watch line on chip '%s'",
 					   resolver->chips[i].path);
+
+			gpiod_line_info_free(info);
+		}
 
 		chips[i] = chip;
 		pollfds[i].fd = gpiod_chip_get_fd(chip);
