@@ -308,7 +308,7 @@ static gboolean gpiodbus_daemon_export_lines(GpiodbusDaemon *self,
 			g_critical("failed to setup a line-info watch: %s",
 				   err->message);
 			for (j = i; j >= 0; j--)
-				gpiodglib_chip_unwatch_line_info(chip, i, NULL);
+				gpiodglib_chip_unwatch_line_info(chip, j, NULL);
 			return FALSE;
 		}
 
