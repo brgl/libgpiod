@@ -139,7 +139,7 @@ void gpiod_line_mask_zero(uint64_t *mask)
 	*mask = 0ULL;
 }
 
-bool gpiod_line_mask_test_bit(const uint64_t *mask, int nr)
+bool gpiod_line_mask_test_bit(const uint64_t *mask, unsigned int nr)
 {
 	return *mask & (1ULL << nr);
 }
