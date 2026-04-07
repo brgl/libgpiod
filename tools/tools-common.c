@@ -122,6 +122,8 @@ long long parse_period(const char *option)
 
 	switch (*end) {
 	case 'u':
+		if (*(end + 1) != 's')
+			return -1;
 		m = 1;
 		end++;
 		break;
