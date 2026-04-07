@@ -676,6 +676,28 @@ class LineRequestSurvivesParentChip(TestCase):
         req.release()
 
 
+class UsingMoreLinesThanRequestedNotAllowed(TestCase):
+    def setUp(self) -> None:
+        self.sim = gpiosim.Chip(num_lines=4)
+
+    def tearDown(self) -> None:
+        del self.sim
+
+    def test_line_get_more_values_than_requested_lines(self) -> None:
+        with gpiod.request_lines(
+            self.sim.dev_path, config={0: gpiod.LineSettings(direction=Direction.INPUT)}
+        ) as req:
+            with self.assertRaises(ValueError):
+                req.get_values(list(range(64)))
+
+    def test_line_set_more_values_than_requested_lines(self) -> None:
+        with gpiod.request_lines(
+            self.sim.dev_path, config={0: gpiod.LineSettings(direction=Direction.OUTPUT)}
+        ) as req:
+            with self.assertRaises(ValueError):
+                req.set_values({i: Value.ACTIVE for i in range(64)})
+
+
 class LineRequestStringRepresentation(TestCase):
     def setUp(self) -> None:
         self.sim = gpiosim.Chip(num_lines=8)

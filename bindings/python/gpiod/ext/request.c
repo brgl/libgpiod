@@ -149,6 +149,12 @@ static PyObject *request_get_values(request_object *self, PyObject *args)
 	if (num_offsets < 0)
 		return NULL;
 
+	if (num_offsets > (Py_ssize_t)self->num_lines) {
+		PyErr_SetString(PyExc_ValueError,
+				"number of offsets exceeds the number of requested lines");
+		return NULL;
+	}
+
 	iter = PyObject_GetIter(offsets);
 	if (!iter)
 		return NULL;
@@ -211,6 +217,12 @@ static PyObject *request_set_values(request_object *self, PyObject *args)
 	ret = PyArg_ParseTuple(args, "O", &values);
 	if (!ret)
 		return NULL;
+
+	if (PyObject_Size(values) > (Py_ssize_t)self->num_lines) {
+		PyErr_SetString(PyExc_ValueError,
+				"number of offsets exceeds the number of requested lines");
+		return NULL;
+	}
 
 	clear_buffers(self);
 
