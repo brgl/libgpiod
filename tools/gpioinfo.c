@@ -266,7 +266,7 @@ int main(int argc, char **argv)
 	validate_resolution(resolver, cfg.chip_id);
 	if (argc && resolver->num_found != argc)
 		ret = EXIT_FAILURE;
-	free(resolver);
+	free_line_resolver(resolver);
 
 	return ret;
 }
