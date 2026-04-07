@@ -447,11 +447,14 @@ int main(int argc, char **argv)
 
 			if (cfg.event_type) {
 				evtype = gpiod_info_event_get_event_type(event);
-				if (evtype != cfg.event_type)
+				if (evtype != cfg.event_type) {
+					gpiod_info_event_free(event);
 					continue;
+				}
 			}
 
 			event_print(event, resolver, i, &cfg);
+			gpiod_info_event_free(event);
 
 			events_done++;
 
