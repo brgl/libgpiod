@@ -2,6 +2,23 @@
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 # SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
+libgpiod v2.2.4
+===============
+
+Bug fixes:
+- fix buffer over-read bugs when translating uAPI structs to library types
+- fix variable and argument types where necessary
+- sanitize values returned by the kernel to avoid potential buffer overflows
+- fix memory leaks in gpio-tools
+- add missing return value checks in gpio-tools
+- fix period parsing in gpio-tools
+- use correct loop counter in error path in gpio-manager
+
+Improvements:
+- make tests work with newer coreutils by removing cases checking tools'
+  behavior on SIGINT which stopped working due to changes in behavior of the
+  timeout tool
+
 libgpiod v2.2.3
 ===============
 
