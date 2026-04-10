@@ -4,8 +4,6 @@
 
 /* Common code for GPIO tools. */
 
-#include <ctype.h>
-#include <dirent.h>
 #include <errno.h>
 #include <gpiod.h>
 #include <inttypes.h>
@@ -14,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <time.h>
 
 #include "tools-common.h"
@@ -431,152 +428,31 @@ void print_line_vals(struct gpiotools_line_resolver *resolver, bool is_unquoted,
 	printf("\n");
 }
 
-static int chip_dir_filter(const struct dirent *entry)
-{
-	struct stat sb;
-	int ret = 0;
-	char *path;
-
-	if (asprintf(&path, "/dev/%s", entry->d_name) < 0)
-		return 0;
-
-	if ((lstat(path, &sb) == 0) && (!S_ISLNK(sb.st_mode)) &&
-	    gpiod_is_gpiochip_device(path))
-		ret = 1;
-
-	free(path);
-
-	return ret;
-}
-
-static bool isuint(const char *str)
-{
-	for (; *str && isdigit(*str); str++)
-		;
-
-	return *str == '\0';
-}
-
 bool chip_path_lookup(const char *id, char **path_ptr)
 {
-	char *path;
-
-	if (isuint(id)) {
-		/* by number */
-		if (asprintf(&path, "/dev/gpiochip%s", id) < 0)
-			return false;
-	} else if (strchr(id, '/')) {
-		/* by path */
-		if (asprintf(&path, "%s", id) < 0)
-			return false;
-	} else {
-		/* by device name */
-		if (asprintf(&path, "/dev/%s", id) < 0)
-			return false;
-	}
-
-	if (!gpiod_is_gpiochip_device(path)) {
-		free(path);
-		return false;
-	}
-
-	*path_ptr = path;
-
-	return true;
+	return gpiotools_chip_path_lookup(id, path_ptr);
 }
 
 int chip_paths(const char *id, char ***paths_ptr)
 {
-	char **paths;
-	char *path;
+	int ret;
 
-	if (id == NULL)
-		return all_chip_paths(paths_ptr);
-
-	if (!chip_path_lookup(id, &path))
-		return 0;
-
-	paths = malloc(sizeof(*paths));
-	if (paths == NULL)
+	ret = gpiotools_chip_paths(id, paths_ptr);
+	if (ret < 0)
 		die_eom();
 
-	paths[0] = path;
-	*paths_ptr = paths;
-
-	return 1;
+	return ret;
 }
 
 int all_chip_paths(char ***paths_ptr)
 {
-	int i, j, num_chips, ret = 0;
-	struct dirent **entries;
-	char **paths;
+	int ret;
 
-	num_chips = scandir("/dev/", &entries, chip_dir_filter, versionsort);
-	if (num_chips < 0)
+	ret = gpiotools_all_chip_paths(paths_ptr);
+	if (ret < 0)
 		die_perror("unable to scan /dev");
 
-	paths = calloc(num_chips, sizeof(*paths));
-	if (paths == NULL)
-		die_eom();
-
-	for (i = 0; i < num_chips; i++) {
-		if (asprintf(&paths[i], "/dev/%s", entries[i]->d_name) < 0) {
-			for (j = 0; j < i; j++)
-				free(paths[j]);
-
-			free(paths);
-			return 0;
-		}
-	}
-
-	*paths_ptr = paths;
-	ret = num_chips;
-
-	for (i = 0; i < num_chips; i++)
-		free(entries[i]);
-
-	free(entries);
 	return ret;
-}
-
-static bool resolve_line(struct gpiotools_line_resolver *resolver,
-			 struct gpiod_line_info *info, int chip_num)
-{
-	struct gpiotools_resolved_line *line;
-	bool resolved = false;
-	unsigned int offset;
-	const char *name;
-	int i;
-
-	offset = gpiod_line_info_get_offset(info);
-	for (i = 0; i < resolver->num_lines; i++) {
-		line = &resolver->lines[i];
-		/* already resolved by offset? */
-		if (line->resolved && (line->offset == offset) &&
-		    (line->chip_num == chip_num)) {
-			line->info = info;
-			resolver->num_found++;
-			resolved = true;
-		}
-		if (line->resolved && !resolver->strict)
-			continue;
-
-		/* else resolve by name */
-		name = gpiod_line_info_get_name(info);
-		if (name && (strcmp(line->id, name) == 0)) {
-			if (resolver->strict && line->resolved)
-				die("line '%s' is not unique", line->id);
-			line->offset = offset;
-			line->info = info;
-			line->chip_num = resolver->num_chips;
-			line->resolved = true;
-			resolver->num_found++;
-			resolved = true;
-		}
-	}
-
-	return resolved;
 }
 
 /*
@@ -588,27 +464,12 @@ static bool resolve_line(struct gpiotools_line_resolver *resolver,
 bool resolve_lines_by_offset(struct gpiotools_line_resolver *resolver,
 			     unsigned int num_lines)
 {
-	struct gpiotools_resolved_line *line;
-	bool used = false;
-	int i;
-
-	for (i = 0; i < resolver->num_lines; i++) {
-		line = &resolver->lines[i];
-		if ((line->id_as_offset != -1) &&
-		    (line->id_as_offset < (int)num_lines)) {
-			line->chip_num = 0;
-			line->offset = line->id_as_offset;
-			line->resolved = true;
-			used = true;
-		}
-	}
-	return used;
+	return gpiotools_resolve_lines_by_offset(resolver, num_lines);
 }
 
 bool resolve_done(struct gpiotools_line_resolver *resolver)
 {
-	return (!resolver->strict &&
-		resolver->num_found >= resolver->num_lines);
+	return gpiotools_resolve_done(resolver);
 }
 
 struct gpiotools_line_resolver *resolver_init(int num_lines, char **lines,
@@ -616,30 +477,11 @@ struct gpiotools_line_resolver *resolver_init(int num_lines, char **lines,
 					      bool by_name)
 {
 	struct gpiotools_line_resolver *resolver;
-	struct gpiotools_resolved_line *line;
-	size_t resolver_size;
-	int i;
 
-	resolver_size = sizeof(*resolver) + num_lines * sizeof(*line);
-	resolver = malloc(resolver_size);
+	resolver = gpiotools_resolver_init(num_lines, lines, num_chips,
+					   strict, by_name);
 	if (resolver == NULL)
 		die_eom();
-
-	memset(resolver, 0, resolver_size);
-
-	resolver->chips = calloc(num_chips, sizeof(struct gpiotools_resolved_chip));
-	if (resolver->chips == NULL)
-		die_eom();
-	memset(resolver->chips, 0, num_chips * sizeof(struct gpiotools_resolved_chip));
-
-	resolver->num_lines = num_lines;
-	resolver->strict = strict;
-	for (i = 0; i < num_lines; i++) {
-		line = &resolver->lines[i];
-		line->id = lines[i];
-		line->id_as_offset = by_name ? -1 : parse_uint(lines[i]);
-		line->chip_num = -1;
-	}
 
 	return resolver;
 }
@@ -648,72 +490,23 @@ struct gpiotools_line_resolver *resolve_lines(int num_lines, char **lines,
 					      const char *chip_id, bool strict,
 					      bool by_name)
 {
-	struct gpiod_chip_info *chip_info;
-	struct gpiod_line_info *line_info;
 	struct gpiotools_line_resolver *resolver;
-	int num_chips, i, offset;
-	struct gpiod_chip *chip;
-	bool chip_used;
-	char **paths;
+	int i;
 
-	if (chip_id == NULL)
-		by_name = true;
-
-	num_chips = chip_paths(chip_id, &paths);
-	if (chip_id && (num_chips == 0))
-		die("cannot find GPIO chip character device '%s'", chip_id);
-
-	resolver = resolver_init(num_lines, lines, num_chips, strict, by_name);
-
-	for (i = 0; (i < num_chips) && !resolve_done(resolver); i++) {
-		chip_used = false;
-		chip = gpiod_chip_open(paths[i]);
-		if (!chip) {
-			if ((errno == EACCES) && (chip_id == NULL)) {
-				free(paths[i]);
-				continue;
-			}
-
-			die_perror("unable to open chip '%s'", paths[i]);
-		}
-
-		chip_info = gpiod_chip_get_info(chip);
-		if (!chip_info)
-			die_perror("unable to get info for '%s'", paths[i]);
-
-		num_lines = gpiod_chip_info_get_num_lines(chip_info);
-
-		if (i == 0 && chip_id && !by_name)
-			chip_used = resolve_lines_by_offset(resolver, num_lines);
-
-		for (offset = 0;
-		     (offset < num_lines) && !resolve_done(resolver);
-		     offset++) {
-			line_info = gpiod_chip_get_line_info(chip, offset);
-			if (!line_info)
-				die_perror("unable to read the info for line %d from %s",
-					   offset,
-					   gpiod_chip_info_get_name(chip_info));
-
-			if (resolve_line(resolver, line_info, i))
-				chip_used = true;
-			else
-				gpiod_line_info_free(line_info);
-
-		}
-
-		gpiod_chip_close(chip);
-
-		if (chip_used) {
-			resolver->chips[resolver->num_chips].info = chip_info;
-			resolver->chips[resolver->num_chips].path = paths[i];
-			resolver->num_chips++;
-		} else {
-			gpiod_chip_info_free(chip_info);
-			free(paths[i]);
-		}
+	resolver = gpiotools_resolve_lines(num_lines, lines, chip_id,
+					   strict, by_name);
+	if (resolver == NULL) {
+		if (errno == ENODEV)
+			die("cannot find GPIO chip character device '%s'",
+			    chip_id);
+		else
+			die_perror("error resolving lines");
 	}
-	free(paths);
+
+	for (i = 0; i < resolver->num_lines; i++) {
+		if (resolver->lines[i].not_unique)
+			die("line '%s' is not unique", resolver->lines[i].id);
+	}
 
 	return resolver;
 }
@@ -754,75 +547,30 @@ void validate_resolution(struct gpiotools_line_resolver *resolver,
 
 void free_line_resolver(struct gpiotools_line_resolver *resolver)
 {
-	int i;
-
-	if (!resolver)
-		return;
-
-	for (i = 0; i < resolver->num_lines; i++)
-		gpiod_line_info_free(resolver->lines[i].info);
-
-	for (i = 0; i < resolver->num_chips; i++) {
-		gpiod_chip_info_free(resolver->chips[i].info);
-		free(resolver->chips[i].path);
-	}
-
-	free(resolver->chips);
-	free(resolver);
+	gpiotools_free_line_resolver(resolver);
 }
 
 int get_line_offsets_and_values(struct gpiotools_line_resolver *resolver,
 				int chip_num, unsigned int *offsets,
 				enum gpiod_line_value *values)
 {
-	struct gpiotools_resolved_line *line;
-	int i, num_lines = 0;
-
-	for (i = 0; i < resolver->num_lines; i++) {
-		line = &resolver->lines[i];
-		if (line->chip_num == chip_num) {
-			offsets[num_lines] = line->offset;
-			if (values)
-				values[num_lines] = line->value;
-
-			num_lines++;
-		}
-	}
-
-	return num_lines;
+	return gpiotools_get_line_offsets_and_values(resolver, chip_num,
+						     offsets, values);
 }
 
 const char *get_chip_name(struct gpiotools_line_resolver *resolver, int chip_num)
 {
-	return gpiod_chip_info_get_name(resolver->chips[chip_num].info);
+	return gpiotools_get_chip_name(resolver, chip_num);
 }
 
 const char *get_line_name(struct gpiotools_line_resolver *resolver, int chip_num,
 			  unsigned int offset)
 {
-	struct gpiotools_resolved_line *line;
-	int i;
-
-	for (i = 0; i < resolver->num_lines; i++) {
-		line = &resolver->lines[i];
-		if (line->info && (line->offset == offset) &&
-		    (line->chip_num == chip_num))
-			return gpiod_line_info_get_name(
-				resolver->lines[i].info);
-	}
-
-	return 0;
+	return gpiotools_get_line_name(resolver, chip_num, offset);
 }
 
 void set_line_values(struct gpiotools_line_resolver *resolver, int chip_num,
 		     enum gpiod_line_value *values)
 {
-	int i, j;
-
-	for (i = 0, j = 0; i < resolver->num_lines; i++) {
-		if (resolver->lines[i].chip_num == chip_num) {
-			resolver->lines[i].value = values[j];
-			j++;
-		}
-	}
+	gpiotools_set_line_values(resolver, chip_num, values);
 }

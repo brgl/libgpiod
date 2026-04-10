@@ -33,6 +33,9 @@ libgpiosim_version      = '1.0.1'
 # ... and another one for GLib bindings:
 libgpiod_glib_soversion = '1'
 libgpiod_glib_version   = '1.0.0'
+# ... and another for the gpio-tools shared helpers library:
+libgpiotools_soversion  = '1'
+libgpiotools_version    = '1.0.0'
 
 add_project_arguments(
   '-D_GNU_SOURCE',
