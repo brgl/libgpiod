@@ -255,8 +255,8 @@ static void print_banner(int num_lines, char **lines)
 }
 
 static void event_print_formatted(struct gpiod_edge_event *event,
-				  struct line_resolver *resolver, int chip_num,
-				  struct config *cfg)
+				  struct gpiotools_line_resolver *resolver,
+				  int chip_num, struct config *cfg)
 {
 	const char *lname, *prev, *curr;
 	unsigned int offset;
@@ -331,7 +331,7 @@ end:
 }
 
 static void event_print_human_readable(struct gpiod_edge_event *event,
-				       struct line_resolver *resolver,
+				       struct gpiotools_line_resolver *resolver,
 				       int chip_num, struct config *cfg)
 {
 	unsigned int offset;
@@ -353,7 +353,7 @@ static void event_print_human_readable(struct gpiod_edge_event *event,
 }
 
 static void event_print(struct gpiod_edge_event *event,
-			struct line_resolver *resolver, int chip_num,
+			struct gpiotools_line_resolver *resolver, int chip_num,
 			struct config *cfg)
 {
 	if (cfg->quiet)
@@ -374,7 +374,7 @@ int main(int argc, char **argv)
 	struct gpiod_line_config *line_cfg;
 	int num_lines, events_done = 0;
 	struct gpiod_edge_event *event;
-	struct line_resolver *resolver;
+	struct gpiotools_line_resolver *resolver;
 	enum gpiod_line_value *values;
 	struct timespec idle_timeout;
 	struct gpiod_chip *chip;

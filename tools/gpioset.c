@@ -349,7 +349,8 @@ static void wait_fd(int fd)
  * offset and values are scratch pads for working.
  */
 static void apply_values(struct gpiod_line_request **requests,
-			 struct line_resolver *resolver, unsigned int *offsets,
+			 struct gpiotools_line_resolver *resolver,
+			 unsigned int *offsets,
 			 enum gpiod_line_value *values)
 {
 	int i;
@@ -363,7 +364,7 @@ static void apply_values(struct gpiod_line_request **requests,
 }
 
 /* Toggle the values of all lines in the resolver */
-static void toggle_all_lines(struct line_resolver *resolver)
+static void toggle_all_lines(struct gpiotools_line_resolver *resolver)
 {
 	int i;
 
@@ -378,7 +379,7 @@ static void toggle_all_lines(struct line_resolver *resolver)
  */
 static void toggle_sequence(int toggles, unsigned long long *toggle_periods,
 			    struct gpiod_line_request **requests,
-			    struct line_resolver *resolver,
+			    struct gpiotools_line_resolver *resolver,
 			    unsigned int *offsets,
 			    enum gpiod_line_value *values)
 {
@@ -434,7 +435,7 @@ static bool parse_line_ids(int num_lines, char **words, char **lines)
  * Set the values in the resolver for the line values specified by
  * the remaining parameters.
  */
-static void set_line_values_subset(struct line_resolver *resolver,
+static void set_line_values_subset(struct gpiotools_line_resolver *resolver,
 				   int num_lines, char **lines,
 				   enum gpiod_line_value *values)
 {
@@ -450,7 +451,8 @@ static void set_line_values_subset(struct line_resolver *resolver,
 	}
 }
 
-static void print_all_line_values(struct line_resolver *resolver, bool unquoted)
+static void print_all_line_values(struct gpiotools_line_resolver *resolver,
+				  bool unquoted)
 {
 	char *fmt = unquoted ? "%s=%s " : "\"%s\"=%s ";
 	int i;
@@ -468,11 +470,11 @@ static void print_all_line_values(struct line_resolver *resolver, bool unquoted)
  * Print the resovler line values for a subset of lines, specified by
  * num_lines and lines.
  */
-static void print_line_values(struct line_resolver *resolver, int num_lines,
-			      char **lines, bool unquoted)
+static void print_line_values(struct gpiotools_line_resolver *resolver,
+			      int num_lines, char **lines, bool unquoted)
 {
 	char *fmt = unquoted ? "%s=%s " : "\"%s\"=%s ";
-	struct resolved_line *line;
+	struct gpiotools_resolved_line *line;
 	int i, j;
 
 	for (i = 0; i < num_lines; i++) {
@@ -493,10 +495,10 @@ static void print_line_values(struct line_resolver *resolver, int num_lines,
 /*
  * Toggle a subset of lines, specified by num_lines and lines, in the resolver.
  */
-static void toggle_lines(struct line_resolver *resolver, int num_lines,
+static void toggle_lines(struct gpiotools_line_resolver *resolver, int num_lines,
 			 char **lines)
 {
-	struct resolved_line *line;
+	struct gpiotools_resolved_line *line;
 	int i, j;
 
 	for (i = 0; i < num_lines; i++)
@@ -513,7 +515,7 @@ static void toggle_lines(struct line_resolver *resolver, int num_lines,
  * Check that a set of lines, specified by num_lines and lines, are all
  * resolved lines.
  */
-static bool valid_lines(struct line_resolver *resolver, int num_lines,
+static bool valid_lines(struct gpiotools_line_resolver *resolver, int num_lines,
 			char **lines)
 {
 	bool ret = true, found;
@@ -619,7 +621,7 @@ static bool in_line_buffer(const char *id)
 }
 
 /* context for complete_line_id, so it can provide valid line ids */
-static struct line_resolver *completion_context;
+static struct gpiotools_line_resolver *completion_context;
 
 /* tab completion helper for line ids */
 static char *complete_line_id(const char *text, int state)
@@ -735,7 +737,7 @@ static char **tab_completion(const char *text, int start, int end)
 #define PROMPT "gpioset> "
 
 static void interact(struct gpiod_line_request **requests,
-		     struct line_resolver *resolver, char **lines,
+		     struct gpiotools_line_resolver *resolver, char **lines,
 		     unsigned int *offsets, enum gpiod_line_value *values,
 		     bool unquoted)
 {
@@ -867,7 +869,7 @@ int main(int argc, char **argv)
 	struct gpiod_request_config *req_cfg;
 	struct gpiod_line_request **requests;
 	struct gpiod_line_config *line_cfg;
-	struct line_resolver *resolver;
+	struct gpiotools_line_resolver *resolver;
 	enum gpiod_line_value *values;
 	struct gpiod_chip *chip;
 	unsigned int *offsets;

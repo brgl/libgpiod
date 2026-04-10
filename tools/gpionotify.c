@@ -231,8 +231,8 @@ static uint64_t monotonic_to_realtime(uint64_t evtime)
 }
 
 static void event_print_formatted(struct gpiod_info_event *event,
-				  struct line_resolver *resolver, int chip_num,
-				  struct config *cfg)
+				  struct gpiotools_line_resolver *resolver,
+				  int chip_num, struct config *cfg)
 {
 	const char *lname, *prev, *curr, *consumer;
 	struct gpiod_line_info *info;
@@ -319,7 +319,7 @@ end:
 }
 
 static void event_print_human_readable(struct gpiod_info_event *event,
-				       struct line_resolver *resolver,
+				       struct gpiotools_line_resolver *resolver,
 				       int chip_num, struct config *cfg)
 {
 	struct gpiod_line_info *info;
@@ -357,7 +357,7 @@ static void event_print_human_readable(struct gpiod_info_event *event,
 }
 
 static void event_print(struct gpiod_info_event *event,
-			struct line_resolver *resolver, int chip_num,
+			struct gpiotools_line_resolver *resolver, int chip_num,
 			struct config *cfg)
 {
 	if (cfg->quiet)
@@ -372,7 +372,7 @@ static void event_print(struct gpiod_info_event *event,
 int main(int argc, char **argv)
 {
 	int i, j, ret, events_done = 0, evtype;
-	struct line_resolver *resolver;
+	struct gpiotools_line_resolver *resolver;
 	struct gpiod_info_event *event;
 	struct gpiod_line_info *info;
 	struct timespec idle_timeout;

@@ -392,7 +392,7 @@ void print_line_attributes(struct gpiod_line_info *info, bool unquoted_strings)
 	print_consumer(info, unquoted_strings);
 }
 
-void print_line_id(struct line_resolver *resolver, int chip_num,
+void print_line_id(struct gpiotools_line_resolver *resolver, int chip_num,
 		   unsigned int offset, const char *chip_id, bool unquoted)
 {
 	const char *lname, *fmt;
@@ -409,14 +409,14 @@ void print_line_id(struct line_resolver *resolver, int chip_num,
 	printf(fmt, lname);
 }
 
-void print_line_vals(struct line_resolver *resolver, bool is_unquoted,
+void print_line_vals(struct gpiotools_line_resolver *resolver, bool is_unquoted,
 		     bool is_numeric)
 {
 	const char *fmt = is_unquoted ? "%s=%s" : "\"%s\"=%s";
 	int i;
 
 	for (i = 0; i < resolver->num_lines; i++) {
-		struct resolved_line *line = &resolver->lines[i];
+		struct gpiotools_resolved_line *line = &resolver->lines[i];
 
 		if (is_numeric)
 			printf("%d", line->value);
@@ -540,10 +540,10 @@ int all_chip_paths(char ***paths_ptr)
 	return ret;
 }
 
-static bool resolve_line(struct line_resolver *resolver,
+static bool resolve_line(struct gpiotools_line_resolver *resolver,
 			 struct gpiod_line_info *info, int chip_num)
 {
-	struct resolved_line *line;
+	struct gpiotools_resolved_line *line;
 	bool resolved = false;
 	unsigned int offset;
 	const char *name;
@@ -585,10 +585,10 @@ static bool resolve_line(struct line_resolver *resolver,
  * This only applies to the first chip, as otherwise the lines must be
  * identified by name.
  */
-bool resolve_lines_by_offset(struct line_resolver *resolver,
+bool resolve_lines_by_offset(struct gpiotools_line_resolver *resolver,
 			     unsigned int num_lines)
 {
-	struct resolved_line *line;
+	struct gpiotools_resolved_line *line;
 	bool used = false;
 	int i;
 
@@ -605,17 +605,18 @@ bool resolve_lines_by_offset(struct line_resolver *resolver,
 	return used;
 }
 
-bool resolve_done(struct line_resolver *resolver)
+bool resolve_done(struct gpiotools_line_resolver *resolver)
 {
 	return (!resolver->strict &&
 		resolver->num_found >= resolver->num_lines);
 }
 
-struct line_resolver *resolver_init(int num_lines, char **lines, int num_chips,
-				    bool strict, bool by_name)
+struct gpiotools_line_resolver *resolver_init(int num_lines, char **lines,
+					      int num_chips, bool strict,
+					      bool by_name)
 {
-	struct line_resolver *resolver;
-	struct resolved_line *line;
+	struct gpiotools_line_resolver *resolver;
+	struct gpiotools_resolved_line *line;
 	size_t resolver_size;
 	int i;
 
@@ -626,10 +627,10 @@ struct line_resolver *resolver_init(int num_lines, char **lines, int num_chips,
 
 	memset(resolver, 0, resolver_size);
 
-	resolver->chips = calloc(num_chips, sizeof(struct resolved_chip));
+	resolver->chips = calloc(num_chips, sizeof(struct gpiotools_resolved_chip));
 	if (resolver->chips == NULL)
 		die_eom();
-	memset(resolver->chips, 0, num_chips * sizeof(struct resolved_chip));
+	memset(resolver->chips, 0, num_chips * sizeof(struct gpiotools_resolved_chip));
 
 	resolver->num_lines = num_lines;
 	resolver->strict = strict;
@@ -643,13 +644,13 @@ struct line_resolver *resolver_init(int num_lines, char **lines, int num_chips,
 	return resolver;
 }
 
-struct line_resolver *resolve_lines(int num_lines, char **lines,
-				    const char *chip_id, bool strict,
-				    bool by_name)
+struct gpiotools_line_resolver *resolve_lines(int num_lines, char **lines,
+					      const char *chip_id, bool strict,
+					      bool by_name)
 {
 	struct gpiod_chip_info *chip_info;
 	struct gpiod_line_info *line_info;
-	struct line_resolver *resolver;
+	struct gpiotools_line_resolver *resolver;
 	int num_chips, i, offset;
 	struct gpiod_chip *chip;
 	bool chip_used;
@@ -717,9 +718,10 @@ struct line_resolver *resolve_lines(int num_lines, char **lines,
 	return resolver;
 }
 
-void validate_resolution(struct line_resolver *resolver, const char *chip_id)
+void validate_resolution(struct gpiotools_line_resolver *resolver,
+			 const char *chip_id)
 {
-	struct resolved_line *line, *prev;
+	struct gpiotools_resolved_line *line, *prev;
 	bool valid = true;
 	int i, j;
 
@@ -750,7 +752,7 @@ void validate_resolution(struct line_resolver *resolver, const char *chip_id)
 		exit(EXIT_FAILURE);
 }
 
-void free_line_resolver(struct line_resolver *resolver)
+void free_line_resolver(struct gpiotools_line_resolver *resolver)
 {
 	int i;
 
@@ -769,11 +771,11 @@ void free_line_resolver(struct line_resolver *resolver)
 	free(resolver);
 }
 
-int get_line_offsets_and_values(struct line_resolver *resolver, int chip_num,
-				unsigned int *offsets,
+int get_line_offsets_and_values(struct gpiotools_line_resolver *resolver,
+				int chip_num, unsigned int *offsets,
 				enum gpiod_line_value *values)
 {
-	struct resolved_line *line;
+	struct gpiotools_resolved_line *line;
 	int i, num_lines = 0;
 
 	for (i = 0; i < resolver->num_lines; i++) {
@@ -790,15 +792,15 @@ int get_line_offsets_and_values(struct line_resolver *resolver, int chip_num,
 	return num_lines;
 }
 
-const char *get_chip_name(struct line_resolver *resolver, int chip_num)
+const char *get_chip_name(struct gpiotools_line_resolver *resolver, int chip_num)
 {
 	return gpiod_chip_info_get_name(resolver->chips[chip_num].info);
 }
 
-const char *get_line_name(struct line_resolver *resolver, int chip_num,
+const char *get_line_name(struct gpiotools_line_resolver *resolver, int chip_num,
 			  unsigned int offset)
 {
-	struct resolved_line *line;
+	struct gpiotools_resolved_line *line;
 	int i;
 
 	for (i = 0; i < resolver->num_lines; i++) {
@@ -812,7 +814,7 @@ const char *get_line_name(struct line_resolver *resolver, int chip_num,
 	return 0;
 }
 
-void set_line_values(struct line_resolver *resolver, int chip_num,
+void set_line_values(struct gpiotools_line_resolver *resolver, int chip_num,
 		     enum gpiod_line_value *values)
 {
 	int i, j;

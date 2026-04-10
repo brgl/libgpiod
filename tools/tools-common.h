@@ -19,7 +19,7 @@
 
 #define GETOPT_NULL_LONGOPT	NULL, 0, NULL, 0
 
-struct resolved_line {
+struct gpiotools_resolved_line {
 	/* from the command line */
 	const char *id;
 
@@ -47,7 +47,7 @@ struct resolved_line {
 	int value;
 };
 
-struct resolved_chip {
+struct gpiotools_resolved_chip {
 	/* info of the relevant chips */
 	struct gpiod_chip_info *info;
 
@@ -56,7 +56,7 @@ struct resolved_chip {
 };
 
 /* a resolver from requested line names/offsets to lines on the system */
-struct line_resolver {
+struct gpiotools_line_resolver {
 	/*
 	 * number of chips the lines span, and number of entries in chips
 	 */
@@ -72,10 +72,10 @@ struct line_resolver {
 	bool strict;
 
 	/* details of the relevant chips */
-	struct resolved_chip *chips;
+	struct gpiotools_resolved_chip *chips;
 
 	/* descriptors for the requested lines */
-	struct resolved_line lines[];
+	struct gpiotools_resolved_line lines[];
 };
 
 void set_prog_name(const char *name);
@@ -98,30 +98,33 @@ void print_chip_help(void);
 void print_period_help(void);
 void print_event_time(uint64_t evtime, int format);
 void print_line_attributes(struct gpiod_line_info *info, bool unquoted_strings);
-void print_line_id(struct line_resolver *resolver, int chip_num,
+void print_line_id(struct gpiotools_line_resolver *resolver, int chip_num,
 		   unsigned int offset, const char *chip_id, bool unquoted);
-void print_line_vals(struct line_resolver *resolver, bool is_unquoted,
+void print_line_vals(struct gpiotools_line_resolver *resolver, bool is_unquoted,
 		     bool is_numeric);
 bool chip_path_lookup(const char *id, char **path_ptr);
 int chip_paths(const char *id, char ***paths_ptr);
 int all_chip_paths(char ***paths_ptr);
-struct line_resolver *resolve_lines(int num_lines, char **lines,
-				    const char *chip_id, bool strict,
-				    bool by_name);
-struct line_resolver *resolver_init(int num_lines, char **lines, int num_chips,
-				    bool strict, bool by_name);
-bool resolve_lines_by_offset(struct line_resolver *resolver,
+struct gpiotools_line_resolver *resolve_lines(int num_lines, char **lines,
+					      const char *chip_id, bool strict,
+					      bool by_name);
+struct gpiotools_line_resolver *resolver_init(int num_lines, char **lines,
+					      int num_chips, bool strict,
+					      bool by_name);
+bool resolve_lines_by_offset(struct gpiotools_line_resolver *resolver,
 			     unsigned int num_lines);
-bool resolve_done(struct line_resolver *resolver);
-void validate_resolution(struct line_resolver *resolver, const char *chip_id);
-void free_line_resolver(struct line_resolver *resolver);
-int get_line_offsets_and_values(struct line_resolver *resolver, int chip_num,
-				unsigned int *offsets,
+bool resolve_done(struct gpiotools_line_resolver *resolver);
+void validate_resolution(struct gpiotools_line_resolver *resolver,
+			 const char *chip_id);
+void free_line_resolver(struct gpiotools_line_resolver *resolver);
+int get_line_offsets_and_values(struct gpiotools_line_resolver *resolver,
+				int chip_num, unsigned int *offsets,
 				enum gpiod_line_value *values);
-const char *get_chip_name(struct line_resolver *resolver, int chip_num);
-const char *get_line_name(struct line_resolver *resolver, int chip_num,
-			  unsigned int offset);
-void set_line_values(struct line_resolver *resolver, int chip_num,
+const char *get_chip_name(struct gpiotools_line_resolver *resolver,
+			  int chip_num);
+const char *get_line_name(struct gpiotools_line_resolver *resolver,
+			  int chip_num, unsigned int offset);
+void set_line_values(struct gpiotools_line_resolver *resolver, int chip_num,
 		     enum gpiod_line_value *values);
 
 #endif /* __GPIOD_TOOLS_COMMON_H__ */

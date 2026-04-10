@@ -137,7 +137,7 @@ int main(int argc, char **argv)
 	struct gpiod_request_config *req_cfg;
 	struct gpiod_line_request *request;
 	struct gpiod_line_config *line_cfg;
-	struct line_resolver *resolver;
+	struct gpiotools_line_resolver *resolver;
 	enum gpiod_line_value *values;
 	struct gpiod_chip *chip;
 	unsigned int *offsets;

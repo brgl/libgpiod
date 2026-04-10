@@ -99,10 +99,10 @@ static int parse_config(int argc, char **argv, struct config *cfg)
  * printed rather than storing details into the resolver.
  * Does not die on non-unique lines.
  */
-static bool resolve_line(struct line_resolver *resolver,
+static bool resolve_line(struct gpiotools_line_resolver *resolver,
 			 struct gpiod_line_info *info, int chip_num)
 {
-	struct resolved_line *line;
+	struct gpiotools_resolved_line *line;
 	bool resolved = false;
 	unsigned int offset;
 	const char *name;
@@ -170,8 +170,8 @@ static void print_line_info(struct gpiod_line_info *info, bool unquoted_strings)
  * based on resolve_lines, but prints lines immediately rather than collecting
  * details in the resolver.
  */
-static void list_lines(struct line_resolver *resolver, struct gpiod_chip *chip,
-		       int chip_num, struct config *cfg)
+static void list_lines(struct gpiotools_line_resolver *resolver,
+		       struct gpiod_chip *chip, int chip_num, struct config *cfg)
 {
 	struct gpiod_chip_info *chip_info;
 	struct gpiod_line_info *info;
@@ -225,7 +225,7 @@ static void list_lines(struct line_resolver *resolver, struct gpiod_chip *chip,
 
 int main(int argc, char **argv)
 {
-	struct line_resolver *resolver = NULL;
+	struct gpiotools_line_resolver *resolver = NULL;
 	int num_chips, i, ret = EXIT_SUCCESS;
 	struct gpiod_chip *chip;
 	struct config cfg;
