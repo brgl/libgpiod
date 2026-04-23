@@ -22,10 +22,19 @@ static int request_init(PyObject *Py_UNUSED(ignored0),
 	return -1;
 }
 
+static void internal_request_release(request_object *self)
+{
+	if (self->request){
+		Py_BEGIN_ALLOW_THREADS;
+		gpiod_line_request_release(self->request);
+		Py_END_ALLOW_THREADS;
+		self->request = NULL;
+	}
+}
+
 static void request_finalize(request_object *self)
 {
-	if (self->request)
-		PyObject_CallMethod((PyObject *)self, "release", "");
+	internal_request_release(self);
 
 	if (self->offsets)
 		PyMem_Free(self->offsets);
@@ -121,10 +130,7 @@ static PyGetSetDef request_getset[] = {
 static PyObject *
 request_release(request_object *self, PyObject *Py_UNUSED(ignored))
 {
-	Py_BEGIN_ALLOW_THREADS;
-	gpiod_line_request_release(self->request);
-	Py_END_ALLOW_THREADS;
-	self->request = NULL;
+	internal_request_release(self);
 
 	Py_RETURN_NONE;
 }
