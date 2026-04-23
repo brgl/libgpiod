@@ -116,7 +116,7 @@ static void chip_dealloc(PyObject *self)
 	if (ret < 0)
 		return;
 
-	PyObject_Del(self);
+	PyObject_Free(self);
 }
 
 static PyObject *chip_dev_path(chip_object *self, void *Py_UNUSED(ignored))

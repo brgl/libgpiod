@@ -172,12 +172,7 @@ static PyObject *chip_get_line_name(chip_object *self, PyObject *args)
 		return Py_gpiod_SetErrFromErrno();
 
 	name = gpiod_line_info_get_name(info);
-	if (!name) {
-		Py_INCREF(Py_None);
-		line_name = Py_None;
-	} else {
-		line_name = PyUnicode_FromString(name);
-	}
+	line_name = (name) ? PyUnicode_FromString(name) : Py_NewRef(Py_None);
 
 	gpiod_line_info_free(info);
 
@@ -272,7 +267,7 @@ make_request_config(PyObject *consumer_obj, PyObject *event_buffer_size_obj)
 		return NULL;
 	}
 
-	if (consumer_obj != Py_None) {
+	if (!Py_IsNone(consumer_obj)) {
 		consumer = PyUnicode_AsUTF8(consumer_obj);
 		if (!consumer) {
 			gpiod_request_config_free(req_cfg);
@@ -282,7 +277,7 @@ make_request_config(PyObject *consumer_obj, PyObject *event_buffer_size_obj)
 		gpiod_request_config_set_consumer(req_cfg, consumer);
 	}
 
-	if (event_buffer_size_obj != Py_None) {
+	if (!Py_IsNone(event_buffer_size_obj)) {
 		event_buffer_size = PyLong_AsSize_t(event_buffer_size_obj);
 		if (PyErr_Occurred()) {
 			gpiod_request_config_free(req_cfg);

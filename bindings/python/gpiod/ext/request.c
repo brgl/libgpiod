@@ -286,7 +286,7 @@ static PyObject *request_read_edge_events(request_object *self, PyObject *args)
 	if (!ret)
 		return NULL;
 
-	if (max_events_obj != Py_None) {
+	if (!Py_IsNone(max_events_obj)) {
 		max_events = PyLong_AsSize_t(max_events_obj);
 		if (PyErr_Occurred())
 			return NULL;

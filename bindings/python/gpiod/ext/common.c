@@ -12,7 +12,7 @@ void Py_gpiod_dealloc(PyObject *self)
 	if (ret < 0)
 		return;
 
-	PyObject_Del(self);
+	PyObject_Free(self);
 }
 
 PyObject *Py_gpiod_SetErrFromErrno(void)
