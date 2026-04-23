@@ -67,13 +67,18 @@ static PyMethodDef module_methods[] = {
 	{ }
 };
 
+static struct PyModuleDef_Slot module_slots[] = {
+	{ 0, NULL },
+};
+
 static PyModuleDef module_def = {
 	PyModuleDef_HEAD_INIT,
 	.m_name = "system._ext",
 	.m_methods = module_methods,
+	.m_slots = module_slots,
 };
 
 PyMODINIT_FUNC PyInit__ext(void)
 {
-	return PyModule_Create(&module_def);
+	return PyModuleDef_Init(&module_def);
 }
