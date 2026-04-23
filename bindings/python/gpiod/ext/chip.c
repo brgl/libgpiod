@@ -32,10 +32,19 @@ chip_init(chip_object *self, PyObject *args, PyObject *Py_UNUSED(ignored))
 	return 0;
 }
 
+static void internal_chip_close(chip_object *self)
+{
+	if (self->chip) {
+		Py_BEGIN_ALLOW_THREADS;
+		gpiod_chip_close(self->chip);
+		Py_END_ALLOW_THREADS;
+		self->chip = NULL;
+	}
+}
+
 static void chip_finalize(chip_object *self)
 {
-	if (self->chip)
-		PyObject_CallMethod((PyObject *)self, "close", "");
+	internal_chip_close(self);
 }
 
 static PyObject *chip_path(chip_object *self, void *Py_UNUSED(ignored))
@@ -62,10 +71,7 @@ static PyGetSetDef chip_getset[] = {
 
 static PyObject *chip_close(chip_object *self, PyObject *Py_UNUSED(ignored))
 {
-	Py_BEGIN_ALLOW_THREADS;
-	gpiod_chip_close(self->chip);
-	Py_END_ALLOW_THREADS;
-	self->chip = NULL;
+	internal_chip_close(self);
 
 	Py_RETURN_NONE;
 }
