@@ -45,21 +45,6 @@ struct module_state {
 	struct gpiosim_ctx *sim_ctx;
 };
 
-static void free_module_state(void *mod)
-{
-	struct module_state *state = PyModule_GetState((PyObject *)mod);
-
-	if (state->sim_ctx)
-		gpiosim_ctx_unref(state->sim_ctx);
-}
-
-static PyModuleDef module_def = {
-	PyModuleDef_HEAD_INIT,
-	.m_name = "gpiosim._ext",
-	.m_size = sizeof(struct module_state),
-	.m_free = free_module_state,
-};
-
 typedef struct {
 	PyObject_HEAD
 	struct gpiosim_dev *dev;
@@ -71,13 +56,11 @@ static int chip_init(chip_object *self,
 		     PyObject *Py_UNUSED(ignored1))
 {
 	struct module_state *state;
-	PyObject *mod;
 
-	mod = PyState_FindModule(&module_def);
-	if (!mod)
+	state = PyType_GetModuleState(Py_TYPE(self));
+
+	if (!state)
 		return -1;
-
-	state = PyModule_GetState(mod);
 
 	self->dev = gpiosim_dev_new(state->sim_ctx);
 	if (!self->dev) {
@@ -111,12 +94,14 @@ static void chip_finalize(chip_object *self)
 static void chip_dealloc(PyObject *self)
 {
 	int ret;
+	PyTypeObject *tp = Py_TYPE(self);
 
 	ret = PyObject_CallFinalizerFromDealloc(self);
 	if (ret < 0)
 		return;
 
 	PyObject_Free(self);
+	Py_DECREF(tp);
 }
 
 static PyObject *chip_dev_path(chip_object *self, void *Py_UNUSED(ignored))
@@ -289,58 +274,111 @@ static PyMethodDef chip_methods[] = {
 	{ }
 };
 
-static PyTypeObject chip_type = {
-	PyVarObject_HEAD_INIT(NULL, 0)
-	.tp_name = "gpiosim.Chip",
-	.tp_basicsize = sizeof(chip_object),
-	.tp_flags = Py_TPFLAGS_DEFAULT,
-	.tp_new = PyType_GenericNew,
-	.tp_init = (initproc)chip_init,
-	.tp_finalize = (destructor)chip_finalize,
-	.tp_dealloc = (destructor)chip_dealloc,
-	.tp_methods = chip_methods,
-	.tp_getset = chip_getset,
+static PyType_Slot chip_type_slots[] = {
+	{Py_tp_new, PyType_GenericNew},
+	{Py_tp_init, (initproc)chip_init},
+	{Py_tp_finalize, (destructor)chip_finalize},
+	{Py_tp_dealloc, (destructor)chip_dealloc},
+	{Py_tp_methods, chip_methods},
+	{Py_tp_getset, chip_getset},
+	{0, 0}
 };
 
-PyMODINIT_FUNC PyInit__ext(void)
+/*
+ * See xxlimited.c and _bz2module.c for inspiration.
+ *
+ * As part of transitioning to multi-phase module initialization, the
+ * gpiosim.Chip type needs to become heap allocated so that it can access
+ * module state.
+ *
+ * We disallow subclassing by not specifying Py_TPFLAGS_BASETYPE. This
+ * allows the module to use PyType_GetModuleState() since it may otherwise
+ * not return the proper module if a subclass is invoking the method.
+ *
+ * Note:
+ * We do not hold PyObject references so no reference cycles should exist. As
+ * such, we do not set Py_TPFLAGS_HAVE_GC nor define either tp_traverse or
+ * tp_clear.
+ *
+ * There is still some ongoing debate about this this use case however:
+ *   https://github.com/python/cpython/issues/116946
+ *
+ * Note:
+ * If we allow subclassing in the future, reconsider use of PyObject_Free vs
+ * using the function defined in the tp_free slot.
+ *
+ * See also:
+ *   https://github.com/python/cpython/pull/138329#issuecomment-3242079564
+ *   https://github.com/python/cpython/issues/116946#issuecomment-3242135537
+ *   https://github.com/python/cpython/pull/139073
+ *   https://github.com/python/cpython/commit/ec689187957cc80af56b9a63251bbc295bafd781
+*/
+static PyType_Spec chip_type_spec = {
+	.name = "gpiosim.Chip",
+	.basicsize = sizeof(chip_object),
+	.flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_IMMUTABLETYPE),
+	.slots = chip_type_slots,
+};
+
+static int module_exec(PyObject *module)
 {
 	const struct module_const *modconst;
 	struct module_state *state;
-	PyObject *module;
+	PyObject *chip_type_obj;
 	int ret;
-
-	module = PyModule_Create(&module_def);
-	if (!module)
-		return NULL;
-
-	ret = PyState_AddModule(module, &module_def);
-	if (ret) {
-		Py_DECREF(module);
-		return NULL;
-	}
 
 	state = PyModule_GetState(module);
 
 	state->sim_ctx = gpiosim_ctx_new();
 	if (!state->sim_ctx) {
-		Py_DECREF(module);
-		return PyErr_SetFromErrno(PyExc_OSError);
+		PyErr_SetFromErrno(PyExc_OSError);
+		return -1;
 	}
 
-	ret = PyModule_AddType(module, &chip_type);
-	if (ret) {
-		Py_DECREF(module);
-		return NULL;
-	}
+	chip_type_obj = PyType_FromModuleAndSpec(module, &chip_type_spec, NULL);
+
+	if (!chip_type_obj)
+		return -1;
+
+	ret = PyModule_AddType(module, (PyTypeObject*)chip_type_obj);
+	Py_DECREF(chip_type_obj);
+	if (ret < 0)
+		return -1;
 
 	for (modconst = module_constants; modconst->name; modconst++) {
-		ret = PyModule_AddIntConstant(module,
-					      modconst->name, modconst->val);
-		if (ret) {
-			Py_DECREF(module);
-			return NULL;
-		}
+		ret = PyModule_AddIntConstant(module, modconst->name,
+					      modconst->val);
+		if (ret < 0)
+			return -1;
 	}
 
-	return module;
+	return 0;
+}
+
+static void free_module_state(void *mod)
+{
+	struct module_state *state = PyModule_GetState((PyObject *)mod);
+
+	if (state->sim_ctx) {
+		gpiosim_ctx_unref(state->sim_ctx);
+		state->sim_ctx = NULL;
+	}
+}
+
+static struct PyModuleDef_Slot module_slots[] = {
+	{ Py_mod_exec, module_exec },
+	{ 0, NULL },
+};
+
+static PyModuleDef module_def = {
+	PyModuleDef_HEAD_INIT,
+	.m_name = "gpiosim._ext",
+	.m_size = sizeof(struct module_state),
+	.m_free = free_module_state,
+	.m_slots = module_slots,
+};
+
+PyMODINIT_FUNC PyInit__ext(void)
+{
+	return PyModuleDef_Init(&module_def);
 }
