@@ -64,6 +64,8 @@ PyObject *Py_gpiod_SetErrFromErrno(void)
 	return PyErr_SetFromErrno(exc);
 }
 
+/* TODO: remove when 3.14 is the minimum version */
+#if PY_VERSION_HEX < 0x030E0000
 PyObject *Py_gpiod_GetModuleAttrString(const char *modname,
 				       const char *attrname)
 {
@@ -78,6 +80,7 @@ PyObject *Py_gpiod_GetModuleAttrString(const char *modname,
 
 	return attribute;
 }
+#endif
 
 unsigned int Py_gpiod_PyLongAsUnsignedInt(PyObject *pylong)
 {

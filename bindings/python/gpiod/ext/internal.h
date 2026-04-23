@@ -8,13 +8,19 @@
 #include <Python.h>
 
 PyObject *Py_gpiod_SetErrFromErrno(void);
-PyObject *Py_gpiod_GetModuleAttrString(const char *modname,
-				       const char *attrname);
 unsigned int Py_gpiod_PyLongAsUnsignedInt(PyObject *pylong);
 void Py_gpiod_dealloc(PyObject *self);
 PyObject *Py_gpiod_MakeRequestObject(struct gpiod_line_request *request,
 				     size_t event_buffer_size);
 struct gpiod_line_config *Py_gpiod_LineConfigGetData(PyObject *obj);
 struct gpiod_line_settings *Py_gpiod_LineSettingsGetData(PyObject *obj);
+
+#if PY_VERSION_HEX >= 0x030E0000
+/* Alias to standard function available in 3.14 */
+#define Py_gpiod_GetModuleAttrString PyImport_ImportModuleAttrString
+#else
+PyObject *Py_gpiod_GetModuleAttrString(const char *modname,
+				       const char *attrname);
+#endif /* PY_VERSION_HEX >= 0x030E0000 */
 
 #endif /* __LIBGPIOD_PYTHON_MODULE_H__ */
