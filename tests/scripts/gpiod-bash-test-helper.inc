@@ -176,14 +176,14 @@ run_prog() {
 	# testing script.
 	cmd=$1
 	shift
-	output=$(timeout 10s "$SOURCE_DIR/$cmd" "$@" 2>&1)
+	output=$(timeout 10s "$cmd" "$@" 2>&1)
 	status=$?
 }
 
 dut_run() {
 	cmd=$1
 	shift
-	coproc timeout 10s "$SOURCE_DIR/$cmd" "$@" 2>&1
+	coproc timeout 10s "$cmd" "$@" 2>&1
 	DUT_PID=$COPROC_PID
 	read -r -t1 -n1 -u "${COPROC[0]}" DUT_FIRST_CHAR
 }
@@ -191,7 +191,7 @@ dut_run() {
 dut_run_redirect() {
 	cmd=$1
 	shift
-	coproc timeout 10s "$SOURCE_DIR/$cmd" "$@" > "$SHUNIT_TMPDIR/$DUT_OUTPUT" 2>&1
+	coproc timeout 10s "$cmd" "$@" > "$SHUNIT_TMPDIR/$DUT_OUTPUT" 2>&1
 	DUT_PID=$COPROC_PID
 	# give the process time to spin up
 	# FIXME - find a better solution
@@ -278,7 +278,7 @@ tearDown() {
 }
 
 request_release_line() {
-	"$SOURCE_DIR/gpioget" -c "$@" >/dev/null
+	"gpioget" -c "$@" >/dev/null
 }
 
 die() {

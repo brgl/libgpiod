@@ -7,8 +7,6 @@
 # is already running.
 #
 
-SOURCE_DIR="$(dirname "${BASH_SOURCE[0]}")"
-
 wait_for_sim() {
 	COUNTER=100
 

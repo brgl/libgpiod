@@ -24,58 +24,43 @@ Building
 The core C library does not have any external dependencies other than the
 standard C library with GNU extensions.
 
-The project is built using GNU autotools. In the general case, the steps needed
-to download a source tarball, unpack it, build the library together with the
-command-line tools and install the resulting binaries are as follows:
+The project is built using the meson build system. In the general case, the
+steps needed to download a source tarball, unpack it, build the library
+together with the command-line tools and install the resulting binaries are
+as follows:
 
 .. code-block:: none
 
    wget https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/libgpiod-x.y.z.tar.xz
    tar -xvf ./libgpiod-x.y.z.tar.xz
    cd ./libgpiod-x.y.z/
-   ./configure --enable-tools
-   make
-   sudo make install
+   mkdir build
+   cd build
+   meson setup .. -Dtools=enabled
+   ninja
+   sudo ninja install
 
 The build system requires the following packages to be installed on the host
 system for the basic build:
 
-  * ``autotools``
-  * ``autoconf-archive``
-  * ``libtool``
+  * ``meson``
+  * ``ninja-build``
   * ``pkg-config``
 
 .. note::
    Development files for additional libraries may be required depending on
-   selected options. The configure script will report any missing additional
-   required dependencies.
+   selected options. Meson will report any missing additional required
+   dependencies at configuration stage.
 
 .. note::
    The command-line tools optionally depend on libedit for the interactive
    feature.
 
-The project can also be built directly from the git repository. However in this
-case the configure script does not exist and must be created first - either by
-calling ``autoreconf``:
+The project can also be built directly from the git repository.
 
-.. code-block:: none
-
-   autoreconf -ifv
-   ./configure --enable-tools
-   make
-
-Or by executing the provided ``autogen.sh`` script directly from the git tree:
-
-.. code-block:: none
-
-   ./autogen.sh --enable-tools
-   make
-
-.. note::
-   The autogen script will execute ``./configure`` and pass all the
-   command-line arguments to it.
-
-For all configure features, see: ``./configure --help``.
+For all configure features, use: ``meson introspect --buildoptions`` or see
+the contents of the ``meson_options.txt`` file in the top-level directory of
+the repository.
 
 Installing
 ----------
@@ -84,11 +69,11 @@ To install the project run:
 
 .. code-block:: none
 
-   make install
+   ninja install
 
 .. note::
    The above may require superuser privileges.
 
 This will install libgpiod under the default system paths. If you want to
 install it under non-standard path, pass the ``--prefix=<install path>``
-option to ``configure``.
+option to ``meson setup``.

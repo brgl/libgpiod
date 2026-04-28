@@ -4,9 +4,6 @@
 # SPDX-FileCopyrightText: 2022 Kent Gibson <warthog618@gmail.com>
 # SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-export SOURCE_DIR
-SOURCE_DIR="$(dirname "${BASH_SOURCE[0]}")"
-
 #
 # gpiodetect test cases
 #
