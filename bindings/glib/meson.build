@@ -71,7 +71,7 @@ install_headers(glib_public_headers, subdir: 'gpiod-glib')
 pkgconfig.generate(libgpiod_glib_lib,
   name: 'gpiod-glib',
   description: 'GObject bindings for libgpiod',
-  url: 'https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/',
+  url: project_url,
   version: meson.project_version(),
   requires_private: ['libgpiod >= 2.1'],
 )

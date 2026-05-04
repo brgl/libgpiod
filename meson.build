@@ -15,6 +15,8 @@ project('libgpiod', ['c', 'cpp'],
 extra_version = '-devel'
 version_str = meson.project_version() + extra_version
 
+project_url = 'https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/'
+
 # Core libgpiod API version.
 api_version = '2.2.0'
 

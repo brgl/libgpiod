@@ -28,7 +28,7 @@ pkgconfig = import('pkgconfig')
 pkgconfig.generate(libgpiod_lib,
   name: 'libgpiod',
   description: 'Library and tools for the Linux GPIO chardev',
-  url: 'https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/',
+  url: project_url,
   version: meson.project_version(),
 )
 

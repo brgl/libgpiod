@@ -55,7 +55,7 @@ install_headers(
 pkgconfig.generate(libgpiodcxx_lib,
   name: 'libgpiodcxx',
   description: 'C++ bindings for libgpiod',
-  url: 'https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/',
+  url: project_url,
   version: meson.project_version(),
   requires: ['libgpiod'],
 )
