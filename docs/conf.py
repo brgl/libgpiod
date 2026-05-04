@@ -121,6 +121,7 @@ meson_cmd = [
     "-Dbindings-glib=enabled",
     "-Dintrospection=enabled",
     "-Ddbus=enabled",
+    "--auto-features=disabled",
 ]
 if os.path.exists(sphinx_builddir):
     meson_cmd.append("--reconfigure")
