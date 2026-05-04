@@ -18,18 +18,18 @@ author = "Bartosz Golaszewski"
 master_doc = "index"
 source_suffix = ".rst"
 
-# Extract the full version from configure.ac (including -devel, -rc and other
+# Extract the full version from meson.build (including -devel, -rc and other
 # tags).
-with open("../configure.ac", "r") as fd:
+with open("../meson.build", "r") as fd:
     version = ""
     extra = ""
     for line in fd.readlines():
-        match = re.search(r"AC_INIT\(\[libgpiod\], \[(.*?)\]\)", line)
-        if match:
+        match = re.search(r"version:\s*'(.*?)'", line)
+        if match and not version:
             version = match.group(1)
             continue
 
-        match = re.search(r"AC_SUBST\(EXTRA_VERSION, \[(.*?)\]\)", line)
+        match = re.search(r"extra_version\s*=\s*'(.*?)'", line)
         if match:
             extra = match.group(1)
 
@@ -61,6 +61,9 @@ html_theme = "sphinx_rtd_theme" if sphinx_rtd_theme else "default"
 # For some reason on RTD we're in the docs/ directory while during a local
 # build, we're still in the top source directory.
 prefix = "../" if os.getenv("READTHEDOCS") == "True" else "./"
+builddir_prefix = (
+    "../sphinx-builddir" if os.getenv("READTHEDOCS") == "True" else "./sphinx-builddir"
+)
 
 
 def make_glib_docs(app):
@@ -69,8 +72,8 @@ def make_glib_docs(app):
             "gi-docgen",
             "generate",
             "--config",
-            f"{prefix}/bindings/glib/gi-docgen.toml",
-            f"{prefix}/bindings/glib/Gpiodglib-1.0.gir",
+            f"{builddir_prefix}/bindings/glib/gi-docgen.toml",
+            f"{builddir_prefix}/bindings/glib/Gpiodglib-1.0.gir",
             "--output-dir",
             f"{app.outdir}",
         ],
@@ -109,19 +112,20 @@ subprocess.run(["doxygen", "Doxyfile"])
 
 cwd = os.getcwd()
 os.chdir("..")
-subprocess.run(["autoreconf", "-ifv"], check=True)
-subprocess.run(
-    [
-        "./configure",
-        "--enable-tools",
-        "--enable-bindings-glib",
-        "--enable-introspection",
-        "--enable-tools",
-        "--enable-dbus",
-    ],
-    check=True,
-)
-subprocess.run(["make", "-j"], check=True)
+sphinx_builddir = "sphinx-builddir"
+meson_cmd = [
+    "meson",
+    "setup",
+    sphinx_builddir,
+    "-Dtools=enabled",
+    "-Dbindings-glib=enabled",
+    "-Dintrospection=enabled",
+    "-Ddbus=enabled",
+]
+if os.path.exists(sphinx_builddir):
+    meson_cmd.append("--reconfigure")
+subprocess.run(meson_cmd, check=True)
+subprocess.run(["ninja", "-C", sphinx_builddir], check=True)
 os.chdir(cwd)
 
 for page in [
@@ -154,7 +158,7 @@ for page in [
             "--standalone",
             "--wrap=none",
             f"--output={page}.rst",
-            f"../man/{page}.man",
+            f"../sphinx-builddir/man/{page}.1",
         ],
         check=True,
     )

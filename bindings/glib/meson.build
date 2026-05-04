@@ -3,6 +3,15 @@
 
 subdir('gpiod-glib')
 
+configure_file(
+  input: 'gi-docgen.toml.in',
+  output: 'gi-docgen.toml',
+  configuration: {
+    'PACKAGE_VERSION': version_str,
+    'PACKAGE_URL': project_url,
+  },
+)
+
 project_headers = files(
   'gpiod-glib/line.h',
   'gpiod-glib/edge-event.h',
