@@ -14,10 +14,6 @@ keywords = ["libgpiod", "gpio"]
 license = "Apache-2.0 OR BSD-3-Clause"
 edition = "2021"
 
-exclude = [
-    "Makefile.am",
-]
-
 [features]
 v2_1 = ["libgpiod-sys/v2_1"]
 vnext = ["v2_1"]
