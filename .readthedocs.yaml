@@ -16,8 +16,8 @@ build:
     python: "3.12"
     rust: "1.86"
   apt_packages:
-      - autoconf
-      - autoconf-archive
+      - meson
+      - ninja-build
       # doxygen is available by default, but just in case.
       - doxygen
       - help2man
