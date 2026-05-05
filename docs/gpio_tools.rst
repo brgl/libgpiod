@@ -239,3 +239,15 @@ Block until a line is released:
 .. code-block:: none
 
    $ gpionotify --quiet --num-events=1 --event=released GPIO6
+
+Shared library
+--------------
+
+A number of functions used to implement **gpio-tools** has been made available
+in a shared library separate from the low-level, core libgpiod API in the form
+of libgpiotools.
+
+.. toctree::
+   :maxdepth: 1
+
+   libgpiotools API documentation<gpio_tools_lib>
