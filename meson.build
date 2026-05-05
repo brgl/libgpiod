@@ -12,7 +12,7 @@ project('libgpiod', ['c', 'cpp'],
   meson_version: '>= 0.64.0',
 )
 
-extra_version = '-devel'
+extra_version = '+devel'
 version_str = meson.project_version() + extra_version
 
 project_url = 'https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/'
