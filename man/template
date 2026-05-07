@@ -2,9 +2,9 @@
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 
 [AUTHOR]
-Bartosz Golaszewski <brgl@bgdev.pl>
+Bartosz Golaszewski <brgl@kernel.org>
 
 [REPORTING BUGS]
 Report bugs to:
-    Bartosz Golaszewski <brgl@bgdev.pl>
+    Bartosz Golaszewski <brgl@kernel.org>
     linux-gpio <linux-gpio@vger.kernel.org>
