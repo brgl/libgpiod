@@ -164,6 +164,6 @@ if opt_dbus.allowed() and gudev_dep.found() and gdbus_codegen.found()
   subdir('dbus')
 endif
 
-if help2man.found()
+if help2man.found() and meson.can_run_host_binaries()
   subdir('man')
 endif
