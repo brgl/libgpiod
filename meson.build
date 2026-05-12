@@ -21,17 +21,17 @@ project_url = 'https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/'
 api_version = '2.2.0'
 
 # Core C library ABI version.
-libgpiod_soversion      = '3'
+libgpiod_soversion      = 3
 libgpiod_version        = '3.1.1'
 # Have a separate ABI version for C++ bindings:
-libgpiodcxx_soversion   = '2'
+libgpiodcxx_soversion   = 2
 libgpiodcxx_version     = '2.1.0'
 # ABI version for libgpiosim (we need this since it can be installed if we
 # enable tests).
-libgpiosim_soversion    = '1'
+libgpiosim_soversion    = 1
 libgpiosim_version      = '1.0.1'
 # ... and another one for GLib bindings:
-libgpiod_glib_soversion = '1'
+libgpiod_glib_soversion = 1
 libgpiod_glib_version   = '1.0.0'
 
 add_project_arguments(
