@@ -31,5 +31,4 @@ install_data('io.gpiod1.xml',
 libgpiodbus_dep = declare_dependency(
   link_with: libgpiodbus_lib,
   include_directories: dbus_lib_inc,
-  sources: generated_dbus,
 )
