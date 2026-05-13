@@ -21,9 +21,15 @@ pkgconfig.generate(libgpiotools_lib,
   version: meson.project_version(),
 )
 
+libgpiotools_dep = declare_dependency(
+  link_with: libgpiotools_lib,
+  include_directories: include_directories('.'),
+)
+
 tools_common_lib = static_library('tools-common',
   sources: ['tools-common.c'],
   include_directories: libgpiod_inc,
+  dependencies: [libgpiotools_dep],
   pic: true,
 )
 
@@ -33,7 +39,7 @@ tools_common_dep = declare_dependency(
 )
 
 tools_c_args = []
-tools_deps = [libgpiod_dep, tools_common_dep]
+tools_deps = [libgpiod_dep, libgpiotools_dep, tools_common_dep]
 
 if opt_gpioset_interactive.allowed() and libedit_dep.found()
   tools_c_args += ['-DGPIOSET_INTERACTIVE']

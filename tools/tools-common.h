@@ -7,6 +7,8 @@
 
 #include <gpiod.h>
 
+#include "gpiotools.h"
+
 /*
  * Various helpers for the GPIO tools.
  *
@@ -19,64 +21,9 @@
 
 #define GETOPT_NULL_LONGOPT	NULL, 0, NULL, 0
 
-struct resolved_line {
-	/* from the command line */
-	const char *id;
-
-	/*
-	 * id parsed as int, if that is an option, or -1 if line must be
-	 * resolved by name
-	 */
-	int id_as_offset;
-
-	/* line has been located on a chip */
-	bool resolved;
-
-	/* remaining fields only valid once resolved... */
-
-	/* info for the line */
-	struct gpiod_line_info *info;
-
-	/* num of relevant chip in line_resolver */
-	int chip_num;
-
-	/* offset of line on chip */
-	unsigned int offset;
-
-	/* line value for gpioget/set */
-	int value;
-};
-
-struct resolved_chip {
-	/* info of the relevant chips */
-	struct gpiod_chip_info *info;
-
-	/* path to the chip */
-	char *path;
-};
-
-/* a resolver from requested line names/offsets to lines on the system */
-struct line_resolver {
-	/*
-	 * number of chips the lines span, and number of entries in chips
-	 */
-	int num_chips;
-
-	/* number of lines in lines */
-	int num_lines;
-
-	/* number of lines found */
-	int num_found;
-
-	/* perform exhaustive search to check line names are unique */
-	bool strict;
-
-	/* details of the relevant chips */
-	struct resolved_chip *chips;
-
-	/* descriptors for the requested lines */
-	struct resolved_line lines[];
-};
+#define resolved_line		gpiotools_resolved_line
+#define resolved_chip		gpiotools_resolved_chip
+#define line_resolver		gpiotools_line_resolver
 
 void set_prog_name(const char *name);
 const char *get_prog_name(void);
