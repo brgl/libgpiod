@@ -33,6 +33,22 @@ There are currently six command-line tools available:
   changes to watch for, how many events to process before exiting, or if the
   events should be reported to the console
 
+Shared library
+--------------
+
+A number of functions used to implement **gpio-tools** has been made available
+in a shared library separate from the low-level, core libgpiod API in the form
+of libgpiotools.
+
+.. note::
+   The libgpiotools library does not get nearly as much attention and care as
+   the core libgpiod C library so your mileage may vary.
+
+.. toctree::
+   :maxdepth: 1
+
+   libgpiotools API documentation<gpio_tools_lib>
+
 .. toctree::
    :maxdepth: 1
    :caption: Manual entries

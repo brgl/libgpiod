@@ -1,6 +1,26 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2026 Qualcomm Technologies, Inc. and/or its subsidiaries
 
+libgpiotools_lib = library('gpiotools',
+  sources: ['gpiotools.c'],
+  include_directories: libgpiod_inc,
+  c_args: ['-fvisibility=hidden'],
+  dependencies: [libgpiod_dep],
+  version: libgpiotools_version,
+  soversion: libgpiotools_soversion,
+  install: true,
+)
+
+install_headers('gpiotools.h')
+
+pkgconfig = import('pkgconfig')
+pkgconfig.generate(libgpiotools_lib,
+  name: 'libgpiotools',
+  description: 'Collection of high-level functions for building programs using libgpiod',
+  url: project_url,
+  version: meson.project_version(),
+)
+
 tools_common_lib = static_library('tools-common',
   sources: ['tools-common.c'],
   include_directories: libgpiod_inc,

@@ -4,6 +4,7 @@
 PROJECT_NAME		= libgpiod
 OUTPUT_DIRECTORY	= doxygen-output
 INPUT			= ../include/gpiod.h \
+			  ../tools/gpiotools.h \
 			  ../bindings/cxx/gpiod.hpp \
 			  ../bindings/cxx/gpiodcxx/
 GENERATE_XML		= YES
