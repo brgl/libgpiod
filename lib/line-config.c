@@ -90,13 +90,50 @@ static struct per_line_config *find_config(struct gpiod_line_config *config,
 	return &config->line_configs[config->num_configs++];
 }
 
+/*
+ * Count offsets in the input array that would require a new slot in the
+ * config: those not already present in config->line_configs and not repeated
+ * earlier in the same offsets array.
+ */
+static size_t count_new_offsets(const struct gpiod_line_config *config,
+				const unsigned int *offsets, size_t num_offsets)
+{
+	size_t i, j, num_new = 0;
+	bool existing;
+
+	for (i = 0; i < num_offsets; i++) {
+		existing = false;
+
+		for (j = 0; j < config->num_configs; j++) {
+			if (config->line_configs[j].offset == offsets[i]) {
+				existing = true;
+				break;
+			}
+		}
+
+		if (!existing) {
+			for (j = 0; j < i; j++) {
+				if (offsets[j] == offsets[i]) {
+					existing = true;
+					break;
+				}
+			}
+		}
+
+		if (!existing)
+			num_new++;
+	}
+
+	return num_new;
+}
+
 GPIOD_API int gpiod_line_config_add_line_settings(
 	struct gpiod_line_config *config, const unsigned int *offsets,
 	size_t num_offsets, struct gpiod_line_settings *settings)
 {
 	struct per_line_config *per_line;
 	struct settings_node *node, *old;
-	size_t i;
+	size_t i, new_offsets;
 
 	assert(config);
 
@@ -105,7 +142,9 @@ GPIOD_API int gpiod_line_config_add_line_settings(
 		return -1;
 	}
 
-	if ((config->num_configs + num_offsets) > LINES_MAX) {
+	new_offsets = count_new_offsets(config, offsets, num_offsets);
+
+	if ((config->num_configs + new_offsets) > LINES_MAX) {
 		errno = E2BIG;
 		return -1;
 	}
