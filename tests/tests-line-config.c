@@ -512,3 +512,28 @@ GPIOD_TEST_CASE(dont_allow_line_config_to_balloon_out_of_control)
 	g_test_trap_subprocess(NULL, 0, G_TEST_SUBPROCESS_DEFAULT);
 	g_test_trap_assert_passed();
 }
+
+GPIOD_TEST_CASE(update_existing_offset_in_full_config)
+{
+	g_autoptr(struct_gpiod_line_settings) settings = NULL;
+	g_autoptr(struct_gpiod_line_config) config = NULL;
+	guint offsets[64], i;
+	gint ret;
+
+	settings = gpiod_test_create_line_settings_or_fail();
+	config = gpiod_test_create_line_config_or_fail();
+
+	for (i = 0; i < 64; i++)
+		offsets[i] = i;
+
+	/* Fill the config to capacity with all 64 offsets. */
+	gpiod_test_line_config_add_line_settings_or_fail(config, offsets, 64,
+							 settings);
+
+	g_assert_cmpuint(gpiod_line_config_get_num_configured_offsets(config),
+			 ==, 64);
+
+	gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
+	ret = gpiod_line_config_add_line_settings(config, offsets, 1, settings);
+	g_assert_cmpint(ret, ==, 0);
+}
