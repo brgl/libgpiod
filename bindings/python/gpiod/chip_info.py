@@ -10,7 +10,9 @@ __all__ = ["ChipInfo"]
 @dataclass(frozen=True, repr=False)
 class ChipInfo:
     """
-    Snapshot of a chip's status.
+    Immutable snapshot of a chip's status.
+
+    Synchronization: none required
     """
 
     name: str

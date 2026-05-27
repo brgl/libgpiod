@@ -26,6 +26,9 @@ __all__ = ["LineRequest"]
 class LineRequest:
     """
     Stores the context of a set of requested GPIO lines.
+
+    Synchronization: objects of this class require external synchronization.
+    Protect calls with a lock when sharing an instance across threads.
     """
 
     def __init__(self, req: _ext.Request):

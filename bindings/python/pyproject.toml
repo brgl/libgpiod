@@ -27,6 +27,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: Free Threading :: 3 - Stable",
 ]
 
 [project.urls]
@@ -70,5 +71,4 @@ ignore=[
 
 [tool.cibuildwheel]
 build = "cp*"
-skip = "cp31?t-*"  # Do not build free-threaded wheels
 archs = ["x86_64", "aarch64"]

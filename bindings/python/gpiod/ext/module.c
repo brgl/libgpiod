@@ -188,7 +188,10 @@ static int module_exec(PyObject* module)
 
 static struct PyModuleDef_Slot module_slots[] = {
 	{ Py_mod_exec, module_exec },
-	{ },
+#if PY_VERSION_HEX >= 0x030E0000 && defined(Py_GIL_DISABLED)
+	{Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+	{0, NULL},
 };
 
 static PyModuleDef module_def = {

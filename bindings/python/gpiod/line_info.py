@@ -12,7 +12,9 @@ __all__ = ["LineInfo"]
 @dataclass(frozen=True, init=False, repr=False)
 class LineInfo:
     """
-    Snapshot of a line's status.
+    Immutable snapshot of a line's status.
+
+    Synchronization: none required
     """
 
     offset: int

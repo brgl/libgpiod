@@ -14,6 +14,8 @@ __all__ = ["InfoEvent"]
 class InfoEvent:
     """
     Immutable object containing data about a single line info event.
+
+    Synchronization: none required
     """
 
     class Type(Enum):

@@ -14,6 +14,8 @@ __all__ = ["LineSettings"]
 class LineSettings:
     """
     Stores a set of line properties.
+
+    Synchronization: none required
     """
 
     direction: Direction = Direction.AS_IS

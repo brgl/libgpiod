@@ -5,10 +5,16 @@
 
 These are the official Python bindings for [libgpiod](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/about/).
 
+Both GIL-enabled and free-threaded CPython are supported.
+
+The Python bindings, much like the C API they wrap, are not thread-safe and do
+require external synchronization by the caller to serialize access to objects
+shared across threads.
+
 The gpiod library has been vendored into this package for your convenience and
 this version of gpiod is independent from your system package.
 
-Binary wheels are not provided. The source package requires python3-dev.
+Binary wheels are provided for some platforms. The source package requires python3-dev.
 
 ## Rationale
 

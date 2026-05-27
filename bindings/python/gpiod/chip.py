@@ -50,6 +50,9 @@ class Chip:
 
         with gpiod.Chip(path="/dev/gpiochip0") as chip:
             do_something(chip)
+
+    Synchronization: objects of this class require external synchronization.
+    Protect calls with a lock when sharing an instance across threads.
     """
 
     def __init__(self, path: str):

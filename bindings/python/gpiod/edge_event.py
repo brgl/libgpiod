@@ -13,6 +13,8 @@ __all__ = ["EdgeEvent"]
 class EdgeEvent:
     """
     Immutable object containing data about a single edge event.
+
+    Synchronization: none required
     """
 
     class Type(Enum):

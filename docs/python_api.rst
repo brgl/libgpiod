@@ -17,6 +17,12 @@ easily through Python scripts, enabling tasks such as reading input values,
 setting outputs, monitoring events, and configuring more fine-grained pin
 options.
 
+The Python bindings, much like the C API they wrap, are not thread-safe and do
+require external synchronization by the caller to serialize access to objects
+shared across threads.
+
+The bindings support both GIL-enabled and free-threaded CPython interpreters.
+
 .. note::
    Python bindings require python3 support and libpython development files for
    building from sources.
