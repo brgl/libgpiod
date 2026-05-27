@@ -33,6 +33,7 @@ classifiers = [
 [project.urls]
 Homepage = "https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git"
 Issues = "https://github.com/brgl/libgpiod/issues/"
+Changelog = "https://github.com/brgl/libgpiod/blob/master/bindings/python/CHANGELOG.md"
 
 [dependency-groups]
 lint = ["mypy>=1.18.1", "ruff~=0.15.0", "types-setuptools", "packaging"]

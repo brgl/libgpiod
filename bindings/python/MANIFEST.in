@@ -5,6 +5,7 @@ include setup.py
 include build_tests.py
 include README.md
 include libgpiod-version.txt
+include CHANGELOG.md
 
 recursive-include gpiod *.py
 recursive-include tests *.py
