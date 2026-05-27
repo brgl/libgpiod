@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -25,3 +26,7 @@ class LinkGuard:
         tb: TracebackType | None,
     ) -> None:
         os.unlink(self.dst)
+
+
+def is_free_threaded() -> bool:
+    return hasattr(sys, "_is_gil_enabled") and not sys._is_gil_enabled()

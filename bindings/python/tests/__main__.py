@@ -14,6 +14,7 @@ from .tests_line_info import *
 from .tests_line_request import *
 from .tests_line_settings import *
 from .tests_module import *
+from .tests_threading import *
 
 set_process_name("python-gpiod")
 

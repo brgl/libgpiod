@@ -19,6 +19,7 @@ foreach f : [
   'tests_line_request.py',
   'tests_line_settings.py',
   'tests_module.py',
+  'tests_threading.py',
 ]
   fs.copyfile(f)
 endforeach
