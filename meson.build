@@ -12,24 +12,24 @@ project('libgpiod', ['c', 'cpp'],
   meson_version: '>= 0.64.0',
 )
 
-extra_version = '+devel'
+extra_version = ''
 version_str = meson.project_version() + extra_version
 
 project_url = 'https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/'
 
 # Core libgpiod API version.
-api_version = '2.2.0'
+api_version = '2.2.1'
 
 # Core C library ABI version.
 libgpiod_soversion      = 3
-libgpiod_version        = '3.1.1'
+libgpiod_version        = '3.1.2'
 # Have a separate ABI version for C++ bindings:
 libgpiodcxx_soversion   = 2
-libgpiodcxx_version     = '2.1.0'
+libgpiodcxx_version     = '2.1.1'
 # ABI version for libgpiosim (we need this since it can be installed if we
 # enable tests).
 libgpiosim_soversion    = 1
-libgpiosim_version      = '1.0.1'
+libgpiosim_version      = '1.1.0'
 # ... and another one for GLib bindings:
 libgpiod_glib_soversion = 1
 libgpiod_glib_version   = '1.0.0'
