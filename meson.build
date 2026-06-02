@@ -92,6 +92,10 @@ if opt_tests.allowed()
   # glib/gio are also used by tests (different min-version from bindings).
   glib_test_dep = dependency('glib-2.0', version: '>= 2.74', required: opt_tests)
   gio_test_dep  = dependency('gio-2.0', version: '>= 2.74', required: opt_tests)
+
+  tests_enabled = libkmod_dep.found() and mount_dep.found()
+else
+  tests_enabled = false
 endif
 
 if opt_bindings_cxx.allowed() and opt_tests.allowed()
@@ -114,11 +118,19 @@ if opt_bindings_glib.allowed()
   gio_dep       = dependency('gio-2.0', version: '>= 2.80', required: opt_bindings_glib)
   gio_unix_dep  = dependency('gio-unix-2.0', version: '>= 2.80', required: opt_bindings_glib)
   glib_mkenums  = find_program('glib-mkenums', required: opt_bindings_glib)
+
+  glib_enabled = glib_dep.found() and glib_mkenums.found()
+else
+  glib_enabled = false
 endif
 
 if opt_dbus.allowed()
   gudev_dep      = dependency('gudev-1.0', version: '>= 230', required: opt_dbus)
   gdbus_codegen  = find_program('gdbus-codegen', required: opt_dbus)
+
+  dbus_enabled = gudev_dep.found() and gdbus_codegen.found()
+else
+  dbus_enabled = false
 endif
 
 if opt_introspection.allowed()
@@ -126,6 +138,10 @@ if opt_introspection.allowed()
                              required: opt_introspection)
   g_ir_scanner  = find_program('g-ir-scanner', required: opt_introspection)
   g_ir_compiler = find_program('g-ir-compiler', required: opt_introspection)
+
+  introspection_enabled = gir_dep.found() and g_ir_scanner.found() and g_ir_compiler.found()
+else
+  introspection_enabled = false
 endif
 
 if opt_systemd.allowed()
@@ -138,10 +154,18 @@ if opt_systemd.allowed()
       systemd_unit_dir = systemd_dep.get_variable('systemdsystemunitdir')
     endif
   endif
+
+  systemd_enabled = systemd_dep.found()
+else
+  systemd_enabled = false
 endif
 
 if opt_bindings_rust.allowed()
   cargo = find_program('cargo', required: opt_bindings_rust)
+
+  rust_enabled = cargo.found()
+else
+  rust_enabled = false
 endif
 
 help2man = find_program('help2man', required: false)
@@ -149,24 +173,47 @@ help2man = find_program('help2man', required: false)
 subdir('include')
 subdir('lib')
 
-if opt_tools.allowed()
+tools_enabled = opt_tools.allowed()
+if tools_enabled
   subdir('tools')
 endif
 
-if opt_examples.allowed()
+examples_enabled = opt_examples.allowed()
+if examples_enabled
   subdir('examples')
 endif
 
-if opt_tests.allowed() and libkmod_dep.found() and mount_dep.found()
+if tests_enabled
   subdir('tests')
 endif
 
 subdir('bindings')
 
-if opt_dbus.allowed() and gudev_dep.found() and gdbus_codegen.found()
+if dbus_enabled
   subdir('dbus')
 endif
 
 if help2man.found() and meson.can_run_host_binaries()
   subdir('man')
 endif
+
+summary({
+  'Tools'                 : tools_enabled,
+  'Tests'                 : tests_enabled,
+  'Examples'              : examples_enabled,
+  'D-Bus'                 : dbus_enabled,
+}, section: 'Components', bool_yn: true)
+
+summary({
+  'C++'                   : opt_bindings_cxx.allowed(),
+  'Python'                : opt_bindings_python.allowed(),
+  'Rust'                  : rust_enabled,
+  'GLib'                  : glib_enabled,
+}, section: 'Bindings', bool_yn: true)
+
+summary({
+  'gpioset interactive'   : libedit_dep.found(),
+  'GObject introspection' : introspection_enabled,
+  'systemd'               : systemd_enabled,
+  'Profiling'             : get_option('profiling'),
+}, section: 'Features', bool_yn: true)

@@ -5,7 +5,7 @@ if opt_bindings_cxx.allowed()
   subdir('cxx')
 endif
 
-if opt_bindings_glib.allowed() and glib_dep.found() and glib_mkenums.found()
+if glib_enabled
   subdir('glib')
 endif
 
@@ -13,6 +13,6 @@ if opt_bindings_python.allowed()
   subdir('python')
 endif
 
-if opt_bindings_rust.allowed()
+if rust_enabled
   subdir('rust')
 endif
