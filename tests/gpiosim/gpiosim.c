@@ -813,8 +813,6 @@ GPIOSIM_API int gpiosim_dev_enable(struct gpiosim_dev *dev)
 		return -1;
 	}
 
-	bank = container_of(&dev->banks, struct gpiosim_bank, siblings);
-
 	list_for_each_entry(bank, &dev->banks, siblings) {
 		ret = bank_enable(bank);
 		if (ret) {
