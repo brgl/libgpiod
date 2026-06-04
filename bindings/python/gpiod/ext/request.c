@@ -160,6 +160,8 @@ static PyObject *request_get_values(request_object *self, PyObject *args)
 		next = PyIter_Next(iter);
 		if (!next) {
 			Py_DECREF(iter);
+			if (PyErr_Occurred())
+				return NULL;
 			break;
 		}
 
