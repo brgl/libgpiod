@@ -149,9 +149,11 @@ gpiod_line_info_from_uapi(struct gpio_v2_line_info *uapi_info)
 
 	info->offset = uapi_info->offset;
 	strncpy(info->name, uapi_info->name, GPIO_MAX_NAME_SIZE);
+	info->name[GPIO_MAX_NAME_SIZE] = '\0';
 
 	info->used = !!(uapi_info->flags & GPIO_V2_LINE_FLAG_USED);
 	strncpy(info->consumer, uapi_info->consumer, GPIO_MAX_NAME_SIZE);
+	info->consumer[GPIO_MAX_NAME_SIZE] = '\0';
 
 	if (uapi_info->flags & GPIO_V2_LINE_FLAG_OUTPUT)
 		info->direction = GPIOD_LINE_DIRECTION_OUTPUT;
