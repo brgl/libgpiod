@@ -166,7 +166,7 @@ GPIOD_CXX_API ::std::ostream& operator<<(::std::ostream& out, const line_info& i
 	::std::string name, consumer;
 
 	name = info.name().empty() ? "unnamed" : ::std::string("'") + info.name() + "'";
-	consumer = info.consumer().empty() ? "unused" : ::std::string("'") + info.name() + "'";
+	consumer = info.consumer().empty() ? "unused" : ::std::string("'") + info.consumer() + "'";
 
 	out << "gpiod::line_info(offset=" << info.offset() <<
 	       ", name=" << name <<
