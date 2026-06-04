@@ -12,6 +12,7 @@
 //! The API is logically split into several parts such as: GPIO chip & line
 //! operators, GPIO events handling etc.
 
+use std::cmp::Ordering;
 use std::ffi::CStr;
 use std::fs;
 use std::os::raw::c_char;
@@ -491,7 +492,7 @@ pub fn gpiochip_devices<P: AsRef<Path>>(path: &P) -> Result<Vec<chip::Chip>> {
         }
     }
 
-    devices.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+    devices.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(Ordering::Equal));
     devices.dedup_by(|a, b| a.1.eq(&b.1));
 
     Ok(devices.into_iter().map(|a| a.0).collect())
