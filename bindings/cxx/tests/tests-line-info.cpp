@@ -147,7 +147,7 @@ TEST_CASE("line_info stream insertion operator works")
 	auto info = chip.get_line_info(0);
 
 	REQUIRE_THAT(info, stringify_matcher<::gpiod::line_info>(
-		"gpiod::line_info(offset=0, name='foo', used=true, consumer='foo', direction=OUTPUT, "
+		"gpiod::line_info(offset=0, name='foo', used=true, consumer='hogger', direction=OUTPUT, "
 		"active_low=false, bias=UNKNOWN, drive=PUSH_PULL, edge_detection=NONE, event_clock=MONOTONIC, debounced=false)"));
 }
 

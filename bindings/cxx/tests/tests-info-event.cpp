@@ -215,7 +215,7 @@ TEST_CASE("info_event stream insertion operator works", "[info-event][line-info]
 	buf << event;
 
 	expected << "gpiod::info_event\\(event_type='LINE_REQUESTED', timestamp=[1-9][0-9]+, " <<
-		    "line_info=gpiod::line_info\\(offset=0, name=unnamed, used=true, consumer='', " <<
+		    "line_info=gpiod::line_info\\(offset=0, name=unnamed, used=true, consumer='\\?', " <<
 		    "direction=INPUT, active_low=false, bias=UNKNOWN, drive=PUSH_PULL, " <<
 		    "edge_detection=NONE, event_clock=MONOTONIC, debounced=false\\)\\)";
 
