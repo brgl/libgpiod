@@ -282,6 +282,12 @@ impl PartialEq for Info {
     }
 }
 
+impl Ord for Info {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap_or(Ordering::Equal)
+    }
+}
+
 impl PartialOrd for Info {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         let name = match self.name() {
