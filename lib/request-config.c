@@ -74,6 +74,6 @@ gpiod_request_config_get_event_buffer_size(struct gpiod_request_config *config)
 void gpiod_request_config_to_uapi(struct gpiod_request_config *config,
 				  struct gpio_v2_line_request *uapi_req)
 {
-	strcpy(uapi_req->consumer, config->consumer);
+	strncpy(uapi_req->consumer, config->consumer, GPIO_MAX_NAME_SIZE);
 	uapi_req->event_buffer_size = config->event_buffer_size;
 }
