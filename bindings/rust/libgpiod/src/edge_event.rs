@@ -21,6 +21,7 @@ use super::{
 /// number of events are being read.
 
 #[derive(Debug, Eq, PartialEq)]
+#[repr(transparent)]
 pub struct Event(*mut gpiod::gpiod_edge_event);
 
 // SAFETY: Event models a wrapper around an owned gpiod_edge_event and may
@@ -67,9 +68,7 @@ impl Event {
     pub fn global_seqno(&self) -> usize {
         // SAFETY: `gpiod_edge_event` is guaranteed to be valid here.
         unsafe {
-            gpiod::gpiod_edge_event_get_global_seqno(self.0)
-                .try_into()
-                .unwrap()
+            gpiod::gpiod_edge_event_get_global_seqno(self.0) as usize
         }
     }
 
@@ -80,9 +79,7 @@ impl Event {
     pub fn line_seqno(&self) -> usize {
         // SAFETY: `gpiod_edge_event` is guaranteed to be valid here.
         unsafe {
-            gpiod::gpiod_edge_event_get_line_seqno(self.0)
-                .try_into()
-                .unwrap()
+            gpiod::gpiod_edge_event_get_line_seqno(self.0) as usize
         }
     }
 }
