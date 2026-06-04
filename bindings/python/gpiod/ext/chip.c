@@ -85,7 +85,9 @@ static PyObject *chip_get_info(chip_object *self, PyObject *Py_UNUSED(ignored))
 	if (!type)
 		return NULL;
 
+	Py_BEGIN_ALLOW_THREADS;
 	info = gpiod_chip_get_info(self->chip);
+	Py_END_ALLOW_THREADS;
 	if (!info) {
 		Py_DECREF(type);
 		return PyErr_SetFromErrno(PyExc_OSError);
