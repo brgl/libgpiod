@@ -43,7 +43,10 @@ gint gpiodbus_id_alloc(GTree *id_root)
 
 void gpiodbus_id_free(GTree *id_root, gint id)
 {
-	g_assert(g_tree_remove(id_root, &id));
+	gboolean removed;
+
+	removed = g_tree_remove(id_root, &id);
+	g_assert(removed);
 }
 
 gboolean
