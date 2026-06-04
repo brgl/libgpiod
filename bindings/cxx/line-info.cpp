@@ -126,28 +126,28 @@ GPIOD_CXX_API line::bias line_info::bias() const
 {
 	int bias = ::gpiod_line_info_get_bias(this->_m_priv->info.get());
 
-	return bias_mapping.at(bias);
+	return get_mapped_value(bias, bias_mapping);
 }
 
 GPIOD_CXX_API line::drive line_info::drive() const
 {
 	int drive = ::gpiod_line_info_get_drive(this->_m_priv->info.get());
 
-	return drive_mapping.at(drive);
+	return get_mapped_value(drive, drive_mapping);
 }
 
 GPIOD_CXX_API line::edge line_info::edge_detection() const
 {
 	int edge = ::gpiod_line_info_get_edge_detection(this->_m_priv->info.get());
 
-	return edge_mapping.at(edge);
+	return get_mapped_value(edge, edge_mapping);
 }
 
 GPIOD_CXX_API line::clock line_info::event_clock() const
 {
 	int clock = ::gpiod_line_info_get_event_clock(this->_m_priv->info.get());
 
-	return clock_mapping.at(clock);
+	return get_mapped_value(clock, clock_mapping);
 }
 
 GPIOD_CXX_API bool line_info::debounced() const  noexcept
