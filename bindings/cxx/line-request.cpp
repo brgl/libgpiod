@@ -136,7 +136,7 @@ GPIOD_CXX_API void line_request::get_values(line::values& values)
 }
 
 GPIOD_CXX_API line_request&
-line_request::line_request::set_value(line::offset offset, line::value value)
+line_request::set_value(line::offset offset, line::value value)
 {
 	return this->set_values({ offset }, { value });
 }
