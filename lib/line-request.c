@@ -99,7 +99,7 @@ gpiod_line_request_get_value(struct gpiod_line_request *request,
 			     unsigned int offset)
 {
 	enum gpiod_line_value val;
-	unsigned int ret;
+	int ret;
 
 	assert(request);
 
