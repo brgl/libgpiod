@@ -383,8 +383,8 @@ int main(int argc, char **argv)
 
 	set_prog_name(argv[0]);
 	i = parse_config(argc, argv, &cfg);
-	argc -= optind;
-	argv += optind;
+	argc -= i;
+	argv += i;
 
 	if (argc < 1)
 		die("at least one GPIO line must be specified");
