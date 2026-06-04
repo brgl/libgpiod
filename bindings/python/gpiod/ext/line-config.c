@@ -119,6 +119,10 @@ line_config_set_output_values(line_config_object *self, PyObject *args)
 		next = PyIter_Next(iter);
 		if (!next) {
 			Py_DECREF(iter);
+			if (PyErr_Occurred()) {
+				PyMem_Free(valbuf);
+				return NULL;
+			}
 			break;
 		}
 
