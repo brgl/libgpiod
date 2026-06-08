@@ -739,9 +739,10 @@ static void interact(struct gpiod_line_request **requests,
 		     unsigned int *offsets, enum gpiod_line_value *values,
 		     bool unquoted)
 {
-	int num_words, num_lines, max_words, period_us, i;
+	int num_words, num_lines, max_words, i;
 	char *line, **words, *line_buf;
 	bool done, stdout_is_tty;
+	long long period_us;
 
 	stifle_history(20);
 	rl_attempted_completion_function = tab_completion;
