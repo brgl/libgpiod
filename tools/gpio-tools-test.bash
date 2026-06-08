@@ -1320,6 +1320,27 @@ test_gpioset_interactive_sleep() {
 	dut_readable
 }
 
+test_gpioset_interactive_sleep_with_long_period() {
+	gpiosim_chip sim0 num_lines=8 line_name=1:foo
+
+	dut_run gpioset --interactive foo=1
+
+	# clear the initial prompt
+	dut_flush
+
+	# A period longer than INT_MAX microseconds (~36 minutes) must be
+	# accepted, not overflow into a negative value and get rejected as an
+	# invalid period.
+	dut_write "sleep 40m"
+
+	# give the tool a moment to either start sleeping (correct) or print an
+	# error and re-prompt (the bug)
+	sleep 1
+
+	# nothing must be readable: the tool is sleeping, not reporting an error
+	assert_fail dut_readable
+}
+
 test_gpioset_toggle_continuous() {
 	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=4:bar \
 				      line_name=7:baz
