@@ -879,6 +879,17 @@ test_gpioget_with_invalid_hold_period() {
 	status_is 1
 }
 
+test_gpioget_with_trailing_garbage_in_period() {
+	gpiosim_chip sim0 num_lines=8
+
+	# A period with trailing garbage after the unit suffix must be
+	# rejected. "100msx" must not be silently parsed as "100ms".
+	run_prog gpioget --hold-period=100msx --chip "${GPIOSIM_CHIP_NAME[sim0]}" 0
+
+	output_regex_match ".*invalid period.*"
+	status_is 1
+}
+
 #
 # gpioset test cases
 #

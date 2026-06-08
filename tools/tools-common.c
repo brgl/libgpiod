@@ -153,6 +153,9 @@ long long parse_period(const char *option)
 		m = 1000;
 	}
 
+	if (*end != '\0')
+		return -1;
+
 	if (m != 0 && p > ULLONG_MAX / m)
 		return -1;
 	p *= m;
