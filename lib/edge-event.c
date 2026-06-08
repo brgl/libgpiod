@@ -184,6 +184,11 @@ int gpiod_edge_event_buffer_read_fd(int fd,
 	if (max_events > buffer->capacity)
 		max_events = buffer->capacity;
 
+	if (max_events == 0) {
+		buffer->num_events = 0;
+		return 0;
+	}
+
 	rd = read(fd, buffer->event_data,
 		  max_events * sizeof(*buffer->event_data));
 	if (rd < 0) {
