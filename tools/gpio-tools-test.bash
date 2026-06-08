@@ -2486,6 +2486,29 @@ test_gpionotify_multiple_lines_across_multiple_chips() {
 	assert_fail dut_readable
 }
 
+test_gpionotify_do_not_watch_lines_on_wrong_chip() {
+	gpiosim_chip sim0 num_lines=4 line_name=2:foo
+	gpiosim_chip sim1 num_lines=8 line_name=4:bar
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local sim1=${GPIOSIM_CHIP_NAME[sim1]}
+
+	dut_run gpionotify --banner foo bar
+	dut_regex_match "Watching lines .*"
+
+	# Toggle sim1 offset 2 - this is foo's offset but on the wrong chip, so
+	# it must not be watched and must not produce any event. Doing it before
+	# the legitimate bar event guarantees that a spurious event, if emitted,
+	# would be read first from sim1's event buffer.
+	request_release_line "$sim1" 2
+
+	request_release_line "$sim1" 4
+	dut_regex_match "[0-9]+\.[0-9]+\\s+requested\\s+\"bar\""
+	dut_regex_match "[0-9]+\.[0-9]+\\s+released\\s+\"bar\""
+
+	assert_fail dut_readable
+}
+
 test_gpionotify_exit_after_SIGTERM() {
 	gpiosim_chip sim0 num_lines=8
 

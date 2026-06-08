@@ -407,9 +407,12 @@ int main(int argc, char **argv)
 				   resolver->chips[i].path);
 
 		for (j = 0; j < resolver->num_lines; j++) {
+			if (resolver->lines[j].chip_num != i)
+				continue;
+
 			info = gpiod_chip_watch_line_info(chip,
 						resolver->lines[j].offset);
-			if ((resolver->lines[j].chip_num == i) && !info)
+			if (!info)
 				die_perror("unable to watch line on chip '%s'",
 					   resolver->chips[i].path);
 
