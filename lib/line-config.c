@@ -182,7 +182,7 @@ GPIOD_API int gpiod_line_config_add_line_settings(
 				old->prev->next = old->next;
 			if (old->next)
 				old->next->prev = old->prev;
-			free(old->settings);
+			gpiod_line_settings_free(old->settings);
 			free(old);
 		}
 	}
