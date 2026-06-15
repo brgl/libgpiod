@@ -2,6 +2,23 @@
 # SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
 # SPDX-FileCopyrightText: 2023 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
+libgpiod v2.2.5
+===============
+
+Bug fixes:
+- allow modifying settings for existing offsets in a full line-config
+- fix signed/unsigned type mismatch in gpiod_line_request_get_value()
+- add explicit NUL-termination after strncpy() calls in core library
+- fix consumer string in line_info stream operator in C++ bindings
+- use get_mapped_value() for all enum mappings in line_info in C++ bindings
+- move g_tree_remove() out of g_assert() in gpiodbus_id_free() to avoid
+  resource exhaustion when assertions are disabled
+- return 0 when zero events are requested in edge-event API
+- fix gpionotify watching lines on the wrong chip
+- reject trailing garbage in parse_period() in gpio-tools
+- store interactive sleep period in a long long in gpioset to avoid overflow
+- use gpiod_line_settings_free() to release settings in line-config
+
 libgpiod v2.2.4
 ===============
 
