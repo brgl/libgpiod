@@ -1,3 +1,71 @@
+libgpiod v2.3
+=============
+
+New features:
+- replace autotools with meson & ninja as the build system
+- provide libgpiotools: a new shared library exposing a public API for
+  line name lookup and other high-level helpers previously only available
+  internally to gpio-tools
+- add initial-state option to gpiomon to display line states before
+  waiting for events
+- provide comprehensive sphinx-based documentation for all components:
+  core C API, C++ bindings, Python bindings, GLib bindings, D-Bus API,
+  gpio-tools, and libgpiotools
+- extend libgpiosim with new routines allowing to use the new functionality
+  provided in more recent versions of the gpio-sim module in the kernel
+
+Improvements:
+- make tests work with newer coreutils by removing cases checking tools'
+  behavior on SIGINT which stopped working due to changes in behavior of the
+  timeout tool
+- decouple the libgpiod core C library API version from the global libgpiod
+  project version as the former is now quite stable and no longer changes
+  with every release
+- extend libgpiosim self-tests
+
+Bug fixes:
+- allow modifying settings for existing offsets in a full line-config
+- fix signed/unsigned type mismatch in gpiod_line_request_get_value()
+- add explicit NUL-termination after strncpy() calls in core library
+- fix consumer string in line_info stream operator in C++ bindings
+- use get_mapped_value() for all enum mappings in line_info in C++ bindings
+- move g_tree_remove() out of g_assert() in gpiodbus_id_free() to avoid
+  resource exhaustion when assertions are disabled
+- return 0 when zero events are requested in edge-event API
+- fix gpionotify watching lines on the wrong chip
+- reject trailing garbage in parse_period() in gpio-tools
+- store interactive sleep period in a long long in gpioset to avoid overflow
+- use gpiod_line_settings_free() to release settings in line-config
+- fix buffer over-read bugs when translating uAPI structs to library types
+- fix variable and argument types where necessary
+- sanitize values returned by the kernel to avoid potential buffer overflows
+- fix memory leaks in gpio-tools
+- add missing return value checks in gpio-tools
+- fix period parsing in gpio-tools
+- use correct loop counter in error path in gpio-manager
+- don't try to export the same chip object twice in gpio-manager on duplicate
+  uevents
+- use the "add"/"remove" uevents when watching for GPIO chips in the system as
+  the "bind"/"unbind" pair is only emitted by linux for controllers which don't
+  have a firmware node attached
+- don't allow clearing hogs on active devices in tests
+- don't install uneeded files
+- fix a pkgconfig check in configure
+- fix a return type check in test harness
+- don't implicity unquote unnamed lines in gpioinfo
+- remove useless variable in reconfigure example
+- don't let struct line_config balloon out of control and trigger an OOM
+- drop python3-config check from configure.ac
+- fix potential PyDict_Next() crash in python bindings
+- disable the GPIO simulator before releasing it in C++, rust and python
+  bindings tests
+- fix the way we wait for simulated chips to appear in D-Bus command-line
+  client tests
+- make read_edge_events lifetimes more explicit in rust bindings
+- make waiting for info events more reliable in GLib bindings tests
+- defer removal of bank entries when device is not disabled in libgpiosim
+- add missing LineInfo import to __init__.py in python bindings
+
 libgpiod v2.2
 =============
 
