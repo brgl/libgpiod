@@ -112,10 +112,10 @@ if opt_introspection.allowed() and gir_dep.found()
   )
 endif
 
-if opt_examples.allowed()
+if examples_enabled
   subdir('examples')
 endif
 
-if opt_tests.allowed()
+if tests_enabled
   subdir('tests')
 endif

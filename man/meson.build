@@ -4,7 +4,7 @@
 man_template = files('template')
 man1_dir = get_option('mandir') / 'man1'
 
-if opt_tools.allowed()
+if tools_enabled
   foreach tool : ['gpiodetect', 'gpioinfo', 'gpioget', 'gpioset', 'gpiomon', 'gpionotify']
     custom_target(tool + '.1',
       output: tool + '.1',
@@ -24,7 +24,7 @@ if opt_tools.allowed()
   endforeach
 endif
 
-if opt_dbus.allowed()
+if dbus_enabled
   gpiocli_cmds = [
     'detect', 'find', 'info', 'get', 'monitor', 'notify',
     'reconfigure', 'release', 'request', 'requests', 'set', 'wait',

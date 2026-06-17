@@ -5,6 +5,6 @@ py = import('python').find_installation('python3', required: true)
 
 subdir('gpiod')
 
-if opt_tests.allowed()
+if tests_enabled
   subdir('tests')
 endif

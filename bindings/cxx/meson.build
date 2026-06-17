@@ -65,10 +65,10 @@ libgpiodcxx_dep = declare_dependency(
   include_directories: cxx_inc,
 )
 
-if opt_examples.allowed()
+if examples_enabled
   subdir('examples')
 endif
 
-if opt_tests.allowed()
+if tests_enabled
   subdir('tests')
 endif

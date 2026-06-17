@@ -6,6 +6,6 @@ subdir('lib')
 subdir('manager')
 subdir('client')
 
-if opt_tests.allowed()
+if tests_enabled
   subdir('tests')
 endif
