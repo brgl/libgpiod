@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Qualcomm Technologies, Inc. and/or its subsidiaries
 
 project('libgpiod', ['c', 'cpp'],
-  version: '2.3',
+  version: '2.4',
   license: 'LGPL-2.1-or-later',
   default_options: [
     'c_std=gnu89',
@@ -12,7 +12,7 @@ project('libgpiod', ['c', 'cpp'],
   meson_version: '>= 0.64.0',
 )
 
-extra_version = ''
+extra_version = '+devel'
 version_str = meson.project_version() + extra_version
 
 project_url = 'https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/'
