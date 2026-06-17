@@ -241,7 +241,7 @@ class build_ext(orig_build_ext):
             gpiod_ext.libraries = []
             gpiod_ext.include_dirs = ["include", "lib", "gpiod/ext"]
             gpiod_ext.extra_compile_args.append(
-                f'-DGPIOD_VERSION_STR="{libgpiod_version}"',
+                f'-DGPIOD_API_VERSION_STR="{libgpiod_version}"',
             )
 
         super().run()
