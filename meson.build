@@ -93,7 +93,9 @@ if opt_tests.allowed()
   glib_test_dep = dependency('glib-2.0', version: '>= 2.74', required: opt_tests)
   gio_test_dep  = dependency('gio-2.0', version: '>= 2.74', required: opt_tests)
 
-  tests_enabled = libkmod_dep.found() and mount_dep.found()
+  tests_enabled = (libkmod_dep.found() and mount_dep.found() and
+                   threads_dep.found() and glib_test_dep.found() and
+                   gio_test_dep.found())
 else
   tests_enabled = false
 endif
