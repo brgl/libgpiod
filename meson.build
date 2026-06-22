@@ -126,7 +126,8 @@ if opt_bindings_glib.allowed()
   gio_unix_dep  = dependency('gio-unix-2.0', version: '>= 2.80', required: opt_bindings_glib)
   glib_mkenums  = find_program('glib-mkenums', required: opt_bindings_glib)
 
-  glib_enabled = glib_dep.found() and glib_mkenums.found()
+  glib_enabled = (glib_dep.found() and gobject_dep.found() and gio_dep.found() and
+                  gio_unix_dep.found() and glib_mkenums.found())
 else
   glib_enabled = false
 endif
