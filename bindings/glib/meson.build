@@ -90,7 +90,7 @@ libgpiod_glib_dep = declare_dependency(
   include_directories: glib_inc,
 )
 
-if opt_introspection.allowed() and gir_dep.found()
+if introspection_enabled
   gnome = import('gnome')
 
   glib_gir = gnome.generate_gir(libgpiod_glib_lib,
