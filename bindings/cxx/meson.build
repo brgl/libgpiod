@@ -69,6 +69,6 @@ if examples_enabled
   subdir('examples')
 endif
 
-if tests_enabled
+if cxx_tests_enabled
   subdir('tests')
 endif

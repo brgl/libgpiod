@@ -98,18 +98,23 @@ else
   tests_enabled = false
 endif
 
-if opt_bindings_cxx.allowed() and opt_tests.allowed()
+if opt_bindings_cxx.allowed() and tests_enabled
   catch2_test_dep = dependency('catch2-with-main', version: '>= 3.0', required: false)
-  if not catch2_test_dep.found()
+  cxx_tests_enabled = catch2_test_dep.found()
+  if not cxx_tests_enabled
     # Some distros don't ship pkgconfig or cmake info for catch2 but they do
     # package it so check the header.
     cxx = meson.get_compiler('cpp')
     if cxx.has_header('catch2/catch_all.hpp')
       catch2_test_dep = declare_dependency()
-    else
-      error('catch2 not found, unable to build tests')
+      cxx_tests_enabled = true
     endif
   endif
+  if not cxx_tests_enabled
+    warning('catch2 not found, C++ bindings tests will not be built')
+  endif
+else
+  cxx_tests_enabled = false
 endif
 
 if opt_bindings_glib.allowed()
@@ -204,12 +209,16 @@ summary({
   'D-Bus'                 : dbus_enabled,
 }, section: 'Components', bool_yn: true)
 
-summary({
-  'C++'                   : opt_bindings_cxx.allowed(),
+bindings_summary = {'C++' : opt_bindings_cxx.allowed()}
+if opt_bindings_cxx.allowed()
+  bindings_summary += {'C++ tests' : cxx_tests_enabled}
+endif
+bindings_summary += {
   'Python'                : opt_bindings_python.allowed(),
   'Rust'                  : rust_enabled,
   'GLib'                  : glib_enabled,
-}, section: 'Bindings', bool_yn: true)
+}
+summary(bindings_summary, section: 'Bindings', bool_yn: true)
 
 summary({
   'gpioset interactive'   : libedit_dep.found(),
