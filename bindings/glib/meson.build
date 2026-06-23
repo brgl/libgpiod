@@ -88,6 +88,7 @@ pkgconfig.generate(libgpiod_glib_lib,
 libgpiod_glib_dep = declare_dependency(
   link_with: libgpiod_glib_lib,
   include_directories: glib_inc,
+  sources: [gen_enum_c, gen_enum_h],
 )
 
 if introspection_enabled
