@@ -35,6 +35,8 @@ void die_oom(void) NORETURN;
 void die_perror(const char *fmt, ...) NORETURN PRINTF(1, 2);
 void print_version(void);
 int parse_bias_or_die(const char *option);
+int parse_line_value(const char *option);
+int parse_line_value_or_die(const char *option);
 long long parse_period(const char *option);
 unsigned long long parse_period_or_die(const char *option);
 void sleep_us(unsigned long long period);

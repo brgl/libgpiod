@@ -229,24 +229,7 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 
 static enum gpiod_line_value parse_value(const char *option)
 {
-	if (strcmp(option, "0") == 0)
-		return GPIOD_LINE_VALUE_INACTIVE;
-	if (strcmp(option, "1") == 0)
-		return GPIOD_LINE_VALUE_ACTIVE;
-	if (strcmp(option, "inactive") == 0)
-		return GPIOD_LINE_VALUE_INACTIVE;
-	if (strcmp(option, "active") == 0)
-		return GPIOD_LINE_VALUE_ACTIVE;
-	if (strcmp(option, "off") == 0)
-		return GPIOD_LINE_VALUE_INACTIVE;
-	if (strcmp(option, "on") == 0)
-		return GPIOD_LINE_VALUE_ACTIVE;
-	if (strcmp(option, "false") == 0)
-		return GPIOD_LINE_VALUE_INACTIVE;
-	if (strcmp(option, "true") == 0)
-		return GPIOD_LINE_VALUE_ACTIVE;
-
-	return GPIOD_LINE_VALUE_ERROR;
+	return parse_line_value(option);
 }
 
 /*

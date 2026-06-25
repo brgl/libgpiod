@@ -115,6 +115,28 @@ int parse_bias_or_die(const char *option)
 	return GPIOD_LINE_BIAS_DISABLED;
 }
 
+int parse_line_value(const char *option)
+{
+	if (strcmp(option, "0") == 0 || strcmp(option, "inactive") == 0 ||
+	    strcmp(option, "off") == 0 || strcmp(option, "false") == 0)
+		return GPIOD_LINE_VALUE_INACTIVE;
+	if (strcmp(option, "1") == 0 || strcmp(option, "active") == 0 ||
+	    strcmp(option, "on") == 0 || strcmp(option, "true") == 0)
+		return GPIOD_LINE_VALUE_ACTIVE;
+
+	return GPIOD_LINE_VALUE_ERROR;
+}
+
+int parse_line_value_or_die(const char *option)
+{
+	int val = parse_line_value(option);
+
+	if (val == GPIOD_LINE_VALUE_ERROR)
+		die("invalid line value: '%s'", option);
+
+	return val;
+}
+
 long long parse_period(const char *option)
 {
 	unsigned long long p, m = 0;
