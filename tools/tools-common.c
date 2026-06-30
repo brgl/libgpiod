@@ -115,6 +115,104 @@ int parse_bias_or_die(const char *option)
 	return GPIOD_LINE_BIAS_DISABLED;
 }
 
+static int parse_line_value(const char *option)
+{
+	if (strcmp(option, "0") == 0 || strcmp(option, "inactive") == 0 ||
+	    strcmp(option, "off") == 0 || strcmp(option, "false") == 0)
+		return GPIOD_LINE_VALUE_INACTIVE;
+	if (strcmp(option, "1") == 0 || strcmp(option, "active") == 0 ||
+	    strcmp(option, "on") == 0 || strcmp(option, "true") == 0)
+		return GPIOD_LINE_VALUE_ACTIVE;
+
+	return GPIOD_LINE_VALUE_ERROR;
+}
+
+int parse_line_value_or_die(const char *option)
+{
+	int val = parse_line_value(option);
+
+	if (val == GPIOD_LINE_VALUE_ERROR)
+		die("invalid line value: '%s'", option);
+
+	return val;
+}
+
+/*
+ * Parse line id and value pairs from lvs into lines and values.
+ *
+ * Accepted forms:
+ *     'line=value'
+ *     '"line"=value'
+ *
+ * If line id is quoted it is returned unquoted. A quoted id may contain '=' and
+ * '"=' as the value is always the part after the last '"='.
+ *
+ * The strings in lvs are modified in place: the separator is replaced with a
+ * NUL byte and lines point into them.
+ *
+ * Errors are reported on stdout without the program name prefix in
+ * interactive mode and on stderr otherwise.
+ */
+bool parse_line_values(int num_lines, char **lvs, char **lines,
+		       enum gpiod_line_value *values, bool interactive)
+{
+	char *value, *line;
+	bool quoted;
+	int i;
+
+	for (i = 0; i < num_lines; i++) {
+		line = lvs[i];
+		quoted = *line == '"';
+
+		if (!quoted) {
+			value = strchr(line, '=');
+		} else {
+			line++;
+			value = strrchr(line, '=');
+			if (value && value > line && *(value - 1) == '"')
+				value--;
+			else
+				value = NULL;
+		}
+
+		/* No separator or no line id in front of it. */
+		if (!value || value == line) {
+			if (interactive)
+				printf("invalid line value: '%s'\n", lvs[i]);
+			else
+				print_error("invalid line value: '%s'", lvs[i]);
+			return false;
+		}
+
+		*value = '\0';
+		value++;
+
+		/* Skip the '=' after the closing quote. */
+		if (quoted)
+			value++;
+		values[i] = parse_line_value(value);
+
+		if (values[i] == GPIOD_LINE_VALUE_ERROR) {
+			if (interactive)
+				printf("invalid line value: '%s'\n", value);
+			else
+				print_error("invalid line value: '%s'", value);
+			return false;
+		}
+
+		lines[i] = line;
+	}
+
+	return true;
+}
+
+void parse_line_values_or_die(int num_lines, char **lvs, char **lines,
+			      enum gpiod_line_value *values)
+{
+	if (!parse_line_values(num_lines, lvs, lines, values, false))
+		exit(EXIT_FAILURE);
+}
+
 long long parse_period(const char *option)
 {
 	unsigned long long p, m = 0;
