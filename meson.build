@@ -214,6 +214,10 @@ lib_funcs = {
   'readlink': 'unistd.h',
 }
 
+tools_headers = [
+  'sys/file.h',
+  'sys/syscall.h',
+]
 tools_funcs = {
   'daemon': 'unistd.h',
   'asprintf': 'stdio.h',
@@ -221,6 +225,10 @@ tools_funcs = {
   'versionsort': 'dirent.h',
   'strtoull': 'stdlib.h',
   'nanosleep': 'time.h',
+  'fork': 'unistd.h',
+  'dup2': 'unistd.h',
+  'flock': 'sys/file.h',
+  'pipe': 'unistd.h',
 }
 
 tests_headers = [
@@ -255,6 +263,7 @@ dbus_funcs = {
 check_headers = lib_headers
 check_funcs = lib_funcs
 if opt_tools.allowed()
+  check_headers += tools_headers
   check_funcs += tools_funcs
 endif
 if tests_enabled
