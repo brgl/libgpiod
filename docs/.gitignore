@@ -11,6 +11,8 @@ gpioget.rst
 gpioset.rst
 gpiomon.rst
 gpionotify.rst
+gpioctl.rst
+gpioctl-*.rst
 
 gpio-manager.rst
 
