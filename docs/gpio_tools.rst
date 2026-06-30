@@ -16,7 +16,8 @@ Overview
 The **libgpiod** project includes a suite of **command-line tools** to
 facilitate GPIO manipulation from console and shell scripts.
 
-There are currently six command-line tools available:
+There are currently six stateless command-line tools available, plus
+``gpioctl`` for persistent line control:
 
 * **gpiodetect**: list all gpiochips present on the system, their names, labels
   and number of GPIO lines
@@ -32,6 +33,8 @@ There are currently six command-line tools available:
 * **gpionotify**: wait for changed to the info for GPIO lines, specify which
   changes to watch for, how many events to process before exiting, or if the
   events should be reported to the console
+* **gpioctl**: request and persistently hold GPIO lines via a per-user background
+  daemon; supports get, set, monitor and reconfigure operations on held requests
 
 Shared library
 --------------
@@ -59,6 +62,11 @@ of libgpiotools.
    gpioset<gpioset>
    gpiomon<gpiomon>
    gpionotify<gpionotify>
+
+.. toctree::
+   :maxdepth: 1
+
+   gpioctl<gpioctl_top>
 
 Examples
 --------
