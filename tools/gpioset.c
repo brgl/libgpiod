@@ -227,95 +227,6 @@ static int parse_config(int argc, char **argv, struct config *cfg)
 	return optind;
 }
 
-static enum gpiod_line_value parse_value(const char *option)
-{
-	if (strcmp(option, "0") == 0)
-		return GPIOD_LINE_VALUE_INACTIVE;
-	if (strcmp(option, "1") == 0)
-		return GPIOD_LINE_VALUE_ACTIVE;
-	if (strcmp(option, "inactive") == 0)
-		return GPIOD_LINE_VALUE_INACTIVE;
-	if (strcmp(option, "active") == 0)
-		return GPIOD_LINE_VALUE_ACTIVE;
-	if (strcmp(option, "off") == 0)
-		return GPIOD_LINE_VALUE_INACTIVE;
-	if (strcmp(option, "on") == 0)
-		return GPIOD_LINE_VALUE_ACTIVE;
-	if (strcmp(option, "false") == 0)
-		return GPIOD_LINE_VALUE_INACTIVE;
-	if (strcmp(option, "true") == 0)
-		return GPIOD_LINE_VALUE_ACTIVE;
-
-	return GPIOD_LINE_VALUE_ERROR;
-}
-
-/*
- * Parse line id and values from lvs into lines and values.
- *
- * Accepted forms:
- *     'line=value'
- *     '"line"=value'
- *
- * If line id is quoted then it is returned unquoted.
- */
-static bool parse_line_values(int num_lines, char **lvs, char **lines,
-			      enum gpiod_line_value *values, bool interactive)
-{
-	char *value, *line;
-	int i;
-
-	for (i = 0; i < num_lines; i++) {
-		line = lvs[i];
-
-		if (*line != '"') {
-			value = strchr(line, '=');
-		} else {
-			line++;
-			value = strstr(line, "\"=");
-			if (value) {
-				*value = '\0';
-				value++;
-			}
-		}
-
-		if (!value) {
-			if (interactive)
-				printf("invalid line value: '%s'\n", lvs[i]);
-			else
-				print_error("invalid line value: '%s'", lvs[i]);
-
-			return false;
-		}
-
-		*value = '\0';
-		value++;
-		values[i] = parse_value(value);
-
-		if (values[i] == GPIOD_LINE_VALUE_ERROR) {
-			if (interactive)
-				printf("invalid line value: '%s'\n", value);
-			else
-				print_error("invalid line value: '%s'", value);
-
-			return false;
-		}
-
-		lines[i] = line;
-	}
-
-	return true;
-}
-
-/*
- * Parse line id and values from lvs into lines and values, or die trying.
- */
-static void parse_line_values_or_die(int num_lines, char **lvs, char **lines,
-				     enum gpiod_line_value *values)
-{
-	if (!parse_line_values(num_lines, lvs, lines, values, false))
-		exit(EXIT_FAILURE);
-}
-
 static void print_banner(int num_lines, char **lines)
 {
 	int i;
@@ -794,7 +705,7 @@ static void interact(struct gpiod_line_request **requests,
 			if (num_lines == 0)
 				printf("at least one GPIO line value must be specified\n");
 			else if (parse_line_values(num_lines, &words[1], lines,
-						   values, true) &&
+						   values) &&
 				 valid_lines(resolver, num_lines, lines)) {
 				set_line_values_subset(resolver, num_lines,
 						       lines, values);
