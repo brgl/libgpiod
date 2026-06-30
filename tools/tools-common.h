@@ -35,6 +35,11 @@ void die_oom(void) NORETURN;
 void die_perror(const char *fmt, ...) NORETURN PRINTF(1, 2);
 void print_version(void);
 int parse_bias_or_die(const char *option);
+int parse_line_value_or_die(const char *option);
+bool parse_line_values(int num_lines, char **lvs, char **lines,
+		       enum gpiod_line_value *values);
+void parse_line_values_or_die(int num_lines, char **lvs, char **lines,
+			      enum gpiod_line_value *values);
 long long parse_period(const char *option);
 unsigned long long parse_period_or_die(const char *option);
 void sleep_us(unsigned long long period);
