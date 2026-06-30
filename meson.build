@@ -214,6 +214,9 @@ lib_funcs = {
   'readlink': 'unistd.h',
 }
 
+tools_headers = [
+  'sys/file.h',
+]
 tools_funcs = {
   'daemon': 'unistd.h',
   'asprintf': 'stdio.h',
@@ -221,6 +224,10 @@ tools_funcs = {
   'versionsort': 'dirent.h',
   'strtoull': 'stdlib.h',
   'nanosleep': 'time.h',
+  'fork': 'unistd.h',
+  'dup2': 'unistd.h',
+  'flock': 'sys/file.h',
+  'pipe': 'unistd.h',
 }
 
 tests_headers = [

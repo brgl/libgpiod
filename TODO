@@ -8,20 +8,6 @@ serve as the starting point.
 
 ==========
 
-* implement a simple daemon for controlling GPIOs in C together with a client
-  program
-
-This is by far the lowest priority task. Similarly as with the dbus daemon:
-the goal is to provide a centralized agent controlling GPIOs with a simple
-interface consisting of a command line client communicating with the server
-over unix sockets.
-
-In this case however the goal is to have as few dependencies as possible. This
-is because for some small systems dbus is overkill. Since we won't be using any
-standardized protocol, it will take much more effort to implement it correctly.
-
-----------
-
 * improve gpioset --interactive tab completion
 
 The existing tab completion uses libedit's readline emulation layer which
