@@ -46,8 +46,18 @@ if opt_gpioset_interactive.allowed() and libedit_dep.found()
   tools_deps += [libedit_dep]
 endif
 
+tools = [
+  'gpiodetect',
+  'gpioinfo',
+  'gpioget',
+  'gpioset',
+  'gpiomon',
+  'gpionotify',
+  'gpioctl'
+]
+
 tools_exes = {}
-foreach tool : ['gpiodetect', 'gpioinfo', 'gpioget', 'gpioset', 'gpiomon', 'gpionotify']
+foreach tool : tools
   tools_exes += {tool: executable(tool,
     sources: [tool + '.c'],
     include_directories: libgpiod_inc,
@@ -56,3 +66,12 @@ foreach tool : ['gpiodetect', 'gpioinfo', 'gpioget', 'gpioset', 'gpiomon', 'gpio
     install: true,
   )}
 endforeach
+
+if tests_enabled
+  executable('gpioctl-test-helper',
+    sources: ['gpioctl-test-helper.c'],
+    include_directories: libgpiod_inc,
+    dependencies: tools_deps,
+    install: false,
+  )
+endif
