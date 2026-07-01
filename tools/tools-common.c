@@ -305,6 +305,22 @@ void print_period_help(void)
 	printf("    microseconds respectively.\n");
 }
 
+void print_event_format_help(bool include_line_chip)
+{
+	printf("\n");
+	printf("Format specifiers:\n");
+	printf("  %%o   GPIO line offset\n");
+	if (include_line_chip) {
+		printf("  %%l   GPIO line name\n");
+		printf("  %%c   GPIO chip name\n");
+	}
+	printf("  %%e   numeric edge event type ('1' - rising or '2' - falling)\n");
+	printf("  %%E   edge event type ('rising' or 'falling')\n");
+	printf("  %%S   event timestamp as seconds\n");
+	printf("  %%U   event timestamp as UTC\n");
+	printf("  %%L   event timestamp as local time\n");
+}
+
 #define TIME_BUFFER_SIZE 20
 
 /*
@@ -335,6 +351,90 @@ void print_event_time(uint64_t evtime, int format)
 		printf("%" PRIu64 ".%09" PRIu64, evtime / 1000000000,
 		       evtime % 1000000000);
 	}
+}
+
+void print_event(uint64_t timestamp_ns, unsigned int offset, int event_type,
+		 int timestamp_fmt, const char *fmt,
+		 const char *line_name, const char *chip_name, bool unquoted)
+{
+	const char *prev, *curr;
+	char spec;
+
+	if (!fmt) {
+		print_event_time(timestamp_ns, timestamp_fmt);
+		if (event_type == GPIOD_EDGE_EVENT_RISING_EDGE)
+			fputs("\trising\t", stdout);
+		else
+			fputs("\tfalling\t", stdout);
+		if (!line_name) {
+			if (chip_name)
+				printf("%s %u", chip_name, offset);
+			else
+				printf("%u", offset);
+		} else {
+			if (chip_name)
+				printf("%s %u ", chip_name, offset);
+			printf(unquoted ? "%s" : "\"%s\"", line_name);
+		}
+		fputc('\n', stdout);
+		return;
+	}
+
+	for (prev = curr = fmt;;) {
+		curr = strchr(curr, '%');
+		if (!curr) {
+			fputs(prev, stdout);
+			break;
+		}
+
+		if (prev != curr)
+			fwrite(prev, curr - prev, 1, stdout);
+
+		spec = *(curr + 1);
+
+		switch (spec) {
+		case 'c':
+			fputs(chip_name ? chip_name : "unknown", stdout);
+			break;
+		case 'e':
+			printf("%d", event_type);
+			break;
+		case 'E':
+			fputs(event_type == GPIOD_EDGE_EVENT_RISING_EDGE ?
+			      "rising" : "falling", stdout);
+			break;
+		case 'l':
+			fputs(line_name ? line_name : "unnamed", stdout);
+			break;
+		case 'L':
+			print_event_time(timestamp_ns, 2);
+			break;
+		case 'o':
+			printf("%u", offset);
+			break;
+		case 'S':
+			print_event_time(timestamp_ns, 0);
+			break;
+		case 'U':
+			print_event_time(timestamp_ns, 1);
+			break;
+		case '%':
+			fputc('%', stdout);
+			break;
+		case '\0':
+			fputc('%', stdout);
+			goto end;
+		default:
+			fwrite(curr, 2, 1, stdout);
+			break;
+		}
+
+		curr += 2;
+		prev = curr;
+	}
+
+end:
+	fputc('\n', stdout);
 }
 
 static void print_bias(struct gpiod_line_info *info)

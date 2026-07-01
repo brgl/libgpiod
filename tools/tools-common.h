@@ -48,7 +48,11 @@ unsigned int parse_uint_or_die(const char *option);
 void print_bias_help(void);
 void print_chip_help(void);
 void print_period_help(void);
+void print_event_format_help(bool include_line_chip);
 void print_event_time(uint64_t evtime, int format);
+void print_event(uint64_t timestamp_ns, unsigned int offset, int event_type,
+		 int timestamp_fmt, const char *fmt,
+		 const char *line_name, const char *chip_name, bool unquoted);
 void print_line_attributes(struct gpiod_line_info *info, bool unquoted_strings);
 void print_line_id(struct line_resolver *resolver, int chip_num,
 		   unsigned int offset, const char *chip_id, bool unquoted);
