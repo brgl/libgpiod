@@ -325,6 +325,20 @@ void print_period_help(void)
 	printf("    microseconds respectively.\n");
 }
 
+void print_event_format_help(void)
+{
+	printf("\n");
+	printf("Format specifiers:\n");
+	printf("  %%o   GPIO line offset\n");
+	printf("  %%l   GPIO line name\n");
+	printf("  %%c   GPIO chip name\n");
+	printf("  %%e   numeric edge event type ('1' - rising or '2' - falling)\n");
+	printf("  %%E   edge event type ('rising' or 'falling')\n");
+	printf("  %%S   event timestamp as seconds\n");
+	printf("  %%U   event timestamp as UTC\n");
+	printf("  %%L   event timestamp as local time\n");
+}
+
 #define TIME_BUFFER_SIZE 20
 
 /*
@@ -355,6 +369,119 @@ void print_event_time(uint64_t evtime, int format)
 		printf("%" PRIu64 ".%09" PRIu64, evtime / 1000000000,
 		       evtime % 1000000000);
 	}
+}
+
+/*
+ * Print the line as 'chip offset "name"' or just '"name"' if show_chip is
+ * false. Lines without a name are always identified by the chip name, if
+ * known, and the offset.
+ */
+static void print_line_desc(const char *chip_name, unsigned int offset,
+			    const char *line_name, bool show_chip,
+			    bool unquoted)
+{
+	if (!line_name) {
+		if (chip_name)
+			printf("%s %u", chip_name, offset);
+		else
+			printf("%u", offset);
+		return;
+	}
+
+	if (show_chip && chip_name)
+		printf("%s %u ", chip_name, offset);
+
+	printf(unquoted ? "%s" : "\"%s\"", line_name);
+}
+
+static void print_event_human_readable(const struct event_info *ev,
+				       const struct event_format_opts *opts)
+{
+	print_event_time(ev->timestamp_ns, opts->timestamp_fmt);
+	if (ev->event_type == GPIOD_EDGE_EVENT_RISING_EDGE)
+		fputs("\trising\t", stdout);
+	else
+		fputs("\tfalling\t", stdout);
+	print_line_desc(ev->chip_name, ev->offset, ev->line_name,
+			opts->show_chip, opts->unquoted);
+	fputc('\n', stdout);
+}
+
+static void print_event_formatted(const struct event_info *ev,
+				  const struct event_format_opts *opts)
+{
+	const char *prev, *curr;
+	char spec;
+
+	for (prev = curr = opts->fmt;; curr += 2, prev = curr) {
+		curr = strchr(curr, '%');
+		if (!curr) {
+			fputs(prev, stdout);
+			break;
+		}
+
+		if (prev != curr)
+			fwrite(prev, curr - prev, 1, stdout);
+
+		spec = *(curr + 1);
+
+		switch (spec) {
+		case 'c':
+			fputs(ev->chip_name ? ev->chip_name : "unknown", stdout);
+			break;
+		case 'e':
+			printf("%d", ev->event_type);
+			break;
+		case 'E':
+			fputs(ev->event_type == GPIOD_EDGE_EVENT_RISING_EDGE ?
+			      "rising" : "falling", stdout);
+			break;
+		case 'l':
+			fputs(ev->line_name ? ev->line_name : "unnamed", stdout);
+			break;
+		case 'L':
+			print_event_time(ev->timestamp_ns, 2);
+			break;
+		case 'o':
+			printf("%u", ev->offset);
+			break;
+		case 'S':
+			print_event_time(ev->timestamp_ns, 0);
+			break;
+		case 'U':
+			print_event_time(ev->timestamp_ns, 1);
+			break;
+		case '%':
+			fputc('%', stdout);
+			break;
+		case '\0':
+			fputc('%', stdout);
+			goto end;
+		default:
+			fwrite(curr, 2, 1, stdout);
+			break;
+		}
+	}
+
+end:
+	fputc('\n', stdout);
+}
+
+/*
+ * Print an edge event either in the default human-readable format or, if fmt
+ * is set, according to it.
+ *
+ * The chip name is always used for the %c specifier and to identify lines
+ * without a name. show_chip only controls whether it's printed before the
+ * name of a named line in the default format.
+ */
+void print_event(const struct event_info *ev,
+		 const struct event_format_opts *opts)
+{
+	if (opts->fmt)
+		print_event_formatted(ev, opts);
+	else
+		print_event_human_readable(ev, opts);
 }
 
 static void print_bias(struct gpiod_line_info *info)
@@ -493,18 +620,9 @@ void print_line_attributes(struct gpiod_line_info *info, bool unquoted_strings)
 void print_line_id(struct line_resolver *resolver, int chip_num,
 		   unsigned int offset, const char *chip_id, bool unquoted)
 {
-	const char *lname, *fmt;
-
-	lname = get_line_name(resolver, chip_num, offset);
-	if (!lname) {
-		printf("%s %u", get_chip_name(resolver, chip_num), offset);
-		return;
-	}
-	if (chip_id)
-		printf("%s %u ", get_chip_name(resolver, chip_num), offset);
-
-	fmt = unquoted ? "%s" : "\"%s\"";
-	printf(fmt, lname);
+	print_line_desc(get_chip_name(resolver, chip_num), offset,
+			get_line_name(resolver, chip_num, offset), !!chip_id,
+			unquoted);
 }
 
 void print_line_vals(struct line_resolver *resolver, bool is_unquoted,
