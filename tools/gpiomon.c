@@ -79,16 +79,7 @@ static void print_help(void)
 	printf("  -v, --version\t\toutput version information and exit\n");
 	print_chip_help();
 	print_period_help();
-	printf("\n");
-	printf("Format specifiers:\n");
-	printf("  %%o   GPIO line offset\n");
-	printf("  %%l   GPIO line name\n");
-	printf("  %%c   GPIO chip name\n");
-	printf("  %%e   numeric edge event type ('1' - rising or '2' - falling)\n");
-	printf("  %%E   edge event type ('rising' or 'falling')\n");
-	printf("  %%S   event timestamp as seconds\n");
-	printf("  %%U   event timestamp as UTC\n");
-	printf("  %%L   event timestamp as local time\n");
+	print_event_format_help(true);
 }
 
 static int parse_edges_or_die(const char *option)
@@ -254,115 +245,28 @@ static void print_banner(int num_lines, char **lines)
 	}
 }
 
-static void event_print_formatted(struct gpiod_edge_event *event,
-				  struct line_resolver *resolver, int chip_num,
-				  struct config *cfg)
-{
-	const char *lname, *prev, *curr;
-	unsigned int offset;
-	uint64_t evtime;
-	int evtype;
-	char fmt;
-
-	offset = gpiod_edge_event_get_line_offset(event);
-	evtime = gpiod_edge_event_get_timestamp_ns(event);
-	evtype = gpiod_edge_event_get_event_type(event);
-
-	for (prev = curr = cfg->fmt;;) {
-		curr = strchr(curr, '%');
-		if (!curr) {
-			fputs(prev, stdout);
-			break;
-		}
-
-		if (prev != curr)
-			fwrite(prev, curr - prev, 1, stdout);
-
-		fmt = *(curr + 1);
-
-		switch (fmt) {
-		case 'c':
-			fputs(get_chip_name(resolver, chip_num), stdout);
-			break;
-		case 'e':
-			printf("%d", evtype);
-			break;
-		case 'E':
-			if (evtype == GPIOD_EDGE_EVENT_RISING_EDGE)
-				fputs("rising", stdout);
-			else
-				fputs("falling", stdout);
-			break;
-		case 'l':
-			lname = get_line_name(resolver, chip_num, offset);
-			if (!lname)
-				lname = "unnamed";
-			fputs(lname, stdout);
-			break;
-		case 'L':
-			print_event_time(evtime, 2);
-			break;
-		case 'o':
-			printf("%u", offset);
-			break;
-		case 'S':
-			print_event_time(evtime, 0);
-			break;
-		case 'U':
-			print_event_time(evtime, 1);
-			break;
-		case '%':
-			fputc('%', stdout);
-			break;
-		case '\0':
-			fputc('%', stdout);
-			goto end;
-		default:
-			fwrite(curr, 2, 1, stdout);
-			break;
-		}
-
-		curr += 2;
-		prev = curr;
-	}
-
-end:
-	fputc('\n', stdout);
-}
-
-static void event_print_human_readable(struct gpiod_edge_event *event,
-				       struct line_resolver *resolver,
-				       int chip_num, struct config *cfg)
-{
-	unsigned int offset;
-	uint64_t evtime;
-
-	offset = gpiod_edge_event_get_line_offset(event);
-	evtime = gpiod_edge_event_get_timestamp_ns(event);
-
-	print_event_time(evtime, cfg->timestamp_fmt);
-
-	if (gpiod_edge_event_get_event_type(event) ==
-	    GPIOD_EDGE_EVENT_RISING_EDGE)
-		fputs("\trising\t", stdout);
-	else
-		fputs("\tfalling\t", stdout);
-
-	print_line_id(resolver, chip_num, offset, cfg->chip_id, cfg->unquoted);
-	fputc('\n', stdout);
-}
-
 static void event_print(struct gpiod_edge_event *event,
 			struct line_resolver *resolver, int chip_num,
 			struct config *cfg)
 {
+	const char *line_name, *chip_name;
+	unsigned int offset;
+
 	if (cfg->quiet)
 		return;
 
-	if (cfg->fmt)
-		event_print_formatted(event, resolver, chip_num, cfg);
-	else
-		event_print_human_readable(event, resolver, chip_num, cfg);
+	offset = gpiod_edge_event_get_line_offset(event);
+	line_name = get_line_name(resolver, chip_num, offset);
+	chip_name = cfg->chip_id ? get_chip_name(resolver, chip_num) : NULL;
+
+	print_event(gpiod_edge_event_get_timestamp_ns(event),
+		    offset,
+		    gpiod_edge_event_get_event_type(event),
+		    cfg->timestamp_fmt,
+		    cfg->fmt,
+		    line_name,
+		    chip_name,
+		    cfg->unquoted);
 }
 
 int main(int argc, char **argv)
