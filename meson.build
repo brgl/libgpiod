@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2026 Qualcomm Technologies, Inc. and/or its subsidiaries
 
-project('libgpiod', ['c', 'cpp'],
+project('libgpiod', 'c',
   version: '2.4',
   license: 'LGPL-2.1-or-later',
   default_options: [
@@ -55,6 +55,10 @@ opt_bindings_glib       = get_option('bindings-glib')
 opt_dbus                = get_option('dbus')
 opt_introspection       = get_option('introspection')
 opt_systemd             = get_option('systemd')
+
+if opt_bindings_cxx.allowed()
+  add_languages('cpp')
+endif
 
 if get_option('profiling')
   profiling_c_args    = ['-fprofile-arcs', '-ftest-coverage']
