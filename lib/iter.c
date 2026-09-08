@@ -51,7 +51,7 @@ struct gpiod_chip_iter *gpiod_chip_iter_new(void)
 	if (!iter)
 		goto err_free_dirs;
 
-	iter->num_chips = num_chips;
+	iter->num_chips = 0;
 	iter->offset = 0;
 
 	if (num_chips == 0) {
@@ -64,22 +64,14 @@ struct gpiod_chip_iter *gpiod_chip_iter_new(void)
 		goto err_free_iter;
 
 	for (i = 0; i < num_chips; i++) {
-		iter->chips[i] = gpiod_chip_open_by_name(dirs[i]->d_name);
-		if (!iter->chips[i])
-			goto err_close_chips;
+		iter->chips[iter->num_chips] = gpiod_chip_open_by_name(dirs[i]->d_name);
+		if (iter->chips[iter->num_chips])
+			iter->num_chips++;
 	}
 
 	free_dirs(dirs, num_chips);
 
 	return iter;
-
-err_close_chips:
-	for (i = 0; i < num_chips; i++) {
-		if (iter->chips[i])
-			gpiod_chip_close(iter->chips[i]);
-	}
-
-	free(iter->chips);
 
 err_free_iter:
 	free(iter);

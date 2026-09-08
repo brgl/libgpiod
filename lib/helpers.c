@@ -423,7 +423,7 @@ struct gpiod_line *gpiod_line_find(const char *name)
 			return line;
 		}
 
-		if (errno != ENOENT)
+		if (errno != ENOENT && errno != ENODEV)
 			goto out;
 	}
 
