@@ -1,9 +1,3 @@
-<!--
-SPDX-License-Identifier: CC0-1.0
-SPDX-FileCopyrightText: 2022 Linaro Ltd.
-SPDX-FileCopyrightText: 2022 Viresh Kumar <viresh.kumar@linaro.org>
--->
-
 # Generated gpiosim Rust FFI bindings
 Automatically generated Rust FFI bindings via
 	[bindgen](https://github.com/rust-lang/rust-bindgen).

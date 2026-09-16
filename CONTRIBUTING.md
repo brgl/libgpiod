@@ -1,7 +1,3 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-<!-- SPDX-FileCopyrightText: 2024 Bartosz Golaszewski <bartosz.golaszewski@linaro.org> -->
-<!-- Based on text originally written by Grant Likely <grant.likely@linaro.org> -->
-
 Contributing
 ============
 

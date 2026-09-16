@@ -1,6 +1,66 @@
 version = 1
 
 [[annotations]]
+path = "README.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2025 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>"
+]
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+[[annotations]]
+path = "bindings/python/README.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2023 Phil Howard <phil@gadgetoid.com>"
+]
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+[[annotations]]
+path = "bindings/python/CHANGELOG.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2026 Vincent Fazio <vfazio@gmail.com>"
+]
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+[[annotations]]
+path = "bindings/rust/gpiosim-sys/README.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2022 Linaro Ltd.",
+  "2022 Viresh Kumar <viresh.kumar@linaro.org>"
+]
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "bindings/rust/libgpiod-sys/README.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2022 Linaro Ltd.",
+  "2022 Viresh Kumar <viresh.kumar@linaro.org>"
+]
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "bindings/rust/libgpiod/README.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2022 Linaro Ltd.",
+  "2022 Viresh Kumar <viresh.kumar@linaro.org>"
+]
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "CONTRIBUTING.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2024 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>",
+  "Based on text originally written by Grant Likely <grant.likely@linaro.org>"
+]
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+[[annotations]]
 path = "NEWS"
 precedence = "aggregate"
 SPDX-FileCopyrightText = [

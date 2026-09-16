@@ -1,6 +1,3 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-<!-- SPDX-FileCopyrightText: 2023 Phil Howard <phil@gadgetoid.com> -->
-
 # gpiod
 
 These are the official Python bindings for [libgpiod](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/about/).

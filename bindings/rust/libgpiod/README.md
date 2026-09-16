@@ -1,9 +1,3 @@
-<!--
-SPDX-License-Identifier: CC0-1.0
-SPDX-FileCopyrightText: 2023 Linaro Ltd.
-SPDX-FileCopyrightText: 2023 Erik Schilling <erik.schilling@linaro.org>
--->
-
 # Safe wrapper around Rust FFI bindings for libgpiod
 
 [libgpiod](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/tree/README)
