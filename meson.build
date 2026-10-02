@@ -57,7 +57,7 @@ opt_introspection       = get_option('introspection')
 opt_systemd             = get_option('systemd')
 
 if opt_bindings_cxx.allowed()
-  add_languages('cpp')
+  add_languages('cpp', native: false)
 endif
 
 if get_option('profiling')
