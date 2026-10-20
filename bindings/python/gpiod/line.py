@@ -6,7 +6,7 @@ from enum import Enum
 
 from . import _ext
 
-__all__ = ["Value", "Direction", "Bias", "Drive", "Edge", "Clock"]
+__all__ = ["Bias", "Clock", "Direction", "Drive", "Edge", "Value"]
 
 
 class Value(Enum):
