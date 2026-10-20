@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 __all__ = ["config_iter", "poll_fd"]
 
+_LINE_ID_TYPES = (int, str)
+
 
 def poll_fd(fd: int, timeout: timedelta | float | None = None) -> bool:
     sec: float | None
@@ -30,7 +32,7 @@ def config_iter(
     config: dict[Iterable[int | str] | int | str, LineSettings | None],
 ) -> Generator[tuple[int | str, LineSettings | None]]:
     for key, settings in config.items():
-        if isinstance(key, int) or isinstance(key, str):
+        if isinstance(key, _LINE_ID_TYPES):
             yield key, settings
         else:
             for subkey in key:
