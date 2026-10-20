@@ -23,7 +23,7 @@ def poll_fd(fd: int, timeout: timedelta | float | None = None) -> bool:
         sec = timeout
 
     readable, _, _ = select([fd], [], [], sec)
-    return True if fd in readable else False
+    return fd in readable
 
 
 def config_iter(
