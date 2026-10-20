@@ -149,7 +149,7 @@ class Chip:
                     except ValueError:
                         raise ex
                 else:
-                    raise ex
+                    raise
         else:
             offset = id
 
