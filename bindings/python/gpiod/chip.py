@@ -73,7 +73,7 @@ class Chip:
         Returns:
           True if the chip is open and False if it's closed.
         """
-        return True if self._chip else False
+        return self._chip is not None
 
     def __enter__(self) -> Chip:
         """
