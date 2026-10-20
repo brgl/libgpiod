@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
     from .line_settings import LineSettings
 
-__all__ = ["poll_fd", "config_iter"]
+__all__ = ["config_iter", "poll_fd"]
 
 
 def poll_fd(fd: int, timeout: timedelta | float | None = None) -> bool:
