@@ -49,7 +49,7 @@ class LineRequest:
         Returns:
           True if the request is live and False if it's been released.
         """
-        return True if self._req else False
+        return self._req is not None
 
     def __enter__(self) -> LineRequest:
         """
