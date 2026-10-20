@@ -87,10 +87,11 @@ def fetch_tarball(func: Callable[[T], None]) -> Callable[[T], None]:
         # If the version in "libgpiod-version.txt" already matches our
         # requested tarball, then skip the fetch altogether.
         try:
-            if open("libgpiod-version.txt").read() == LIBGPIOD_VERSION:
-                log.info("skipping tarball fetch")
-                func(cmd)
-                return
+            with open("libgpiod-version.txt") as f:
+                if f.read() == LIBGPIOD_VERSION:
+                    log.info("skipping tarball fetch")
+                    func(cmd)
+                    return
         except OSError:
             pass
 
@@ -185,7 +186,8 @@ def fetch_tarball(func: Callable[[T], None]) -> Callable[[T], None]:
                     cmd.distribution.metadata.license_files = [LICENSE_FILE]  # type: ignore[attr-defined]
 
         # Save the libgpiod version for sdist
-        open("libgpiod-version.txt", "w").write(LIBGPIOD_VERSION)
+        with open("libgpiod-version.txt", "w") as f:
+            f.write(LIBGPIOD_VERSION)
 
         # Run the command
         func(cmd)
@@ -217,7 +219,8 @@ class build_ext(orig_build_ext):
         # Try to get the gpiod version from the .txt file included in sdist
         libgpiod_version: str | None
         try:
-            libgpiod_version = open("libgpiod-version.txt").read()
+            with open("libgpiod-version.txt") as f:
+                libgpiod_version = f.read()
         except OSError:
             libgpiod_version = LIBGPIOD_VERSION
 
