@@ -4600,6 +4600,148 @@ test_gpioctl_reconfigure_output_value() {
 	status_is 0
 }
 
+test_gpioctl_reconfigure_values_for_all_lines() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 1=inactive 2=inactive 3=inactive
+	status_is 0
+
+	# Positional values follow the order of the request.
+	run_prog gpioctl reconfigure request0 --output 1 0 1
+	status_is 0
+	gpiosim_check_value sim0 1 1
+	gpiosim_check_value sim0 2 0
+	gpiosim_check_value sim0 3 1
+
+	# line=value pairs may come in any order.
+	run_prog gpioctl reconfigure request0 --output 3=0 1=0 2=1
+	status_is 0
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 1
+	gpiosim_check_value sim0 3 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_values_for_subset_of_lines() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 1=inactive 2=inactive 3=inactive
+	status_is 0
+
+	run_prog gpioctl reconfigure request0 --output 1=1 2=1
+	status_is 1
+	output_regex_match ".*values must be specified for all 3 lines of request 0.*"
+
+	run_prog gpioctl reconfigure request0 --output 1
+	status_is 1
+	output_regex_match ".*values must be specified for all 3 lines of request 0.*"
+
+	# Nothing must have changed.
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 0
+	gpiosim_check_value sim0 3 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_values_for_too_many_lines() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 1=inactive 2=inactive
+	status_is 0
+
+	run_prog gpioctl reconfigure request0 --output 1=1 2=1 3=1
+	status_is 1
+	output_regex_match ".*values must be specified for all 2 lines of request 0.*"
+
+	run_prog gpioctl reconfigure request0 --output 1 1 1
+	status_is 1
+	output_regex_match ".*values must be specified for all 2 lines of request 0.*"
+
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_values_for_wrong_lines() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 1=inactive 2=inactive
+	status_is 0
+
+	run_prog gpioctl reconfigure request0 --output 1=1 3=1
+	status_is 1
+	output_regex_match ".*no line '3' in request 0.*"
+
+	run_prog gpioctl reconfigure request0 --output 1=1 1=0
+	status_is 1
+	output_regex_match ".*line '1' specified more than once.*"
+
+	run_prog gpioctl reconfigure request0 --output 1=1 0
+	status_is 1
+	output_regex_match ".*cannot mix positional values and line=value pairs.*"
+
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_values_by_name() {
+	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=3:bar line_name=5:xyz
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output foo=inactive bar=inactive xyz=inactive
+	status_is 0
+
+	# Names and offsets can be mixed, in any order.
+	run_prog gpioctl reconfigure request0 --output xyz=1 foo=0 3=1
+	status_is 0
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 3 1
+	gpiosim_check_value sim0 5 1
+
+	run_prog gpioctl reconfigure request0 --output foo=1 bar=0 xyz=0
+	status_is 0
+	gpiosim_check_value sim0 1 1
+	gpiosim_check_value sim0 3 0
+	gpiosim_check_value sim0 5 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_reconfigure_values_in_input_mode() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 1=inactive 2=inactive
+	status_is 0
+
+	run_prog gpioctl reconfigure request0 --input 1=1 2=1
+	status_is 1
+	output_regex_match ".*output values can only be set in output mode.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
 test_gpioctl_reconfigure_nonexistent() {
 	run_prog gpioctl reconfigure request99 --input
 	status_is 1
@@ -4627,7 +4769,7 @@ gpioctl_debug_setup() {
 gpioctl_debug_teardown() {
 	kill "$DEBUG_PID" 2>/dev/null
 	wait "$DEBUG_PID" 2>/dev/null
-	rm -f "$SOCKPATH"
+	rm -f "$SOCKPATH" "$SOCKPATH.lock"
 }
 
 test_gpioctl_server_disconnects_on_short_message() {
@@ -4669,6 +4811,43 @@ test_gpioctl_server_disconnects_on_unknown_type() {
 
 	run_prog gpioctl -p "$SOCKPATH" ping
 	status_is 0
+
+	gpioctl_debug_teardown
+}
+
+test_gpioctl_server_validates_reconfigure_offsets() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	gpioctl_debug_setup
+
+	run_prog gpioctl -p "$SOCKPATH" -c "$sim0" request --output 1=inactive 2=inactive 3=inactive
+	status_is 0
+
+	# EINVAL (22) for anything but exactly the lines of the request, each once.
+	run_prog gpioctl-test-helper reconfigure "$SOCKPATH" 0 1=1 2=1
+	output_is "error 22"
+	run_prog gpioctl-test-helper reconfigure "$SOCKPATH" 0 1=1 2=1 3=1 4=1
+	output_is "error 22"
+	run_prog gpioctl-test-helper reconfigure "$SOCKPATH" 0 1=1 2=1 4=1
+	output_is "error 22"
+	run_prog gpioctl-test-helper reconfigure "$SOCKPATH" 0 1=1 2=1 2=1
+	output_is "error 22"
+	run_prog gpioctl-test-helper reconfigure "$SOCKPATH" 99 1=1 2=1 3=1
+	output_is "error 2"
+
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 0
+	gpiosim_check_value sim0 3 0
+
+	# The request order doesn't matter, the values follow their offsets.
+	run_prog gpioctl-test-helper reconfigure "$SOCKPATH" 0 3=1 1=0 2=1
+	output_is "ok"
+
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 1
+	gpiosim_check_value sim0 3 1
 
 	gpioctl_debug_teardown
 }
