@@ -249,25 +249,24 @@ static void event_print(struct gpiod_edge_event *event,
 			struct line_resolver *resolver, int chip_num,
 			struct config *cfg)
 {
-	const char *line_name, *chip_name;
-	unsigned int offset;
+	struct event_format_opts opts = {
+		.timestamp_fmt = cfg->timestamp_fmt,
+		.fmt = cfg->fmt,
+		.show_chip = !!cfg->chip_id,
+		.unquoted = cfg->unquoted,
+	};
+	struct event_info ev = { };
 
 	if (cfg->quiet)
 		return;
 
-	offset = gpiod_edge_event_get_line_offset(event);
-	line_name = get_line_name(resolver, chip_num, offset);
-	chip_name = get_chip_name(resolver, chip_num);
+	ev.timestamp_ns = gpiod_edge_event_get_timestamp_ns(event);
+	ev.offset = gpiod_edge_event_get_line_offset(event);
+	ev.event_type = gpiod_edge_event_get_event_type(event);
+	ev.line_name = get_line_name(resolver, chip_num, ev.offset);
+	ev.chip_name = get_chip_name(resolver, chip_num);
 
-	print_event(gpiod_edge_event_get_timestamp_ns(event),
-		    offset,
-		    gpiod_edge_event_get_event_type(event),
-		    cfg->timestamp_fmt,
-		    cfg->fmt,
-		    line_name,
-		    chip_name,
-		    !!cfg->chip_id,
-		    cfg->unquoted);
+	print_event(&ev, &opts);
 }
 
 int main(int argc, char **argv)

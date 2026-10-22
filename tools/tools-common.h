@@ -50,10 +50,25 @@ void print_chip_help(void);
 void print_period_help(void);
 void print_event_format_help(void);
 void print_event_time(uint64_t evtime, int format);
-void print_event(uint64_t timestamp_ns, unsigned int offset, int event_type,
-		 int timestamp_fmt, const char *fmt,
-		 const char *line_name, const char *chip_name, bool show_chip,
-		 bool unquoted);
+
+struct event_info {
+	uint64_t timestamp_ns;
+	unsigned int offset;
+	int event_type;
+	const char *line_name;
+	const char *chip_name;
+};
+
+struct event_format_opts {
+	int timestamp_fmt;
+	const char *fmt;
+	bool show_chip;
+	bool unquoted;
+};
+
+void print_event(const struct event_info *ev,
+		 const struct event_format_opts *opts);
+
 void print_line_attributes(struct gpiod_line_info *info, bool unquoted_strings);
 void print_line_id(struct line_resolver *resolver, int chip_num,
 		   unsigned int offset, const char *chip_id, bool unquoted);

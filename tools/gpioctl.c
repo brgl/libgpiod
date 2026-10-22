@@ -2859,14 +2859,21 @@ static const char *monitor_line_name(const struct request_info *info,
 static int monitor_main(int argc, char **argv, const struct config *cfg)
 {
 	struct message msg = { .type = MSG_TYPE_MONITOR };
+	struct event_format_opts fmt_opts = { };
 	struct monitor_opts opts = { };
 	struct resolved_name *resolved;
 	struct request_info *info;
+	struct event_info ev = { };
 	unsigned int num_filter, id, i;
 	int events_done = 0, sock;
 	bool filter;
 
 	parse_monitor_cmdline(&argc, &argv, &opts);
+
+	fmt_opts.timestamp_fmt = opts.timestamp_fmt;
+	fmt_opts.fmt = opts.fmt;
+	fmt_opts.show_chip = true;
+	fmt_opts.unquoted = cfg->unquoted;
 
 	if (argc < 1)
 		die("at least one request or line must be specified, try %s monitor --help",
@@ -2910,12 +2917,13 @@ static int monitor_main(int argc, char **argv, const struct config *cfg)
 				continue;
 		}
 
-		print_event(msg.edge_ev.timestamp_ns, msg.edge_ev.offset,
-			    msg.edge_ev.event_type, opts.timestamp_fmt,
-			    opts.fmt,
-			    monitor_line_name(info, msg.edge_ev.offset),
-			    info ? info->chip_name : NULL, true,
-			    cfg->unquoted);
+		ev.timestamp_ns = msg.edge_ev.timestamp_ns;
+		ev.offset = msg.edge_ev.offset;
+		ev.event_type = msg.edge_ev.event_type;
+		ev.line_name = monitor_line_name(info, msg.edge_ev.offset);
+		ev.chip_name = info ? info->chip_name : NULL;
+
+		print_event(&ev, &fmt_opts);
 		fflush(stdout);
 
 		events_done++;
