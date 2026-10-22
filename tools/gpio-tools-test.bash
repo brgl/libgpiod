@@ -3937,6 +3937,41 @@ test_gpioset_quoted_line_name_with_equal_sign() {
 	dut_kill
 }
 
+test_gpioctl_too_many_lines_by_name() {
+	gpiosim_chip sim0 num_lines=4 line_name=1:foo
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local names=()
+	local i
+
+	run_prog gpioctl -c "$sim0" request --output foo=inactive
+	status_is 0
+
+	# The same line can be given many times. 64 are fine, 65 are too many.
+	for i in $(seq 64); do
+		names+=(foo)
+	done
+
+	run_prog gpioctl get "${names[@]}"
+	status_is 0
+
+	run_prog gpioctl get "${names[@]}" foo
+	status_is 1
+	output_regex_match ".*can only handle up to 64 lines.*"
+
+	names=()
+	for i in $(seq 65); do
+		names+=(foo=active)
+	done
+
+	run_prog gpioctl set "${names[@]}"
+	status_is 1
+	output_regex_match ".*can only handle up to 64 lines.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
 test_gpioctl_set_mixed_positional_and_offset_rejected() {
 	gpiosim_chip sim0 num_lines=8
 

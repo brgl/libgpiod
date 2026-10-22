@@ -2474,6 +2474,10 @@ static void for_each_request_group(const struct resolved_name *resolved,
 	unsigned int pos[MAX_REQ_LINES], i, j, cnt;
 	bool done[MAX_REQ_LINES];
 
+	/* A line may be repeated so this can exceed the size of any request. */
+	if (n > MAX_REQ_LINES)
+		die("can only handle up to %u lines", MAX_REQ_LINES);
+
 	memset(done, 0, sizeof(done));
 
 	for (i = 0; i < n; i++) {
