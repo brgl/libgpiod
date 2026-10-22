@@ -112,6 +112,16 @@ Reconfigure a held request - switch to input and enable edge detection:
 
    $ gpioctl reconfigure request0 --both-edges
 
+Reconfigure a request of several lines to output. Values must be given for all
+of its lines, either in the order shown by ``gpioctl requests`` or as
+``line=value`` pairs in any order, where ``line`` is the name or the offset of
+a line of the request:
+
+.. code-block:: none
+
+   $ gpioctl reconfigure request1 --output active inactive active
+   $ gpioctl reconfigure request1 --output 7=inactive power_led=active 3=active
+
 Monitor edge events on a held edge-detection request:
 
 .. code-block:: none
@@ -156,6 +166,29 @@ Stop the daemon (releases all held lines):
 .. code-block:: none
 
    $ gpioctl stop
+
+Caveats
+-------
+
+By default the daemon listens on an abstract Unix-domain socket named after
+the user id, ``gpioctl-<uid>``. Abstract socket names are not protected by
+file permissions: any local user can bind a name before the daemon of the user
+it belongs to does. The clients and the daemon check the credentials of their
+peer and refuse to talk to a server of another user, so nothing is
+disclosed, but the squatted name keeps the victim's own daemon from starting
+and ``gpioctl`` then fails for them.
+
+As a workaround use a socket in a private directory, for example one under
+``$XDG_RUNTIME_DIR``, by passing ``--socket-path`` to every invocation:
+
+.. code-block:: none
+
+   $ gpioctl --socket-path "$XDG_RUNTIME_DIR/gpioctl.sock" request --output 5=active
+
+A socket created this way is a regular file and is protected by the
+permissions of its directory. A lock file with the same name and a ``.lock``
+suffix is created next to it to serialize starting the daemon. It is empty and
+safe to remove when the daemon is not running.
 
 .. note::
    For more information please refer to the output of ``gpioctl --help`` as
