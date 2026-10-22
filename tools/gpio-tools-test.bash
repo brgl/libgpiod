@@ -4912,6 +4912,66 @@ test_gpioctl_monitor_short_format_option() {
 	status_is 0
 }
 
+test_gpioctl_monitor_client_not_reading_is_dropped() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local out="$SHUNIT_TMPDIR/monitor-out" pid i
+
+	run_prog gpioctl -c "$sim0" request --both-edges 3
+	status_is 0
+
+	gpioctl monitor --banner request0 > "$out" 2>&1 &
+	pid=$!
+	for i in $(seq 20); do
+		grep -q "Monitoring request0" "$out" && break
+		sleep 0.1
+	done
+
+	# A client that doesn't read fills up its socket buffer after a few dozen
+	# events. Produce many more than that.
+	kill -STOP "$pid"
+	for i in $(seq 100); do
+		gpiosim_set_pull sim0 3 pull-down
+		gpiosim_set_pull sim0 3 pull-up
+	done
+
+	# The server must carry on and keep the request.
+	run_prog gpioctl ping
+	status_is 0
+	run_prog gpioctl requests
+	status_is 0
+	output_regex_match ".*request0 .*offsets: \\[3\\].*"
+
+	# The client was dropped: once it reads again, it runs out of events
+	# without having received them all and exits with an error.
+	kill -CONT "$pid"
+	for i in $(seq 50); do
+		kill -0 "$pid" 2> /dev/null || break
+		sleep 0.1
+	done
+	if kill -0 "$pid" 2> /dev/null; then
+		kill "$pid"
+		fail "the monitor was not dropped"
+	fi
+	wait "$pid"
+	assertEquals "monitor exit status" 1 $?
+	grep -q "server disconnected unexpectedly" "$out" ||
+		fail "no error reported by the dropped monitor"
+
+	# Monitoring works again afterwards. Events the server hadn't read yet
+	# are still queued for the request and get replayed first.
+	dut_run gpioctl monitor --banner "--format=%e %o" request0
+	dut_regex_match "Monitoring request0.*"
+	dut_read
+	gpiosim_set_pull sim0 3 pull-down
+	dut_read
+	output_is "2 3"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
 test_gpioctl_socket_path_stale_socket() {
 	local sockpath
 
