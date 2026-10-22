@@ -144,7 +144,11 @@ int parse_line_value_or_die(const char *option)
  *     'line=value'
  *     '"line"=value'
  *
- * If line id is quoted it is returned unquoted.
+ * If line id is quoted it is returned unquoted. A quoted id may contain '=' and
+ * '"=' as the value is always the part after the last '"='.
+ *
+ * The strings in lvs are modified in place: the separator is replaced with a
+ * NUL byte and lines point into them.
  *
  * Errors are reported on stdout without the program name prefix in
  * interactive mode and on stderr otherwise.
@@ -153,23 +157,26 @@ bool parse_line_values(int num_lines, char **lvs, char **lines,
 		       enum gpiod_line_value *values, bool interactive)
 {
 	char *value, *line;
+	bool quoted;
 	int i;
 
 	for (i = 0; i < num_lines; i++) {
 		line = lvs[i];
+		quoted = *line == '"';
 
-		if (*line != '"') {
+		if (!quoted) {
 			value = strchr(line, '=');
 		} else {
 			line++;
-			value = strstr(line, "\"=");
-			if (value) {
-				*value = '\0';
-				value++;
-			}
+			value = strrchr(line, '=');
+			if (value && value > line && *(value - 1) == '"')
+				value--;
+			else
+				value = NULL;
 		}
 
-		if (!value) {
+		/* No separator or no line id in front of it. */
+		if (!value || value == line) {
 			if (interactive)
 				printf("invalid line value: '%s'\n", lvs[i]);
 			else
@@ -179,6 +186,10 @@ bool parse_line_values(int num_lines, char **lvs, char **lines,
 
 		*value = '\0';
 		value++;
+
+		/* Skip the '=' after the closing quote. */
+		if (quoted)
+			value++;
 		values[i] = parse_line_value(value);
 
 		if (values[i] == GPIOD_LINE_VALUE_ERROR) {
