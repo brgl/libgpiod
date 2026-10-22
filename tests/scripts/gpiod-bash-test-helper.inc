@@ -73,7 +73,7 @@ gpiosim_chip() {
 	do
 		local KEY VAL
 		KEY=$(echo "$ARG" | cut -d"=" -f1)
-		VAL=$(echo "$ARG" | cut -d"=" -f2)
+		VAL=$(echo "$ARG" | cut -d"=" -f2-)
 
 		if [ "$KEY" = "num_lines" ]
 		then
