@@ -213,6 +213,11 @@ struct edge_event {
  * The protocol is not stable, it is subject to change at any moment without
  * any notice and meant only to be used by this program. Don't make it part
  * of any library.
+ *
+ * TODO: every message, edge events included, takes the size of the largest
+ * one, struct request_info. A client that doesn't read fills up its socket
+ * buffer after only about 50 events and gets dropped. Use a smaller message
+ * for events or make the message size variable.
  */
 struct message {
 	unsigned int type;
@@ -1537,6 +1542,11 @@ static struct server *make_server(const struct sockaddr_un *addr)
 	return srv;
 }
 
+/*
+ * FIXME: a failure here happens in the detached server process, so the client
+ * has no way of learning about it and only sees a timeout while waiting for
+ * the server to come up. Report the error to the client.
+ */
 static void redirect_fds(void)
 {
 	int fd, ret;
