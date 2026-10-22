@@ -990,12 +990,61 @@ static void handle_set_request(struct client *cli, struct server *srv,
 		srv_drop_client(srv, cli);
 }
 
+/* Check that offsets are exactly the lines of the request, each only once. */
+static bool offsets_match(const unsigned int *req_offsets, size_t num_req,
+			  const unsigned int *offsets, size_t num)
+{
+	size_t i, j;
+
+	if (num != num_req)
+		return false;
+
+	for (i = 0; i < num; i++) {
+		for (j = 0; j < num_req; j++) {
+			if (offsets[i] == req_offsets[j])
+				break;
+		}
+		if (j == num_req)
+			return false;
+
+		for (j = i + 1; j < num; j++) {
+			if (offsets[j] == offsets[i])
+				return false;
+		}
+	}
+
+	return true;
+}
+
+/*
+ * libgpiod wants the offsets of a reconfigure in the order of the request.
+ * Arrange the values, given for offsets in any order, accordingly. The
+ * offsets must be known to match: see offsets_match().
+ */
+static void order_values(const unsigned int *req_offsets, size_t num,
+			 const unsigned int *offsets,
+			 const enum gpiod_line_value *values,
+			 enum gpiod_line_value *ordered)
+{
+	size_t i, j;
+
+	for (i = 0; i < num; i++) {
+		for (j = 0; j < num; j++) {
+			if (offsets[j] == req_offsets[i])
+				break;
+		}
+
+		ordered[i] = values[j];
+	}
+}
+
 static void handle_reconfigure_request(struct client *cli, struct server *srv,
 					const struct reconfigure *rcfg)
 {
 	struct message resp = { .type = MSG_TYPE_OK };
 	struct gpiod_line_settings *settings;
-	unsigned int offsets[MAX_REQ_LINES];
+	unsigned int offsets[MAX_REQ_LINES], new_offsets[MAX_REQ_LINES];
+	enum gpiod_line_value values[MAX_REQ_LINES], ordered[MAX_REQ_LINES];
 	struct gpiod_line_config *line_cfg;
 	struct line_request *line_req;
 	struct request_config cfg;
@@ -1014,8 +1063,29 @@ static void handle_reconfigure_request(struct client *cli, struct server *srv,
 	cfg = rcfg->cfg;
 	num_lines = gpiod_line_request_get_requested_offsets(
 			line_req->handle, offsets, MAX_REQ_LINES);
-	memcpy(cfg.offsets, offsets, num_lines * sizeof(*offsets));
-	cfg.num_offsets = num_lines;
+
+	/*
+	 * Without offsets the values, if any, are in the order of the lines
+	 * in the request. Otherwise they belong to the offsets given.
+	 */
+	if (!cfg.num_offsets) {
+		memcpy(cfg.offsets, offsets, num_lines * sizeof(*offsets));
+		cfg.num_offsets = num_lines;
+	} else {
+		memcpy(new_offsets, cfg.offsets,
+		       cfg.num_offsets * sizeof(*new_offsets));
+
+		if (!offsets_match(offsets, num_lines, new_offsets,
+				   cfg.num_offsets)) {
+			send_error_response(cli, srv, EINVAL);
+			return;
+		}
+
+		memcpy(values, cfg.values, num_lines * sizeof(*values));
+		order_values(offsets, num_lines, new_offsets, values, ordered);
+		memcpy(cfg.offsets, offsets, num_lines * sizeof(*offsets));
+		memcpy(cfg.values, ordered, num_lines * sizeof(*ordered));
+	}
 
 	line_cfg = gpiod_line_config_new();
 	settings = gpiod_line_settings_new();
@@ -2956,8 +3026,11 @@ static void print_reconfigure_help(void)
 	printf("<request> is the name or bare id as reported by the 'requests'\n");
 	printf("sub-command.\n");
 	printf("\n");
-	printf("In output mode, values may optionally be set per-line using the\n");
-	printf("'line=value' syntax. Values: '0'/'1', 'active'/'inactive', 'on'/'off'.\n");
+	printf("In output mode, values may optionally be set. They must be given for\n");
+	printf("all lines of the request, either one per line in the order listed by\n");
+	printf("'requests' or as 'line=value' pairs, where line is the name or the\n");
+	printf("offset of a line in the request. Values: '0'/'1', 'active'/'inactive',\n");
+	printf("'on'/'off'.\n");
 	printf("\n");
 	printf("Options:\n");
 	printf("  -i, --input\t\t\tset direction to input\n");
@@ -2981,6 +3054,118 @@ static void print_reconfigure_help(void)
 	print_period_help();
 }
 
+static const struct request_info *
+find_req_info(const struct request_info *infos, unsigned int num_infos,
+	      unsigned int id)
+{
+	unsigned int i;
+
+	for (i = 0; i < num_infos; i++) {
+		if (infos[i].id == id)
+			return &infos[i];
+	}
+
+	return NULL;
+}
+
+/* Find a line of the request by its name or offset. Returns its index. */
+static unsigned int find_info_line(const struct request_info *info,
+				   const char *line)
+{
+	unsigned int i, found = 0;
+	bool match = false;
+	unsigned long off;
+	char *end;
+
+	for (i = 0; i < info->num_offsets; i++) {
+		if (info->line_names[i][0] == '\0' ||
+		    strcmp(info->line_names[i], line) != 0)
+			continue;
+
+		if (match)
+			die("line '%s' is ambiguous in request %u", line,
+			    info->id);
+
+		match = true;
+		found = i;
+	}
+	if (match)
+		return found;
+
+	errno = 0;
+	off = strtoul(line, &end, 10);
+	if (!errno && end != line && *end == '\0') {
+		for (i = 0; i < info->num_offsets; i++) {
+			if (info->offsets[i] == off)
+				return i;
+		}
+	}
+
+	die("no line '%s' in request %u", line, info->id);
+}
+
+/*
+ * Values are either given for all lines of the request in the order they are
+ * listed by 'requests' or as 'line=value' pairs, where line is the name or
+ * the offset of a line in the request, for all of its lines.
+ */
+static void reconfigure_values(int sock, unsigned int id,
+			       struct request_config *cfg,
+			       const struct request_opts *opts,
+			       int argc, char **argv)
+{
+	enum gpiod_line_value values[MAX_REQ_LINES];
+	const struct request_info *info;
+	struct request_info *infos;
+	bool used[MAX_REQ_LINES];
+	char *lines[MAX_REQ_LINES];
+	unsigned int num_infos, k;
+	int i, num_eq = 0;
+
+	if (!opts->output)
+		die("output values can only be set in output mode");
+
+	infos = collect_req_infos(sock, &num_infos);
+	info = find_req_info(infos, num_infos, id);
+	if (!info)
+		die("no request with id %u", id);
+
+	if ((unsigned int)argc != info->num_offsets)
+		die("values must be specified for all %u lines of request %u",
+		    info->num_offsets, id);
+
+	for (i = 0; i < argc; i++) {
+		if (strchr(argv[i], '='))
+			num_eq++;
+	}
+	if (num_eq && num_eq != argc)
+		die("cannot mix positional values and line=value pairs");
+
+	if (!num_eq) {
+		for (i = 0; i < argc; i++) {
+			cfg->offsets[i] = info->offsets[i];
+			cfg->values[i] = parse_line_value_or_die(argv[i]);
+		}
+	} else {
+		parse_line_values_or_die(argc, argv, lines, values);
+		memset(used, 0, sizeof(used));
+
+		for (i = 0; i < argc; i++) {
+			k = find_info_line(info, lines[i]);
+			if (used[k])
+				die("line '%s' specified more than once",
+				    lines[i]);
+
+			used[k] = true;
+			cfg->offsets[i] = info->offsets[k];
+			cfg->values[i] = values[i];
+		}
+	}
+
+	cfg->num_offsets = argc;
+	free(infos);
+}
+
 static int reconfigure_main(int argc, char **argv, const struct config *cfg)
 {
 	struct message msg = { .type = MSG_TYPE_RECONFIGURE };
@@ -3001,9 +3186,13 @@ static int reconfigure_main(int argc, char **argv, const struct config *cfg)
 	argc--;
 	argv++;
 
-	apply_opts_to_config(&msg.reconfigure.cfg, &opts, argc, argv);
+	apply_opts_to_config(&msg.reconfigure.cfg, &opts, 0, NULL);
 
 	sock = get_connection(cfg->socket_path);
+	if (argc)
+		reconfigure_values(sock, id, &msg.reconfigure.cfg, &opts, argc,
+				   argv);
+
 	client_exchange(sock, &msg);
 	client_validate_response(&msg, MSG_TYPE_OK,
 				 "unable to reconfigure request %u", id);
