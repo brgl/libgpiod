@@ -74,6 +74,7 @@ static const char *const msg_type_str[] = {
 
 #define MAX_EPOLL_EVENTS	16
 #define SERVER_START_TIMEOUT_MS	2000
+#define SEND_WAIT_TIMEOUT_MS	1000
 #define CONSUMER_NAME_SIZE	32
 #define MAX_REQ_LINES		64
 #define MONITOR_EVENT_BUF_SIZE	16
@@ -460,6 +461,10 @@ static int receive_message(struct receiver *rcv, struct server *srv,
 
 	ret = recv(rcv->fd, msg, sizeof(*msg), MSG_TRUNC);
 	if (ret < 0) {
+		/* Nothing to read after all, wait for the next event. */
+		if (errno == EAGAIN)
+			return 1;
+
 		srv_log(srv, "Failed to receive client data: %s\n",
 			strerror(errno));
 		return -1;
@@ -494,6 +499,85 @@ static int send_message(struct receiver *rcv, struct server *srv,
 	return 0;
 }
 
+/*
+ * Like send_message() but if the client's socket buffer is full wait for it
+ * to drain until the deadline instead of failing right away. For replies made
+ * of many messages sent in a row that a client which does read them would
+ * otherwise miss. The deadline is for the whole reply so a client that
+ * doesn't read, or reads too slowly, can't stall the server for longer.
+ */
+static void deadline_from_now(struct timespec *ts, unsigned int ms)
+{
+	clock_gettime(CLOCK_MONOTONIC, ts);
+	ts->tv_sec += ms / 1000;
+	ts->tv_nsec += (ms % 1000) * 1000000L;
+	if (ts->tv_nsec >= 1000000000L) {
+		ts->tv_sec++;
+		ts->tv_nsec -= 1000000000L;
+	}
+}
+
+static int ms_until(const struct timespec *deadline)
+{
+	struct timespec now;
+	long left;
+
+	clock_gettime(CLOCK_MONOTONIC, &now);
+	left = (deadline->tv_sec - now.tv_sec) * 1000 +
+	       (deadline->tv_nsec - now.tv_nsec) / 1000000;
+
+	return left > 0 ? left : 0;
+}
+
+static int send_message_wait(struct receiver *rcv, struct server *srv,
+			     struct message *msg,
+			     const struct timespec *deadline)
+{
+	struct pollfd pfd = {
+		.fd = rcv->fd,
+		.events = POLLOUT,
+	};
+	ssize_t ret;
+	int left;
+
+	for (;;) {
+		ret = send(rcv->fd, msg, sizeof(*msg), MSG_NOSIGNAL);
+		if (ret >= 0)
+			break;
+
+		if (errno != EAGAIN) {
+			srv_log(srv, "Failed to send data to client: %s\n",
+				strerror(errno));
+			return -1;
+		}
+
+		left = ms_until(deadline);
+		if (!left) {
+			srv_log(srv, "Client is not reading, giving up\n");
+			return -1;
+		}
+
+		ret = poll(&pfd, 1, left);
+		if (ret < 0) {
+			if (errno == EINTR)
+				continue;
+
+			srv_log(srv, "Failed to poll the client socket: %s\n",
+				strerror(errno));
+			return -1;
+		}
+		if (ret == 0) {
+			srv_log(srv, "Client is not reading, giving up\n");
+			return -1;
+		}
+	}
+
+	srv_log(srv, "Server message of type '%s' sent\n",
+		msg_type_to_str(msg->type));
+
+	return 0;
+}
+
 static void send_error_response(struct client *cli, struct server *srv,
 				int errnum)
 {
@@ -501,8 +585,11 @@ static void send_error_response(struct client *cli, struct server *srv,
 		.type = MSG_TYPE_ERROR,
 		.err.errnum = errnum,
 	};
+	int ret;
 
-	send_message(&cli->rcv, srv, &msg);
+	ret = send_message(&cli->rcv, srv, &msg);
+	if (ret)
+		srv_drop_client(srv, cli);
 }
 
 static bool check_num_offsets(struct client *cli, struct server *srv,
@@ -698,12 +785,15 @@ static void handle_list_request(struct client *cli, struct server *srv)
 {
 	unsigned int offsets[MAX_REQ_LINES];
 	struct line_request *line_req;
+	struct timespec deadline;
 	const char *chip_name;
 	struct message resp;
 	size_t num_offsets;
 	int ret;
 
 	srv_log(srv, "Handling list request from process %d\n", cli->creds.pid);
+
+	deadline_from_now(&deadline, SEND_WAIT_TIMEOUT_MS);
 
 	list_for_each_entry(line_req, &srv->requests, list) {
 		memset(&resp, 0, sizeof(resp));
@@ -725,7 +815,7 @@ static void handle_list_request(struct client *cli, struct server *srv)
 		memcpy(resp.req_info.line_names, line_req->line_names,
 		       num_offsets * sizeof(*line_req->line_names));
 
-		ret = send_message(&cli->rcv, srv, &resp);
+		ret = send_message_wait(&cli->rcv, srv, &resp, &deadline);
 		if (ret) {
 			srv_drop_client(srv, cli);
 			return;
@@ -735,7 +825,7 @@ static void handle_list_request(struct client *cli, struct server *srv)
 	memset(&resp, 0, sizeof(resp));
 	resp.type = MSG_TYPE_OK;
 
-	ret = send_message(&cli->rcv, srv, &resp);
+	ret = send_message_wait(&cli->rcv, srv, &resp, &deadline);
 	if (ret)
 		srv_drop_client(srv, cli);
 }
@@ -1036,7 +1126,9 @@ static void client_receive(uint32_t events, struct receiver *rcv,
 	}
 
 	ret = receive_message(rcv, srv, &msg);
-	if (ret) {
+	if (ret > 0)
+		return;
+	if (ret < 0) {
 		srv_drop_client(srv, cli);
 		return;
 	}
@@ -1104,7 +1196,11 @@ static void server_receive(uint32_t events UNUSED, struct receiver *rcv,
 	socklen_t len;
 	int sock, ret;
 
-	sock = accept(rcv->fd, NULL, NULL);
+	/*
+	 * The server is single-threaded. Never let a client that doesn't read
+	 * its socket block it: sending to it fails with EAGAIN and it's dropped.
+	 */
+	sock = accept4(rcv->fd, NULL, NULL, SOCK_NONBLOCK | SOCK_CLOEXEC);
 	if (sock < 0) {
 		srv_log(srv, "Failed to accept client connection: %s\n",
 			strerror(errno));
