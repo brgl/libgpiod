@@ -18,9 +18,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/file.h>
 #include <sys/prctl.h>
 #include <sys/signalfd.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/timerfd.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -71,6 +73,7 @@ static const char *const msg_type_str[] = {
 };
 
 #define MAX_EPOLL_EVENTS	16
+#define SERVER_START_TIMEOUT_MS	2000
 #define CONSUMER_NAME_SIZE	32
 #define MAX_REQ_LINES		64
 #define MONITOR_EVENT_BUF_SIZE	16
@@ -1306,6 +1309,10 @@ static NORETURN void run_server(struct server *srv)
 	exit(EXIT_SUCCESS);
 }
 
+/*
+ * Returns NULL if the address is an abstract one that is already in use: some
+ * other process was faster to start the server.
+ */
 static struct server *make_server(const struct sockaddr_un *addr)
 {
 	struct epoll_event event = {
@@ -1319,8 +1326,14 @@ static struct server *make_server(const struct sockaddr_un *addr)
 		die_perror("failed to create the server socket");
 
 	ret = bind(sock, (struct sockaddr *)addr, sizeof(*addr));
-	if (ret)
+	if (ret) {
+		if (errno == EADDRINUSE && addr->sun_path[0] == '\0') {
+			close(sock);
+			return NULL;
+		}
+
 		die_perror("failed to bind to the unix socket");
+	}
 
 	ret = listen(sock, 128);
 	if (ret < 0)
@@ -1374,7 +1387,7 @@ static void redirect_fds(void)
 		close(fd);
 }
 
-static void spawn_server(struct server *srv)
+static void spawn_server(struct server *srv, int lock_fd)
 {
 	pid_t pid;
 
@@ -1396,6 +1409,8 @@ static void spawn_server(struct server *srv)
 
 		prctl(PR_SET_NAME, "gpioctl server");
 		redirect_fds();
+		if (lock_fd >= 0)
+			close(lock_fd);
 
 		run_server(srv);
 	} else {
@@ -1404,12 +1419,15 @@ static void spawn_server(struct server *srv)
 	}
 }
 
-static void start_server(const struct sockaddr_un *addr)
+static void start_server(const struct sockaddr_un *addr, int lock_fd)
 {
 	struct server *srv;
 
 	srv = make_server(addr);
-	spawn_server(srv);
+	if (!srv)
+		return;
+
+	spawn_server(srv, lock_fd);
 	/*
 	 * If we returned, we're the client. The daemon owns the socket file,
 	 * so clear the path so that free_server() doesn't unlink it from the
@@ -1419,6 +1437,7 @@ static void start_server(const struct sockaddr_un *addr)
 	free_server(srv);
 }
 
+/* Returns -1 with errno set to ENOENT or ECONNREFUSED if there's no server. */
 static int try_connect(const struct sockaddr_un *addr)
 {
 	struct ucred creds;
@@ -1436,7 +1455,9 @@ static int try_connect(const struct sockaddr_un *addr)
 			 * The socket file does not exist or is there but
 			 * there's no server bound to it behind.
 			 */
+			ret = errno;
 			close(sock);
+			errno = ret;
 			return -1;
 		}
 
@@ -1471,10 +1492,94 @@ static void make_addr(struct sockaddr_un *addr, const char *socket_path)
 	}
 }
 
+/*
+ * Starting a server on a filesystem socket must be serialized between
+ * clients as it involves removing a stale socket file. Take an exclusive
+ * lock on a file next to the socket. Abstract sockets need no locking, there
+ * are no stale ones. Returns the descriptor of the lock file or -1. Dies if
+ * the lock can't be taken in a reasonable time.
+ */
+static int lock_startup(const struct sockaddr_un *addr)
+{
+	struct timespec ts = { .tv_nsec = 10 * 1000 * 1000 };
+	char path[sizeof(addr->sun_path) + 8];
+	int fd, i;
+
+	if (addr->sun_path[0] == '\0')
+		return -1;
+
+	snprintf(path, sizeof(path), "%s.lock", addr->sun_path);
+
+	fd = open(path, O_RDWR | O_CREAT | O_CLOEXEC | O_NOFOLLOW, 0600);
+	if (fd < 0)
+		die_perror("failed to open the lock file '%s'", path);
+
+	/* Don't wait forever for a client that hangs or a file we can't win. */
+	for (i = 0; i < SERVER_START_TIMEOUT_MS / 10; i++) {
+		if (i)
+			nanosleep(&ts, NULL);
+
+		if (!flock(fd, LOCK_EX | LOCK_NB))
+			return fd;
+
+		if (errno != EWOULDBLOCK && errno != EINTR)
+			die_perror("failed to lock '%s'", path);
+	}
+
+	die("timed out waiting for the lock '%s'", path);
+}
+
+static void unlock_startup(int fd)
+{
+	if (fd < 0)
+		return;
+
+	/*
+	 * The server process inherits the descriptor from us. Unlock
+	 * explicitly as closing ours wouldn't release the lock.
+	 */
+	flock(fd, LOCK_UN);
+	close(fd);
+}
+
+/*
+ * A server that didn't exit cleanly leaves its socket file behind. It would
+ * make bind() fail for the new server so remove it. Only remove actual
+ * sockets: connect() also fails with ECONNREFUSED for other file types.
+ */
+static void remove_stale_socket(const struct sockaddr_un *addr)
+{
+	struct stat st;
+
+	if (addr->sun_path[0] != '\0' && !lstat(addr->sun_path, &st) &&
+	    S_ISSOCK(st.st_mode))
+		unlink(addr->sun_path);
+}
+
+/*
+ * Wait for a server that's being started, possibly by another process, to
+ * become available.
+ */
+static int wait_for_server(const struct sockaddr_un *addr)
+{
+	struct timespec ts = { .tv_nsec = 10 * 1000 * 1000 };
+	int sock, i;
+
+	for (i = 0; i < SERVER_START_TIMEOUT_MS / 10; i++) {
+		sock = try_connect(addr);
+		if (sock >= 0)
+			return sock;
+
+		nanosleep(&ts, NULL);
+	}
+
+	return -1;
+}
+
 static int get_connection(const char *socket_path)
 {
 	struct sockaddr_un addr;
-	int sock;
+	int sock, lock_fd;
 
 	make_addr(&addr, socket_path);
 
@@ -1482,11 +1587,25 @@ static int get_connection(const char *socket_path)
 	if (sock >= 0)
 		return sock;
 
-	start_server(&addr);
+	lock_fd = lock_startup(&addr);
+	if (lock_fd >= 0) {
+		/* Another client may have started the server meanwhile. */
+		sock = try_connect(&addr);
+		if (sock >= 0) {
+			unlock_startup(lock_fd);
+			return sock;
+		}
 
-	sock = try_connect(&addr);
+		if (errno == ECONNREFUSED)
+			remove_stale_socket(&addr);
+	}
+
+	start_server(&addr, lock_fd);
+	unlock_startup(lock_fd);
+
+	sock = wait_for_server(&addr);
 	if (sock < 0)
-		die_perror("failed to connect to server");
+		die("timed out waiting for the server to start");
 
 	return sock;
 }
@@ -1499,6 +1618,9 @@ static int debug_main(int argc UNUSED, char **argv UNUSED,
 
 	make_addr(&addr, cfg->socket_path);
 	srv = make_server(&addr);
+	if (!srv)
+		die("a server is already running");
+
 	srv->logging = true;
 	run_server(srv);
 }
