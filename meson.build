@@ -9,7 +9,7 @@ project('libgpiod', 'c',
     'cpp_std=gnu++17',
     'warning_level=2',
   ],
-  meson_version: '>= 0.64.0',
+  meson_version: '>= 1.3.0',
 )
 
 extra_version = '+devel'
@@ -181,6 +181,92 @@ else
 endif
 
 help2man = find_program('help2man', required: false)
+
+cc = meson.get_compiler('c')
+
+lib_headers = [
+  'fcntl.h',
+  'getopt.h',
+  'dirent.h',
+  'poll.h',
+  'sys/sysmacros.h',
+  'sys/ioctl.h',
+  'sys/param.h',
+  'sys/stat.h',
+  'sys/types.h',
+  'linux/const.h',
+  'linux/ioctl.h',
+  'linux/types.h',
+]
+lib_funcs = {
+  'ioctl': 'sys/ioctl.h',
+  'open': 'fcntl.h',
+  'close': 'unistd.h',
+  'read': 'unistd.h',
+  'ppoll': 'poll.h',
+  'realpath': 'stdlib.h',
+  'readlink': 'unistd.h',
+}
+
+tools_funcs = {
+  'daemon': 'unistd.h',
+  'asprintf': 'stdio.h',
+  'scandir': 'dirent.h',
+  'versionsort': 'dirent.h',
+  'strtoull': 'stdlib.h',
+  'nanosleep': 'time.h',
+}
+
+tests_headers = [
+  'sys/utsname.h',
+  'sys/mount.h',
+  'sys/prctl.h',
+  'sys/random.h',
+  'linux/version.h',
+  'pthread.h',
+]
+tests_funcs = {
+  'atexit': 'stdlib.h',
+  'asprintf': 'stdio.h',
+  'prctl': 'sys/prctl.h',
+  'unlink': 'unistd.h',
+  'unlinkat': 'unistd.h',
+  'openat': 'fcntl.h',
+  'mkdirat': 'sys/stat.h',
+  'write': 'unistd.h',
+  'twalk': 'search.h',
+  'tsearch': 'search.h',
+  'tdestroy': 'search.h',
+  'tdelete': 'search.h',
+  'setrlimit': 'sys/resource.h',
+}
+
+dbus_funcs = {
+  'daemon': 'unistd.h',
+  'strverscmp': 'string.h',
+}
+
+check_headers = lib_headers
+check_funcs = lib_funcs
+if opt_tools.allowed()
+  check_funcs += tools_funcs
+endif
+if tests_enabled
+  check_headers += tests_headers
+  check_funcs += tests_funcs
+endif
+if dbus_enabled
+  check_funcs += dbus_funcs
+endif
+
+foreach hdr : check_headers
+  cc.check_header(hdr, args: '-D_GNU_SOURCE', required: true)
+endforeach
+
+foreach func, hdr : check_funcs
+  cc.has_function(func, prefix: '#include <@0@>'.format(hdr),
+                  args: '-D_GNU_SOURCE', required: true)
+endforeach
 
 subdir('include')
 subdir('lib')
