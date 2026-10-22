@@ -3860,6 +3860,83 @@ test_gpioctl_set_subset_by_offset() {
 	status_is 0
 }
 
+test_gpioctl_set_quoted_line_names() {
+	gpiosim_chip sim0 num_lines=8 line_name=1:foo line_name=2:a=b line_name=4:0
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 0=inactive 1=inactive 2=inactive 4=inactive
+	status_is 0
+
+	run_prog gpioctl set '"foo"=active'
+	status_is 0
+	gpiosim_check_value sim0 1 1
+
+	# The '=' in the name must not be taken for the separator.
+	run_prog gpioctl set '"a=b"=active'
+	status_is 0
+	gpiosim_check_value sim0 2 1
+
+	# A quoted number is a name, not an offset: line 4 is named "0".
+	run_prog gpioctl set '"0"=active'
+	status_is 0
+	gpiosim_check_value sim0 4 1
+	gpiosim_check_value sim0 0 0
+
+	run_prog gpioctl set 0=active
+	status_is 0
+	gpiosim_check_value sim0 0 1
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_set_empty_line_ids() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 0=inactive
+	status_is 0
+
+	run_prog gpioctl set =active
+	status_is 1
+	output_regex_match ".*invalid line value: '=active'.*"
+
+	run_prog gpioctl set '""=active'
+	status_is 1
+	output_regex_match ".*invalid line value: '\"\"=active'.*"
+
+	gpiosim_check_value sim0 0 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioset_empty_line_ids() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioset --chip "$sim0" =1
+	status_is 1
+	output_regex_match ".*invalid line value: '=1'.*"
+
+	run_prog gpioset --chip "$sim0" '""=1'
+	status_is 1
+	output_regex_match ".*invalid line value: '\"\"=1'.*"
+}
+
+test_gpioset_quoted_line_name_with_equal_sign() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:a=b
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	dut_run gpioset --chip "$sim0" '"a=b"=1'
+	gpiosim_check_value sim0 2 1
+	dut_kill
+}
+
 test_gpioctl_set_mixed_positional_and_offset_rejected() {
 	gpiosim_chip sim0 num_lines=8
 
@@ -4461,6 +4538,8 @@ test_gpioctl_socket_path() {
 
 	# verify file was cleaned up (filesystem socket)
 	assert_fail test -e "$sockpath"
+
+	rm -f "$sockpath.lock"
 }
 
 test_gpioctl_socket_path_isolates_daemons() {
@@ -4493,6 +4572,8 @@ test_gpioctl_socket_path_isolates_daemons() {
 
 	run_prog gpioctl -p "$sockB" stop
 	status_is 0
+
+	rm -f "$sockA.lock" "$sockB.lock"
 }
 
 test_gpioctl_reconfigure_input_to_output() {
@@ -4742,6 +4823,26 @@ test_gpioctl_reconfigure_values_in_input_mode() {
 	status_is 0
 }
 
+test_gpioctl_reconfigure_output_without_values() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 1=active 2=active
+	status_is 0
+	gpiosim_check_value sim0 1 1
+	gpiosim_check_value sim0 2 1
+
+	# Like gpiocli: no values means the default value, inactive.
+	run_prog gpioctl reconfigure request0 --output
+	status_is 0
+	gpiosim_check_value sim0 1 0
+	gpiosim_check_value sim0 2 0
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
 test_gpioctl_reconfigure_nonexistent() {
 	run_prog gpioctl reconfigure request99 --input
 	status_is 1
@@ -4770,6 +4871,111 @@ gpioctl_debug_teardown() {
 	kill "$DEBUG_PID" 2>/dev/null
 	wait "$DEBUG_PID" 2>/dev/null
 	rm -f "$SOCKPATH" "$SOCKPATH.lock"
+}
+
+test_gpioctl_requests_many() {
+	gpiosim_chip sim0 num_lines=64
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local i
+
+	for i in $(seq 0 63); do
+		gpioctl -c "$sim0" request "$i" > /dev/null || fail "request $i failed"
+	done
+
+	run_prog gpioctl requests
+	status_is 0
+	num_lines_is 64
+	output_regex_match ".*request63 .*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_monitor_short_format_option() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --rising-edge 3
+	status_is 0
+
+	dut_run gpioctl monitor --banner -F "%e %o" request0
+	dut_regex_match "Monitoring request0.*"
+
+	gpiosim_set_pull sim0 3 pull-down
+	gpiosim_set_pull sim0 3 pull-up
+	dut_read
+	output_is "1 3"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_socket_path_stale_socket() {
+	local sockpath
+
+	sockpath=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
+
+	# A server killed hard leaves its socket behind.
+	gpioctl debug -p "$sockpath" > /dev/null 2>&1 &
+	local pid=$!
+	local i
+	for i in $(seq 20); do
+		gpioctl -p "$sockpath" ping > /dev/null 2>&1 && break
+		sleep 0.1
+	done
+	kill -9 "$pid"
+	wait "$pid" 2>/dev/null
+
+	run_prog gpioctl -p "$sockpath" ping
+	status_is 0
+
+	run_prog gpioctl -p "$sockpath" stop
+	status_is 0
+
+	rm -f "$sockpath" "$sockpath.lock"
+}
+
+test_gpioctl_socket_path_not_a_socket() {
+	local sockpath
+
+	sockpath=$(mktemp /tmp/gpioctl-test-XXXXXX)
+
+	# Only stale sockets may be removed, never other files.
+	run_prog gpioctl -p "$sockpath" ping
+	status_is 1
+	test -e "$sockpath" || fail "regular file was removed"
+
+	rm -f "$sockpath" "$sockpath.lock"
+}
+
+test_gpioctl_concurrent_first_use() {
+	gpiosim_chip sim0 num_lines=16
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local sockpath pids=() i
+
+	sockpath=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
+
+	# All clients race to start the server, they must end up sharing one.
+	for i in $(seq 0 9); do
+		gpioctl -p "$sockpath" -c "$sim0" request "$i" > /dev/null 2>&1 &
+		pids+=($!)
+	done
+
+	for i in "${pids[@]}"; do
+		wait "$i" || fail "a client failed to request its line"
+	done
+
+	run_prog gpioctl -p "$sockpath" requests
+	status_is 0
+	num_lines_is 10
+
+	run_prog gpioctl -p "$sockpath" stop
+	status_is 0
+
+	rm -f "$sockpath" "$sockpath.lock"
 }
 
 test_gpioctl_server_disconnects_on_short_message() {
