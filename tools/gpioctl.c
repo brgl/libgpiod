@@ -607,7 +607,8 @@ static int build_line_config(struct gpiod_line_config *line_cfg,
 			     struct gpiod_line_settings *settings,
 			     const struct request_config *cfg)
 {
-	unsigned int offsets[MAX_REQ_LINES];
+	unsigned int offsets[MAX_REQ_LINES], i;
+	int ret;
 
 	if (cfg->direction)
 		gpiod_line_settings_set_direction(settings, cfg->direction);
@@ -637,6 +638,28 @@ static int build_line_config(struct gpiod_line_config *line_cfg,
 
 	memcpy(offsets, cfg->offsets, cfg->num_offsets * sizeof(*offsets));
 
+	/*
+	 * Output values are part of the line settings: that way the lines are
+	 * driven to the right level as soon as they become outputs.
+	 */
+	if (cfg->direction == GPIOD_LINE_DIRECTION_OUTPUT &&
+	    cfg->values[0] != GPIOD_LINE_VALUE_ERROR) {
+		for (i = 0; i < cfg->num_offsets; i++) {
+			ret = gpiod_line_settings_set_output_value(settings,
+							cfg->values[i]);
+			if (ret)
+				return ret;
+
+			ret = gpiod_line_config_add_line_settings(line_cfg,
+							&offsets[i], 1,
+							settings);
+			if (ret)
+				return ret;
+		}
+
+		return 0;
+	}
+
 	return gpiod_line_config_add_line_settings(line_cfg, offsets,
 						   cfg->num_offsets, settings);
 }
@@ -644,7 +667,6 @@ static int build_line_config(struct gpiod_line_config *line_cfg,
 static struct line_request *request_lines(struct server *srv,
 					  const struct request *req)
 {
-	enum gpiod_line_value values[MAX_REQ_LINES];
 	struct gpiod_request_config *req_cfg;
 	struct gpiod_line_settings *settings;
 	struct gpiod_line_config *line_cfg;
@@ -695,13 +717,6 @@ static struct line_request *request_lines(struct server *srv,
 	gpiod_chip_close(chip);
 
 	line_req->num_lines = req->cfg.num_offsets;
-
-	if (req->cfg.direction == GPIOD_LINE_DIRECTION_OUTPUT &&
-	    req->cfg.values[0] != GPIOD_LINE_VALUE_ERROR) {
-		memcpy(values, req->cfg.values,
-		       req->cfg.num_offsets * sizeof(*values));
-		gpiod_line_request_set_values(line_req->handle, values);
-	}
 
 	gpiod_line_settings_free(settings);
 	gpiod_line_config_free(line_cfg);
@@ -979,7 +994,6 @@ static void handle_reconfigure_request(struct client *cli, struct server *srv,
 					const struct reconfigure *rcfg)
 {
 	struct message resp = { .type = MSG_TYPE_OK };
-	enum gpiod_line_value values[MAX_REQ_LINES];
 	struct gpiod_line_settings *settings;
 	unsigned int offsets[MAX_REQ_LINES];
 	struct gpiod_line_config *line_cfg;
@@ -1022,12 +1036,6 @@ static void handle_reconfigure_request(struct client *cli, struct server *srv,
 	if (ret) {
 		send_error_response(cli, srv, errno);
 		return;
-	}
-
-	if (rcfg->cfg.direction == GPIOD_LINE_DIRECTION_OUTPUT &&
-	    rcfg->cfg.values[0] != GPIOD_LINE_VALUE_ERROR) {
-		memcpy(values, rcfg->cfg.values, num_lines * sizeof(*values));
-		gpiod_line_request_set_values(line_req->handle, values);
 	}
 
 	ret = send_message(&cli->rcv, srv, &resp);
