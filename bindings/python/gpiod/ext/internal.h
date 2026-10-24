@@ -4,8 +4,9 @@
 #ifndef __LIBGPIOD_PYTHON_MODULE_H__
 #define __LIBGPIOD_PYTHON_MODULE_H__
 
-#include <gpiod.h>
 #include <Python.h>
+
+#include <gpiod.h>
 
 PyObject *Py_gpiod_SetErrFromErrno(void);
 unsigned int Py_gpiod_PyLongAsUnsignedInt(PyObject *pylong);

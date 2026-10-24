@@ -3,6 +3,7 @@
 // SPDX-FileCopyrightText: 2024 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
 #include <Python.h>
+
 #include <linux/version.h>
 #include <sys/prctl.h>
 #include <sys/utsname.h>
