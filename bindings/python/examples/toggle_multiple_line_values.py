@@ -29,9 +29,9 @@ def toggle_multiple_line_values(
     )
 
     while True:
-        print(" ".join(f"{l}={value_str[v]}" for (l, v) in line_values.items()))  # noqa: E741
+        print(" ".join(f"{l}={value_str[v]}" for (l, v) in line_values.items()))
         time.sleep(1)
-        for l, v in line_values.items():  # noqa: E741
+        for l, v in line_values.items():
             line_values[l] = toggle_value(v)
         request.set_values(line_values)
 

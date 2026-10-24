@@ -167,7 +167,7 @@ def fetch_tarball(func: Callable[[T], None]) -> Callable[[T], None]:
                     project = cast("dict[str,str]", tomllib.load(f).get("project"))
                     license_file = project.get("license")
                 else:  # tomllib isn't standard, fall back to parsing by line
-                    for line in f.readlines():
+                    for line in f.readlines():  # noqa: FURB129
                         _line = line.decode()
                         if _line.startswith("license = "):
                             license_file = _line.split("=")[1].strip(' \r\n"')

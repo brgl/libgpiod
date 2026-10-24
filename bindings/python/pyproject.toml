@@ -36,7 +36,7 @@ Issues = "https://github.com/brgl/libgpiod/issues/"
 Changelog = "https://github.com/brgl/libgpiod/blob/master/bindings/python/CHANGELOG.md"
 
 [dependency-groups]
-lint = ["mypy>=1.18.1", "ruff~=0.15.0", "types-setuptools", "packaging"]
+lint = ["mypy>=1.18.1", "ruff~=0.17.0", "types-setuptools", "packaging"]
 
 [tool.setuptools]
 platforms = ["linux"]
@@ -56,19 +56,14 @@ files = [
   ".",
 ]
 
+[tool.ruff]
+extend-exclude = ["*.md"]
+
 [tool.ruff.lint]
-select = ["B", "E", "F", "I", "TC", "UP"]
-ignore=[
-  # Ignore chained exception warnings for now: https://docs.astral.sh/ruff/rules/raise-without-from-inside-except/
-  "B904",
-  # Never enforce line length violations. Let the formatter handle it: https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
-  "E501",
-]
+typing-extensions = false
 
 [tool.ruff.lint.per-file-ignores]
-"gpiod/__init__.py" = ["F403", "F405"]  # ignore warnings about star imports
-"tests/__main__.py" = ["F403"]
-"tests/**.py" = ["F841"]  # ignore warnings about unused variables
+"tests/**.py" = ["F841", "SIM117"]  # ignore warnings about unused variables and chaining context managers
 
 [tool.cibuildwheel]
 build = "cp*"
