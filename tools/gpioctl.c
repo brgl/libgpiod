@@ -214,10 +214,9 @@ struct edge_event {
  * any notice and meant only to be used by this program. Don't make it part
  * of any library.
  *
- * TODO: every message, edge events included, takes the size of the largest
- * one, struct request_info. A client that doesn't read fills up its socket
- * buffer after only about 50 events and gets dropped. Use a smaller message
- * for events or make the message size variable.
+ * Messages are sent and received as only msg_size() bytes: the type field plus
+ * the union member matching it. Otherwise a flood of small messages (edge
+ * events are 20 bytes) would each cost as much as the largest one.
  */
 struct message {
 	unsigned int type;
@@ -459,6 +458,50 @@ static const char *msg_type_to_str(unsigned int type)
 	return msg_type_str[type];
 }
 
+#define MSG_SIZE(member) \
+	(offsetof(struct message, member) + \
+	 sizeof(((struct message *)0)->member))
+
+/* The type must have already been checked to be less than NUM_MSG_TYPES. */
+static size_t msg_size(unsigned int type)
+{
+	switch (type) {
+	case MSG_TYPE_ERROR:
+		return MSG_SIZE(err);
+	case MSG_TYPE_REQUEST:
+		return MSG_SIZE(req);
+	case MSG_TYPE_REQ_OK:
+		return MSG_SIZE(req_ok);
+	case MSG_TYPE_RELEASE:
+		return MSG_SIZE(rel);
+	case MSG_TYPE_REQ_INFO:
+		return MSG_SIZE(req_info);
+	case MSG_TYPE_GET:
+		return MSG_SIZE(get_req);
+	case MSG_TYPE_GET_OK:
+		return MSG_SIZE(get_ok);
+	case MSG_TYPE_SET:
+		return MSG_SIZE(set_req);
+	case MSG_TYPE_MONITOR:
+		return MSG_SIZE(monitor_req);
+	case MSG_TYPE_EDGE_EVENT:
+		return MSG_SIZE(edge_ev);
+	case MSG_TYPE_RECONFIGURE:
+		return MSG_SIZE(reconfigure);
+	default:
+		/* OK, ping, stop and list: no payload. */
+		return offsetof(struct message, err);
+	}
+}
+
+/* Is a received datagram of len bytes a well-formed message? */
+static bool msg_size_valid(const struct message *msg, ssize_t len)
+{
+	return len >= (ssize_t)sizeof(msg->type) &&
+	       msg->type < NUM_MSG_TYPES &&
+	       (size_t)len == msg_size(msg->type);
+}
+
 static int receive_message(struct receiver *rcv, struct server *srv,
 			   struct message *msg)
 {
@@ -475,7 +518,7 @@ static int receive_message(struct receiver *rcv, struct server *srv,
 		return -1;
 	}
 
-	if (ret == 0 || (size_t)ret != sizeof(*msg)) {
+	if (!msg_size_valid(msg, ret)) {
 		srv_log(srv, "Invalid message received from client\n");
 		return -1;
 	}
@@ -491,7 +534,7 @@ static int send_message(struct receiver *rcv, struct server *srv,
 {
 	ssize_t ret;
 
-	ret = send(rcv->fd, msg, sizeof(*msg), MSG_NOSIGNAL);
+	ret = send(rcv->fd, msg, msg_size(msg->type), MSG_NOSIGNAL);
 	if (ret < 0) {
 		srv_log(srv, "Failed to send data to client: %s\n",
 			strerror(errno));
@@ -549,7 +592,7 @@ static int send_message_wait(struct receiver *rcv, struct server *srv,
 	int left;
 
 	for (;;) {
-		ret = send(rcv->fd, msg, sizeof(*msg), MSG_NOSIGNAL);
+		ret = send(rcv->fd, msg, msg_size(msg->type), MSG_NOSIGNAL);
 		if (ret >= 0)
 			break;
 
@@ -1812,7 +1855,7 @@ static void client_send_msg(int sock, const struct message *msg)
 {
 	ssize_t ret;
 
-	ret = send(sock, msg, sizeof(*msg), MSG_NOSIGNAL);
+	ret = send(sock, msg, msg_size(msg->type), MSG_NOSIGNAL);
 	if (ret < 0)
 		die_perror("failed to send data to server");
 }
@@ -1839,7 +1882,7 @@ static void client_recv_reply(int sock, struct message *msg)
 		die_perror("failed to receive data from server");
 	if (recvd == 0)
 		die("server disconnected unexpectedly");
-	if ((size_t)recvd != sizeof(*msg))
+	if (!msg_size_valid(msg, recvd))
 		die("unexpected message size received from server");
 }
 
@@ -1852,7 +1895,7 @@ static void client_recv_event(int sock, struct message *msg)
 		die_perror("failed to receive data from server");
 	if (recvd == 0)
 		die("server disconnected unexpectedly");
-	if ((size_t)recvd != sizeof(*msg))
+	if (!msg_size_valid(msg, recvd))
 		die("unexpected message size received from server");
 }
 

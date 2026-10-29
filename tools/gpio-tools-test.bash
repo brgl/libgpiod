@@ -4963,10 +4963,10 @@ test_gpioctl_monitor_client_not_reading_is_dropped() {
 		sleep 0.1
 	done
 
-	# A client that doesn't read fills up its socket buffer after a few dozen
-	# events. Produce many more than that.
+	# A client that doesn't read fills up its socket buffer after a few
+	# hundred events. Produce many more than that.
 	kill -STOP "$pid"
-	for i in $(seq 100); do
+	for i in $(seq 2000); do
 		gpiosim_set_pull sim0 3 pull-down
 		gpiosim_set_pull sim0 3 pull-up
 	done
@@ -5073,6 +5073,49 @@ test_gpioctl_concurrent_first_use() {
 	rm -f "$sockpath" "$sockpath.lock"
 }
 
+test_gpioctl_monitor_slow_client_keeps_events() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local out="$SHUNIT_TMPDIR/monitor-keep" pid count i
+
+	run_prog gpioctl -c "$sim0" request --both-edges 3
+	status_is 0
+
+	gpioctl monitor --banner "--format=%e %o" request0 > "$out" 2>&1 &
+	pid=$!
+	for i in $(seq 20); do
+		grep -q "Monitoring request0" "$out" && break
+		sleep 0.1
+	done
+
+	# This many events used to overflow the socket buffer and get the
+	# monitor dropped. Now they fit.
+	kill -STOP "$pid"
+	for i in $(seq 50); do
+		gpiosim_set_pull sim0 3 pull-up
+		gpiosim_set_pull sim0 3 pull-down
+	done
+	kill -CONT "$pid"
+
+	# gpio-sim coalesces some of the quick toggles so don't expect all 100
+	# but way more than what used to fit in the socket buffer.
+	for i in $(seq 50); do
+		count=$(grep -c ' 3$' "$out")
+		[ "$count" -ge 80 ] && break
+		sleep 0.1
+	done
+
+	kill -0 "$pid" 2> /dev/null || fail "the monitor was dropped"
+	assertTrue "too few events delivered: $count" "[ $count -ge 80 ]"
+
+	kill "$pid" 2> /dev/null
+	wait "$pid" 2> /dev/null
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
 test_gpioctl_server_disconnects_on_short_message() {
 	gpioctl_debug_setup
 
@@ -5098,17 +5141,25 @@ test_gpioctl_server_disconnects_on_long_message() {
 test_gpioctl_server_disconnects_on_unknown_type() {
 	gpioctl_debug_setup
 
-	# GPIOCTL_MSG_SIZE = sizeof(struct message) in tools/gpioctl.c.
-	# = 4 (type) + sizeof(struct request_info) which dominates the union:
-	#   4 (id) + 32 (chip_name) + 32 (consumer) + 256 (offsets[64]) +
-	#   4 (num_offsets) + 2048 (line_names[64][32]) = 2376 -> total 2380.
-	# Update this constant if the wire protocol changes.
-	local GPIOCTL_MSG_SIZE=2380
+	# All-zero 4-byte message: type field = 0 = MSG_TYPE_OK, which has no
+	# payload so this is a well-formed message of a server-to-client type
+	# that has no case in client_receive()'s switch, so the server drops
+	# the client via the default path.
+	gpioctl-test-helper zero-msg "$SOCKPATH" 4
 
-	# All-zero message: type field = 0 = MSG_TYPE_OK, a server-to-client
-	# type that has no case in client_receive()'s switch, so the server
-	# drops the client via the default path.
-	gpioctl-test-helper zero-msg "$SOCKPATH" "$GPIOCTL_MSG_SIZE"
+	run_prog gpioctl -p "$SOCKPATH" ping
+	status_is 0
+
+	gpioctl_debug_teardown
+}
+
+test_gpioctl_server_disconnects_on_size_type_mismatch() {
+	gpioctl_debug_setup
+
+	# 553 bytes is the size of a reconfigure message but the all-zero type
+	# field makes it MSG_TYPE_OK, which has no payload. The server must
+	# reject the mismatch.
+	gpioctl-test-helper zero-msg "$SOCKPATH" 553
 
 	run_prog gpioctl -p "$SOCKPATH" ping
 	status_is 0

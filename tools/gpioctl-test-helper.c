@@ -32,12 +32,12 @@
 /*
  * Just the parts of the gpioctl wire protocol needed to forge a reconfigure
  * message: keep them in sync with tools/gpioctl.c. The server only accepts
- * messages of exactly the size of its struct message so pad ours to that.
+ * messages of exactly the size of their type so the reconfigure payload must
+ * be mirrored in full.
  */
 #define MSG_TYPE_OK		0
 #define MSG_TYPE_ERROR		1
 #define MSG_TYPE_RECONFIGURE	14
-#define MSG_SIZE		2380
 #define MAX_REQ_LINES		64
 
 struct request_config {
@@ -46,6 +46,11 @@ struct request_config {
 	enum gpiod_line_value values[MAX_REQ_LINES];
 	bool active_low;
 	enum gpiod_line_direction direction;
+	enum gpiod_line_bias bias;
+	enum gpiod_line_drive drive;
+	enum gpiod_line_edge edge;
+	enum gpiod_line_clock event_clock;
+	unsigned long debounce_period_us;
 } PACKED;
 
 struct message {
@@ -53,12 +58,11 @@ struct message {
 	union {
 		struct {
 			unsigned int errnum;
-		} err;
+		} PACKED err;
 		struct {
 			unsigned int id;
 			struct request_config cfg;
-		} reconfigure;
-		char pad[MSG_SIZE - sizeof(unsigned int)];
+		} PACKED reconfigure;
 	};
 } PACKED;
 
