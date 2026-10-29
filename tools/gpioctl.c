@@ -281,6 +281,11 @@ struct server {
 	bool timer_armed;
 	struct receiver rcv;
 	int epollfd;
+	/*
+	 * While the detached server is starting up this is the write end of
+	 * the pipe used to tell the client about failures, -1 otherwise.
+	 */
+	int startup_fd;
 	struct epoll_event *pending;
 	int num_pending;
 	unsigned int usecnt;
@@ -321,10 +326,28 @@ srv_die(struct server *srv, const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
+/*
+ * The detached server has no stderr to complain on, so if it fails while
+ * starting up, pass the error number to the client waiting on the other end of
+ * the startup pipe. Does nothing once the server is up.
+ */
+static void srv_report_startup_failure(struct server *srv, int errnum)
+{
+	ssize_t ret;
+
+	if (srv->startup_fd < 0)
+		return;
+
+	ret = write(srv->startup_fd, &errnum, sizeof(errnum));
+	(void)ret;
+}
+
 static PRINTF(2, 3) NORETURN void
 srv_die_perror(struct server *srv, const char *fmt, ...)
 {
 	va_list va;
+
+	srv_report_startup_failure(srv, errno);
 
 	va_start(va, fmt);
 	srv_vlog(srv, fmt, va);
@@ -336,6 +359,7 @@ srv_die_perror(struct server *srv, const char *fmt, ...)
 
 static NORETURN void srv_die_oom(struct server *srv)
 {
+	srv_report_startup_failure(srv, ENOMEM);
 	srv_die(srv, "Out of memory");
 }
 
@@ -1470,6 +1494,15 @@ static NORETURN void run_server(struct server *srv)
 	add_timerfd(srv);
 	arm_idle_timer(srv);
 
+	/*
+	 * Closing the write end of the startup pipe without having written
+	 * anything tells the client that the server is up and running.
+	 */
+	if (srv->startup_fd >= 0) {
+		close(srv->startup_fd);
+		srv->startup_fd = -1;
+	}
+
 	srv_log(srv, "gpioctl server started\n");
 
 	while (!srv->stop) {
@@ -1565,6 +1598,7 @@ static struct server *make_server(const struct sockaddr_un *addr)
 		die_oom();
 
 	memset(srv, 0, sizeof(*srv));
+	srv->startup_fd = -1;
 	memcpy(srv->socket_path, addr->sun_path, sizeof(srv->socket_path));
 
 	srv->epollfd = epoll_create1(0);
@@ -1584,38 +1618,73 @@ static struct server *make_server(const struct sockaddr_un *addr)
 	return srv;
 }
 
-/*
- * FIXME: a failure here happens in the detached server process, so the client
- * has no way of learning about it and only sees a timeout while waiting for
- * the server to come up. Report the error to the client.
- */
-static void redirect_fds(void)
+static void redirect_fds(struct server *srv)
 {
 	int fd, ret;
 
 	fd = open("/dev/null", O_RDWR);
 	if (fd < 0)
-		die_perror("failed to open /dev/null");
+		srv_die_perror(srv, "failed to open /dev/null");
 
 	ret = dup2(fd, STDIN_FILENO);
 	if (ret < 0)
-		die_perror("failed to redirect stdin");
+		srv_die_perror(srv, "failed to redirect stdin");
 
 	ret = dup2(fd, STDOUT_FILENO);
 	if (ret < 0)
-		die_perror("failed to redirect stdout");
+		srv_die_perror(srv, "failed to redirect stdout");
 
 	ret = dup2(fd, STDERR_FILENO);
 	if (ret < 0)
-		die_perror("failed to redirect stderr");
+		srv_die_perror(srv, "failed to redirect stderr");
 
 	if (fd > STDERR_FILENO)
 		close(fd);
 }
 
+/*
+ * Wait for the detached server to either come up, which it signals by closing
+ * the write end of the startup pipe, or to report why it can't.
+ */
+static void wait_for_startup(int rd)
+{
+	struct pollfd pfd = {
+		.fd = rd,
+		.events = POLLIN,
+	};
+	int ret, errnum;
+	ssize_t rdlen;
+
+	do {
+		ret = poll(&pfd, 1, SERVER_START_TIMEOUT_MS);
+	} while (ret < 0 && errno == EINTR);
+	if (ret < 0)
+		die_perror("failed to poll the startup pipe");
+	if (ret == 0)
+		die("timed out waiting for the server to start");
+
+	do {
+		rdlen = read(rd, &errnum, sizeof(errnum));
+	} while (rdlen < 0 && errno == EINTR);
+	if (rdlen < 0)
+		die_perror("failed to read from the startup pipe");
+
+	/* End of file: the server is up. */
+	if (rdlen == 0)
+		return;
+
+	errno = errnum;
+	die_perror("the server failed to start");
+}
+
 static void spawn_server(struct server *srv, int lock_fd)
 {
+	int startup_pipe[2], ret;
 	pid_t pid;
+
+	ret = pipe(startup_pipe);
+	if (ret)
+		die_perror("failed to create the startup pipe");
 
 	pid = fork();
 	if (pid < 0) {
@@ -1625,23 +1694,33 @@ static void spawn_server(struct server *srv, int lock_fd)
 		 * Server process. Start a new session and fork again to be
 		 * reparented to init.
 		 */
+		close(startup_pipe[0]);
+		srv->startup_fd = startup_pipe[1];
+
 		setsid();
 
 		pid = fork();
 		if (pid < 0)
-			die_perror("failed to spawn the final server process");
+			srv_die_perror(srv, "failed to spawn the final server process");
 		else if (pid > 0)
 			exit(EXIT_SUCCESS);
 
 		prctl(PR_SET_NAME, "gpioctl server");
-		redirect_fds();
+		redirect_fds(srv);
 		if (lock_fd >= 0)
 			close(lock_fd);
 
 		run_server(srv);
 	} else {
-		/* Client process, wait for the first fork to exit. */
+		/*
+		 * Client process. Drop our write end of the startup pipe or
+		 * we'd never see the end of file, wait for the first fork to
+		 * exit and for the server to report back.
+		 */
+		close(startup_pipe[1]);
 		waitpid(pid, NULL, 0);
+		wait_for_startup(startup_pipe[0]);
+		close(startup_pipe[0]);
 	}
 }
 
