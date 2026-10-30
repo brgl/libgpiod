@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # SPDX-FileCopyrightText: 2026 Qualcomm Technologies, Inc. and/or its subsidiaries
 
-libgpiosim_both = both_libraries('gpiosim',
+libgpiosim_lib = library('gpiosim',
   sources: ['gpiosim.c'],
   c_args: ['-fvisibility=hidden'],
   dependencies: [libkmod_dep, mount_dep, threads_dep],
@@ -9,8 +9,19 @@ libgpiosim_both = both_libraries('gpiosim',
   soversion: libgpiosim_soversion,
   install: true,
 )
-libgpiosim_lib = libgpiosim_both.get_shared_lib()
-libgpiosim_static = libgpiosim_both.get_static_lib()
+
+# The Rust bindings always link against the static libgpiosim.
+if get_option('default_library') == 'both'
+  libgpiosim_static = libgpiosim_lib.get_static_lib()
+elif get_option('default_library') == 'static'
+  libgpiosim_static = libgpiosim_lib
+else
+  libgpiosim_static = static_library('gpiosim',
+    objects: libgpiosim_lib.extract_all_objects(recursive: false),
+    build_by_default: false,
+  )
+endif
+
 libgpiosim_inc = include_directories('.')
 
 executable('gpiosim-selftest',

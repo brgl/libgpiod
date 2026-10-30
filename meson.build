@@ -6,6 +6,7 @@ project('libgpiod', 'c',
   license: 'LGPL-2.1-or-later',
   default_options: [
     'c_std=gnu89',
+    'default_library=both',
     'cpp_std=gnu++17',
     'warning_level=2',
   ],
@@ -78,6 +79,11 @@ if opt_introspection.enabled()
   assert(opt_bindings_glib.allowed(),
     'introspection requires -Dbindings-glib=enabled')
 endif
+
+# Introspection requires the shared library.
+opt_introspection = opt_introspection.require(
+  get_option('default_library') != 'static',
+  error_message: 'introspection requires -Ddefault_library=shared or both')
 
 # systemd requires D-Bus.
 if opt_systemd.enabled()
