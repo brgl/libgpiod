@@ -29,7 +29,7 @@ There are currently six command-line tools available:
 * **gpiomon**: wait for edge events on GPIO lines, specify which edges to watch
   for, how many events to process before exiting, or if the events should be
   reported to the console
-* **gpionotify**: wait for changed to the info for GPIO lines, specify which
+* **gpionotify**: wait for changes to the info for GPIO lines, specify which
   changes to watch for, how many events to process before exiting, or if the
   events should be reported to the console
 
