@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Qualcomm Technologies, Inc. and/or its subsidiaries
 
 project('libgpiod', 'c',
-  version: '2.3.1',
+  version: '2.3.2',
   license: 'LGPL-2.1-or-later',
   default_options: [
     'c_std=gnu89',
