@@ -1,3 +1,11 @@
+libgpiod v2.3.2
+===============
+
+Bug fixes:
+- don't require a C++ compiler if we're not building C++ bindings
+- fix fully static linking in meson
+- fix the SPDX license header for libgpiodbus
+
 libgpiod v2.3.1
 ===============
 
