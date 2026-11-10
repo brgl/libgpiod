@@ -5221,6 +5221,39 @@ test_gpioctl_monitor_slow_client_keeps_events() {
 	status_is 0
 }
 
+test_gpioctl_server_out_of_descriptors() {
+	local sockpath pid ticks a b i
+
+	sockpath=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
+
+	bash -c "ulimit -n 12; exec gpioctl -p $sockpath debug" > /dev/null 2>&1 &
+	pid=$!
+
+	for i in $(seq 20); do
+		gpioctl -p "$sockpath" ping > /dev/null 2>&1 && break
+		sleep 0.1
+	done
+
+	# More clients than the server has descriptors for.
+	for i in $(seq 20); do
+		gpioctl-test-helper hold "$sockpath" 4 &
+	done
+
+	sleep 1
+	a=$(awk '{ print $14 + $15 }' "/proc/$pid/stat")
+	sleep 2
+	b=$(awk '{ print $14 + $15 }' "/proc/$pid/stat")
+	ticks=$((b - a))
+
+	# Used to spin on the connections it could not accept.
+	assertTrue "server spins ($ticks ticks)" "[ $ticks -lt 10 ]"
+
+	wait %2 2> /dev/null
+	kill "$pid" 2> /dev/null
+	wait "$pid" 2> /dev/null
+	rm -f "$sockpath" "$sockpath.lock"
+}
+
 test_gpioctl_server_disconnects_on_short_message() {
 	gpioctl_debug_setup
 

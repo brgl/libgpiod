@@ -278,6 +278,7 @@ struct server {
 	struct receiver rcv;
 	int epollfd;
 	int startup_fd;
+	int spare_fd;
 	struct epoll_event *pending;
 	int num_pending;
 	unsigned int usecnt;
@@ -1343,17 +1344,40 @@ static void client_receive(uint32_t events, struct receiver *rcv,
 	}
 }
 
+/*
+ * Out of file descriptors, accept4() fails and leaves the connection in the
+ * queue so the listening socket stays readable and the event loop would spin.
+ * Give up the spare descriptor to accept the connection and close it right
+ * away: the client is told that it's been rejected and we get the spare
+ * descriptor back.
+ */
+static void srv_reject_pending(struct server *srv, int err)
+{
+	int sock;
+
+	if ((err != EMFILE && err != ENFILE) || srv->spare_fd < 0)
+		return;
+
+	close(srv->spare_fd);
+	sock = accept4(srv->rcv.fd, NULL, NULL, SOCK_NONBLOCK | SOCK_CLOEXEC);
+	if (sock >= 0)
+		close(sock);
+	srv->spare_fd = open("/dev/null", O_RDONLY | O_CLOEXEC);
+}
+
 static void server_receive(uint32_t events UNUSED, struct receiver *rcv,
 			   struct server *srv)
 {
 	struct client *cli;
+	int sock, ret, err;
 	socklen_t len;
-	int sock, ret;
 
 	sock = accept4(rcv->fd, NULL, NULL, SOCK_NONBLOCK | SOCK_CLOEXEC);
 	if (sock < 0) {
+		err = errno;
 		srv_log(srv, "Failed to accept client connection: %s\n",
-			strerror(errno));
+			strerror(err));
+		srv_reject_pending(srv, err);
 		return;
 	}
 
@@ -1475,6 +1499,8 @@ static void add_timerfd(struct server *srv)
 static void free_server(struct server *srv)
 {
 	close(srv->epollfd);
+	if (srv->spare_fd >= 0)
+		close(srv->spare_fd);
 	if (srv->rcv.fd >= 0)
 		close(srv->rcv.fd);
 	/* Filesystem sockets (non-abstract) need to be unlinked. */
@@ -1490,6 +1516,9 @@ static NORETURN void run_server(struct server *srv)
 	struct client *cli, *tmp;
 	struct receiver *rcv;
 	int numev, i;
+
+	/* Reserved for srv_reject_pending(). */
+	srv->spare_fd = open("/dev/null", O_RDONLY | O_CLOEXEC);
 
 	add_signalfd(srv);
 	add_timerfd(srv);
@@ -1605,6 +1634,7 @@ static struct server *make_server(const struct sockaddr_un *addr)
 
 	memset(srv, 0, sizeof(*srv));
 	srv->startup_fd = -1;
+	srv->spare_fd = -1;
 	memcpy(srv->socket_path, addr->sun_path, sizeof(srv->socket_path));
 
 	srv->epollfd = epoll_create1(0);

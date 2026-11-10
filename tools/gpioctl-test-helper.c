@@ -4,7 +4,11 @@
 
 /*
  * Test helper for forging messages to the gpioctl server in the gpio-tools
- * test suite. Two modes:
+ * test suite. Modes:
+ *
+ *   hold <socket-path> <seconds>
+ *     Connect to the server and keep the connection open without sending
+ *     anything for the given time.
  *
  *   zero-msg <socket-path> <num-bytes>
  *     Send a single message of exactly <num-bytes> zero bytes.
@@ -99,6 +103,23 @@ static unsigned long parse_ulong_or_die(const char *str)
 	return val;
 }
 
+static int hold_main(int argc, char **argv)
+{
+	unsigned long seconds;
+	int sock;
+
+	if (argc != 3)
+		die("usage: %s hold <socket-path> <seconds>", get_prog_name());
+
+	seconds = parse_ulong_or_die(argv[2]);
+	sock = connect_to_server(argv[1]);
+
+	sleep(seconds);
+	close(sock);
+
+	return EXIT_SUCCESS;
+}
+
 static int zero_msg_main(int argc, char **argv)
 {
 	unsigned long num_bytes;
@@ -187,7 +208,9 @@ int main(int argc, char **argv)
 	argc -= 1;
 	argv += 1;
 
-	if (strcmp(cmd, "reconfigure") == 0)
+	if (strcmp(cmd, "hold") == 0)
+		return hold_main(argc, argv);
+	else if (strcmp(cmd, "reconfigure") == 0)
 		return reconfigure_main(argc, argv);
 	else if (strcmp(cmd, "zero-msg") == 0)
 		return zero_msg_main(argc, argv);
