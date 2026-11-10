@@ -11,7 +11,9 @@
  *     anything for the given time.
  *
  *   zero-msg <socket-path> <num-bytes>
- *     Send a single message of exactly <num-bytes> zero bytes.
+ *     Send a single message of exactly <num-bytes> zero bytes and wait for
+ *     the server to close the connection, which it should. Closing first
+ *     would make the server see a hang-up instead of the message.
  *
  *   reconfigure <socket-path> <request-id> <offset>=<value>...
  *     Send a reconfigure message, switching the request to output mode, with
@@ -21,6 +23,7 @@
 
 #include <errno.h>
 #include <gpiod.h>
+#include <poll.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,8 +126,9 @@ static int hold_main(int argc, char **argv)
 static int zero_msg_main(int argc, char **argv)
 {
 	unsigned long num_bytes;
+	struct pollfd pfd;
 	char *buf;
-	int sock;
+	int sock, ret;
 
 	if (argc != 3)
 		die("usage: %s <socket-path> <num-bytes>", get_prog_name());
@@ -139,6 +143,15 @@ static int zero_msg_main(int argc, char **argv)
 
 	if (send(sock, buf, num_bytes, 0) < 0)
 		die_perror("send");
+
+	pfd.fd = sock;
+	pfd.events = POLLIN;
+
+	ret = poll(&pfd, 1, 5000);
+	if (ret < 0)
+		die_perror("poll");
+	if (ret == 0)
+		die("the server did not close the connection");
 
 	close(sock);
 	free(buf);
