@@ -3435,6 +3435,48 @@ test_gpioctl_request_line_names_with_equal_sign() {
 	status_is 0
 }
 
+test_gpioctl_by_name_with_numeric_line_names() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:1 line_name=5:0
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 2=active
+	status_is 0
+	output_is "request0"
+	run_prog gpioctl -c "$sim0" request --output 4=inactive
+	status_is 0
+	output_is "request1"
+	run_prog gpioctl -c "$sim0" request --both-edges 5
+	status_is 0
+	output_is "request2"
+
+	# "1" is the id of the second request...
+	run_prog gpioctl get 1
+	status_is 0
+	output_is "inactive"
+
+	# ...unless we say that it's a line name.
+	run_prog gpioctl --by-name get 1
+	status_is 0
+	output_is "\"1\"=active"
+
+	run_prog gpioctl --by-name set 1=inactive
+	status_is 0
+	gpiosim_check_value sim0 2 0
+	gpiosim_check_value sim0 4 0
+
+	# "0" is request0, an output request with no events to monitor.
+	dut_run gpioctl --by-name monitor --banner "--format=%e %o" 0
+	dut_regex_match "Monitoring.*"
+	gpiosim_set_pull sim0 5 pull-up
+	dut_regex_match "1 5"
+	dut_kill
+	dut_wait
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
 test_gpioctl_request_chip_path_relative_to_client() {
 	gpiosim_chip sim0 num_lines=8
 
