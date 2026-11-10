@@ -3348,9 +3348,10 @@ test_gpioctl_request_values_without_output_mode() {
 
 	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
 
+	# Without output mode there are no values, '=' is part of the name.
 	run_prog gpioctl -c "$sim0" request 2=1
 	status_is 1
-	output_regex_match ".*output values can only be set in output mode"
+	output_regex_match ".*cannot find line.*2=1.*"
 
 	run_prog gpioctl stop
 	status_is 0
@@ -3363,7 +3364,7 @@ test_gpioctl_request_value_with_input_mode() {
 
 	run_prog gpioctl -c "$sim0" request --input foo=active
 	status_is 1
-	output_regex_match ".*output values can only be set in output mode"
+	output_regex_match ".*cannot find line.*foo=active.*"
 
 	run_prog gpioctl stop
 	status_is 0
@@ -3378,6 +3379,57 @@ test_gpioctl_request_partial_values_rejected() {
 	run_prog gpioctl -c "$sim0" request --output 0=1 1
 	status_is 1
 	output_regex_match ".*if values are set, they must be set for all lines"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_too_many_lines() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local args=()
+	local i
+
+	# Values are stored per argument: this used to overflow the config.
+	for i in $(seq 600); do
+		args+=(0=1)
+	done
+
+	run_prog gpioctl -c "$sim0" request --output "${args[@]}"
+	status_is 1
+	output_regex_match ".*can only handle up to 64 lines.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
+test_gpioctl_request_line_names_with_equal_sign() {
+	gpiosim_chip sim0 num_lines=8 line_name=2:a=b line_name=3:c
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	# Input mode: '=' is part of the name.
+	run_prog gpioctl -c "$sim0" request a=b
+	status_is 0
+	output_is "request0"
+
+	run_prog gpioctl release request0
+	status_is 0
+
+	# Output mode: the value follows the closing quote.
+	run_prog gpioctl -c "$sim0" request --output '"a=b"=1' c=1
+	status_is 0
+	output_is "request0"
+	gpiosim_check_value sim0 2 1
+	gpiosim_check_value sim0 3 1
+
+	run_prog gpioctl release request0
+	status_is 0
+
+	# An empty quoted id is not a line.
+	run_prog gpioctl -c "$sim0" request --output '""=1'
+	status_is 1
 
 	run_prog gpioctl stop
 	status_is 0

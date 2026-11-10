@@ -2193,12 +2193,44 @@ static void parse_request_cmdline(int *argc, char ***argv,
 	*argv += optind;
 }
 
+/*
+ * Split "line=value" in place into a bare line id and a value. The separator
+ * of a quoted id is the last '=' that follows the closing quote, so that the
+ * id may contain '='. Quotes are removed from the id.
+ */
+static bool split_line_value(char **arg, enum gpiod_line_value *value)
+{
+	bool quoted = **arg == '"';
+	char *eq;
+
+	if (quoted) {
+		eq = strrchr(*arg, '=');
+		if (!eq || eq <= *arg + 2 || *(eq - 1) != '"')
+			return false;
+	} else {
+		eq = strchr(*arg, '=');
+		if (!eq)
+			return false;
+	}
+
+	*value = parse_line_value_or_die(eq + 1);
+
+	if (quoted) {
+		*(eq - 1) = '\0';
+		(*arg)++;
+	} else {
+		*eq = '\0';
+	}
+
+	return true;
+}
+
 static void apply_opts_to_config(struct request_config *cfg,
 				 struct request_opts *opts,
 				 int argc, char **argv)
 {
+	enum gpiod_line_value value;
 	int i, num_values = 0;
-	char *eq;
 
 	if ((opts->rising_edge || opts->falling_edge) && !opts->output)
 		opts->input = true;
@@ -2207,15 +2239,13 @@ static void apply_opts_to_config(struct request_config *cfg,
 	for (i = 0; i < MAX_REQ_LINES; i++)
 		cfg->values[i] = GPIOD_LINE_VALUE_ERROR;
 
-	/* argv entries must be bare line names/offsets for line resolution. */
-	for (i = 0; i < argc; i++) {
-		eq = strchr(argv[i], '=');
-
-		if (eq) {
-			if (!opts->output)
-				die("output values can only be set in output mode");
-			cfg->values[i] = parse_line_value_or_die(eq + 1);
-			*eq = '\0';
+	/*
+	 * argv entries must be bare line names/offsets for line resolution.
+	 * Without output mode there are no values and '=' is part of the id.
+	 */
+	for (i = 0; opts->output && i < argc && i < MAX_REQ_LINES; i++) {
+		if (split_line_value(&argv[i], &value)) {
+			cfg->values[i] = value;
 			num_values++;
 		}
 	}
@@ -2272,6 +2302,10 @@ static int request_main(int argc, char **argv, const struct config *cfg)
 
 	parse_request_cmdline(&argc, &argv, &opts, false, NULL);
 	validate_request_opts(&opts);
+
+	/* Checked first: values are stored per argument. */
+	if (argc > MAX_REQ_LINES)
+		die("can only handle up to %u lines", MAX_REQ_LINES);
 
 	apply_opts_to_config(&req->cfg, &opts, argc, argv);
 
