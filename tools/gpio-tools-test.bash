@@ -5221,6 +5221,52 @@ test_gpioctl_monitor_slow_client_keeps_events() {
 	status_is 0
 }
 
+test_gpioctl_server_does_not_inherit_client_state() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local sockpath dir pid
+
+	sockpath=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
+	dir=$(mktemp -d /tmp/gpioctl-test-XXXXXX)
+
+	# The client has an extra file open and runs in a directory of its own.
+	(cd "$dir" && gpioctl -p "$sockpath" -c "$sim0" request 1 9> "$dir/file" > /dev/null)
+
+	pid=$(pgrep -n -x "gpioctl server")
+
+	assertEquals "daemon cwd" "/" "$(readlink "/proc/$pid/cwd")"
+	ls -l "/proc/$pid/fd" | grep -q "$dir/file"
+	assertNotEquals "the daemon inherited the file" "0" "$?"
+
+	run_prog gpioctl -p "$sockpath" stop
+	status_is 0
+
+	rm -rf "$dir" "$sockpath.lock"
+}
+
+test_gpioctl_relative_socket_path() {
+	local dir
+
+	dir=$(mktemp -d /tmp/gpioctl-test-XXXXXX)
+
+	# The server changes its directory but must keep using the same socket.
+	(cd "$dir" && gpioctl -p ./sock ping)
+	assertEquals "ping" "0" "$?"
+	(cd "$dir" && gpioctl -p sock ping)
+	assertEquals "ping again" "0" "$?"
+	(cd "$dir" && gpioctl -p ./sock stop)
+	assertEquals "stop" "0" "$?"
+
+	rm -rf "$dir"
+}
+
+test_gpioctl_socket_path_too_long() {
+	run_prog gpioctl -p "/tmp/$(printf 'x%.0s' $(seq 120))" ping
+	status_is 1
+	output_regex_match ".*socket path is too long.*"
+}
+
 test_gpioctl_server_out_of_descriptors() {
 	local sockpath pid ticks a b i
 
