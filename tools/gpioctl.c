@@ -3,6 +3,7 @@
 // SPDX-FileCopyrightText: 2026 Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 // SPDX-FileCopyrightText: 2026 Qualcomm Technologies, Inc. and/or its subsidiaries
 
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -327,10 +328,15 @@ srv_die(struct server *srv, const char *fmt, ...)
  */
 static void srv_report_startup_failure(struct server *srv, int errnum)
 {
+	ssize_t ret;
+
 	if (srv->startup_fd < 0)
 		return;
 
-	(void)write(srv->startup_fd, &errnum, sizeof(errnum));
+	ret = write(srv->startup_fd, &errnum, sizeof(errnum));
+	if (ret < 0)
+		srv_log(srv, "Failed to report the startup failure: %s\n",
+			strerror(errno));
 }
 
 static PRINTF(2, 3) NORETURN void
@@ -2315,7 +2321,8 @@ static void parse_request_cmdline(int *argc, char ***argv,
 			help_fn ? help_fn() : print_request_help();
 			exit(EXIT_SUCCESS);
 		case '?':
-			die("try %s request --help", get_prog_name());
+			die("try %s %s --help", get_prog_name(),
+			    permute ? "reconfigure" : "request");
 		default:
 			abort();
 		}
@@ -2537,7 +2544,9 @@ static bool try_parse_request_id(const char *arg, unsigned int *out)
 
 	if (strncmp(s, "request", 7) == 0)
 		s += 7;
-	if (*s == '\0')
+
+	/* strtoul() would also take blanks and signs. */
+	if (!isdigit((unsigned char)*s))
 		return false;
 
 	errno = 0;
@@ -2753,7 +2762,7 @@ static void print_get_help(void)
 	printf("\n");
 	printf("Each argument is either:\n");
 	printf("  - a request name or bare id as reported by the 'requests' sub-command\n");
-	printf("    (all values are printed in offset order), or\n");
+	printf("    (all values are printed in the order listed by 'requests'), or\n");
 	printf("  - one or more GPIO line names; each value is printed as \"name\"=value.\n");
 	printf("\n");
 	printf("Options:\n");
@@ -2919,15 +2928,19 @@ static void print_set_help(void)
 {
 	printf("Usage: %s [GLOBAL OPTIONS] set <request> <value>...\n",
 	       get_prog_name());
+	/*
+	 * help2man only replaces the program name on the first usage line.
+	 * Don't print the path we were run with on the next ones.
+	 */
 	printf("       %s [GLOBAL OPTIONS] set <request> <offset>=<value>...\n",
-	       get_prog_name());
+	       get_prog_short_name());
 	printf("       %s [GLOBAL OPTIONS] set <line>=<value>...\n",
-	       get_prog_name());
+	       get_prog_short_name());
 	printf("\n");
 	printf("Update the output values of GPIO lines or a request held by the daemon.\n");
 	printf("\n");
 	printf("The first form takes a request name or bare id and values for all lines\n");
-	printf("in the request in offset order (count must match).\n");
+	printf("in the request in the order listed by 'requests' (count must match).\n");
 	printf("The second form takes a request name or bare id and offset=value pairs\n");
 	printf("to update a subset of lines.\n");
 	printf("The third form takes one or more GPIO line names with values in\n");

@@ -4945,6 +4945,17 @@ test_gpioctl_reconfigure_values_by_name() {
 	status_is 0
 }
 
+test_gpioctl_request_ids_are_plain_numbers() {
+	local id
+
+	# strtoul() takes these for 0.
+	for id in -0 +0 " 0" request-0 "request 0" -18446744073709551615; do
+		run_prog gpioctl release -- "$id"
+		status_is 1
+		output_regex_match ".*invalid request name.*"
+	done
+}
+
 test_gpioctl_reconfigure_requires_direction() {
 	gpiosim_chip sim0 num_lines=8
 
