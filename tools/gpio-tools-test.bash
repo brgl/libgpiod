@@ -4993,7 +4993,7 @@ test_gpioctl_reconfigure_nonexistent() {
 gpioctl_debug_setup() {
 	SOCKPATH=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
 
-	gpioctl -p "$SOCKPATH" debug > /dev/null 2>&1 &
+	gpioctl -p "$SOCKPATH" debug > "$SOCKPATH.log" 2>&1 &
 	DEBUG_PID=$!
 
 	local i
@@ -5008,7 +5008,7 @@ gpioctl_debug_setup() {
 gpioctl_debug_teardown() {
 	kill "$DEBUG_PID" 2>/dev/null
 	wait "$DEBUG_PID" 2>/dev/null
-	rm -f "$SOCKPATH" "$SOCKPATH.lock"
+	rm -f "$SOCKPATH" "$SOCKPATH.lock" "$SOCKPATH.log"
 }
 
 test_gpioctl_requests_many() {
@@ -5362,6 +5362,8 @@ test_gpioctl_server_disconnects_on_short_message() {
 	gpioctl_debug_setup
 
 	gpioctl-test-helper zero-msg "$SOCKPATH" 1
+	run_prog grep -c "Invalid message received from client" "$SOCKPATH.log"
+	output_is "1"
 
 	run_prog gpioctl -p "$SOCKPATH" ping
 	status_is 0
@@ -5373,6 +5375,8 @@ test_gpioctl_server_disconnects_on_long_message() {
 	gpioctl_debug_setup
 
 	gpioctl-test-helper zero-msg "$SOCKPATH" 100000
+	run_prog grep -c "Invalid message received from client" "$SOCKPATH.log"
+	output_is "1"
 
 	run_prog gpioctl -p "$SOCKPATH" ping
 	status_is 0
@@ -5388,6 +5392,8 @@ test_gpioctl_server_disconnects_on_unknown_type() {
 	# that has no case in client_receive()'s switch, so the server drops
 	# the client via the default path.
 	gpioctl-test-helper zero-msg "$SOCKPATH" 4
+	run_prog grep -c "Unexpected message type 0 received from client" "$SOCKPATH.log"
+	output_is "1"
 
 	run_prog gpioctl -p "$SOCKPATH" ping
 	status_is 0
@@ -5402,6 +5408,8 @@ test_gpioctl_server_disconnects_on_size_type_mismatch() {
 	# field makes it MSG_TYPE_OK, which has no payload. The server must
 	# reject the mismatch.
 	gpioctl-test-helper zero-msg "$SOCKPATH" 553
+	run_prog grep -c "Invalid message received from client" "$SOCKPATH.log"
+	output_is "1"
 
 	run_prog gpioctl -p "$SOCKPATH" ping
 	status_is 0
