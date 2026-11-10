@@ -5353,6 +5353,21 @@ test_gpioctl_sub_commands_reject_arguments() {
 	done
 }
 
+test_gpioctl_works_with_closed_standard_descriptors() {
+	local sockpath
+
+	sockpath=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
+
+	# The server must not mistake its descriptors for the standard ones.
+	gpioctl -p "$sockpath" ping <&- >&- 2>&-
+	assertEquals "ping" "0" "$?"
+
+	gpioctl -p "$sockpath" stop <&- >&- 2>&-
+	assertEquals "stop" "0" "$?"
+
+	rm -f "$sockpath.lock"
+}
+
 test_gpioctl_server_out_of_descriptors() {
 	local sockpath pid ticks a b i
 
