@@ -2026,11 +2026,23 @@ static int get_connection(const char *socket_path)
 	return sock;
 }
 
-static int debug_main(int argc UNUSED, char **argv UNUSED,
-		      const struct config *cfg)
+/*
+ * The sub-commands without options of their own: refuse anything after the
+ * name, e.g. a global option placed in the wrong spot would otherwise be
+ * silently ignored.
+ */
+static void reject_arguments(int argc, char **argv)
+{
+	if (argc > 1)
+		die("unexpected argument for '%s': '%s'", argv[0], argv[1]);
+}
+
+static int debug_main(int argc, char **argv, const struct config *cfg)
 {
 	struct sockaddr_un addr;
 	struct server *srv;
+
+	reject_arguments(argc, argv);
 
 	make_addr(&addr, cfg->socket_path);
 	srv = make_server(&addr);
@@ -2582,11 +2594,14 @@ static int release_main(int argc, char **argv, const struct config *cfg UNUSED)
 	return EXIT_SUCCESS;
 }
 
-static int stop_main(int argc UNUSED, char **argv UNUSED,
-		     const struct config *cfg)
+static int stop_main(int argc, char **argv, const struct config *cfg)
 {
 	struct message msg = { .type = MSG_TYPE_STOP };
-	int sock = get_connection(cfg->socket_path);
+	int sock;
+
+	reject_arguments(argc, argv);
+
+	sock = get_connection(cfg->socket_path);
 
 	client_exchange(sock, &msg);
 	client_validate_response(&msg, MSG_TYPE_OK, "unable to stop daemon");
@@ -2595,11 +2610,14 @@ static int stop_main(int argc UNUSED, char **argv UNUSED,
 	return EXIT_SUCCESS;
 }
 
-static int ping_main(int argc UNUSED, char **argv UNUSED,
-		     const struct config *cfg)
+static int ping_main(int argc, char **argv, const struct config *cfg)
 {
 	struct message msg = { .type = MSG_TYPE_PING };
-	int sock = get_connection(cfg->socket_path);
+	int sock;
+
+	reject_arguments(argc, argv);
+
+	sock = get_connection(cfg->socket_path);
 
 	client_exchange(sock, &msg);
 	client_validate_response(&msg, MSG_TYPE_OK, "unable to ping daemon");
