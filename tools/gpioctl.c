@@ -3709,11 +3709,33 @@ static const struct sub_command *find_sub_cmd(const char *name)
 	return NULL;
 }
 
+/*
+ * If we're started with any of the standard descriptors closed, the next
+ * ones we open take their numbers. The server relies on its own descriptors
+ * being above them when it redirects the standard ones to /dev/null.
+ */
+static void ensure_std_fds_open(void)
+{
+	int fd;
+
+	for (;;) {
+		fd = open("/dev/null", O_RDWR);
+		if (fd < 0)
+			return;
+
+		if (fd > STDERR_FILENO) {
+			close(fd);
+			return;
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	struct config cfg = { .consumer = "gpioctl" };
 	const struct sub_command *subcmd;
 
+	ensure_std_fds_open();
 	set_prog_name(argv[0]);
 	parse_global_cmdline(&argc, &argv, &cfg);
 
