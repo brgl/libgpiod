@@ -5482,6 +5482,16 @@ test_gpioctl_server_validates_reconfigure_offsets() {
 	gpioctl_debug_teardown
 }
 
+# gpioctl talks to its server over an abstract Unix socket, which is shared
+# by all processes of a network namespace and named after the user. Run in a
+# namespace of our own, so that the tests don't use, and in the end stop, the
+# server of the user running them. Carry on in the current one if we can't.
+if [ -z "$GPIOTOOLS_TEST_NETNS" ] && command -v unshare > /dev/null &&
+   unshare -n true 2> /dev/null; then
+	export GPIOTOOLS_TEST_NETNS=1
+	exec unshare -n "$BASH" "$0" "$@"
+fi
+
 # shellcheck source=tests/scripts/gpiod-bash-test-helper.inc
 source gpiod-bash-test-helper.inc
 
