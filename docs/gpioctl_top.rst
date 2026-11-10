@@ -18,7 +18,7 @@ The client auto-spawns the daemon on first use and communicates with it over
 a per-user, abstract Unix-domain socket. The daemon stays alive as long as it
 holds any active GPIO requests or client connections. When all requests are
 released and client connections closed, the server starts an idle timer and
-exists after 60 seconds of inactivity.
+exits after 60 seconds of inactivity.
 
 Examples
 --------
@@ -60,7 +60,7 @@ Read the current value of a held request:
    $ gpioctl get request0
    active
 
-Read a line value by its name (daemon finds the request holding that line):
+Read a line value by its name (the client finds the request holding that line):
 
 .. code-block:: none
 
