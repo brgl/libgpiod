@@ -1537,17 +1537,22 @@ static NORETURN void run_server(struct server *srv)
 	srv_log(srv, "gpioctl server exiting\n");
 
 	/*
-	 * Close the listening socket before dropping clients so that any
-	 * new connection attempt races get ECONNREFUSED rather than
+	 * Remove the socket file first. A client that sees ECONNREFUSED
+	 * between closing the socket and unlinking the file takes it for a
+	 * stale one, removes it and starts a new server, whose file we would
+	 * then unlink from under it. With the file gone first, clients either
+	 * connect to us before that or find no file and start a new server.
+	 * Then close the listening socket before dropping clients so that
+	 * connection attempts racing with us get ECONNREFUSED rather than
 	 * connecting to a server that won't serve them.
 	 */
-	epoll_ctl(srv->epollfd, EPOLL_CTL_DEL, srv->rcv.fd, NULL);
-	close(srv->rcv.fd);
-	srv->rcv.fd = -1;
 	if (srv->socket_path[0] != '\0') {
 		unlink(srv->socket_path);
 		srv->socket_path[0] = '\0';
 	}
+	epoll_ctl(srv->epollfd, EPOLL_CTL_DEL, srv->rcv.fd, NULL);
+	close(srv->rcv.fd);
+	srv->rcv.fd = -1;
 
 	list_for_each_entry_safe(cli, tmp, &srv->clients, list)
 		srv_drop_client(srv, cli);
