@@ -4993,7 +4993,7 @@ test_gpioctl_reconfigure_nonexistent() {
 gpioctl_debug_setup() {
 	SOCKPATH=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
 
-	gpioctl debug -p "$SOCKPATH" > /dev/null 2>&1 &
+	gpioctl -p "$SOCKPATH" debug > /dev/null 2>&1 &
 	DEBUG_PID=$!
 
 	local i
@@ -5163,7 +5163,7 @@ test_gpioctl_socket_path_stale_socket() {
 	sockpath=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
 
 	# A server killed hard leaves its socket behind.
-	gpioctl debug -p "$sockpath" > /dev/null 2>&1 &
+	gpioctl -p "$sockpath" debug > /dev/null 2>&1 &
 	local pid=$!
 	local i
 
@@ -5313,6 +5313,16 @@ test_gpioctl_socket_path_too_long() {
 	run_prog gpioctl -p "/tmp/$(printf 'x%.0s' $(seq 120))" ping
 	status_is 1
 	output_regex_match ".*socket path is too long.*"
+}
+
+test_gpioctl_sub_commands_reject_arguments() {
+	local sub
+
+	for sub in debug ping stop; do
+		run_prog gpioctl "$sub" --socket-path /tmp/gpioctl-test-nonexistent
+		status_is 1
+		output_regex_match ".*unexpected argument for '$sub': '--socket-path'.*"
+	done
 }
 
 test_gpioctl_server_out_of_descriptors() {
