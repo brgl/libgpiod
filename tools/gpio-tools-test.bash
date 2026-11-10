@@ -3435,6 +3435,54 @@ test_gpioctl_request_line_names_with_equal_sign() {
 	status_is 0
 }
 
+test_gpioctl_request_chip_path_relative_to_client() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sockpath dir
+
+	sockpath=$(mktemp -u /tmp/gpioctl-test-XXXXXX)
+	dir=$(mktemp -d /tmp/gpioctl-test-XXXXXX)
+	ln -s "${GPIOSIM_CHIP_PATH[sim0]}" "$dir/mychip"
+
+	# The server is spawned from a different directory than the one the
+	# chip path is relative to.
+	(cd / && gpioctl -p "$sockpath" ping)
+	assertEquals "ping" "0" "$?"
+
+	(cd "$dir" && gpioctl -p "$sockpath" -c ./mychip request 1 > /dev/null)
+	assertEquals "request" "0" "$?"
+
+	run_prog gpioctl -p "$sockpath" requests
+	status_is 0
+	output_regex_match ".*request0 .*offsets: \\[1\\].*"
+
+	run_prog gpioctl -p "$sockpath" stop
+	status_is 0
+
+	rm -rf "$dir" "$sockpath.lock"
+}
+
+test_gpioctl_request_chip_path_too_long() {
+	gpiosim_chip sim0 num_lines=8
+
+	local dir
+
+	dir=$(mktemp -d /tmp/gpioctl-test-XXXXXX)
+	mkdir -p "$dir/$(printf 'd%.0s' $(seq 60))/$(printf 'e%.0s' $(seq 60))"
+	dir="$dir/$(printf 'd%.0s' $(seq 60))/$(printf 'e%.0s' $(seq 60))"
+	ln -s "${GPIOSIM_CHIP_PATH[sim0]}" "$dir/chip"
+
+	# The path of the link is too long but the real path of the chip isn't.
+	run_prog gpioctl -c "$dir/chip" request 1
+	status_is 0
+	output_is "request0"
+
+	run_prog gpioctl stop
+	status_is 0
+
+	rm -rf "${dir%%/d*}"
+}
+
 test_gpioctl_request_debounce_requires_edge() {
 	gpiosim_chip sim0 num_lines=8
 

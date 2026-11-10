@@ -2418,6 +2418,7 @@ static int request_main(int argc, char **argv, const struct config *cfg)
 	struct line_resolver *resolver;
 	struct request *req = &msg.req;
 	struct request_opts opts = { };
+	char *real_path;
 	int sock, i;
 
 	parse_request_cmdline(&argc, &argv, &opts, false, NULL);
@@ -2442,8 +2443,21 @@ static int request_main(int argc, char **argv, const struct config *cfg)
 	if (resolver->num_lines > MAX_REQ_LINES)
 		die("can only handle up to %u lines", MAX_REQ_LINES);
 
-	snprintf(req->chip_path, sizeof(req->chip_path), "%s",
-		 resolver->chips[resolver->lines[0].chip_num].path);
+	/*
+	 * The server opens the chip from its own working directory and may
+	 * not see what a symlink points to relative to ours: send the real
+	 * path.
+	 */
+	real_path = realpath(resolver->chips[resolver->lines[0].chip_num].path,
+			     NULL);
+	if (!real_path)
+		die_perror("unable to resolve the chip path");
+
+	if (strlen(real_path) >= sizeof(req->chip_path))
+		die("chip path is too long: %s", real_path);
+
+	strcpy(req->chip_path, real_path);
+	free(real_path);
 
 	snprintf(req->consumer, sizeof(req->consumer), "%s", cfg->consumer);
 
