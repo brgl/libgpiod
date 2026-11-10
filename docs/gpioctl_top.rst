@@ -106,14 +106,18 @@ Change multiple output lines by name in a single call:
 
    $ gpioctl set power_led=active status_led=inactive
 
-Reconfigure a held request - switch to input and enable edge detection:
+Reconfigure a held request - switch to input and enable edge detection. The new
+configuration replaces the whole existing one, so settings like ``--active-low``
+or ``--pull-up`` must be given again to be kept, and a direction is required
+unless it's implied by another option, as edge detection does here:
 
 .. code-block:: none
 
    $ gpioctl reconfigure request0 --both-edges
 
-Reconfigure a request of several lines to output. Values must be given for all
-of its lines, either in the order shown by ``gpioctl requests`` or as
+Reconfigure a request of several lines to output. Values are optional (the lines
+are driven inactive without them) but if given, they must be given for all of
+its lines, either in the order shown by ``gpioctl requests`` or as
 ``line=value`` pairs in any order, where ``line`` is the name or the offset of
 a line of the request:
 

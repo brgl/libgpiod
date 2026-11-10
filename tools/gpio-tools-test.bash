@@ -4945,6 +4945,23 @@ test_gpioctl_reconfigure_values_by_name() {
 	status_is 0
 }
 
+test_gpioctl_reconfigure_requires_direction() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+
+	run_prog gpioctl -c "$sim0" request --output 1=active
+	status_is 0
+
+	# Nothing would change as the direction is left as is.
+	run_prog gpioctl reconfigure request0 --active-low
+	status_is 1
+	output_regex_match ".*direction must be specified.*"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
 test_gpioctl_reconfigure_values_in_input_mode() {
 	gpiosim_chip sim0 num_lines=8
 

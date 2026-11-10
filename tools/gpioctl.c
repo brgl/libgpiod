@@ -3338,6 +3338,11 @@ static void print_reconfigure_help(void)
 	printf("<request> is the name or bare id as reported by the 'requests'\n");
 	printf("sub-command.\n");
 	printf("\n");
+	printf("The new configuration replaces the whole existing one: settings of the\n");
+	printf("request that are not given again (active-low, bias, ...) are reset to\n");
+	printf("their defaults. A direction (--input or --output) is required unless\n");
+	printf("implied by another option.\n");
+	printf("\n");
 	printf("In output mode, values may optionally be set. They must be given for\n");
 	printf("all lines of the request, either one per line in the order listed by\n");
 	printf("'requests' or as 'line=value' pairs, where line is the name or the\n");
@@ -3482,6 +3487,7 @@ static int reconfigure_main(int argc, char **argv, const struct config *cfg)
 {
 	struct message msg = { .type = MSG_TYPE_RECONFIGURE };
 	struct request_opts opts = { };
+	struct request_config *rcfg;
 	unsigned int id;
 	int sock;
 
@@ -3499,6 +3505,17 @@ static int reconfigure_main(int argc, char **argv, const struct config *cfg)
 	argv++;
 
 	apply_opts_to_config(&msg.reconfigure.cfg, &opts, 0, NULL);
+
+	/*
+	 * Lines with no direction in the new configuration are left as they
+	 * are, so nothing would change. Bias, edge detection and debouncing
+	 * only make sense for inputs, which apply_opts_to_config() and the
+	 * server take care of.
+	 */
+	rcfg = &msg.reconfigure.cfg;
+	if (!rcfg->direction && !rcfg->bias && !rcfg->edge &&
+	    !rcfg->debounce_period_us)
+		die("direction must be specified, use --input or --output");
 
 	sock = get_connection(cfg->socket_path);
 	if (argc)
