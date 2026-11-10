@@ -568,13 +568,6 @@ static int send_message(struct receiver *rcv, struct server *srv,
 	return 0;
 }
 
-/*
- * Like send_message() but if the client's socket buffer is full wait for it
- * to drain until the deadline instead of failing right away. For replies made
- * of many messages sent in a row that a client which does read them would
- * otherwise miss. The deadline is for the whole reply so a client that
- * doesn't read, or reads too slowly, can't stall the server for longer.
- */
 static void deadline_from_now(struct timespec *ts, unsigned int ms)
 {
 	clock_gettime(CLOCK_MONOTONIC, ts);
@@ -601,6 +594,13 @@ static int ms_until(const struct timespec *deadline)
 	return left > 0 ? left : 0;
 }
 
+/*
+ * Like send_message() but if the client's socket buffer is full wait for it
+ * to drain until the deadline instead of failing right away. For replies made
+ * of many messages sent in a row that a client which does read them would
+ * otherwise miss. The deadline is for the whole reply so a client that
+ * doesn't read, or reads too slowly, can't stall the server for longer.
+ */
 static int send_message_wait(struct receiver *rcv, struct server *srv,
 			     struct message *msg,
 			     const struct timespec *deadline)
