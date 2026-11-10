@@ -31,8 +31,9 @@
 
 #include "tools-common.h"
 
-#define PACKED	__attribute__((__packed__))
-#define UNUSED	__attribute__((unused))
+#define PACKED		__attribute__((__packed__))
+#define UNUSED		__attribute__((unused))
+#define ARRAY_SIZE(arr)	(sizeof(arr) / sizeof((arr)[0]))
 
 enum {
 	MSG_TYPE_OK,
@@ -1673,6 +1674,50 @@ static void redirect_fds(struct server *srv)
 		close(fd);
 }
 
+static void close_fd_range(unsigned int first, unsigned int last)
+{
+	unsigned int fd;
+	long max;
+
+	max = sysconf(_SC_OPEN_MAX);
+
+	for (fd = first; fd <= last && (long)fd < max; fd++)
+		close(fd);
+}
+
+/*
+ * The server is started by an arbitrary process and inherits everything it
+ * has open. Don't hold on to files or locks of the client: close everything
+ * except for the descriptors the server needs.
+ */
+static void close_inherited_fds(const struct server *srv)
+{
+	int keep[] = { srv->epollfd, srv->rcv.fd, srv->startup_fd };
+	unsigned int first = STDERR_FILENO + 1, last, i, j;
+	const unsigned int num_keep = ARRAY_SIZE(keep);
+	int tmp;
+
+	/* Sort so that what's left in between can be closed in ranges. */
+	for (i = 0; i < num_keep; i++) {
+		for (j = i + 1; j < num_keep; j++) {
+			if (keep[j] < keep[i]) {
+				tmp = keep[i];
+				keep[i] = keep[j];
+				keep[j] = tmp;
+			}
+		}
+	}
+
+	for (i = 0; i <= num_keep; i++) {
+		last = i < num_keep ? (unsigned int)keep[i] : ~0U;
+
+		if (last > first)
+			close_fd_range(first, last - 1);
+		if (i < num_keep)
+			first = keep[i] + 1;
+	}
+}
+
 /*
  * Wait for the detached server to either come up, which it signals by closing
  * the write end of the startup pipe, or to report why it can't.
@@ -1710,7 +1755,7 @@ static void wait_for_startup(int fd)
 	die_perror("the server failed to start");
 }
 
-static void spawn_server(struct server *srv, int lock_fd)
+static void spawn_server(struct server *srv)
 {
 	int startup_pipe[2], ret;
 	pid_t pid;
@@ -1739,9 +1784,13 @@ static void spawn_server(struct server *srv, int lock_fd)
 			exit(EXIT_SUCCESS);
 
 		prctl(PR_SET_NAME, "gpioctl server");
+
+		/* Don't keep the working directory of the client busy. */
+		if (chdir("/"))
+			srv_die_perror(srv, "failed to change directory to /");
+
+		close_inherited_fds(srv);
 		redirect_fds(srv);
-		if (lock_fd >= 0)
-			close(lock_fd);
 
 		run_server(srv);
 	} else {
@@ -1757,7 +1806,7 @@ static void spawn_server(struct server *srv, int lock_fd)
 	}
 }
 
-static void start_server(const struct sockaddr_un *addr, int lock_fd)
+static void start_server(const struct sockaddr_un *addr)
 {
 	struct server *srv;
 
@@ -1765,7 +1814,7 @@ static void start_server(const struct sockaddr_un *addr, int lock_fd)
 	if (!srv)
 		return;
 
-	spawn_server(srv, lock_fd);
+	spawn_server(srv);
 	/*
 	 * If we returned, we're the client. The daemon owns the socket file,
 	 * so clear the path so that free_server() doesn't unlink it from the
@@ -1817,17 +1866,36 @@ static int try_connect(const struct sockaddr_un *addr)
 	return sock;
 }
 
+/*
+ * The server changes its working directory, so a relative socket path has to
+ * be made absolute before it's handed over to it.
+ */
 static void make_addr(struct sockaddr_un *addr, const char *socket_path)
 {
+	char cwd[PATH_MAX];
+	int len;
+
 	memset(addr, 0, sizeof(*addr));
 	addr->sun_family = AF_UNIX;
-	if (socket_path) {
-		strncpy(addr->sun_path, socket_path,
-			sizeof(addr->sun_path) - 1);
-	} else {
+	if (!socket_path) {
 		snprintf(addr->sun_path + 1, sizeof(addr->sun_path) - 1,
 			 "gpioctl-%u", getuid());
+		return;
 	}
+
+	if (socket_path[0] == '/') {
+		len = snprintf(addr->sun_path, sizeof(addr->sun_path), "%s",
+			       socket_path);
+	} else {
+		if (!getcwd(cwd, sizeof(cwd)))
+			die_perror("failed to get the current working directory");
+
+		len = snprintf(addr->sun_path, sizeof(addr->sun_path), "%s/%s",
+			       cwd, socket_path);
+	}
+
+	if (len >= (int)sizeof(addr->sun_path))
+		die("socket path is too long");
 }
 
 /*
@@ -1938,7 +2006,7 @@ static int get_connection(const char *socket_path)
 			remove_stale_socket(&addr);
 	}
 
-	start_server(&addr, lock_fd);
+	start_server(&addr);
 	unlock_startup(lock_fd);
 
 	sock = wait_for_server(&addr);

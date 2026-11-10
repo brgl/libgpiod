@@ -216,7 +216,6 @@ lib_funcs = {
 
 tools_headers = [
   'sys/file.h',
-  'sys/syscall.h',
 ]
 tools_funcs = {
   'daemon': 'unistd.h',
@@ -229,6 +228,7 @@ tools_funcs = {
   'dup2': 'unistd.h',
   'flock': 'sys/file.h',
   'pipe': 'unistd.h',
+  'sysconf': 'unistd.h',
 }
 
 tests_headers = [
