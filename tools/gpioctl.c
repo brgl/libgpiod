@@ -1189,8 +1189,20 @@ static void monitor_receive(uint32_t events UNUSED, struct receiver *rcv,
 	num_events = gpiod_line_request_read_edge_events(line_req->handle,
 							 line_req->ev_buf,
 							 MONITOR_EVENT_BUF_SIZE);
-	if (num_events < 0)
+	if (num_events < 0) {
+		if (errno == EAGAIN || errno == EINTR)
+			return;
+
+		/*
+		 * The request is gone for good (e.g. the chip was removed).
+		 * The descriptor would stay readable and spin the event loop,
+		 * so drop the monitor, which also tells the client.
+		 */
+		srv_log(srv, "Failed to read edge events: %s\n",
+			strerror(errno));
+		srv_drop_client(srv, line_req->monitor_client);
 		return;
+	}
 
 	for (i = 0; i < num_events; i++) {
 		event = gpiod_edge_event_buffer_get_event(line_req->ev_buf, i);

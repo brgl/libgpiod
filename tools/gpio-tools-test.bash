@@ -5002,6 +5002,48 @@ test_gpioctl_monitor_short_format_option() {
 	status_is 0
 }
 
+test_gpioctl_monitor_chip_removed() {
+	gpiosim_chip sim0 num_lines=8
+
+	local sim0=${GPIOSIM_CHIP_NAME[sim0]}
+	local out="$SHUNIT_TMPDIR/monitor-out" pid i ticks
+
+	run_prog gpioctl -c "$sim0" request --both-edges 3
+	status_is 0
+
+	gpioctl monitor --banner request0 > "$out" 2>&1 &
+	pid=$!
+
+	for i in $(seq 20); do
+		grep -q "Monitoring request0" "$out" && break
+		sleep 0.1
+	done
+
+	echo 0 > "$GPIOSIM_CONFIGFS/${GPIOSIM_APP_NAME}-$$-sim0/live"
+
+	# The monitor is told that it's been dropped.
+	for i in $(seq 50); do
+		kill -0 "$pid" 2> /dev/null || break
+		sleep 0.1
+	done
+
+	if kill -0 "$pid" 2> /dev/null; then
+		kill "$pid"
+		fail "the monitor was not dropped"
+	fi
+	wait "$pid"
+	assertNotEquals "monitor should have failed" "0" "$?"
+
+	# And the server doesn't spin on the dead descriptor: it used up
+	# next to no CPU time.
+	sleep 2
+	ticks=$(awk '{ print $14 + $15 }' "/proc/$(pgrep -n -x 'gpioctl server')/stat")
+	assertTrue "server spins ($ticks ticks)" "[ $ticks -lt 10 ]"
+
+	run_prog gpioctl stop
+	status_is 0
+}
+
 test_gpioctl_monitor_client_not_reading_is_dropped() {
 	gpiosim_chip sim0 num_lines=8
 
