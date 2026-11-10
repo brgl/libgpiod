@@ -2566,6 +2566,15 @@ static bool is_request_id(const char *arg)
 	return try_parse_request_id(arg, &id);
 }
 
+/*
+ * With --by-name every argument is a line name, even one that looks like a
+ * request id.
+ */
+static bool is_request_arg(const char *arg, const struct config *cfg)
+{
+	return !cfg->by_name && is_request_id(arg);
+}
+
 static unsigned int parse_request_id(const char *arg)
 {
 	unsigned int id;
@@ -2912,7 +2921,7 @@ static int get_main(int argc, char **argv, const struct config *cfg)
 
 	sock = get_connection(cfg->socket_path);
 
-	if (is_request_id(argv[0])) {
+	if (is_request_arg(argv[0], cfg)) {
 		if (argc > 1)
 			die("only one request can be queried at a time");
 		get_request(sock, argv, cfg);
@@ -3090,7 +3099,7 @@ static int set_main(int argc, char **argv, const struct config *cfg)
 	sock = get_connection(cfg->socket_path);
 
 	eq = strchr(argv[0], '=');
-	if (eq && !is_request_id(argv[0]))
+	if (cfg->by_name || (eq && !is_request_id(argv[0])))
 		set_by_name(sock, argc, argv);
 	else
 		set_request(sock, argc, argv);
@@ -3193,6 +3202,7 @@ static void parse_monitor_cmdline(int *argc, char ***argv,
 }
 
 static unsigned int monitor_resolve(int sock, int argc, char **argv,
+				    const struct config *cfg,
 				    struct resolved_name **resolved_out,
 				    unsigned int *num_filter_out,
 				    struct request_info **info_out)
@@ -3203,7 +3213,7 @@ static unsigned int monitor_resolve(int sock, int argc, char **argv,
 
 	infos = collect_req_infos(sock, &num_infos);
 
-	if (is_request_id(argv[0])) {
+	if (is_request_arg(argv[0], cfg)) {
 		if (argc > 1)
 			die("only one request can be monitored at a time");
 
@@ -3284,11 +3294,11 @@ static int monitor_main(int argc, char **argv, const struct config *cfg)
 
 	sock = get_connection(cfg->socket_path);
 
-	id = monitor_resolve(sock, argc, argv, &resolved, &num_filter, &info);
+	id = monitor_resolve(sock, argc, argv, cfg, &resolved, &num_filter, &info);
 	filter = (num_filter > 0);
 
 	if (opts.initial_state) {
-		if (is_request_id(argv[0]))
+		if (is_request_arg(argv[0], cfg))
 			get_request(sock, argv, cfg);
 		else
 			get_by_name(sock, argc, argv, cfg);
@@ -3618,6 +3628,7 @@ static void print_help(void)
 	printf("\n");
 	printf("Options:\n");
 	printf("      --by-name\t\ttreat lines as names even if they would parse as an offset\n");
+	printf("\t\t\t(or, for sub-commands taking requests, as a request id)\n");
 	printf("  -c, --chip <chip>\trestrict scope to a particular chip\n");
 	printf("  -C, --consumer <name>\tconsumer name applied to requested lines\n");
 	printf("\t\t\t(default is 'gpioctl')\n");
