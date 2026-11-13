@@ -2332,44 +2332,12 @@ static void parse_request_cmdline(int *argc, char ***argv,
 	*argv += optind;
 }
 
-/*
- * Split "line=value" in place into a bare line id and a value. The separator
- * of a quoted id is the last '=' that follows the closing quote, so that the
- * id may contain '='. Quotes are removed from the id.
- */
-static bool split_line_value(char **arg, enum gpiod_line_value *value)
-{
-	bool quoted = **arg == '"';
-	char *eq;
-
-	if (quoted) {
-		eq = strrchr(*arg, '=');
-		if (!eq || eq <= *arg + 2 || *(eq - 1) != '"')
-			return false;
-	} else {
-		eq = strchr(*arg, '=');
-		if (!eq)
-			return false;
-	}
-
-	*value = parse_line_value_or_die(eq + 1);
-
-	if (quoted) {
-		*(eq - 1) = '\0';
-		(*arg)++;
-	} else {
-		*eq = '\0';
-	}
-
-	return true;
-}
-
 static void apply_opts_to_config(struct request_config *cfg,
 				 struct request_opts *opts,
 				 int argc, char **argv)
 {
-	enum gpiod_line_value value;
 	int i, num_values = 0;
+	char *line, *value;
 
 	if ((opts->rising_edge || opts->falling_edge) && !opts->output)
 		opts->input = true;
@@ -2383,8 +2351,10 @@ static void apply_opts_to_config(struct request_config *cfg,
 	 * Without output mode there are no values and '=' is part of the id.
 	 */
 	for (i = 0; opts->output && i < argc && i < MAX_REQ_LINES; i++) {
-		if (split_line_value(&argv[i], &value)) {
-			cfg->values[i] = value;
+		line = split_line_value(argv[i], &value);
+		if (line) {
+			cfg->values[i] = parse_line_value_or_die(value);
+			argv[i] = line;
 			num_values++;
 		}
 	}
