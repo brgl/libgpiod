@@ -36,6 +36,7 @@ void die_perror(const char *fmt, ...) NORETURN PRINTF(1, 2);
 void print_version(void);
 int parse_bias_or_die(const char *option);
 int parse_line_value_or_die(const char *option);
+char *split_line_value(char *arg, char **value);
 bool parse_line_values(int num_lines, char **lvs, char **lines,
 		       enum gpiod_line_value *values, bool interactive);
 void parse_line_values_or_die(int num_lines, char **lvs, char **lines,
