@@ -1376,14 +1376,14 @@ test_monitor_multiple_lines_by_name() {
 	dut_run gpiocli monitor foo xyz
 
 	gpiosim_set_pull sim0 1 pull-up
+	dut_regex_match "[0-9]+ rising\\s+\"foo\""
+
 	gpiosim_set_pull sim0 5 pull-up # This should be ignored
 	gpiosim_set_pull sim0 11 pull-up
-	gpiosim_set_pull sim0 1 pull-down
+	dut_regex_match "[0-9]+ rising\\s+\"xyz\""
 
-	dut_read
-	output_regex_match "[0-9]+ rising\\s+\"foo\""
-	output_regex_match "[0-9]+ rising\\s+\"xyz\""
-	output_regex_match "[0-9]+ falling\\s+\"foo\""
+	gpiosim_set_pull sim0 1 pull-down
+	dut_regex_match "[0-9]+ falling\\s+\"foo\""
 
 	gpiodbus_release_request "$request"
 }
@@ -1421,13 +1421,13 @@ test_monitor_all_lines_on_request() {
 	dut_run gpiocli monitor -r "$request"
 
 	gpiosim_set_pull sim0 1 pull-up
-	gpiosim_set_pull sim0 4 pull-up
-	gpiosim_set_pull sim0 1 pull-down
+	dut_regex_match "[0-9]+ rising\\s+\"foo\""
 
-	dut_read
-	output_regex_match "[0-9]+ rising\\s+\"foo\""
-	output_regex_match "[0-9]+ rising\\s+4"
-	output_regex_match "[0-9]+ falling\\s+\"foo\""
+	gpiosim_set_pull sim0 4 pull-up
+	dut_regex_match "[0-9]+ rising\\s+4"
+
+	gpiosim_set_pull sim0 1 pull-down
+	dut_regex_match "[0-9]+ falling\\s+\"foo\""
 
 	gpiodbus_release_request "$request"
 }
